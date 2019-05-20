@@ -24,10 +24,20 @@ int RobotController::setTargetPose(const interaction::Pose & pose)
     uint16_t* data = (uint16_t*)buf.data();
     *data = type;
     pose.AppendToString(&buf);
-    sendRequest(buf);
-
+    return sendRequest(buf);
 }
 
+interaction::Pose RobotController::getCurrentPose()
+{
+    std::string buf;
+    buf.resize(sizeof(uint16_t));
+    uint16_t type = CURRENT_POSE;
+    uint16_t* data = (uint16_t*)buf.data();
+    *data = type;
+    sendRequest(buf);
+    //currentPose should be updated now
+    return currentPose;
+}
 
 int RobotController::sendRequest(const std::string& serializedMessage){
     
@@ -55,7 +65,7 @@ int RobotController::evaluateReply(const std::string& reply){
 
     std::string serializedMessage(reply.data()+sizeof(uint16_t),reply.size()-sizeof(uint16_t));
 
-    ControlMessageType msgtype = *((ControlMessageType*)type);
+    ControlMessageType msgtype = (ControlMessageType)*type;
 
     switch (msgtype){
         case CURRENT_POSE:{

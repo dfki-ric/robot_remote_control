@@ -13,6 +13,8 @@ namespace interaction
             virtual ~RobotController(){};
             
             int setTargetPose(const interaction::Pose & pose);
+            
+            interaction::Pose getCurrentPose();
 
         protected:
             virtual int sendRequest(const std::string& serializedMessage);

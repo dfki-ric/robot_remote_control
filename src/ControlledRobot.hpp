@@ -11,7 +11,11 @@ namespace interaction
             ControlledRobot(const std::string &addr);
             virtual ~ControlledRobot(){};
 
-            interaction::Pose getTargetPose();
+            void update();
+
+            interaction::Pose getTargetPose(){
+                return targetPose;
+            }
 
             void setCurrentPose(const interaction::Pose& pose){
                 currentPose = pose;
@@ -23,7 +27,8 @@ namespace interaction
             int evaluateRequest(const std::string& request);
 
         private:
-
+            void addControlMessageType(std::string &buf, const ControlMessageType& type);
+            zmq::message_t serializeControlMessageType(const ControlMessageType& type);
             zmq::message_t serializeCurrentPose();
 
             std::shared_ptr<zmq::context_t> context;
