@@ -4,6 +4,6 @@
 
 namespace interaction
 {    
-    enum MessageType{TARGET_POSE};
+    enum ControlMessageType{NO_DATA=0,TARGET_POSE,CURRENT_POSE};
 } // end namespace interaction-library-controlled_robot
 
