@@ -1,10 +1,10 @@
 #include <boost/test/unit_test.hpp>
-#include <interaction-library-controlled_robot/Dummy.hpp>
+#include <interaction-library-controlled_robot/ControlledRobot.hpp>
 
-using namespace interaction-library-controlled_robot;
+using namespace interaction;
 
 BOOST_AUTO_TEST_CASE(it_should_not_crash_when_welcome_is_called)
 {
-    interaction-library-controlled_robot::DummyClass dummy;
+    interaction::ControlledRobot dummy;
     dummy.welcome();
 }

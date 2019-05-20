@@ -1,0 +1,5 @@
+include:
+   - project: 'build_server/gitlab_ci_includes'
+     ref: 'master'
+     file: 'projects/vrlab.yml'
+     
