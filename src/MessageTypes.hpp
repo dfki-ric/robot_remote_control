@@ -4,7 +4,7 @@
 
 namespace interaction
 {    
-    enum ControlMessageType{NO_DATA=0,TARGET_POSE,CURRENT_POSE};
+    enum ControlMessageType{NO_DATA=0,TARGET_POSE,CURRENT_POSE,TWIST_COMMAND};
 
 
 

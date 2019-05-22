@@ -13,13 +13,18 @@ namespace interaction
             virtual ~RobotController(){};
             
             int setTargetPose(const interaction::Pose & pose);
+
+            int setTwistCommand(const interaction::Twist &twistCommand);
+
+            
+
             
             interaction::Pose getCurrentPose();
 
         protected:
-            virtual int sendRequest(const std::string& serializedMessage);
+            virtual std::string sendRequest(const std::string& serializedMessage);
 
-            int evaluateReply(const std::string& reply);
+            ControlMessageType evaluateReply(const std::string& reply);
 
         private:
 
@@ -27,6 +32,17 @@ namespace interaction
 	        std::shared_ptr<zmq::socket_t> socket;
 
             interaction::Pose currentPose;
+
+
+            template< class CLASS > std::string sendProtobufData(CLASS protodata, const ControlMessageType &type ){
+                std::string buf;
+                buf.resize(sizeof(uint16_t));
+                uint16_t uint_type = type;
+                uint16_t* data = (uint16_t*)buf.data();
+                *data = uint_type;
+                protodata.AppendToString(&buf);
+                return sendRequest(buf);
+            }
 
 
     };

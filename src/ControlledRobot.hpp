@@ -21,10 +21,14 @@ namespace interaction
                 currentPose = pose;
             }
 
-        protected:
-            virtual int receiveRequest();
+            interaction::Twist getTwistCommand(){
+                return twistCommand;
+            }
 
-            int evaluateRequest(const std::string& request);
+        protected:
+            virtual ControlMessageType receiveRequest();
+
+            ControlMessageType evaluateRequest(const std::string& request);
 
         private:
             void addControlMessageType(std::string &buf, const ControlMessageType& type);
@@ -37,6 +41,8 @@ namespace interaction
 
             interaction::Pose targetPose;
             interaction::Pose currentPose;
+            interaction::Twist twistCommand;
+
 
 
     };

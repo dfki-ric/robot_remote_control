@@ -21,14 +21,14 @@ void ControlledRobot::update()
     receiveRequest();
 }
 
-int ControlledRobot::receiveRequest()
+ControlMessageType ControlledRobot::receiveRequest()
 {
     zmq::message_t requestmsg;
     socket->recv(&requestmsg);
 
     std::string msg ((char*)requestmsg.data(),requestmsg.size());
 
-    int req = evaluateRequest(msg);
+    ControlMessageType req = evaluateRequest(msg);
 
     printf("receive request of type %i\n",req);
 
@@ -36,7 +36,7 @@ int ControlledRobot::receiveRequest()
     
 }
 
-int ControlledRobot::evaluateRequest(const std::string& request)
+ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 {
 
     uint16_t* type = (uint16_t*)request.data();
