@@ -1,11 +1,11 @@
 rock_library(interaction-library-controlled_robot
     SOURCES ControlledRobot.cpp
-    HEADERS ControlledRobot.hpp
+    HEADERS ControlledRobot.hpp MessageTypes.hpp
     DEPS_PKGCONFIG interaction-types libzmq)
 
 rock_library(interaction-library-robot_controller
     SOURCES RobotController.cpp
-    HEADERS RobotController.hpp
+    HEADERS RobotController.hpp MessageTypes.hpp
     DEPS_PKGCONFIG interaction-types libzmq)
 
 rock_executable(interaction-library-robot_controller_bin RobotControllerMain.cpp
