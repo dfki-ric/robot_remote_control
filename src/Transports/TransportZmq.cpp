@@ -34,15 +34,21 @@ TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type){
 
 }
 
-int TransportZmq::send(const std::string& buf){
+int TransportZmq::send(const std::string& buf, Flags flags){
     zmq::message_t msg(buf.data(),buf.size());
-    return socket->send(msg);
+
+    int zmqflag = 0;
+    if (flags & NOBLOCK){
+        zmqflag = ZMQ_NOBLOCK;
+    }
+
+    return socket->send(msg,zmqflag);
 }
 
-std::string TransportZmq::receive(){
+int TransportZmq::receive(std::string* buf,Flags flags){
     zmq::message_t requestmsg;
-    socket->recv(&requestmsg);
-    std::string msg ((char*)requestmsg.data(),requestmsg.size());
-    return msg;
+    int result = socket->recv(&requestmsg,flags);
+    *buf = std::string((char*)requestmsg.data(),requestmsg.size());
+    return result;
 }
 

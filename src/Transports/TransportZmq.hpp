@@ -23,9 +23,9 @@ namespace interaction
         TransportZmq(const std::string &addr, const ConnectionType &type);
         virtual ~TransportZmq(){};
 
-        int send(const std::string& buf);
+        int send(const std::string& buf, Flags flags = NONE);
 
-        std::string receive();
+        int receive(std::string* buf, Flags flags = NONE);
 
 
         private:

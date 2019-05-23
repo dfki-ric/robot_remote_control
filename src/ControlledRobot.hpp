@@ -9,7 +9,7 @@ namespace interaction
     {
         public: 
 
-            ControlledRobot(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport);
+            ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport);
             virtual ~ControlledRobot(){};
 
             void update();
@@ -18,9 +18,7 @@ namespace interaction
                 return targetPose;
             }
 
-            void setCurrentPose(const interaction::Pose& pose){
-                currentPose = pose;
-            }
+            void setCurrentPose(const interaction::Pose& pose);
 
             interaction::Twist getTwistCommand(){
                 return twistCommand;
@@ -34,8 +32,8 @@ namespace interaction
         private:
             void addControlMessageType(std::string &buf, const ControlMessageType& type);
 
-            std::shared_ptr<interaction::Transport> commandTransport;
-            std::shared_ptr<interaction::Transport> telemetryTransport;
+            TransportSharedPtr commandTransport;
+            TransportSharedPtr telemetryTransport;
 
             std::string serializeControlMessageType(const ControlMessageType& type);
             std::string serializeCurrentPose();
@@ -46,8 +44,18 @@ namespace interaction
             interaction::Pose currentPose;
             interaction::Twist twistCommand;
 
-
-
+            template<class CLASS> int sendTelemetry(const CLASS &protodata, const ControlMessageType& type){
+                if (telemetryTransport.get()){
+                    std::string buf;
+                    buf.resize(sizeof(uint16_t));
+                    uint16_t uint_type = type;
+                    uint16_t* data = (uint16_t*)buf.data();
+                    *data = uint_type;
+                    protodata.AppendToString(&buf);
+                    return telemetryTransport->send(buf);
+                }
+                return 0;
+            };
     };
 
 } // end namespace interaction-library-controlled_robot

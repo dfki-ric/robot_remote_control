@@ -9,16 +9,28 @@ namespace interaction
     {
         public: 
 
-            RobotController(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport);
+            RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr());
             virtual ~RobotController(){};
             
-            int setTargetPose(const interaction::Pose & pose);
+            /**
+             * @brief in case there is a telemetry connection, receive all and fill the data fields
+             */
+            void updateTelemetry();
 
-            int setTwistCommand(const interaction::Twist &twistCommand);
+
+            void setTargetPose(const interaction::Pose & pose);
+
+            void setTwistCommand(const interaction::Twist &twistCommand);
 
             
 
-            
+            /**
+             * @brief Get the Current Pose object
+             * 
+             * not needed if there is a telemetry sream
+             * 
+             * @return interaction::Pose 
+             */
             interaction::Pose getCurrentPose();
 
         protected:
@@ -28,13 +40,13 @@ namespace interaction
 
         private:
 
-            std::shared_ptr<interaction::Transport> commandTransport;
-            std::shared_ptr<interaction::Transport> telemetryTransport;
+            TransportSharedPtr commandTransport;
+            TransportSharedPtr telemetryTransport;
 
             interaction::Pose currentPose;
 
 
-            template< class CLASS > std::string sendProtobufData(CLASS protodata, const ControlMessageType &type ){
+            template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type ){
                 std::string buf;
                 buf.resize(sizeof(uint16_t));
                 uint16_t uint_type = type;

@@ -5,22 +5,32 @@ using namespace std;
 using namespace interaction;
 
 
-RobotController::RobotController(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport):
+RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
 }
 
 
-int RobotController::setTargetPose(const interaction::Pose & pose)
+void RobotController::setTargetPose(const interaction::Pose & pose)
 {
     sendProtobufData(pose,TARGET_POSE);
 }
 
 
-int RobotController::setTwistCommand(const interaction::Twist &twistCommand)
+void RobotController::setTwistCommand(const interaction::Twist &twistCommand)
 {
     sendProtobufData(twistCommand,TWIST_COMMAND);
+}
+
+
+void RobotController::updateTelemetry(){
+    if (telemetryTransport.get()){
+        std::string buf;
+        while(telemetryTransport->receive(&buf,interaction::Transport::NOBLOCK)){
+            evaluateReply(buf);
+        }
+    }
 }
 
 
@@ -42,7 +52,11 @@ interaction::Pose RobotController::getCurrentPose()
 std::string RobotController::sendRequest(const std::string& serializedMessage){
     
     commandTransport->send(serializedMessage);
-    std::string replystr = commandTransport->receive();
+    std::string replystr;
+
+    //blocking receive
+    commandTransport->receive(&replystr);
+
     return replystr;
 }
 
@@ -54,8 +68,6 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
     std::string serializedMessage(reply.data()+sizeof(uint16_t),reply.size()-sizeof(uint16_t));
 
     ControlMessageType msgtype = (ControlMessageType)*type;
-
-    printf("receive reply of type %i\n",msgtype);
 
     switch (msgtype){
         case CURRENT_POSE:{

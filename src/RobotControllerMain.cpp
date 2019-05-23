@@ -3,16 +3,19 @@
 #include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
 #include <unistd.h>
 
+
+using namespace interaction;
+
 int main(int argc, char** argv)
 {
-    std::shared_ptr<interaction::Transport> commands = std::shared_ptr<interaction::Transport>(new interaction::TransportZmq("tcp://127.0.0.1:7001",interaction::TransportZmq::REQ));
-    std::shared_ptr<interaction::Transport> telemetry = std::shared_ptr<interaction::Transport>(new interaction::TransportZmq("tcp://127.0.0.1:7002",interaction::TransportZmq::SUB));
-    interaction::RobotController controller(commands,telemetry);
+    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001",TransportZmq::REQ));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002",TransportZmq::SUB));
+    RobotController controller(commands,telemetry);
     
     //consruct type
-    interaction::Position position;
-    interaction::Orientation orientation;
-    interaction::Pose pose;
+    Position position;
+    Orientation orientation;
+    Pose pose;
 
     //fill
     position.set_x(0);
@@ -40,10 +43,15 @@ int main(int argc, char** argv)
     while (true){
         //controller.setTargetPose(pose);
         controller.setTwistCommand(twistcommand);
+
+        //receive pending telemetry
+        controller.updateTelemetry();
         currentpose = controller.getCurrentPose();
 
         pose.mutable_position()->set_x(x);
         x += 0.01;
+
+        
 
         printf("%.2f %.2f %.2f\n",currentpose.position().x(),currentpose.position().y(),currentpose.position().z());
 

@@ -5,7 +5,7 @@ using namespace std;
 using namespace interaction;
 
 
-ControlledRobot::ControlledRobot(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport):
+ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
@@ -14,17 +14,18 @@ ControlledRobot::ControlledRobot(std::shared_ptr<interaction::Transport> command
 
 void ControlledRobot::update()
 {
-    receiveRequest();
+    while (receiveRequest() != NO_DATA){};
 }
 
 ControlMessageType ControlledRobot::receiveRequest()
 {
-
-    std::string msg = commandTransport->receive();
-    ControlMessageType reqestType = evaluateRequest(msg);
-    printf("processed request of type %i\n",reqestType);
-    return reqestType;
-    
+    std::string msg;
+    int result = commandTransport->receive(&msg,interaction::Transport::NOBLOCK);
+    if (result){
+        ControlMessageType reqestType = evaluateRequest(msg);
+        return reqestType;
+    }
+    return NO_DATA;
 }
 
 ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
@@ -46,7 +47,6 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
         }
         case TWIST_COMMAND:{
             twistCommand.ParseFromString(serializedMessage);
-            printf("got twist\n");
             commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
             return TWIST_COMMAND;
         }
@@ -57,6 +57,13 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
         } 
     }
 
+}
+
+
+
+void ControlledRobot::setCurrentPose(const interaction::Pose& pose){
+    currentPose = pose;
+    sendTelemetry(pose,CURRENT_POSE);
 }
 
 void ControlledRobot::addControlMessageType(std::string &buf, const ControlMessageType& type){

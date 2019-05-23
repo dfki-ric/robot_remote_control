@@ -2,11 +2,13 @@
 #include <interaction-library-controlled_robot/ControlledRobot.hpp>
 #include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
 
+using namespace interaction;
+
 int main(int argc, char** argv)
 {
-    std::shared_ptr<interaction::Transport> commands = std::shared_ptr<interaction::Transport>(new interaction::TransportZmq("tcp://*:7001",interaction::TransportZmq::REP));
-    std::shared_ptr<interaction::Transport> telemetry = std::shared_ptr<interaction::Transport>(new interaction::TransportZmq("tcp://*:7002",interaction::TransportZmq::PUB));
-    interaction::ControlledRobot robot(commands,telemetry);
+    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001",interaction::TransportZmq::REP));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002",interaction::TransportZmq::PUB));
+    ControlledRobot robot(commands,telemetry);
     
 
     while (true){
