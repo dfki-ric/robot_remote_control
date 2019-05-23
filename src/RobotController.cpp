@@ -5,14 +5,10 @@ using namespace std;
 using namespace interaction;
 
 
-RobotController::RobotController(const std::string &addr)
+RobotController::RobotController(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport):
+    commandTransport(commandTransport),
+    telemetryTransport(telemetryTransport)
 {
-    context = std::shared_ptr<zmq::context_t>(new zmq::context_t(1));
-    socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REQ));
-    
-    socket->connect(addr);
-
-
 }
 
 
@@ -45,18 +41,9 @@ interaction::Pose RobotController::getCurrentPose()
 
 std::string RobotController::sendRequest(const std::string& serializedMessage){
     
-    zmq::message_t msg(serializedMessage.data(),serializedMessage.size());
-    socket->send(msg);
-   
-    zmq::message_t reply;
-    socket->recv(&reply);
-
-    std::string replystr ((char*)reply.data(),reply.size());
-
+    commandTransport->send(serializedMessage);
+    std::string replystr = commandTransport->receive();
     return replystr;
-
-    
-
 }
 
 ControlMessageType RobotController::evaluateReply(const std::string& reply){

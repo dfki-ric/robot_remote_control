@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MessageTypes.hpp"
-#include <zmq.hpp>
+#include "Transports/Transport.hpp"
 
 namespace interaction
 {
@@ -9,7 +9,7 @@ namespace interaction
     {
         public: 
 
-            RobotController(const std::string &addr);
+            RobotController(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport);
             virtual ~RobotController(){};
             
             int setTargetPose(const interaction::Pose & pose);
@@ -28,8 +28,8 @@ namespace interaction
 
         private:
 
-            std::shared_ptr<zmq::context_t> context;
-	        std::shared_ptr<zmq::socket_t> socket;
+            std::shared_ptr<interaction::Transport> commandTransport;
+            std::shared_ptr<interaction::Transport> telemetryTransport;
 
             interaction::Pose currentPose;
 

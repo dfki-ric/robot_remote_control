@@ -1,11 +1,13 @@
 #include <iostream>
 #include <interaction-library-controlled_robot/RobotController.hpp>
-
+#include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
 #include <unistd.h>
 
 int main(int argc, char** argv)
 {
-    interaction::RobotController controller("tcp://127.0.0.1:7001");
+    std::shared_ptr<interaction::Transport> commands = std::shared_ptr<interaction::Transport>(new interaction::TransportZmq("tcp://127.0.0.1:7001",interaction::TransportZmq::REQ));
+    std::shared_ptr<interaction::Transport> telemetry = std::shared_ptr<interaction::Transport>(new interaction::TransportZmq("tcp://127.0.0.1:7002",interaction::TransportZmq::SUB));
+    interaction::RobotController controller(commands,telemetry);
     
     //consruct type
     interaction::Position position;

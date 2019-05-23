@@ -5,14 +5,10 @@ using namespace std;
 using namespace interaction;
 
 
-ControlledRobot::ControlledRobot(const std::string &addr)
+ControlledRobot::ControlledRobot(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport):
+    commandTransport(commandTransport),
+    telemetryTransport(telemetryTransport)
 {
-    context = std::shared_ptr<zmq::context_t>(new zmq::context_t(1));
-    socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REP));
-    
-    socket->bind(addr);
-
-
 
 }
 
@@ -23,16 +19,11 @@ void ControlledRobot::update()
 
 ControlMessageType ControlledRobot::receiveRequest()
 {
-    zmq::message_t requestmsg;
-    socket->recv(&requestmsg);
 
-    std::string msg ((char*)requestmsg.data(),requestmsg.size());
-
-    ControlMessageType req = evaluateRequest(msg);
-
-    printf("receive request of type %i\n",req);
-
-    return req;
+    std::string msg = commandTransport->receive();
+    ControlMessageType reqestType = evaluateRequest(msg);
+    printf("processed request of type %i\n",reqestType);
+    return reqestType;
     
 }
 
@@ -45,23 +36,23 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 
     switch (msgtype){
         case CURRENT_POSE:{
-            socket->send(serializeCurrentPose());
+            commandTransport->send(serializeCurrentPose());
             return CURRENT_POSE;
         }
         case TARGET_POSE:{
             targetPose.ParseFromString(serializedMessage);
-            socket->send(serializeControlMessageType(TARGET_POSE));
+            commandTransport->send(serializeControlMessageType(TARGET_POSE));
             return TARGET_POSE;
         }
         case TWIST_COMMAND:{
             twistCommand.ParseFromString(serializedMessage);
             printf("got twist\n");
-            socket->send(serializeControlMessageType(TWIST_COMMAND));
+            commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
             return TWIST_COMMAND;
         }
         
         default:{
-            socket->send(serializeControlMessageType(NO_DATA));
+            commandTransport->send(serializeControlMessageType(NO_DATA));
             return msgtype;
         } 
     }
@@ -76,18 +67,17 @@ void ControlledRobot::addControlMessageType(std::string &buf, const ControlMessa
     *data = typeint;
 }
 
-zmq::message_t ControlledRobot::serializeControlMessageType(const ControlMessageType& type){
+std::string ControlledRobot::serializeControlMessageType(const ControlMessageType& type){
     std::string buf;
     addControlMessageType(buf,type);
-    return zmq::message_t(buf.data(),buf.size());
+    return buf;
 }
 
-zmq::message_t ControlledRobot::serializeCurrentPose()
+std::string ControlledRobot::serializeCurrentPose()
 {
     std::string buf;
     addControlMessageType(buf,CURRENT_POSE);
     currentPose.AppendToString(&buf);
-    zmq::message_t msg(buf.data(),buf.size());
-    return msg;
+    return buf;
 
 }

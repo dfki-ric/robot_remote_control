@@ -1,14 +1,15 @@
 #pragma once
 
 #include "MessageTypes.hpp"
-#include <zmq.hpp>
+#include "Transports/Transport.hpp"
 
 namespace interaction
 {
     class ControlledRobot
     {
         public: 
-            ControlledRobot(const std::string &addr);
+
+            ControlledRobot(std::shared_ptr<interaction::Transport> commandTransport,std::shared_ptr<interaction::Transport> telemetryTransport);
             virtual ~ControlledRobot(){};
 
             void update();
@@ -32,11 +33,13 @@ namespace interaction
 
         private:
             void addControlMessageType(std::string &buf, const ControlMessageType& type);
-            zmq::message_t serializeControlMessageType(const ControlMessageType& type);
-            zmq::message_t serializeCurrentPose();
 
-            std::shared_ptr<zmq::context_t> context;
-	        std::shared_ptr<zmq::socket_t> socket;
+            std::shared_ptr<interaction::Transport> commandTransport;
+            std::shared_ptr<interaction::Transport> telemetryTransport;
+
+            std::string serializeControlMessageType(const ControlMessageType& type);
+            std::string serializeCurrentPose();
+
 
 
             interaction::Pose targetPose;
