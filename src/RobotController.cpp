@@ -64,11 +64,11 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
     uint16_t* type = (uint16_t*)reply.data();
 
-    printf("receive reply of type %i\n",type);
-
     std::string serializedMessage(reply.data()+sizeof(uint16_t),reply.size()-sizeof(uint16_t));
 
     ControlMessageType msgtype = (ControlMessageType)*type;
+
+    printf("receive reply of type %i\n",msgtype);
 
     switch (msgtype){
         case CURRENT_POSE:{
