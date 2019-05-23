@@ -54,7 +54,10 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             return TARGET_POSE;
         }
         
-        default: return msgtype;
+        default:{
+            socket->send(serializeControlMessageType(NO_DATA));
+            return msgtype;
+        } 
     }
 
 }
