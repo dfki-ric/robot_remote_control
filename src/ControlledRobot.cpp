@@ -53,6 +53,12 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             socket->send(serializeControlMessageType(TARGET_POSE));
             return TARGET_POSE;
         }
+        case TWIST_COMMAND:{
+            twistCommand.ParseFromString(serializedMessage);
+            printf("got twist\n");
+            socket->send(serializeControlMessageType(TWIST_COMMAND));
+            return TWIST_COMMAND;
+        }
         
         default:{
             socket->send(serializeControlMessageType(NO_DATA));
@@ -67,7 +73,7 @@ void ControlledRobot::addControlMessageType(std::string &buf, const ControlMessa
     buf.resize(currsize + sizeof(uint16_t));
     uint16_t typeint = type;
     uint16_t* data = (uint16_t*)(buf.data()+currsize);
-    *data = type;
+    *data = typeint;
 }
 
 zmq::message_t ControlledRobot::serializeControlMessageType(const ControlMessageType& type){

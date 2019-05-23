@@ -27,10 +27,17 @@ int main(int argc, char** argv)
 
     interaction::Pose currentpose;
 
+    interaction::Twist twistcommand;
+    twistcommand.mutable_angular()->set_z(0.1);
+    twistcommand.mutable_linear()->set_x(0.1);
+    
+
+
     float x = 0;
 
     while (true){
-        controller.setTargetPose(pose);
+        //controller.setTargetPose(pose);
+        controller.setTwistCommand(twistcommand);
         currentpose = controller.getCurrentPose();
 
         pose.mutable_position()->set_x(x);
@@ -38,7 +45,10 @@ int main(int argc, char** argv)
 
         printf("%.2f %.2f %.2f\n",currentpose.position().x(),currentpose.position().y(),currentpose.position().z());
 
-        usleep(1000000);
+
+
+
+        usleep(100000);
     }
     
 
