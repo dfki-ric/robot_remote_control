@@ -10,7 +10,6 @@ namespace interaction
         public: 
 
             RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr());
-            virtual ~RobotController(){};
             virtual ~RobotController();
             
             /**
