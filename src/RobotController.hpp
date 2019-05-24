@@ -11,6 +11,7 @@ namespace interaction
 
             RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr());
             virtual ~RobotController(){};
+            virtual ~RobotController();
             
             /**
              * @brief in case there is a telemetry connection, receive all and fill the data fields

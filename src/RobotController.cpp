@@ -11,6 +11,10 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
 {
 }
 
+RobotController::~RobotController(){
+
+}
+
 
 void RobotController::setTargetPose(const interaction::Pose & pose)
 {
