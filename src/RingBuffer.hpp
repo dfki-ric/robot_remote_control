@@ -26,8 +26,6 @@ template <class TYPE> class RingBuffer{
                 contentsize++;
                 in++;
                 in %= buffersize;
-
-
                 return true;
             }
             printf("Buffer full\n");

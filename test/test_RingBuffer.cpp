@@ -23,7 +23,6 @@ void checkBuffer(unsigned int size, RingBuffer<int>& buffer, unsigned int startw
         
         if (buffer.popData(content)){
             BOOST_CHECK_EQUAL(content,i);
-            printf("%i %i\n",content,i);
         }else{
             //should not happen
             BOOST_CHECK_EQUAL(true,false);
@@ -95,8 +94,6 @@ BOOST_AUTO_TEST_CASE(preserve_content_multiuse)
     
     int content;
     for (int i = 0;i<1000;i++){
-        printf("%i\n",i%2);
-
         if (!(i%2)){
             //run first
             fillBuffer(5,buffer);
