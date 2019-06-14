@@ -20,6 +20,7 @@ namespace interaction
 
             void setCurrentPose(const interaction::Pose& pose);
 
+
             interaction::Twist getTwistCommand(){
                 return twistCommand;
             }
@@ -31,6 +32,7 @@ namespace interaction
 
         private:
             void addControlMessageType(std::string &buf, const ControlMessageType& type);
+            void addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type);
 
             TransportSharedPtr commandTransport;
             TransportSharedPtr telemetryTransport;
@@ -38,13 +40,12 @@ namespace interaction
             std::string serializeControlMessageType(const ControlMessageType& type);
             std::string serializeCurrentPose();
 
-
-
+            //buffers
             interaction::Pose targetPose;
             interaction::Pose currentPose;
             interaction::Twist twistCommand;
 
-            template<class CLASS> int sendTelemetry(const CLASS &protodata, const ControlMessageType& type){
+            template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type){
                 if (telemetryTransport.get()){
                     std::string buf;
                     buf.resize(sizeof(uint16_t));

@@ -2,12 +2,12 @@
 
 rock_library(interaction-library-controlled_robot
     SOURCES ControlledRobot.cpp
-    HEADERS ControlledRobot.hpp MessageTypes.hpp Transports/Transport.hpp
+    HEADERS ControlledRobot.hpp MessageTypes.hpp RingBuffer.hpp Transports/Transport.hpp
     DEPS_PKGCONFIG interaction-types)
 
 rock_library(interaction-library-robot_controller
     SOURCES RobotController.cpp
-    HEADERS RobotController.hpp MessageTypes.hpp Transports/Transport.hpp
+    HEADERS RobotController.hpp MessageTypes.hpp RingBuffer.hpp Transports/Transport.hpp
     DEPS_PKGCONFIG interaction-types)
 
 rock_library(interaction-library-controlled_robot_transport_zmq

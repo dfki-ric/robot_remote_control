@@ -18,7 +18,7 @@ RobotController::~RobotController(){
 
 void RobotController::setTargetPose(const interaction::Pose & pose)
 {
-    sendProtobufData(pose,TARGET_POSE);
+    sendProtobufData(pose,TARGET_POSE_COMMAND);
 }
 
 
@@ -37,21 +37,6 @@ void RobotController::updateTelemetry(){
     }
 }
 
-
-interaction::Pose RobotController::getCurrentPose()
-{
-    std::string buf;
-    buf.resize(sizeof(uint16_t));
-    uint16_t type = CURRENT_POSE;
-    uint16_t* data = (uint16_t*)buf.data();
-    *data = type;
-    ControlMessageType received_type = evaluateReply(sendRequest(buf));
-    if (received_type != CURRENT_POSE){
-        printf("request returned wrong type of nothing\n");
-        
-    }
-    return currentPose;
-}
 
 std::string RobotController::sendRequest(const std::string& serializedMessage){
     

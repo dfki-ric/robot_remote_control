@@ -36,14 +36,10 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
     std::string serializedMessage(request.data()+sizeof(uint16_t),request.size()-sizeof(uint16_t));
 
     switch (msgtype){
-        case CURRENT_POSE:{
-            commandTransport->send(serializeCurrentPose());
-            return CURRENT_POSE;
-        }
-        case TARGET_POSE:{
+        case TARGET_POSE_COMMAND:{
             targetPose.ParseFromString(serializedMessage);
-            commandTransport->send(serializeControlMessageType(TARGET_POSE));
-            return TARGET_POSE;
+            commandTransport->send(serializeControlMessageType(TARGET_POSE_COMMAND));
+            return TARGET_POSE_COMMAND;
         }
         case TWIST_COMMAND:{
             twistCommand.ParseFromString(serializedMessage);
@@ -60,10 +56,16 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 }
 
 
-
 void ControlledRobot::setCurrentPose(const interaction::Pose& pose){
-    currentPose = pose;
     sendTelemetry(pose,CURRENT_POSE);
+}
+
+void ControlledRobot::addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type){
+    int currsize = buf.size();
+    buf.resize(currsize + sizeof(uint16_t));
+    uint16_t typeint = type;
+    uint16_t* data = (uint16_t*)(buf.data()+currsize);
+    *data = typeint;
 }
 
 void ControlledRobot::addControlMessageType(std::string &buf, const ControlMessageType& type){
@@ -83,7 +85,7 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
 std::string ControlledRobot::serializeCurrentPose()
 {
     std::string buf;
-    addControlMessageType(buf,CURRENT_POSE);
+    addTelemetryMessageType(buf,CURRENT_POSE);
     currentPose.AppendToString(&buf);
     return buf;
 
