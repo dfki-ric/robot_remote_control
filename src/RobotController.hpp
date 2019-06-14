@@ -23,15 +23,9 @@ namespace interaction
             void setTwistCommand(const interaction::Twist &twistCommand);
 
             
-
-            /**
-             * @brief Get the Current Pose object
-             * 
-             * not needed if there is a telemetry sream
-             * 
-             * @return interaction::Pose 
-             */
-            interaction::Pose getCurrentPose();
+            interaction::Pose getCurrentPose(){
+                return currentPose;
+            }
 
         protected:
             virtual std::string sendRequest(const std::string& serializedMessage);
