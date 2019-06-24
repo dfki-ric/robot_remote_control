@@ -62,7 +62,11 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
         case CURRENT_POSE:{
             currentPose.ParseFromString(serializedMessage);
             return msgtype;
-        } 
+        }
+        case JOINT_STATE:{
+            currentJointState.ParseFromString(serializedMessage);
+            return msgtype;
+        }
         
         default: return msgtype;
     }

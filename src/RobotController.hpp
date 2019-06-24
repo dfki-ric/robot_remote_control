@@ -27,6 +27,10 @@ namespace interaction
                 return currentPose;
             }
 
+            interaction::JointState getCurrentJointState(){
+                return currentJointState;
+            }
+
         protected:
             virtual std::string sendRequest(const std::string& serializedMessage);
 
@@ -38,6 +42,7 @@ namespace interaction
             TransportSharedPtr telemetryTransport;
 
             interaction::Pose currentPose;
+            interaction::JointState currentJointState;
 
 
             template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type ){

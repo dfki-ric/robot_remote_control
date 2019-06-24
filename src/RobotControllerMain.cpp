@@ -31,6 +31,7 @@ int main(int argc, char** argv)
     *(pose.mutable_orientation()) = orientation;        
 
     interaction::Pose currentpose;
+    interaction::JointState jointstate;
 
     interaction::Twist twistcommand;
     twistcommand.mutable_angular()->set_z(0.1);
@@ -42,11 +43,12 @@ int main(int argc, char** argv)
 
     while (true){
         //controller.setTargetPose(pose);
-        controller.setTwistCommand(twistcommand);
+        //controller.setTwistCommand(twistcommand);
 
         //receive pending telemetry
         controller.updateTelemetry();
         currentpose = controller.getCurrentPose();
+        jointstate = controller.getCurrentJointState();
 
         pose.mutable_position()->set_x(x);
         x += 0.01;
@@ -55,6 +57,8 @@ int main(int argc, char** argv)
 
         printf("%.2f %.2f %.2f\n",currentpose.position().x(),currentpose.position().y(),currentpose.position().z());
 
+        printf("got %i joints\n",jointstate.name_size());
+        google::protobuf::RepeatedPtrField<std::string> names = jointstate.name();
 
 
 
