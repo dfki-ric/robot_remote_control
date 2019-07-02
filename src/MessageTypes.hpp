@@ -15,7 +15,8 @@ namespace interaction
 
     enum TelemetryMessageType{  NO_TELEMETRY_DATA=0,
                                 CURRENT_POSE,       //the curretn Pose of the robot base
-                                JOINT_STATE         //current Joint values
+                                JOINT_STATE,         //current Joint values
+                                TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
                             };
 
 //http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html

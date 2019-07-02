@@ -7,7 +7,7 @@
  */
 
 void fillBuffer(unsigned int size, RingBuffer<int>& buffer){
-    for (int i = 0;i<size;i++){
+    for (unsigned int i = 0;i<size;i++){
         buffer.pushData(i);
     }
 };
@@ -19,7 +19,7 @@ void fillBuffer(unsigned int size, RingBuffer<int>& buffer){
 void checkBuffer(unsigned int size, RingBuffer<int>& buffer, unsigned int startwith = 0){
 
     int content;
-    for (int i = startwith;i<startwith+size;i++){
+    for (unsigned int i = startwith;i<startwith+size;i++){
         
         if (buffer.popData(content)){
             BOOST_CHECK_EQUAL(content,i);
@@ -92,7 +92,6 @@ BOOST_AUTO_TEST_CASE(preserve_content_multiuse)
 {
     RingBuffer<int> buffer(10);
     
-    int content;
     for (int i = 0;i<1000;i++){
         if (!(i%2)){
             //run first
@@ -110,3 +109,28 @@ BOOST_AUTO_TEST_CASE(preserve_content_multiuse)
     }
 }
 
+BOOST_AUTO_TEST_CASE(resize_buffer)
+{
+    RingBuffer<int> buffer(1);
+
+    BOOST_CHECK_EQUAL(buffer.capacity(),1);
+
+    fillBuffer(5,buffer); //further adds fail
+    checkBuffer(1,buffer); //has first value, push fails if buffer is full
+
+    buffer.resize(10);
+    BOOST_CHECK_EQUAL(buffer.capacity(),10);
+
+    fillBuffer(10,buffer); //fill
+    checkBuffer(10,buffer); //check
+
+    fillBuffer(10,buffer); //fill again
+    buffer.resize(5);
+    BOOST_CHECK_EQUAL(buffer.capacity(),5);
+    checkBuffer(5,buffer); //has oldest values (resize chops at the end of buffer)
+
+    //works as before
+    fillBuffer(5,buffer);
+    checkBuffer(5,buffer);
+
+}

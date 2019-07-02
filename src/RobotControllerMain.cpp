@@ -42,13 +42,16 @@ int main(int argc, char** argv)
     float x = 0;
 
     while (true){
-        //controller.setTargetPose(pose);
+        controller.setTargetPose(pose);
         //controller.setTwistCommand(twistcommand);
 
         //receive pending telemetry
-        controller.updateTelemetry();
-        currentpose = controller.getCurrentPose();
-        jointstate = controller.getCurrentJointState();
+        controller.update();
+
+        //in production, the get function should use a while loop
+        // while (controller.getCurrentPose(currentpose)){do stuff}
+        int buffersize_pose = controller.getCurrentPose(currentpose);
+        int buffersize_joint = controller.getCurrentJointState(jointstate);
 
         pose.mutable_position()->set_x(x);
         x += 0.01;
@@ -60,9 +63,11 @@ int main(int argc, char** argv)
         printf("got %i joints\n",jointstate.name_size());
         google::protobuf::RepeatedPtrField<std::string> names = jointstate.name();
 
+        
+        printf("buffer sizes %i, %i\n",buffersize_pose, buffersize_joint);
 
 
-        usleep(100000);
+        usleep(10000);
     }
     
 

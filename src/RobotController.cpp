@@ -5,10 +5,11 @@ using namespace std;
 using namespace interaction;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):
+RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
+    initBuffers(10);
 }
 
 RobotController::~RobotController(){
@@ -28,7 +29,7 @@ void RobotController::setTwistCommand(const interaction::Twist &twistCommand)
 }
 
 
-void RobotController::updateTelemetry(){
+void RobotController::update(){
     if (telemetryTransport.get()){
         std::string buf;
         while(telemetryTransport->receive(&buf,interaction::Transport::NOBLOCK)){
@@ -60,11 +61,15 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
     switch (msgtype){
         case CURRENT_POSE:{
+            interaction::Pose currentPose;
             currentPose.ParseFromString(serializedMessage);
+            RingBufferAccess::pushData(buffers.get()[CURRENT_POSE],currentPose);
             return msgtype;
         }
         case JOINT_STATE:{
+            interaction::JointState currentJointState;
             currentJointState.ParseFromString(serializedMessage);
+            RingBufferAccess::pushData(buffers.get()[JOINT_STATE],currentJointState);
             return msgtype;
         }
         
@@ -73,4 +78,19 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
     //should never reach this
     return NO_DATA;
+}
+
+
+void RobotController::initBuffers(const unsigned int &defaultSize){
+    //create vector of shared ptr
+    buffers.get().resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
+
+    std::shared_ptr<RingBufferBase> newbuf;
+
+    //fill shared pointers with objects
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::Pose>(defaultSize));
+    buffers.get()[CURRENT_POSE] = newbuf;
+
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::JointState>(defaultSize));
+    buffers.get()[JOINT_STATE] = newbuf;
 }
