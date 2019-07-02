@@ -20,6 +20,8 @@ namespace interaction
 
             void setCurrentPose(const interaction::Pose& pose);
 
+            void setJointState(const interaction::JointState& state);
+
 
             interaction::Twist getTwistCommand(){
                 return twistCommand;

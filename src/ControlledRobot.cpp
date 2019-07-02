@@ -60,6 +60,11 @@ void ControlledRobot::setCurrentPose(const interaction::Pose& pose){
     sendTelemetry(pose,CURRENT_POSE);
 }
 
+void ControlledRobot::setJointState(const interaction::JointState& state){
+    sendTelemetry(state,JOINT_STATE);
+}
+
+
 void ControlledRobot::addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type){
     int currsize = buf.size();
     buf.resize(currsize + sizeof(uint16_t));
