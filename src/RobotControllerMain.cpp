@@ -46,7 +46,10 @@ int main(int argc, char** argv)
         //controller.setTwistCommand(twistcommand);
 
         //receive pending telemetry
-        controller.updateTelemetry();
+        controller.update();
+
+        //in production, the get function should use a while loop
+        // while (controller.getCurrentPose(currentpose)){do stuff}
         int buffersize_pose = controller.getCurrentPose(currentpose);
         int buffersize_joint = controller.getCurrentJointState(jointstate);
 
@@ -60,6 +63,7 @@ int main(int argc, char** argv)
         printf("got %i joints\n",jointstate.name_size());
         google::protobuf::RepeatedPtrField<std::string> names = jointstate.name();
 
+        
         printf("buffer sizes %i, %i\n",buffersize_pose, buffersize_joint);
 
 

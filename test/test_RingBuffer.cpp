@@ -92,7 +92,6 @@ BOOST_AUTO_TEST_CASE(preserve_content_multiuse)
 {
     RingBuffer<int> buffer(10);
     
-    int content;
     for (int i = 0;i<1000;i++){
         if (!(i%2)){
             //run first

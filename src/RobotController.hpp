@@ -3,10 +3,11 @@
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "RingBuffer.hpp"
+#include "UpdateThread/UpdateThread.hpp"
 
 namespace interaction
 {
-    class RobotController
+    class RobotController: public UpdateThread
     {
         public: 
 
@@ -16,8 +17,7 @@ namespace interaction
             /**
              * @brief in case there is a telemetry connection, receive all and fill the data fields
              */
-            void updateTelemetry();
-
+            virtual void update();
 
             void setTargetPose(const interaction::Pose & pose);
 
@@ -63,8 +63,6 @@ namespace interaction
                 protodata.AppendToString(&buf);
                 return sendRequest(buf);
             }
-
-
     };
 
 } // end namespace interaction-library-controlled_robot

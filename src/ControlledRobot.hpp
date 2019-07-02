@@ -2,27 +2,29 @@
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
+#include "UpdateThread/UpdateThread.hpp"
+
 
 namespace interaction
 {
-    class ControlledRobot
+    class ControlledRobot: public UpdateThread
     {
         public: 
 
             ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport);
             virtual ~ControlledRobot(){};
 
-            void update();
+            virtual void update();
 
             interaction::Pose getTargetPose(){
-                return targetPose;
+                return targetPose.get();
             }
 
             void setCurrentPose(const interaction::Pose& pose);
 
 
             interaction::Twist getTwistCommand(){
-                return twistCommand;
+                return twistCommand.get();
             }
 
         protected:
@@ -41,9 +43,9 @@ namespace interaction
             std::string serializeCurrentPose();
 
             //buffers
-            interaction::Pose targetPose;
-            interaction::Pose currentPose;
-            interaction::Twist twistCommand;
+            ThreadProtecetedVar<interaction::Pose> targetPose;
+            ThreadProtecetedVar<interaction::Pose> currentPose;
+            ThreadProtecetedVar<interaction::Twist> twistCommand;
 
             template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type){
                 if (telemetryTransport.get()){
@@ -57,6 +59,9 @@ namespace interaction
                 }
                 return 0;
             };
+            
+
+
     };
 
 } // end namespace interaction-library-controlled_robot

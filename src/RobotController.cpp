@@ -5,7 +5,7 @@ using namespace std;
 using namespace interaction;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):
+RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
@@ -29,7 +29,7 @@ void RobotController::setTwistCommand(const interaction::Twist &twistCommand)
 }
 
 
-void RobotController::updateTelemetry(){
+void RobotController::update(){
     if (telemetryTransport.get()){
         std::string buf;
         while(telemetryTransport->receive(&buf,interaction::Transport::NOBLOCK)){
@@ -88,9 +88,9 @@ void RobotController::initBuffers(const unsigned int &defaultSize){
     std::shared_ptr<RingBufferBase> newbuf;
 
     //fill shared pointers with objects
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::Pose>(defaultSize));
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer< interaction::Pose >(defaultSize));
     buffers[CURRENT_POSE] = newbuf;
 
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::JointState>(defaultSize));
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer< interaction::JointState >(defaultSize));
     buffers[JOINT_STATE] = newbuf;
 }

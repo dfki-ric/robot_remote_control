@@ -5,11 +5,10 @@ using namespace std;
 using namespace interaction;
 
 
-ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):
+ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
-
 }
 
 void ControlledRobot::update()
@@ -37,12 +36,12 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 
     switch (msgtype){
         case TARGET_POSE_COMMAND:{
-            targetPose.ParseFromString(serializedMessage);
+            targetPose.get().ParseFromString(serializedMessage);
             commandTransport->send(serializeControlMessageType(TARGET_POSE_COMMAND));
             return TARGET_POSE_COMMAND;
         }
         case TWIST_COMMAND:{
-            twistCommand.ParseFromString(serializedMessage);
+            twistCommand.get().ParseFromString(serializedMessage);
             commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
             return TWIST_COMMAND;
         }
@@ -86,7 +85,7 @@ std::string ControlledRobot::serializeCurrentPose()
 {
     std::string buf;
     addTelemetryMessageType(buf,CURRENT_POSE);
-    currentPose.AppendToString(&buf);
+    currentPose.get().AppendToString(&buf);
     return buf;
 
 }
