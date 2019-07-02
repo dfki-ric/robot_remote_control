@@ -1,6 +1,7 @@
 #include <iostream>
 #include <interaction-library-controlled_robot/ControlledRobot.hpp>
 #include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
+#include <unistd.h>
 
 using namespace interaction;
 
@@ -12,10 +13,12 @@ int main(int argc, char** argv)
     
 
     while (true){
-        robot.update();
+        robot.update(); //non blocking
 
         //fake-write requested pose to curretn pose
         robot.setCurrentPose(robot.getTargetPose());
+
+        usleep(100000);
     }
 
 
