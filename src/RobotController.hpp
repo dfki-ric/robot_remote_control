@@ -24,8 +24,8 @@ namespace interaction
             void setTwistCommand(const interaction::Twist &twistCommand);
 
             template< class DATATYPE > unsigned int getTelemetry(const TelemetryMessageType &type, DATATYPE &data ){
-                RingBufferAccess::popData(buffers[type],data);
-                return buffers[type]->size();
+                RingBufferAccess::popData(buffers.get()[type],data);
+                return buffers.get()[type]->size();
             }
             
             unsigned int getCurrentPose(interaction::Pose & pose){
@@ -50,7 +50,7 @@ namespace interaction
 
             
 
-            std::vector< std::shared_ptr<RingBufferBase> > buffers;
+            ThreadProtecetedVar< std::vector< std::shared_ptr<RingBufferBase> > > buffers;
             void initBuffers(const unsigned int &defaultSize);
 
 

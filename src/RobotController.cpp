@@ -63,13 +63,13 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
         case CURRENT_POSE:{
             interaction::Pose currentPose;
             currentPose.ParseFromString(serializedMessage);
-            RingBufferAccess::pushData(buffers[CURRENT_POSE],currentPose);
+            RingBufferAccess::pushData(buffers.get()[CURRENT_POSE],currentPose);
             return msgtype;
         }
         case JOINT_STATE:{
             interaction::JointState currentJointState;
             currentJointState.ParseFromString(serializedMessage);
-            RingBufferAccess::pushData(buffers[JOINT_STATE],currentJointState);
+            RingBufferAccess::pushData(buffers.get()[JOINT_STATE],currentJointState);
             return msgtype;
         }
         
@@ -83,14 +83,14 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
 void RobotController::initBuffers(const unsigned int &defaultSize){
     //create vector of shared ptr
-    buffers.resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
+    buffers.get().resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
 
     std::shared_ptr<RingBufferBase> newbuf;
 
     //fill shared pointers with objects
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer< interaction::Pose >(defaultSize));
-    buffers[CURRENT_POSE] = newbuf;
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::Pose>(defaultSize));
+    buffers.get()[CURRENT_POSE] = newbuf;
 
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer< interaction::JointState >(defaultSize));
-    buffers[JOINT_STATE] = newbuf;
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::JointState>(defaultSize));
+    buffers.get()[JOINT_STATE] = newbuf;
 }
