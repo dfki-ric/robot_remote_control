@@ -6,7 +6,8 @@ Library to integrate robots contol by the interaction interface
 
 License
 -------
-dummy-license
+Copyright DFKI GmbH
+
 
 Installation
 ------------
