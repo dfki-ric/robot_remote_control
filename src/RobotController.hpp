@@ -19,13 +19,24 @@ namespace interaction
              */
             virtual void update();
 
+
             void setTargetPose(const interaction::Pose & pose);
 
             void setTwistCommand(const interaction::Twist &twistCommand);
 
+            unsigned int getBufferSize(const TelemetryMessageType &type){
+                buffers.lock();
+                int size = buffers.get_ref()[type]->size();
+                buffers.unlock();
+                return size;
+            }
+
+
             template< class DATATYPE > unsigned int getTelemetry(const TelemetryMessageType &type, DATATYPE &data ){
-                RingBufferAccess::popData(buffers.get()[type],data);
-                return buffers.get()[type]->size();
+                buffers.lock();
+                bool result = RingBufferAccess::popData(buffers.get_ref()[type],data);
+                buffers.unlock();
+                return result;
             }
             
             unsigned int getCurrentPose(interaction::Pose & pose){

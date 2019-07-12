@@ -3,10 +3,18 @@
 
 using namespace interaction;
 
+std::shared_ptr<zmq::context_t> TransportZmq::getContextInstance(unsigned int threads){
+    //implements a singleton using a local static variable
+    static std::shared_ptr<zmq::context_t> contextInstance = std::shared_ptr<zmq::context_t>(new zmq::context_t(threads));
+    return contextInstance;
+};
+
+
+
 
 TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type){
     
-    context = std::shared_ptr<zmq::context_t>(new zmq::context_t(1));
+    context = getContextInstance();
 
     switch(type){
         case REQ:{
@@ -41,8 +49,10 @@ int TransportZmq::send(const std::string& buf, Flags flags){
     if (flags & NOBLOCK){
         zmqflag = ZMQ_NOBLOCK;
     }
-
-    return socket->send(msg,zmqflag);
+    if (socket->send(msg,zmqflag)){
+        return buf.size();
+    }
+    return 0;
 }
 
 int TransportZmq::receive(std::string* buf,Flags flags){

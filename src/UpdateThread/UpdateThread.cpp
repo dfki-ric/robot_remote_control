@@ -1,33 +1,31 @@
 
 
 #include "UpdateThread.hpp"
+#include <unistd.h>
 
 using namespace interaction;
 
 
 UpdateThread::UpdateThread(){
-    threadRunning.get() = false;
 }
 
 UpdateThread::~UpdateThread(){
-    if (threadRunning.get()){
-        stopUpdateThread();
-    }
 }
 
-void UpdateThread::updateThreadMain(const unsigned int &milliseconds){
-    while (threadRunning.get()){
+void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture){
+    while (runningFuture.wait_for(std::chrono::milliseconds(milliseconds)) == std::future_status::timeout){
         update();
-        std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
     }
 }
 
 void UpdateThread::startUpdateThread(const unsigned int &milliseconds){
-    threadRunning.get() = true;
-    updateThread = std::thread(&UpdateThread::updateThreadMain, this, std::ref(milliseconds));
+    stopFuture = stopPromise.get_future();
+    updateThread = std::thread(&UpdateThread::updateThreadMain, this, std::ref(milliseconds), std::move(stopFuture));
 }
 
 void UpdateThread::stopUpdateThread(){
-    threadRunning.get() = false;
-    updateThread.join();
+    stopPromise.set_value();    
+    if (updateThread.joinable()){
+        updateThread.join();
+    }
 }

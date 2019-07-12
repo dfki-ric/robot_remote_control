@@ -20,9 +20,9 @@ namespace interaction
                 return targetPose.get();
             }
 
-            void setCurrentPose(const interaction::Pose& pose);
+            int setCurrentPose(const interaction::Pose& pose);
 
-            void setJointState(const interaction::JointState& state);
+            int setJointState(const interaction::JointState& state);
 
 
             interaction::Twist getTwistCommand(){
@@ -49,6 +49,14 @@ namespace interaction
             ThreadProtecetedVar<interaction::Pose> currentPose;
             ThreadProtecetedVar<interaction::Twist> twistCommand;
 
+            /**
+             * @brief 
+             * 
+             * @tparam CLASS 
+             * @param protodata 
+             * @param type 
+             * @return int size sent
+             */
             template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type){
                 if (telemetryTransport.get()){
                     std::string buf;
@@ -57,8 +65,9 @@ namespace interaction
                     uint16_t* data = (uint16_t*)buf.data();
                     *data = uint_type;
                     protodata.AppendToString(&buf);
-                    return telemetryTransport->send(buf);
+                    return telemetryTransport->send(buf) - sizeof(uint16_t);
                 }
+                printf("ERROR Transport invalid\n");
                 return 0;
             };
             

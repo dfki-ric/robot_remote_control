@@ -10,11 +10,12 @@ namespace zmq{
     class socket_t;
 }
 
-
 namespace interaction
 {
 
     class TransportZmq: public Transport{
+
+
 
         public:
 
@@ -23,9 +24,13 @@ namespace interaction
         TransportZmq(const std::string &addr, const ConnectionType &type);
         virtual ~TransportZmq(){};
 
+        static std::shared_ptr<zmq::context_t> getContextInstance(unsigned int threads = 1);
+
         int send(const std::string& buf, Flags flags = NONE);
 
         int receive(std::string* buf, Flags flags = NONE);
+
+
 
 
         private:

@@ -35,6 +35,8 @@ void RobotController::update(){
         while(telemetryTransport->receive(&buf,interaction::Transport::NOBLOCK)){
             evaluateReply(buf);
         }
+    }else{
+        printf("ERROR no telemetry Transport set\n");
     }
 }
 
@@ -52,7 +54,6 @@ std::string RobotController::sendRequest(const std::string& serializedMessage){
 
 ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
-
     uint16_t* type = (uint16_t*)reply.data();
 
     std::string serializedMessage(reply.data()+sizeof(uint16_t),reply.size()-sizeof(uint16_t));
@@ -63,13 +64,17 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
         case CURRENT_POSE:{
             interaction::Pose currentPose;
             currentPose.ParseFromString(serializedMessage);
-            RingBufferAccess::pushData(buffers.get()[CURRENT_POSE],currentPose);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[CURRENT_POSE],currentPose);
+            buffers.unlock();
             return msgtype;
         }
         case JOINT_STATE:{
             interaction::JointState currentJointState;
             currentJointState.ParseFromString(serializedMessage);
-            RingBufferAccess::pushData(buffers.get()[JOINT_STATE],currentJointState);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[JOINT_STATE],currentJointState);
+            buffers.unlock();
             return msgtype;
         }
         
@@ -83,14 +88,18 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
 void RobotController::initBuffers(const unsigned int &defaultSize){
     //create vector of shared ptr
-    buffers.get().resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
+    buffers.lock();
+    buffers.get_ref().resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
 
     std::shared_ptr<RingBufferBase> newbuf;
 
     //fill shared pointers with objects
     newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::Pose>(defaultSize));
-    buffers.get()[CURRENT_POSE] = newbuf;
+    buffers.get_ref()[CURRENT_POSE] = newbuf;
 
     newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::JointState>(defaultSize));
-    buffers.get()[JOINT_STATE] = newbuf;
+    buffers.get_ref()[JOINT_STATE] = newbuf;
+
+
+    buffers.unlock();
 }

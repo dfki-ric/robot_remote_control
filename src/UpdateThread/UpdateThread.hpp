@@ -2,6 +2,8 @@
 
 #include <thread>
 #include <chrono>
+#include <future>
+
 #include "ThreadProtectedVar.hpp"
 
 namespace interaction
@@ -20,8 +22,11 @@ class UpdateThread{
 
         private:
             std::thread updateThread;
-            ThreadProtecetedVar<bool> threadRunning;
-            void updateThreadMain(const unsigned int &milliseconds);
+            std::promise<void> stopPromise;
+            std::future<void> stopFuture;
+            //ThreadProtecetedVar<bool> threadRunning;
+            //ThreadProtecetedVar<bool> threadFinished;
+            void updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture);
 
 };
 

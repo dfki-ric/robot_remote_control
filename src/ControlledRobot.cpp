@@ -36,12 +36,16 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 
     switch (msgtype){
         case TARGET_POSE_COMMAND:{
-            targetPose.get().ParseFromString(serializedMessage);
+            targetPose.lock();
+            targetPose.get_ref().ParseFromString(serializedMessage);
+            targetPose.unlock();
             commandTransport->send(serializeControlMessageType(TARGET_POSE_COMMAND));
             return TARGET_POSE_COMMAND;
         }
         case TWIST_COMMAND:{
-            twistCommand.get().ParseFromString(serializedMessage);
+            twistCommand.lock();
+            twistCommand.get_ref().ParseFromString(serializedMessage);
+            twistCommand.unlock();
             commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
             return TWIST_COMMAND;
         }
@@ -55,12 +59,12 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 }
 
 
-void ControlledRobot::setCurrentPose(const interaction::Pose& pose){
-    sendTelemetry(pose,CURRENT_POSE);
+int ControlledRobot::setCurrentPose(const interaction::Pose& pose){
+    return sendTelemetry(pose,CURRENT_POSE);
 }
 
-void ControlledRobot::setJointState(const interaction::JointState& state){
-    sendTelemetry(state,JOINT_STATE);
+int ControlledRobot::setJointState(const interaction::JointState& state){
+    return sendTelemetry(state,JOINT_STATE);
 }
 
 
