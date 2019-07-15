@@ -5,7 +5,7 @@
 #include "UpdateThread/UpdateThread.hpp"
 
 
-namespace interaction
+namespace controlledRobot
 {
     class ControlledRobot: public UpdateThread
     {
@@ -16,16 +16,16 @@ namespace interaction
 
             virtual void update();
 
-            interaction::Pose getTargetPose(){
+            controlledRobot::Pose getTargetPose(){
                 return targetPose.get();
             }
 
-            int setCurrentPose(const interaction::Pose& pose);
+            int setCurrentPose(const controlledRobot::Pose& pose);
 
-            int setJointState(const interaction::JointState& state);
+            int setJointState(const controlledRobot::JointState& state);
 
 
-            interaction::Twist getTwistCommand(){
+            controlledRobot::Twist getTwistCommand(){
                 return twistCommand.get();
             }
 
@@ -45,9 +45,9 @@ namespace interaction
             std::string serializeCurrentPose();
 
             //buffers
-            ThreadProtecetedVar<interaction::Pose> targetPose;
-            ThreadProtecetedVar<interaction::Pose> currentPose;
-            ThreadProtecetedVar<interaction::Twist> twistCommand;
+            ThreadProtecetedVar<controlledRobot::Pose> targetPose;
+            ThreadProtecetedVar<controlledRobot::Pose> currentPose;
+            ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
 
             /**
              * @brief 

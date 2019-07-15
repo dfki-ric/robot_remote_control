@@ -3,7 +3,7 @@
 #include "UpdateThread.hpp"
 #include <unistd.h>
 
-using namespace interaction;
+using namespace controlledRobot;
 
 
 UpdateThread::UpdateThread(){

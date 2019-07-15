@@ -10,7 +10,7 @@ namespace zmq{
     class socket_t;
 }
 
-namespace interaction
+namespace controlledRobot
 {
 
     class TransportZmq: public Transport{

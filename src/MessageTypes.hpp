@@ -1,8 +1,8 @@
 #pragma once
 
-#include <interaction.pb.h>
+#include "Types/controlledRobot.pb.h"
 
-namespace interaction
+namespace controlledRobot
 {   
     /**
      * @brief The data channel type

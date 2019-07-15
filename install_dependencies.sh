@@ -35,6 +35,6 @@ source env.sh
 fi
 
 build https://github.com/rock-core/base-cmake.git master base-cmake "$PREFIX"
-build https://git.hb.dfki.de/interaction/interaction-types master interaction-types "$PREFIX"
+#build https://git.hb.dfki.de/interaction/interaction-types master interaction-types "$PREFIX"
 
 

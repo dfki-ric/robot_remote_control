@@ -6,7 +6,7 @@
 
 #include "ThreadProtectedVar.hpp"
 
-namespace interaction
+namespace controlledRobot
 {
 
 class UpdateThread{

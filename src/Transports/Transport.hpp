@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-namespace interaction
+namespace controlledRobot
 {
 
     

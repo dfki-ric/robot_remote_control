@@ -2,7 +2,7 @@
 
 #include <interaction-library-controlled_robot/UpdateThread/UpdateThread.hpp>
 
-using namespace interaction;
+using namespace controlledRobot;
 
 class TestThread: public UpdateThread{
 

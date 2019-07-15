@@ -3,12 +3,12 @@
 #include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
 #include <unistd.h>
 
-using namespace interaction;
+using namespace controlledRobot;
 
 int main(int argc, char** argv)
 {
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001",interaction::TransportZmq::REP));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002",interaction::TransportZmq::PUB));
+    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001",TransportZmq::REP));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002",TransportZmq::PUB));
     ControlledRobot robot(commands,telemetry);
     
 

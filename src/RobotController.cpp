@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace interaction;
+using namespace controlledRobot;
 
 
 RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
@@ -17,13 +17,13 @@ RobotController::~RobotController(){
 }
 
 
-void RobotController::setTargetPose(const interaction::Pose & pose)
+void RobotController::setTargetPose(const Pose & pose)
 {
     sendProtobufData(pose,TARGET_POSE_COMMAND);
 }
 
 
-void RobotController::setTwistCommand(const interaction::Twist &twistCommand)
+void RobotController::setTwistCommand(const Twist &twistCommand)
 {
     sendProtobufData(twistCommand,TWIST_COMMAND);
 }
@@ -32,7 +32,7 @@ void RobotController::setTwistCommand(const interaction::Twist &twistCommand)
 void RobotController::update(){
     if (telemetryTransport.get()){
         std::string buf;
-        while(telemetryTransport->receive(&buf,interaction::Transport::NOBLOCK)){
+        while(telemetryTransport->receive(&buf,Transport::NOBLOCK)){
             evaluateReply(buf);
         }
     }else{
@@ -62,7 +62,7 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
     switch (msgtype){
         case CURRENT_POSE:{
-            interaction::Pose currentPose;
+            Pose currentPose;
             currentPose.ParseFromString(serializedMessage);
             buffers.lock();
             RingBufferAccess::pushData(buffers.get_ref()[CURRENT_POSE],currentPose);
@@ -70,7 +70,7 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
             return msgtype;
         }
         case JOINT_STATE:{
-            interaction::JointState currentJointState;
+            JointState currentJointState;
             currentJointState.ParseFromString(serializedMessage);
             buffers.lock();
             RingBufferAccess::pushData(buffers.get_ref()[JOINT_STATE],currentJointState);
@@ -94,10 +94,10 @@ void RobotController::initBuffers(const unsigned int &defaultSize){
     std::shared_ptr<RingBufferBase> newbuf;
 
     //fill shared pointers with objects
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::Pose>(defaultSize));
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::Pose>(defaultSize));
     buffers.get_ref()[CURRENT_POSE] = newbuf;
 
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<interaction::JointState>(defaultSize));
+    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::JointState>(defaultSize));
     buffers.get_ref()[JOINT_STATE] = newbuf;
 
 

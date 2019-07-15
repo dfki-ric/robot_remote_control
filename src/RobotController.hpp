@@ -5,7 +5,7 @@
 #include "RingBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 
-namespace interaction
+namespace controlledRobot
 {
     class RobotController: public UpdateThread
     {
@@ -20,9 +20,9 @@ namespace interaction
             virtual void update();
 
 
-            void setTargetPose(const interaction::Pose & pose);
+            void setTargetPose(const Pose & pose);
 
-            void setTwistCommand(const interaction::Twist &twistCommand);
+            void setTwistCommand(const Twist &twistCommand);
 
             unsigned int getBufferSize(const TelemetryMessageType &type){
                 buffers.lock();
@@ -39,11 +39,11 @@ namespace interaction
                 return result;
             }
             
-            unsigned int getCurrentPose(interaction::Pose & pose){
+            unsigned int getCurrentPose(Pose & pose){
                 return getTelemetry(CURRENT_POSE,pose);
             }
 
-            unsigned int getCurrentJointState(interaction::JointState & jointState){
+            unsigned int getCurrentJointState(JointState & jointState){
                 return getTelemetry(JOINT_STATE,jointState);
             }
 

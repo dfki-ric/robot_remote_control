@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace interaction;
+using namespace controlledRobot;
 
 
 ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
@@ -19,7 +19,7 @@ void ControlledRobot::update()
 ControlMessageType ControlledRobot::receiveRequest()
 {
     std::string msg;
-    int result = commandTransport->receive(&msg,interaction::Transport::NOBLOCK);
+    int result = commandTransport->receive(&msg,controlledRobot::Transport::NOBLOCK);
     if (result){
         ControlMessageType reqestType = evaluateRequest(msg);
         return reqestType;
@@ -59,11 +59,11 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 }
 
 
-int ControlledRobot::setCurrentPose(const interaction::Pose& pose){
+int ControlledRobot::setCurrentPose(const Pose& pose){
     return sendTelemetry(pose,CURRENT_POSE);
 }
 
-int ControlledRobot::setJointState(const interaction::JointState& state){
+int ControlledRobot::setJointState(const JointState& state){
     return sendTelemetry(state,JOINT_STATE);
 }
 

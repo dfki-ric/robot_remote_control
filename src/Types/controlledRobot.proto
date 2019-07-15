@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package controlledRobot;
+
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+message Position {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}
+
+message Orientation {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+    double w = 4;
+}
+
+message Pose {
+    Position position = 1;
+    Orientation orientation = 2;
+}
+
+message Transform {
+    Pose transform = 1;
+    string from = 2;
+    string to = 3;
+}
+
+message Twist{
+    Vector3 linear = 1;
+    Vector3 angular = 2;
+}
+
+message JointState{
+    repeated string name = 1;
+    repeated double position = 2;
+    repeated double velocity = 3;
+    repeated double effort = 4;
+}

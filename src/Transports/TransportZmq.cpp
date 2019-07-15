@@ -1,7 +1,7 @@
 #include "TransportZmq.hpp"
 #include <zmq.hpp>
 
-using namespace interaction;
+using namespace controlledRobot;
 
 std::shared_ptr<zmq::context_t> TransportZmq::getContextInstance(unsigned int threads){
     //implements a singleton using a local static variable

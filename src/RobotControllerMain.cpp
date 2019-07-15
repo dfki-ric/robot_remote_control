@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 
-using namespace interaction;
+using namespace controlledRobot;
 
 int main(int argc, char** argv)
 {
@@ -30,10 +30,10 @@ int main(int argc, char** argv)
     *(pose.mutable_position()) = position;
     *(pose.mutable_orientation()) = orientation;        
 
-    interaction::Pose currentpose;
-    interaction::JointState jointstate;
+    Pose currentpose;
+    JointState jointstate;
 
-    interaction::Twist twistcommand;
+    Twist twistcommand;
     twistcommand.mutable_angular()->set_z(0.1);
     twistcommand.mutable_linear()->set_x(0.1);
     

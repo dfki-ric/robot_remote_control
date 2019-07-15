@@ -5,7 +5,7 @@
 #include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
 
 
-using namespace interaction;
+using namespace controlledRobot;
  
 TransportSharedPtr commands;
 TransportSharedPtr telemetry;
@@ -25,8 +25,8 @@ void initComms(){
   if (!commands.get()){commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003",TransportZmq::REQ));}
   if (!telemetry.get()){telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004",TransportZmq::SUB));}
 
-  if (!command.get()){command = TransportSharedPtr(new TransportZmq("tcp://*:7003",interaction::TransportZmq::REP));}
-  if (!telemetri.get()){telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004",interaction::TransportZmq::PUB));}
+  if (!command.get()){command = TransportSharedPtr(new TransportZmq("tcp://*:7003",TransportZmq::REP));}
+  if (!telemetri.get()){telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004",TransportZmq::PUB));}
 }
 
 
@@ -39,8 +39,8 @@ BOOST_AUTO_TEST_CASE(Checking_twist_command_transfer)
 
 	robot.startUpdateThread(10);
   
-  interaction::Twist sendtwistcommand;
-  interaction::Twist receivetwistcommand;
+  Twist sendtwistcommand;
+  Twist receivetwistcommand;
   sendtwistcommand.mutable_angular()->set_z(0.4);
   sendtwistcommand.mutable_linear()->set_x(0.6);
   
