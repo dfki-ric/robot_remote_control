@@ -1,5 +1,27 @@
 
-add_subdirectory(Types)
+
+find_package(Protobuf REQUIRED)
+
+set(Protobuf_INCLUDE_DIRS ${PROTOBUF_INCLUDE_DIRS})
+set(Protobuf_LIBRARIES ${PROTOBUF_LIBRARIES})
+set(Protobuf_PROTOC_LIBRARIES ${PROTOBUF_PROTOC_LIBRARIES})
+
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+add_custom_target(typegen_cpp COMMAND protoc --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/Types controlledRobot.proto WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Types)
+#add_custom_target(typegen_js COMMAND protoc --js_out=${CMAKE_CURRENT_SOURCE_DIR} controlledRobot.proto WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+#add_custom_target(typegen_python COMMAND protoc --python_out=${CMAKE_CURRENT_SOURCE_DIR} controlledRobot.proto WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+INSTALL(FILES  Types/controlledRobot.proto DESTINATION protobuf)
+
+set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/Types/controlledRobot.pb.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Types/controlledRobot.pb.h
+    PROPERTIES GENERATED TRUE
+)
+
+
 
 rock_library(interaction-library-update_thread
     SOURCES UpdateThread/UpdateThread.cpp
@@ -21,7 +43,6 @@ rock_library(interaction-library-robot_controller
 #make sure protobuf runs first
 add_dependencies(interaction-library-controlled_robot typegen_cpp)
 add_dependencies(interaction-library-robot_controller typegen_cpp)
-
 
 
 rock_library(interaction-library-controlled_robot_transport_zmq
