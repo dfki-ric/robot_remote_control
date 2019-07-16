@@ -129,11 +129,11 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   //receive pending data
   controller.update();
 
-  int buffersize_pose = controller.getCurrentPose(currentpose);
+  controller.getCurrentPose(currentpose);
  
   
   //data was sent completely
-  BOOST_CHECK(sent == buf.size());
+  BOOST_CHECK((unsigned int)sent == buf.size());
   //and is the same
   COMPARE_PROTOBUF(pose,currentpose);
 
