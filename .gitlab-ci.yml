@@ -4,29 +4,25 @@ include:
      file: 'projects/vrlab.yml'
 
 
-build_standalone:
-  image: d-reg.hb.dfki.de:5000/gitlab-ci/docker-build_essentials_ubuntu:latest
-  before_script: 
-    - apt-get install -y libprotobuf-dev protobuf-compiler libzmqpp-dev
-    - ./install_dependencies.sh .
+image: d-reg.hb.dfki.de:5000/gitlab-ci/docker-build_essentials_ubuntu:latest
+before_script: 
+  - apt-get install -y libprotobuf-dev protobuf-compiler libzmqpp-dev
+  - ./install_dependencies.sh .
+  - . env.sh
+  - mkdir build
+  - cd build
 
+build_standalone:
   build:
     stage: build
     script:
-      - . env.sh
-      - mkdir build
-      - cd build
       - cmake ..
       - make
 
-  test:
-    stage: test
-    script:
-      - ls -la #need to build here?
-      - . env.sh
-      - mkdir build
-      - cd build
-      - cmake -D ROCK_TEST_ENABLED=ON ..
-      - make
-      - ./test/test_suite
+test_standalone:
+  stage: test
+  script:
+    - cmake -D ROCK_TEST_ENABLED=ON ..
+    - make
+    - ./test/test_suite
 
