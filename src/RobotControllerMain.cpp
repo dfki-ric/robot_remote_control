@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     twistcommand.mutable_linear()->set_x(0.1);
     
 
-    controller.startUpdateThread(10);
+    controller.startUpdateThread(100);
 
     float x = 0;
 

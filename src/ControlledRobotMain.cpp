@@ -11,13 +11,16 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002",TransportZmq::PUB));
     ControlledRobot robot(commands,telemetry);
 
-    robot.startUpdateThread(10);    
+    robot.startUpdateThread(100);    
 
     while (true){
-        //robot.update(); //non blocking
+        //robot.update(); //blocking
 
+        Pose pose = robot.getTargetPose();
         //fake-write requested pose to curretn pose
-        robot.setCurrentPose(robot.getTargetPose());
+        robot.setCurrentPose(pose);
+
+        printf("%.2f %.2f %.2f\n",pose.position().x(),pose.position().y(),pose.position().z());
 
         usleep(100000);
     }

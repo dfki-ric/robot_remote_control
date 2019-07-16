@@ -20,7 +20,7 @@ void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::futur
 
 void UpdateThread::startUpdateThread(const unsigned int &milliseconds){
     stopFuture = stopPromise.get_future();
-    updateThread = std::thread(&UpdateThread::updateThreadMain, this, std::ref(milliseconds), std::move(stopFuture));
+    updateThread = std::thread(&UpdateThread::updateThreadMain, this, std::move(milliseconds), std::move(stopFuture));
 }
 
 void UpdateThread::stopUpdateThread(){
