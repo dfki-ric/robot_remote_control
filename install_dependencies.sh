@@ -35,6 +35,8 @@ source env.sh
 fi
 
 build https://github.com/rock-core/base-cmake.git master base-cmake "$PREFIX"
-#build https://git.hb.dfki.de/interaction/interaction-types master interaction-types "$PREFIX"
 
+echo "please also install followind OS dependencies:"
+echo "rotobuf and zmqpp for development"
+echo "in ubuntu : $> apt install libprotobuf-dev protobuf-compiler libzmqpp-dev"
 
