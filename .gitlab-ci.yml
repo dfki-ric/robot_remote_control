@@ -2,6 +2,10 @@ include:
    - project: 'build_server/gitlab_ci_includes'
      ref: 'master'
      file: 'projects/vrlab.yml'
+   - project: 'build_server/gitlab_ci_includes'
+     ref: 'master'
+     file: 'api_publish.yml'
+
 
 #function to install dependencies (before_script also allies to includes)
 .dep_install: &dep_install |
