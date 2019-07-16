@@ -15,20 +15,22 @@ namespace controlledRobot
 
         Transport(){};
         virtual ~Transport(){};
+
         /**
-         * @brief send a request on a "stable"
+         * @brief send date
          * 
-         * @param buf 
-         * @return int 
+         * @param buf the buffer to send
+         * @param Flags flags the flags
+         * @return int number of bytes sent
          */
         virtual int send(const std::string& buf, Flags flags = NONE) = 0;
 
         /**
-         * @brief 
+         * @brief receive data
          * 
-         * @param buf 
-         * @param flags 
-         * @return int 0 if no data received
+         * @param buf buffer to fill on receive
+         * @param Flags flags the flags
+         * @return int 0 if no data received, size of data otherwise
          */
         virtual int receive(std::string* buf, Flags flags = NONE) = 0;
 

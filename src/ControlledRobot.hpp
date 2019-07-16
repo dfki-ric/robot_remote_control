@@ -14,25 +14,59 @@ namespace controlledRobot
             ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport);
             virtual ~ControlledRobot(){};
 
+            /**
+             * @brief threaded update function called by UpdateThread that receives commands
+             */
             virtual void update();
 
+
+            //Command getters
+
+            /**
+             * @brief Get the Target Pose the robot should move to
+             * 
+             * @return controlledRobot::Pose the target pose
+             * @TODO isNEW?
+             */
             controlledRobot::Pose getTargetPose(){
                 return targetPose.get();
             }
 
-            int setCurrentPose(const controlledRobot::Pose& pose);
-
-            int setJointState(const controlledRobot::JointState& state);
-
-
+            /**
+             * @brief Get the Twist Command with velocities to robe should move at
+             * 
+             * @return controlledRobot::Twist 
+             */
             controlledRobot::Twist getTwistCommand(){
                 return twistCommand.get();
             }
 
+
+            // Telemetry setters
+
+            /**
+             * @brief Set the current Pose of the robot
+             * 
+             * @param pose current pose
+             * @return int number of bytes sent
+             */
+            int setCurrentPose(const controlledRobot::Pose& pose);
+
+            /**
+             * @brief Set the curretn JointState of the robot
+             * 
+             * @param pose current JointState
+             * @return int number of bytes sent
+             */
+            int setJointState(const controlledRobot::JointState& state);
+
+
+
+
         protected:
             virtual ControlMessageType receiveRequest();
 
-            ControlMessageType evaluateRequest(const std::string& request);
+            virtual ControlMessageType evaluateRequest(const std::string& request);
 
         private:
             void addControlMessageType(std::string &buf, const ControlMessageType& type);

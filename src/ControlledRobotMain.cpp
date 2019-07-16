@@ -10,10 +10,11 @@ int main(int argc, char** argv)
     TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001",TransportZmq::REP));
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002",TransportZmq::PUB));
     ControlledRobot robot(commands,telemetry);
-    
+
+    robot.startUpdateThread(10);    
 
     while (true){
-        robot.update(); //non blocking
+        //robot.update(); //non blocking
 
         //fake-write requested pose to curretn pose
         robot.setCurrentPose(robot.getTargetPose());

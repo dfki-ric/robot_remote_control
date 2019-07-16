@@ -38,6 +38,7 @@ int main(int argc, char** argv)
     twistcommand.mutable_linear()->set_x(0.1);
     
 
+    controller.startUpdateThread(10);
 
     float x = 0;
 
@@ -46,7 +47,7 @@ int main(int argc, char** argv)
         //controller.setTwistCommand(twistcommand);
 
         //receive pending telemetry
-        controller.update();
+        //controller.update();
 
         //in production, the get function should use a while loop
         // while (controller.getCurrentPose(currentpose)){do stuff}
