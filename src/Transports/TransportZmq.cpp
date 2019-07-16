@@ -57,7 +57,6 @@ int TransportZmq::send(const std::string& buf, Flags flags){
 
 int TransportZmq::receive(std::string* buf,Flags flags){
     zmq::message_t requestmsg;
-    int result = socket->recv(&requestmsg,flags);
     int zmqflag = 0;
     if (flags & NOBLOCK){
         zmqflag = ZMQ_NOBLOCK;
