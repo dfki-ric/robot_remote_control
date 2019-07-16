@@ -3,9 +3,8 @@ include:
      ref: 'master'
      file: 'projects/vrlab.yml'
 
-
-image: d-reg.hb.dfki.de:5000/gitlab-ci/docker-build_essentials_ubuntu:latest
-before_script: 
+#function to install dependencies (before_script also allies to includes)
+.dep_install: &dep_install |
   - apt-get install -y libprotobuf-dev protobuf-compiler libzmqpp-dev
   - ./install_dependencies.sh .
   - . env.sh
@@ -13,15 +12,19 @@ before_script:
   - cd build
 
 build_standalone:
+  image: d-reg.hb.dfki.de:5000/gitlab-ci/docker-build_essentials_ubuntu:latest
   stage: build
   script:
+    - *dep_install
     - cmake ..
-    - make
+    - make -j
 
 test_standalone:
+  image: d-reg.hb.dfki.de:5000/gitlab-ci/docker-build_essentials_ubuntu:latest
   stage: test
   script:
+    - *dep_install
     - cmake -D ROCK_TEST_ENABLED=ON ..
-    - make
+    - make -j
     - ./test/test_suite
 
