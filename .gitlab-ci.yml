@@ -13,11 +13,10 @@ before_script:
   - cd build
 
 build_standalone:
-  build:
-    stage: build
-    script:
-      - cmake ..
-      - make
+  stage: build
+  script:
+    - cmake ..
+    - make
 
 test_standalone:
   stage: test
