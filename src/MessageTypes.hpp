@@ -14,7 +14,8 @@ namespace controlledRobot
                             JOINTS_COMMAND,
                             JOINT_NAME_REQUEST,
                             ACTIONS_COMMAND,
-                            ACTION_NAME_REQUEST
+                            ACTION_NAME_REQUEST,
+                            GOTO_COMMAND
                             };
 
     enum TelemetryMessageType{  NO_TELEMETRY_DATA=0,

@@ -43,3 +43,9 @@ message JointState{
     repeated double velocity = 3;
     repeated double effort = 4;
 }
+
+message GoTo {
+    double max_forward_speed = 1;
+    Vector3 waypoint_point = 2;
+    double waypoint_max_forward_speed = 3;
+}

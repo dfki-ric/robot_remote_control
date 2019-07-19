@@ -49,6 +49,13 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
             return TWIST_COMMAND;
         }
+        case GOTO_COMMAND: {
+            goToCommand.lock();
+            goToCommand.get_ref().ParseFromString(serializedMessage);
+            goToCommand.unlock();
+            commandTransport->send(serializeControlMessageType(GOTO_COMMAND));
+            return GOTO_COMMAND;
+        }
         
         default:{
             commandTransport->send(serializeControlMessageType(NO_DATA));

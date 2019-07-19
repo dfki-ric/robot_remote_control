@@ -41,6 +41,15 @@ namespace controlledRobot
                 return twistCommand.get();
             }
 
+            /**
+             * @brief Get the GoTo Command the robot should execute
+             *
+             * @return controlledRobot::GoTo
+             */
+            controlledRobot::GoTo getGoToCommand() {
+                return goToCommand.get();
+            }
+
 
             // Telemetry setters
 
@@ -82,6 +91,7 @@ namespace controlledRobot
             ThreadProtecetedVar<controlledRobot::Pose> targetPose;
             ThreadProtecetedVar<controlledRobot::Pose> currentPose;
             ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
+            ThreadProtecetedVar<controlledRobot::GoTo> goToCommand;
 
             /**
              * @brief 
