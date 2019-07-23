@@ -98,6 +98,8 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   initComms();
   RobotController controller(commands, telemetry);
   ControlledRobot robot(command, telemetri);
+  controller.update();
+  usleep(100 * 1000);
 
   Position position;
   Orientation orientation;
