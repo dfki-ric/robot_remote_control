@@ -46,8 +46,8 @@ namespace controlledRobot
              *
              * @return controlledRobot::GoTo
              */
-            controlledRobot::GoTo getGoToCommand() {
-                return goToCommand.get();
+            std::pair<unsigned long long int, controlledRobot::GoTo> getGoToCommand() {
+                return std::pair<unsigned long long int, controlledRobot::GoTo>(goToCommandGetCounter++, goToCommand.get());
             }
 
 
@@ -92,6 +92,7 @@ namespace controlledRobot
             ThreadProtecetedVar<controlledRobot::Pose> currentPose;
             ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
             ThreadProtecetedVar<controlledRobot::GoTo> goToCommand;
+            unsigned long long int goToCommandGetCounter;
 
             /**
              * @brief 

@@ -7,7 +7,8 @@ using namespace controlledRobot;
 
 ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
-    telemetryTransport(telemetryTransport)
+    telemetryTransport(telemetryTransport),
+    goToCommandGetCounter(0)
 {
 }
 
@@ -54,6 +55,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             goToCommand.get_ref().ParseFromString(serializedMessage);
             goToCommand.unlock();
             commandTransport->send(serializeControlMessageType(GOTO_COMMAND));
+            goToCommandGetCounter = 0;
             return GOTO_COMMAND;
         }
         
