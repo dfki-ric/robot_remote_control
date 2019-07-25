@@ -27,6 +27,8 @@ on how to install Rock.
 
 You can also build the Library without rock, by using the rock CMake marcos.
 
+As a reference you can have a look into the gitlab-ci.yml file.
+
 ## Rock CMake Macros
 
 The ./install_dependencies.sh script will install the rock cmake macros, if you provide a path to that script, the macros will be installes there.
@@ -67,7 +69,15 @@ install setup properly.
 
 
 
-## Usage
+## Gettings started
+
+have a look into the provided Main examples
+
+* src/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
+* src/RobotControllerMain.cpp (controller that sets the desired robot position)
+
+You can build the Doxygen documentation using `$> doxygen Doxyfile`, it will be written to athe build/doc folder.
+
 
 There are two main libraries generated when compiling this repository:
 
