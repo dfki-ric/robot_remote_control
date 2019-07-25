@@ -33,6 +33,13 @@ namespace controlledRobot
              */
             void setTwistCommand(const Twist &twistCommand);
 
+            /**
+             * @brief Set the GoTo Command of the ControlledRobot
+             *
+             * @param goToCommand
+             */
+            void setGoToCommand(const GoTo &goToCommand);
+
 
             /**
              * @brief Get the Number of pending messages for a specific Telemetry type

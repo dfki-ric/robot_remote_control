@@ -28,6 +28,9 @@ void RobotController::setTwistCommand(const Twist &twistCommand)
     sendProtobufData(twistCommand,TWIST_COMMAND);
 }
 
+void RobotController::setGoToCommand(const GoTo &goToCommand) {
+    sendProtobufData(goToCommand, GOTO_COMMAND);
+}
 
 void RobotController::update(){
     if (telemetryTransport.get()){
