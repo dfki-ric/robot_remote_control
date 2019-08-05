@@ -49,3 +49,8 @@ message GoTo {
     Vector3 waypoint_point = 2;
     double waypoint_max_forward_speed = 3;
 }
+
+message SimpleActions {
+     repeated string name = 1;
+     repeated uint64 state = 2;
+}

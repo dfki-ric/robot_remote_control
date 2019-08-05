@@ -14,7 +14,7 @@ namespace controlledRobot
                             JOINTS_COMMAND,
                             JOINT_NAME_REQUEST,
                             ACTIONS_COMMAND,
-                            ACTION_NAME_REQUEST,
+                            SIMPLE_ACTIONS_NAMES_REQUEST,
                             GOTO_COMMAND
                             };
 
@@ -22,6 +22,10 @@ namespace controlledRobot
                                 CURRENT_POSE,       //the curretn Pose of the robot base
                                 JOINT_STATE,         //current Joint values
                                 TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
+                            };
+
+    enum ReplyMessageType{  NO_REPLY_DATA=0,
+                            JOINT_NAME_REPLY   // the names of the controllable joints
                             };
 
 //http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html
