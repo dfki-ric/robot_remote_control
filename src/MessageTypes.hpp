@@ -15,6 +15,7 @@ namespace controlledRobot
                             JOINT_NAME_REQUEST,
                             ACTIONS_COMMAND,
                             SIMPLE_ACTIONS_NAMES_REQUEST,
+                            COMPLEX_ACTIONS_NAMES_REQUEST,
                             GOTO_COMMAND
                             };
 
@@ -26,7 +27,8 @@ namespace controlledRobot
 
     enum ReplyMessageType{  NO_REPLY_DATA=0,
                             JOINT_NAME_REPLY,   // the names of the controllable joints
-                            SIMPLE_ACTIONS_NAMES_REPLY // the names of the simple actions
+                            SIMPLE_ACTIONS_NAMES_REPLY, // the names of the simple actions
+                            COMPLEX_ACTIONS_NAMES_REPLY // the names of the complex actions
                             };
 
 //http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html

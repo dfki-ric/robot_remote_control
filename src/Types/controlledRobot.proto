@@ -26,6 +26,10 @@ message Pose {
     Orientation orientation = 2;
 }
 
+message Poses {
+    repeated Pose pose = 1;
+}
+
 message Transform {
     Pose transform = 1;
     string from = 2;
@@ -53,4 +57,9 @@ message GoTo {
 message SimpleActions {
      repeated string name = 1;
      repeated uint64 state = 2;
+}
+
+message ComplexActions {
+     repeated string name = 1;
+     repeated Poses poses = 2;
 }
