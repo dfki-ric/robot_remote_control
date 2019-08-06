@@ -25,7 +25,8 @@ namespace controlledRobot
                             };
 
     enum ReplyMessageType{  NO_REPLY_DATA=0,
-                            JOINT_NAME_REPLY   // the names of the controllable joints
+                            JOINT_NAME_REPLY,   // the names of the controllable joints
+                            SIMPLE_ACTIONS_NAMES_REPLY // the names of the simple actions
                             };
 
 //http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html
