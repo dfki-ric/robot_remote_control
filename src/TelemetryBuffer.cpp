@@ -18,11 +18,14 @@ using namespace controlledRobot;
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::JointState>(size));
         get_ref()[JOINT_STATE] = newbuf;
 
-                                    // CURRENT_POSE,       //the curretn Pose of the robot base
-                                    // JOINT_STATE,         //current Joint values
-                                    // JOINT_NAME_REPLY,   // the names of the controllable joints
-                                    // SIMPLE_ACTIONS_NAMES_REPLY, // the names of the simple actions
-                                    // COMPLEX_ACTIONS_NAMES_REPLY, // the names of the complex actions
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::JointState>(size));
+        get_ref()[JOINT_NAME_REPLY] = newbuf;
+
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::SimpleActions>(size));
+        get_ref()[SIMPLE_ACTIONS_NAMES_REPLY] = newbuf;
+
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::ComplexActions>(size));
+        get_ref()[COMPLEX_ACTIONS_NAMES_REPLY] = newbuf;
 
         unlock();
     }
