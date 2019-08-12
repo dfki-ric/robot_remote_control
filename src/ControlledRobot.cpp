@@ -59,8 +59,11 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             return GOTO_COMMAND;
         }
         case TELEMETRY_REQUEST:{
-             uint16_t* requestedtype = (uint16_t*)(request.data()+sizeof(uint16_t));
-             printf("got request for %i\n",*requestedtype);
+            uint16_t* requestedtype = (uint16_t*)(request.data()+sizeof(uint16_t));
+            TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
+            std::string reply = buffers.peekSerialized(type);
+            commandTransport->send(reply);
+            return TELEMETRY_REQUEST;
         }
         
         default:{
@@ -103,11 +106,11 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
     return buf;
 }
 
-std::string ControlledRobot::serializeCurrentPose()
-{
-    std::string buf;
-    addTelemetryMessageType(buf,CURRENT_POSE);
-    currentPose.get().AppendToString(&buf);
-    return buf;
+// std::string ControlledRobot::serializeCurrentPose()
+// {
+//     std::string buf;
+//     addTelemetryMessageType(buf,CURRENT_POSE);
+//     currentPose.get().AppendToString(&buf);
+//     return buf;
 
-}
+// }

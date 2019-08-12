@@ -85,11 +85,11 @@ namespace controlledRobot
             TransportSharedPtr telemetryTransport;
 
             std::string serializeControlMessageType(const ControlMessageType& type);
-            std::string serializeCurrentPose();
+            //std::string serializeCurrentPose();
 
             //buffers
             ThreadProtecetedVar<controlledRobot::Pose> targetPose;
-            ThreadProtecetedVar<controlledRobot::Pose> currentPose;
+            // ThreadProtecetedVar<controlledRobot::Pose> currentPose;
             ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
             ThreadProtecetedVar<controlledRobot::GoTo> goToCommand;
             unsigned long long int goToCommandGetCounter;
@@ -113,6 +113,10 @@ namespace controlledRobot
                     uint16_t* data = (uint16_t*)buf.data();
                     *data = uint_type;
                     protodata.AppendToString(&buf);
+                    //store latest data for future requests
+                    buffers.lock();
+                    RingBufferAccess::pushData(buffers.get_ref()[type],protodata);
+                    buffers.unlock();
                     return telemetryTransport->send(buf) - sizeof(uint16_t);
                 }
                 printf("ERROR Transport invalid\n");

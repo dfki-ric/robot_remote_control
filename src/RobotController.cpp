@@ -36,7 +36,7 @@ void RobotController::update(){
     if (telemetryTransport.get()){
         std::string buf;
         while(telemetryTransport->receive(&buf,Transport::NOBLOCK)){
-            evaluateReply(buf);
+            evaluateTelemetry(buf);
         }
     }else{
         printf("ERROR no telemetry Transport set\n");
@@ -55,7 +55,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage){
     return replystr;
 }
 
-ControlMessageType RobotController::evaluateReply(const std::string& reply){
+ControlMessageType RobotController::evaluateTelemetry(const std::string& reply){
 
     uint16_t* type = (uint16_t*)reply.data();
 

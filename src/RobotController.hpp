@@ -71,6 +71,27 @@ namespace controlledRobot
                 buffers.unlock();
                 return result;
             }
+
+            template< class DATATYPE > void requestTelemetry(const TelemetryMessageType &type, DATATYPE &result){
+                std::string buf;
+                buf.resize(sizeof(uint16_t)*2);
+                uint16_t uint_type;
+                uint16_t* data = (uint16_t*)buf.data();
+
+                uint_type = TELEMETRY_REQUEST;
+                *data = uint_type;
+                
+                data++;
+
+                //add the requested type int
+                uint_type = type;
+                *data = uint_type;
+
+                std::string replybuf = sendRequest(buf);
+                result.ParseFromString(replybuf);
+
+
+            }
             
 
             /**
@@ -98,7 +119,7 @@ namespace controlledRobot
         protected:
             virtual std::string sendRequest(const std::string& serializedMessage);
 
-            ControlMessageType evaluateReply(const std::string& reply);
+            ControlMessageType evaluateTelemetry(const std::string& reply);
 
         private:
 

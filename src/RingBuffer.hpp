@@ -68,7 +68,6 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
                 in %= buffersize;
                 return true;
             }
-            //printf("Buffer full\n");
             return false;
         }
 
@@ -80,7 +79,14 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
                 out %= buffersize;
                 return true;
             }
-            //printf("buffer empty\n");
+            return false;
+        }
+
+        bool peekData(TYPE& data){
+            if (contentsize>0){
+                data = buffer[out];
+                return true;
+            }
             return false;
         }
 
@@ -103,5 +109,10 @@ class RingBufferAccess{
         template<class DATATYPE> static bool popData(std::shared_ptr<RingBufferBase> &buffer, DATATYPE & data){
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             return dataclass->popData(data);
+        }
+
+        template<class DATATYPE> static bool peekData(std::shared_ptr<RingBufferBase> &buffer, DATATYPE & data){
+            std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
+            return dataclass->peekData(data);
         }
 };

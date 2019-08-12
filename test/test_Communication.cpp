@@ -139,5 +139,14 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   //and is the same
   COMPARE_PROTOBUF(pose,currentpose);
 
+  //test single request
+  Pose requestepose;
+  robot.startUpdateThread(200);
+  usleep(200*1000);
+  controller.requestTelemetry(CURRENT_POSE,requestepose);
 
+  COMPARE_PROTOBUF(pose,requestepose);
+
+  robot.stopUpdateThread();
 }
+

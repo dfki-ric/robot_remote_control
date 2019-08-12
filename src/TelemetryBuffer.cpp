@@ -1,5 +1,5 @@
 #include "TelemetryBuffer.hpp"
-#include "MessageTypes.hpp"
+
 
 using namespace controlledRobot;
 
@@ -35,5 +35,45 @@ using namespace controlledRobot;
     }
 
 
+    std::string TelemetryBuffer::peekSerialized(const TelemetryMessageType &type){
+        
+        std::string buf("");
+        lock();
+        
+        switch (type){
+            case CURRENT_POSE:{
+                controlledRobot::Pose pose;
+                fillBuffer(CURRENT_POSE,pose,buf);
+                break;
+            }
+            case JOINT_STATE:{
+                controlledRobot::JointState data;
+                fillBuffer(JOINT_STATE,data,buf);
+                break;
+            }
+            case JOINT_NAME_REPLY:{
+                controlledRobot::JointState data;
+                fillBuffer(JOINT_NAME_REPLY,data,buf);
+                break;
+            }
+            case SIMPLE_ACTIONS_NAMES_REPLY:{
+                controlledRobot::SimpleActions data;
+                fillBuffer(SIMPLE_ACTIONS_NAMES_REPLY,data,buf);
+                break;
+            }
+            case COMPLEX_ACTIONS_NAMES_REPLY:{
+                controlledRobot::ComplexActions data;
+                fillBuffer(COMPLEX_ACTIONS_NAMES_REPLY,data,buf);
+                break;
+            }
+            case NO_TELEMETRY_DATA:
+            case TELEMETRY_MESSAGE_TYPES_NUMBER:
+            break;
 
+        }
+
+        
+        unlock();
+        return buf;
+    }
 
