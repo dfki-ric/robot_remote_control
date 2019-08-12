@@ -15,5 +15,5 @@
   <depend package="dummy-dependency-n" />
   -->
   <depend package="zmq" />
-  <depend package="interaction/types" />
+  <!-- <depend package="interaction/types" /> -->
 </package>

@@ -9,7 +9,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
-    initBuffers(10);
+    std::shared_ptr<TelemetryBuffer> buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(10));
 }
 
 RobotController::~RobotController(){
@@ -86,23 +86,4 @@ ControlMessageType RobotController::evaluateReply(const std::string& reply){
 
     //should never reach this
     return NO_DATA;
-}
-
-
-void RobotController::initBuffers(const unsigned int &defaultSize){
-    //create vector of shared ptr
-    buffers.lock();
-    buffers.get_ref().resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
-
-    std::shared_ptr<RingBufferBase> newbuf;
-
-    //fill shared pointers with objects
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::Pose>(defaultSize));
-    buffers.get_ref()[CURRENT_POSE] = newbuf;
-
-    newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::JointState>(defaultSize));
-    buffers.get_ref()[JOINT_STATE] = newbuf;
-
-
-    buffers.unlock();
 }

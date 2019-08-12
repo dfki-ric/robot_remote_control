@@ -2,8 +2,9 @@
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
-#include "RingBuffer.hpp"
+#include "TelemetryBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
+
 
 namespace controlledRobot
 {
@@ -106,8 +107,8 @@ namespace controlledRobot
 
             
 
-            ThreadProtecetedVar< std::vector< std::shared_ptr<RingBufferBase> > > buffers;
-            void initBuffers(const unsigned int &defaultSize);
+            TelemetryBuffer buffers;
+            //void initBuffers(const unsigned int &defaultSize);
 
 
             template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type ){

@@ -29,13 +29,13 @@ rock_library(interaction-library-update_thread
 )
 
 rock_library(interaction-library-controlled_robot
-    SOURCES ControlledRobot.cpp Types/controlledRobot.pb.cc
+    SOURCES ControlledRobot.cpp TelemetryBuffer.cpp Types/controlledRobot.pb.cc
     HEADERS ControlledRobot.hpp MessageTypes.hpp RingBuffer.hpp Transports/Transport.hpp Types/controlledRobot.pb.h
     DEPS interaction-library-update_thread
     DEPS_PKGCONFIG protobuf)
 
 rock_library(interaction-library-robot_controller
-    SOURCES RobotController.cpp Types/controlledRobot.pb.cc
+    SOURCES RobotController.cpp TelemetryBuffer.cpp Types/controlledRobot.pb.cc
     HEADERS RobotController.hpp MessageTypes.hpp RingBuffer.hpp Transports/Transport.hpp Types/controlledRobot.pb.h
     DEPS interaction-library-update_thread
     DEPS_PKGCONFIG protobuf)

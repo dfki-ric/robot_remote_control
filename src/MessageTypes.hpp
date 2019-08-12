@@ -16,20 +16,19 @@ namespace controlledRobot
                             ACTIONS_COMMAND,
                             SIMPLE_ACTIONS_NAMES_REQUEST,
                             COMPLEX_ACTIONS_NAMES_REQUEST,
-                            GOTO_COMMAND
+                            GOTO_COMMAND,
+                            TELEMETRY_REQUEST
                             };
 
     enum TelemetryMessageType{  NO_TELEMETRY_DATA=0,
                                 CURRENT_POSE,       //the curretn Pose of the robot base
                                 JOINT_STATE,         //current Joint values
+                                JOINT_NAME_REPLY,   // the names of the controllable joints
+                                SIMPLE_ACTIONS_NAMES_REPLY, // the names of the simple actions
+                                COMPLEX_ACTIONS_NAMES_REPLY, // the names of the complex actions
                                 TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
                             };
 
-    enum ReplyMessageType{  NO_REPLY_DATA=0,
-                            JOINT_NAME_REPLY,   // the names of the controllable joints
-                            SIMPLE_ACTIONS_NAMES_REPLY, // the names of the simple actions
-                            COMPLEX_ACTIONS_NAMES_REPLY // the names of the complex actions
-                            };
 
 //http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html
 

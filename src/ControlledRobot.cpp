@@ -58,6 +58,10 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             goToCommandGetCounter = 0;
             return GOTO_COMMAND;
         }
+        case TELEMETRY_REQUEST:{
+             uint16_t* requestedtype = (uint16_t*)(request.data()+sizeof(uint16_t));
+             printf("got request for %i\n",*requestedtype);
+        }
         
         default:{
             commandTransport->send(serializeControlMessageType(NO_DATA));

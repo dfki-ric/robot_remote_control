@@ -3,7 +3,7 @@
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "UpdateThread/UpdateThread.hpp"
-
+#include "TelemetryBuffer.hpp"
 
 namespace controlledRobot
 {
@@ -93,6 +93,9 @@ namespace controlledRobot
             ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
             ThreadProtecetedVar<controlledRobot::GoTo> goToCommand;
             unsigned long long int goToCommandGetCounter;
+
+            TelemetryBuffer buffers;
+
 
             /**
              * @brief 
