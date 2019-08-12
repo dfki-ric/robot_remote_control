@@ -29,6 +29,35 @@ void initComms(){
   if (!telemetri.get()){telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004",TransportZmq::PUB));}
 }
 
+controlledRobot::Pose initTestPose(){
+  Position position;
+  Orientation orientation;
+  Pose pose;
+  
+	
+  position.set_x(4);
+  position.set_y(2);
+  position.set_z(7);
+
+  orientation.set_x(8);
+  orientation.set_y(1);
+  orientation.set_z(3);
+  orientation.set_w(4);
+    
+  *(pose.mutable_position()) = position;
+  *(pose.mutable_orientation()) = orientation;
+  return pose;
+}
+
+controlledRobot::JointState initTestJointState(){
+  JointState state;
+  state.add_name("test");
+  state.add_position(1);
+  state.add_velocity(2);
+  state.add_effort(3);
+  return state;
+}
+
 
 BOOST_AUTO_TEST_CASE(Checking_twist_command_transfer)
 {
@@ -61,22 +90,8 @@ BOOST_AUTO_TEST_CASE(checking_target_pose)
   RobotController controller(commands, telemetry);
 	ControlledRobot robot(command, telemetri);
 	
-  Position position;
-  Orientation orientation;
-  Pose pose;
+  Pose pose = initTestPose();
   Pose pose2; 
-	
-  position.set_x(4);
-  position.set_y(2);
-  position.set_z(7);
-
-  orientation.set_x(8);
-  orientation.set_y(1);
-  orientation.set_z(3);
-  orientation.set_w(4);
-    
-  *(pose.mutable_position()) = position;
-  *(pose.mutable_orientation()) = orientation; 
 	
   robot.startUpdateThread(10);
 
@@ -101,22 +116,9 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   controller.update();
   usleep(100 * 1000);
 
-  Position position;
-  Orientation orientation;
-  Pose pose;
+  
+  Pose pose = initTestPose();
   Pose currentpose;
-
-  position.set_x(4);
-  position.set_y(2);
-  position.set_z(7);
-
-  orientation.set_x(8);
-  orientation.set_y(1);
-  orientation.set_z(3);
-  orientation.set_w(4);
-   
-  *(pose.mutable_position()) = position;
-  *(pose.mutable_orientation()) = orientation;
 
   //buffer for size comparsion
   std::string buf;
@@ -139,14 +141,39 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   //and is the same
   COMPARE_PROTOBUF(pose,currentpose);
 
-  //test single request
-  Pose requestepose;
-  robot.startUpdateThread(200);
-  usleep(200*1000);
-  controller.requestTelemetry(CURRENT_POSE,requestepose);
-
-  COMPARE_PROTOBUF(pose,requestepose);
-
-  robot.stopUpdateThread();
 }
 
+
+BOOST_AUTO_TEST_CASE(generic_request_telemetry_data)
+{
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+  
+  Pose pose = initTestPose();
+  JointState jointstate = initTestJointState();
+
+  
+  //send tememetry data
+  int sent;
+  sent = robot.setCurrentPose(pose);
+  sent = robot.setJointState(jointstate);
+
+
+
+  //test single request
+  Pose requestedpose;
+  controller.requestTelemetry(CURRENT_POSE,requestedpose);
+  COMPARE_PROTOBUF(pose,requestedpose);
+
+
+  JointState requestedJointState;
+  controller.requestTelemetry(JOINT_STATE,requestedJointState);
+  COMPARE_PROTOBUF(jointstate,requestedJointState);
+
+
+  robot.stopUpdateThread();
+  controller.stopUpdateThread();
+}
