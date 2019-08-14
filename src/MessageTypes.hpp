@@ -12,10 +12,7 @@ namespace controlledRobot
                             TARGET_POSE_COMMAND,    //target Pose the robot should move to
                             TWIST_COMMAND,           //directly moce the robot Base
                             JOINTS_COMMAND,
-                            JOINT_NAME_REQUEST,
                             ACTIONS_COMMAND,
-                            SIMPLE_ACTIONS_NAMES_REQUEST,
-                            COMPLEX_ACTIONS_NAMES_REQUEST,
                             GOTO_COMMAND,
                             TELEMETRY_REQUEST
                             };
@@ -23,9 +20,9 @@ namespace controlledRobot
     enum TelemetryMessageType{  NO_TELEMETRY_DATA=0,
                                 CURRENT_POSE,       //the curretn Pose of the robot base
                                 JOINT_STATE,         //current Joint values
-                                JOINT_NAME_REPLY,   // the names of the controllable joints
-                                SIMPLE_ACTIONS_NAMES_REPLY, // the names of the simple actions
-                                COMPLEX_ACTIONS_NAMES_REPLY, // the names of the complex actions
+                                CONTROLLABLE_JOINTS, // info about the controllable joints of the robot
+                                SIMPLE_ACTIONS, // info about the simple actions of the robot
+                                COMPLEX_ACTIONS, // info about the complex actions of the robot
                                 TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
                             };
 

@@ -19,13 +19,13 @@ using namespace controlledRobot;
         get_ref()[JOINT_STATE] = newbuf;
 
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::JointState>(size));
-        get_ref()[JOINT_NAME_REPLY] = newbuf;
+        get_ref()[CONTROLLABLE_JOINTS] = newbuf;
 
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::SimpleActions>(size));
-        get_ref()[SIMPLE_ACTIONS_NAMES_REPLY] = newbuf;
+        get_ref()[SIMPLE_ACTIONS] = newbuf;
 
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::ComplexActions>(size));
-        get_ref()[COMPLEX_ACTIONS_NAMES_REPLY] = newbuf;
+        get_ref()[COMPLEX_ACTIONS] = newbuf;
 
         unlock();
     }
@@ -51,19 +51,19 @@ using namespace controlledRobot;
                 fillBuffer(JOINT_STATE,data,buf);
                 break;
             }
-            case JOINT_NAME_REPLY:{
+            case CONTROLLABLE_JOINTS:{
                 controlledRobot::JointState data;
-                fillBuffer(JOINT_NAME_REPLY,data,buf);
+                fillBuffer(CONTROLLABLE_JOINTS,data,buf);
                 break;
             }
-            case SIMPLE_ACTIONS_NAMES_REPLY:{
+            case SIMPLE_ACTIONS:{
                 controlledRobot::SimpleActions data;
-                fillBuffer(SIMPLE_ACTIONS_NAMES_REPLY,data,buf);
+                fillBuffer(SIMPLE_ACTIONS,data,buf);
                 break;
             }
-            case COMPLEX_ACTIONS_NAMES_REPLY:{
+            case COMPLEX_ACTIONS:{
                 controlledRobot::ComplexActions data;
-                fillBuffer(COMPLEX_ACTIONS_NAMES_REPLY,data,buf);
+                fillBuffer(COMPLEX_ACTIONS,data,buf);
                 break;
             }
             case NO_TELEMETRY_DATA:
