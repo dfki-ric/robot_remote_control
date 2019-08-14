@@ -55,13 +55,13 @@ std::string RobotController::sendRequest(const std::string& serializedMessage){
     return replystr;
 }
 
-ControlMessageType RobotController::evaluateTelemetry(const std::string& reply){
+TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply){
 
     uint16_t* type = (uint16_t*)reply.data();
 
     std::string serializedMessage(reply.data()+sizeof(uint16_t),reply.size()-sizeof(uint16_t));
 
-    ControlMessageType msgtype = (ControlMessageType)*type;
+    TelemetryMessageType msgtype = (TelemetryMessageType)*type;
 
     switch (msgtype){
         case CURRENT_POSE:{
@@ -85,5 +85,5 @@ ControlMessageType RobotController::evaluateTelemetry(const std::string& reply){
     }
 
     //should never reach this
-    return NO_DATA;
+    return NO_TELEMETRY_DATA;
 }

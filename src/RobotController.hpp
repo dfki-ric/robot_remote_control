@@ -119,7 +119,7 @@ namespace controlledRobot
         protected:
             virtual std::string sendRequest(const std::string& serializedMessage);
 
-            ControlMessageType evaluateTelemetry(const std::string& reply);
+            TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
         private:
 
@@ -141,6 +141,7 @@ namespace controlledRobot
                 protodata.AppendToString(&buf);
                 return sendRequest(buf);
             }
+
     };
 
 } // end namespace interaction-library-controlled_robot
