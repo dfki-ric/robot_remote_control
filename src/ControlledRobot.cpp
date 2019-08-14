@@ -83,6 +83,17 @@ int ControlledRobot::setJointState(const JointState& state){
     return sendTelemetry(state,JOINT_STATE);
 }
 
+int ControlledRobot::setControllableJoints(const JointState& controllableJoints) {
+    return sendTelemetry(controllableJoints, CONTROLLABLE_JOINTS);
+}
+
+int ControlledRobot::setSimpleActions(const SimpleActions& simpleActions) {
+    return sendTelemetry(simpleActions, SIMPLE_ACTIONS);
+}
+
+int ControlledRobot::setComplexActions(const ComplexActions& complexActions) {
+    return sendTelemetry(complexActions, COMPLEX_ACTIONS);
+}
 
 void ControlledRobot::addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type){
     int currsize = buf.size();

@@ -69,6 +69,29 @@ namespace controlledRobot
              */
             int setJointState(const controlledRobot::JointState& state);
 
+            /**
+             * @brief The robot uses this method to provide information about its controllable joints
+             *
+             * @param controllableJoints the controllable joints of the robot as a JointState
+             * @return int number of bytes sent
+             */
+            int setControllableJoints(const JointState& controllableJoints);
+
+            /**
+             * @brief The robot uses this method to provide information about its set of simple actions
+             *
+             * @param simpleActions the simple actions of the robot as a SimpleActions
+             * @return int number of bytes sent
+             */
+            int setSimpleActions(const SimpleActions& simpleActions);
+
+            /**
+             * @brief The robot uses this method to provide information about its set of complex actions
+             *
+             * @param complexActions the complex actions of the robot as a ComplexActions
+             * @return int number of bytes sent
+             */
+            int setComplexActions(const ComplexActions& complexActions);
 
 
 
