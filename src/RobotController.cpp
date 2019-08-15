@@ -80,6 +80,30 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
             buffers.unlock();
             return msgtype;
         }
+        case CONTROLLABLE_JOINTS: {
+            JointState controllableJoints;
+            controllableJoints.ParseFromString(serializedMessage);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[CONTROLLABLE_JOINTS],controllableJoints);
+            buffers.unlock();
+            return msgtype;
+        }
+        case SIMPLE_ACTIONS: {
+            SimpleActions simpleActions;
+            simpleActions.ParseFromString(serializedMessage);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[SIMPLE_ACTIONS],simpleActions);
+            buffers.unlock();
+            return msgtype;
+        }
+        case COMPLEX_ACTIONS: {
+            ComplexActions complexActions;
+            complexActions.ParseFromString(serializedMessage);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[COMPLEX_ACTIONS],complexActions);
+            buffers.unlock();
+            return msgtype;
+        }
         
         default: return msgtype;
     }
