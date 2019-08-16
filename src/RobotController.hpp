@@ -114,6 +114,16 @@ namespace controlledRobot
                 return getTelemetry(JOINT_STATE,jointState);
             }
 
+            /**
+             * @brief Request information about the complex actions of the robot.
+             * 
+             * @param complexActions where to write the data to
+             * @return void
+             */
+            void requestComplexActions(ComplexActions &complexActions) {
+                requestTelemetry(COMPLEX_ACTIONS, complexActions);
+            }
+
 
 
         protected:
