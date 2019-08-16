@@ -59,7 +59,14 @@ message SimpleActions {
      repeated uint64 state = 2;
 }
 
+enum ComplexActionType {
+    LIST = 0;
+    AREA = 1;
+    VOLUME = 2;
+}
+
 message ComplexActions {
-     repeated string name = 1;
-     repeated Poses poses = 2;
+    repeated ComplexActionType type = 1;
+    repeated string name = 2;
+    repeated Poses poses = 3;
 }
