@@ -6,10 +6,10 @@ This is a library for Framework independent control of semi-autonomous robots.
 
 ## Motivation
 
-Robots or semi-autonomous vehivles often use their own Framework, with it's own proprietary communication.
+Robots or semi-autonomous vehicles often use their own Framework, with it's own proprietary communication.
 While these are often well suited for in-system communication, they often cause trouble when those systems sould be controlled by an external connection.
 
-Those Connections may also have additional requirements, like low bandwidth, high latency, etc., or custom communication hardware, which does not habe an ethernet stack.
+Those Connections may also have additional requirements, like low bandwidth, high latency, etc., or custom communication hardware, which does not have an ethernet stack.
 This library defines an interface to those robots and supports externally programmed Transports that can handle the requirements above.
 
 
@@ -31,8 +31,8 @@ As a reference you can have a look into the gitlab-ci.yml file.
 
 ## Rock CMake Macros
 
-The ./install_dependencies.sh script will install the rock cmake macros, if you provide a path to that script, the macros will be installes there.
-In this case an env.sh script is generated, which sets up the environment to find the macros, please source it before usinf cmake to compile tis library.
+The ./install_dependencies.sh script will install the rock cmake macros, if you provide a path to that script, the macros will be installed there.
+In this case an env.sh script is generated, which sets up the environment to find the macros, please source it before using cmake to compile this library.
 
 To compile it manually:
 
@@ -40,6 +40,7 @@ To compile it manually:
     source env.sh
     mkdir build
     cd build
+    cmake ..
     make
 
 Documentations on the rock cmake macros is available on [this page](http://rock-robotics.org/stable/documentation/packages/cmake_macros.html).
@@ -76,7 +77,7 @@ have a look into the provided Main examples
 * src/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
 * src/RobotControllerMain.cpp (controller that sets the desired robot position)
 
-You can build the Doxygen documentation using `$> doxygen Doxyfile`, it will be written to athe build/doc folder.
+You can build the Doxygen documentation using `$> doxygen Doxyfile`, it will be written to the build/doc folder.
 
 
 There are two main libraries generated when compiling this repository:
