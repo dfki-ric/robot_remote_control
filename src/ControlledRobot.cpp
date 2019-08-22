@@ -95,6 +95,10 @@ int ControlledRobot::setComplexActions(const ComplexActions& complexActions) {
     return sendTelemetry(complexActions, COMPLEX_ACTIONS);
 }
 
+int ControlledRobot::setRobotName(const RobotName& robotName) {
+    return sendTelemetry(robotName, ROBOT_NAME);
+}
+
 void ControlledRobot::addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type){
     int currsize = buf.size();
     buf.resize(currsize + sizeof(uint16_t));

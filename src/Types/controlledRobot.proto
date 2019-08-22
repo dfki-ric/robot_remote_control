@@ -70,3 +70,7 @@ message ComplexActions {
     repeated ComplexActionType type = 2;
     repeated Poses poses = 3;
 }
+
+message RobotName {
+    string value = 1;
+}

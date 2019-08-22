@@ -93,6 +93,14 @@ namespace controlledRobot
              */
             int setComplexActions(const ComplexActions& complexActions);
 
+            /**
+             * @brief The robot uses this method to provide information about its name
+             *
+             * @param robotName the name of the robot as a RobotName
+             * @return int number of bytes sent
+             */
+            int setRobotName(const RobotName& robotName);
+
 
 
         protected:

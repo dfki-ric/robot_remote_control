@@ -27,6 +27,9 @@ using namespace controlledRobot;
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::ComplexActions>(size));
         get_ref()[COMPLEX_ACTIONS] = newbuf;
 
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::RobotName>(size));
+        get_ref()[ROBOT_NAME] = newbuf;
+
         unlock();
     }
 
@@ -64,6 +67,11 @@ using namespace controlledRobot;
             case COMPLEX_ACTIONS:{
                 controlledRobot::ComplexActions data;
                 fillBuffer(COMPLEX_ACTIONS,data,buf);
+                break;
+            }
+            case ROBOT_NAME:{
+                controlledRobot::RobotName data;
+                fillBuffer(ROBOT_NAME,data,buf);
                 break;
             }
             case NO_TELEMETRY_DATA:
