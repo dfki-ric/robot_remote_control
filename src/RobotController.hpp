@@ -124,6 +124,16 @@ namespace controlledRobot
                 requestTelemetry(COMPLEX_ACTIONS, complexActions);
             }
 
+            /**
+             * @brief Request information about the name of the robot.
+             *
+             * @param robotName where to write the data to
+             * @return void
+             */
+            void requestRobotName(RobotName &robotName) {
+                requestTelemetry(ROBOT_NAME, robotName);
+            }
+
 
 
         protected:
