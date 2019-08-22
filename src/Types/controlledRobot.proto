@@ -66,7 +66,7 @@ enum ComplexActionType {
 }
 
 message ComplexActions {
-    repeated ComplexActionType type = 1;
-    repeated string name = 2;
+    repeated string name = 1;
+    repeated ComplexActionType type = 2;
     repeated Poses poses = 3;
 }
