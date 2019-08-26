@@ -104,6 +104,14 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
             buffers.unlock();
             return msgtype;
         }
+        case ROBOT_NAME: {
+            RobotName robotName;
+            robotName.ParseFromString(serializedMessage);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[ROBOT_NAME],robotName);
+            buffers.unlock();
+            return msgtype;
+        }
         
         default: return msgtype;
     }

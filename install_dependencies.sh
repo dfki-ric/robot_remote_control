@@ -36,7 +36,7 @@ fi
 
 build https://github.com/rock-core/base-cmake.git master base-cmake "$PREFIX"
 
-echo "please also install followind OS dependencies:"
-echo "rotobuf and zmqpp for development"
+echo "please also install following OS dependencies:"
+echo "protobuf and zmqpp for development"
 echo "in ubuntu : $> apt install libprotobuf-dev protobuf-compiler libzmqpp-dev"
 

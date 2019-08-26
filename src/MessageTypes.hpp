@@ -23,6 +23,7 @@ namespace controlledRobot
                                 CONTROLLABLE_JOINTS, // info about the controllable joints of the robot
                                 SIMPLE_ACTIONS, // info about the simple actions of the robot
                                 COMPLEX_ACTIONS, // info about the complex actions of the robot
+                                ROBOT_NAME, // the name of the robot
                                 TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
                             };
 
