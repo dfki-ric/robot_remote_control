@@ -27,7 +27,7 @@ on how to install Rock.
 
 You can also build the Library without rock, by using the rock CMake marcos.
 
-As a reference you can have a look into the gitlab-ci.yml file.
+As a reference you can also have a look into the gitlab-ci.yml file.
 
 ## Rock CMake Macros
 
