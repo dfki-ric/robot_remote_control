@@ -12,7 +12,8 @@ namespace controlledRobot
                             TARGET_POSE_COMMAND,    //target Pose the robot should move to
                             TWIST_COMMAND,           //directly moce the robot Base
                             JOINTS_COMMAND,
-                            ACTIONS_COMMAND,
+                            SIMPLE_ACTIONS_COMMAND,
+                            COMPLEX_ACTIONS_COMMAND,
                             GOTO_COMMAND,
                             TELEMETRY_REQUEST
                             };
