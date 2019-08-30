@@ -41,6 +41,20 @@ namespace controlledRobot
              */
             void setGoToCommand(const GoTo &goToCommand);
 
+            /**
+             * @brief Set the SimpleActions command that the controlled robot should execute
+             *
+             * @param simpleActionsCommand
+             */
+            void setSimpleActionsCommand(const SimpleActions &simpleActionsCommand);
+
+            /**
+             * @brief Set the ComplexActions command that the controlled robot should execute
+             *
+             * @param complexActionsCommand
+             */
+            void setComplexActionsCommand(const ComplexActions &complexActionsCommand);
+
 
             /**
              * @brief Get the Number of pending messages for a specific Telemetry type

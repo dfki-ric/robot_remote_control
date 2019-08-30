@@ -32,6 +32,14 @@ void RobotController::setGoToCommand(const GoTo &goToCommand) {
     sendProtobufData(goToCommand, GOTO_COMMAND);
 }
 
+void RobotController::setSimpleActionsCommand(const SimpleActions &simpleActionsCommand) {
+    sendProtobufData(simpleActionsCommand, SIMPLE_ACTIONS_COMMAND);
+}
+
+ void RobotController::setComplexActionsCommand(const ComplexActions &complexActionsCommand) {
+     sendProtobufData(complexActionsCommand, COMPLEX_ACTIONS_COMMAND);
+ }
+
 void RobotController::update(){
     if (telemetryTransport.get()){
         std::string buf;
