@@ -44,12 +44,35 @@ namespace controlledRobot
             /**
              * @brief Get the GoTo Command the robot should execute
              *
-             * @return controlledRobot::GoTo
+             * @return std::pair<unsigned long long int, controlledRobot::GoTo>
              */
             std::pair<unsigned long long int, controlledRobot::GoTo> getGoToCommand() {
-                return std::pair<unsigned long long int, controlledRobot::GoTo>(goToCommandGetCounter++, goToCommand.get());
+                unsigned long long int counter = goToCommandGetCounter.get();
+                goToCommandGetCounter.set(counter + 1);
+                return std::pair<unsigned long long int, controlledRobot::GoTo>(counter, goToCommand.get());
             }
 
+            /**
+             * @brief Get the SimpleActions Command the robot should execute
+             *
+             * @return std::pair<unsigned long long int, controlledRobot::SimpleActions>
+             */
+            std::pair<unsigned long long int, controlledRobot::SimpleActions> getSimpleActionsCommand() {
+                unsigned long long int counter = simpleActionsCommandGetCounter.get();
+                simpleActionsCommandGetCounter.set(counter + 1);
+                return std::pair<unsigned long long int, controlledRobot::SimpleActions>(counter, simpleActionsCommand.get());
+            }
+
+            /**
+             * @brief Get the ComplexActions Command the robot should execute
+             *
+             * @return std::pair<unsigned long long int, controlledRobot::ComplexActions>
+             */
+            std::pair<unsigned long long int, controlledRobot::ComplexActions> getComplexActionsCommand() {
+                unsigned long long int counter = complexActionsCommandGetCounter.get();
+                complexActionsCommandGetCounter.set(counter + 1);
+                return std::pair<unsigned long long int, controlledRobot::ComplexActions>(counter, complexActionsCommand.get());
+            }
 
             // Telemetry setters
 
@@ -123,7 +146,11 @@ namespace controlledRobot
             // ThreadProtecetedVar<controlledRobot::Pose> currentPose;
             ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
             ThreadProtecetedVar<controlledRobot::GoTo> goToCommand;
-            unsigned long long int goToCommandGetCounter;
+            ThreadProtecetedVar<unsigned long long int> goToCommandGetCounter;
+            ThreadProtecetedVar<controlledRobot::SimpleActions> simpleActionsCommand;
+            ThreadProtecetedVar<unsigned long long int> simpleActionsCommandGetCounter;
+            ThreadProtecetedVar<controlledRobot::ComplexActions> complexActionsCommand;
+            ThreadProtecetedVar<unsigned long long int> complexActionsCommandGetCounter;
 
             TelemetryBuffer buffers;
 

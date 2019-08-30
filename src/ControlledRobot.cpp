@@ -7,9 +7,11 @@ using namespace controlledRobot;
 
 ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
-    telemetryTransport(telemetryTransport),
-    goToCommandGetCounter(0)
+    telemetryTransport(telemetryTransport)
 {
+    goToCommandGetCounter.set(0);
+    simpleActionsCommandGetCounter.set(0);
+    complexActionsCommandGetCounter.set(0);
 }
 
 void ControlledRobot::update()
@@ -55,8 +57,24 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             goToCommand.get_ref().ParseFromString(serializedMessage);
             goToCommand.unlock();
             commandTransport->send(serializeControlMessageType(GOTO_COMMAND));
-            goToCommandGetCounter = 0;
+            goToCommandGetCounter.set(0);
             return GOTO_COMMAND;
+        }
+        case SIMPLE_ACTIONS_COMMAND: {
+            simpleActionsCommand.lock();
+            simpleActionsCommand.get_ref().ParseFromString(serializedMessage);
+            simpleActionsCommand.unlock();
+            commandTransport->send(serializeControlMessageType(SIMPLE_ACTIONS_COMMAND));
+            simpleActionsCommandGetCounter.set(0);
+            return SIMPLE_ACTIONS_COMMAND;
+        }
+        case COMPLEX_ACTIONS_COMMAND: {
+            complexActionsCommand.lock();
+            complexActionsCommand.get_ref().ParseFromString(serializedMessage);
+            complexActionsCommand.unlock();
+            commandTransport->send(serializeControlMessageType(COMPLEX_ACTIONS_COMMAND));
+            complexActionsCommandGetCounter.set(0);
+            return COMPLEX_ACTIONS_COMMAND;
         }
         case TELEMETRY_REQUEST:{
             uint16_t* requestedtype = (uint16_t*)(request.data()+sizeof(uint16_t));
