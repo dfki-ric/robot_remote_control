@@ -6,16 +6,18 @@
 using namespace controlledRobot;
 
 
-UpdateThread::UpdateThread(){
+UpdateThread::UpdateThread():running(false){
 }
 
 UpdateThread::~UpdateThread(){
 }
 
 void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture){
+    running = true;
     while (runningFuture.wait_for(std::chrono::milliseconds(milliseconds)) == std::future_status::timeout){
         update();
     }
+    running = false;
 }
 
 void UpdateThread::startUpdateThread(const unsigned int &milliseconds){

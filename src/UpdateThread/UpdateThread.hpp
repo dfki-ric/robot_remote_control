@@ -39,11 +39,16 @@ class UpdateThread{
          */
         void stopUpdateThread();
 
+        bool threaded(){
+            return running;
+        };
+
         private:
             std::thread updateThread;
             std::promise<void> stopPromise;
             std::future<void> stopFuture;
             void updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture);
+            bool running;
 
 };
 

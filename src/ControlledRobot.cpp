@@ -22,7 +22,11 @@ void ControlledRobot::update()
 ControlMessageType ControlledRobot::receiveRequest()
 {
     std::string msg;
-    int result = commandTransport->receive(&msg,controlledRobot::Transport::NOBLOCK);
+    controlledRobot::Transport::Flags flags;
+    if (!this->threaded()){
+        flags = Transport::NOBLOCK;
+    }
+    int result = commandTransport->receive(&msg,flags);
     if (result){
         ControlMessageType reqestType = evaluateRequest(msg);
         return reqestType;
