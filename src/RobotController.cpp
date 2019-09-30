@@ -43,10 +43,10 @@ void RobotController::setSimpleActionsCommand(const SimpleActions &simpleActions
 void RobotController::update(){
     if (telemetryTransport.get()){
         std::string buf;
-        controlledRobot::Transport::Flags flags;
-        if (!this->threaded()){
+        controlledRobot::Transport::Flags flags = Transport::NONE;
+        //if (!this->threaded()){
             flags = Transport::NOBLOCK;
-        }
+        //}
         while(telemetryTransport->receive(&buf,flags)){
             evaluateTelemetry(buf);
         }
