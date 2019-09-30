@@ -1,28 +1,32 @@
 # interaction-library-controlled_robot
 
-
 This is a library for Framework independent control of semi-autonomous robots.
+
+This library was initiated and is currently developed at the
+[Robotics Innovation Center](http://robotik.dfki-bremen.de/en/startpage.html) of the
+[German Research Center for Artificial Intelligence (DFKI)](http://www.dfki.de) in Bremen.
+
 
 
 ## Motivation
 
 Robots or semi-autonomous vehicles often use their own Framework, with it's own proprietary communication.
-While these are often well suited for in-system communication, they often cause trouble when those systems sould be controlled by an external connection.
+While these are often well suited for in-system communication, they often cause trouble when those systems should be controlled by an external connection.
 
-Those Connections may also have additional requirements, like low bandwidth, high latency, etc., or custom communication hardware, which does not have an ethernet stack.
+Those connections may also have additional requirements, like low bandwidth, high latency, etc., or custom communication hardware, which does not have an ethernet stack.
 This library defines an interface to those robots and supports externally programmed Transports that can handle the requirements above.
 
 
 ## License
 
-BSD Clause 3
-Copyright DFKI GmbH
+[BSD Clause 3](https://opensource.org/licenses/BSD-3-Clause)<br> - Copyright DFKI GmbH
 
+[GPLv3](https://opensource.org/licenses/GPL-3.0)<br> - for ZMQ Transport, Tests, and examples (which include the ZeroMQ header) 
 
 ## Installation
 
 The easiest way to build and install this package is to use Rock's build system.
-See [this page](http://rock-robotics.org/stable/documentation/installation.html)
+See [this page](http://rock-robotics.org/documentation/installation.html)
 on how to install Rock.
 
 You can also build the Library without rock, by using the rock CMake marcos.
@@ -43,8 +47,13 @@ To compile it manually:
     cmake ..
     make
 
-Documentations on the rock cmake macros is available on [this page](http://rock-robotics.org/stable/documentation/packages/cmake_macros.html).
+Documentations on the rock cmake macros is available on [this page](http://rock-robotics.org/documentation/packages/cmake_macros.html).
 
+### Dependencies
+
+Additionally you need to manually install the following OS dependencies:
+
+    sudo apt install libprotobuf-dev protobuf-compiler libzmqpp-dev
 
 ### Rock Standard Layout
 
@@ -89,7 +98,7 @@ The RobotController class is a framework independent cpp class which is able to 
 ### ControlledRobot
 
 This library is to be used on the robot, you can map the commands received from the RobotController Library to commands of your Robot to listen to the commands.
-Also you can also add Telemery to this library, which are then send to the RobotController.
+Also you can add Telemery to this library, which are then send to the RobotController.
 
 
 ### Transports
@@ -100,3 +109,23 @@ While commands from RobotController to ControlledRobot are getting acknowledged 
 These Transports are given to the RobotController and ControlledRobot in their contructor and only implement an send() and receive() function.
 So it is easy to implement other means of connections between those.
 
+
+## Testing
+
+The repository includes a test directory with several boost test cases. You can build this directory and the test_suite executable as follows:
+
+    mkdir build
+    cd build
+    cmake -D ROCK_TEST_ENABLED=ON ..
+    make
+
+If you always want to build the test directory as well add the following lines to your CMakeLists.txt
+
+    ENABLE_TESTING()
+    ADD_SUBDIRECTORY(test)
+
+In order to run the tests you can either run all by executing (in /build/test) ```./test_suite``` or choose a specific test with the -t flag ```./test_suite -t checking_current_pose```
+
+## Bug Reports
+
+To search for bugs or report them, please use GitHubs [Issue-Tracker](https://github.com/dfki-ric/robot_control_interface/issues)

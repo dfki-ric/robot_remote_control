@@ -1,19 +1,26 @@
 <package>
-  <description brief="Library to integrate robots contol by the interaction interface">
-  
+  <description brief="Library for Framework independent control of semi-autonomous robots">
+    This library defines an interface to control robots independent of their own Framework.
+    In addition it supports externally programmed Transports that can handle requirements like
+    low bandwidth, high latency or custom communication hardware.
   </description>
   <author>Steffen Planthaber/Steffen.Planthaber@dfki.de</author>
-  <license></license>
-  <url>http://</url>
+  <license>BSD-3-Clause</license>
+  <url>https://github.com/dfki-ric/robot_control_interface</url>
   <logo>http://</logo>
   <depend package="base/cmake" />
-  <!--
-   To add any dependencies use the depend tag
-  <depend package="dummy-dependency-0" />
-	...
-  <depend package="dummy-dependency-n-1" />
-  <depend package="dummy-dependency-n" />
-  -->
   <depend package="zmq" />
-  <!-- <depend package="interaction/types" /> -->
+  <keywords>
+    <keyword>communication</keyword>
+    <keyword>control</keyword>
+    <keyword>cave</keyword>
+  </keywords>
+  <stage>1</stage>
+  <use>multi project</use>
+  <activity>active</activity>
+  <classifiers>
+    <classifier>c++</classifier>
+    <classifier>protobuf<classifier>
+    <classifier>ZeroMQ<classifier>
+  </classifiers>
 </package>
