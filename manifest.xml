@@ -7,7 +7,7 @@
   <author>Steffen Planthaber/Steffen.Planthaber@dfki.de</author>
   <license>BSD-3-Clause</license>
   <url>https://github.com/dfki-ric/robot_control_interface</url>
-  <logo>http://</logo>
+  <!--<logo>http://</logo>-->
   <depend package="base/cmake" />
   <depend package="zmq" />
   <keywords>
