@@ -54,9 +54,13 @@ message GoTo {
     double waypoint_max_forward_speed = 3;
 }
 
+message SimpleAction{
+    string name = 1;
+    uint64 state = 2;
+}
+
 message SimpleActions {
-     repeated string name = 1;
-     repeated uint64 state = 2;
+     repeated SimpleAction actions = 1;
 }
 
 enum ComplexActionType {
@@ -65,10 +69,14 @@ enum ComplexActionType {
     VOLUME = 2;
 }
 
+message ComplexAction{
+    string name = 1;
+    ComplexActionType type = 2;
+    Poses poses = 3;
+}
+
 message ComplexActions {
-    repeated string name = 1;
-    repeated ComplexActionType type = 2;
-    repeated Poses poses = 3;
+    repeated ComplexAction actions = 1;
 }
 
 message RobotName {
