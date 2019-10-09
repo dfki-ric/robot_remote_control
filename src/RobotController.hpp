@@ -139,6 +139,28 @@ namespace controlledRobot
             }
 
             /**
+             * @brief Request information about the simple actions of the robot.
+             * 
+             * @param simpleActions where to write the data to
+             * @return void
+             */
+            void requestSimpleActions(SimpleActions &simpleActions) {
+                requestTelemetry(SIMPLE_ACTIONS, simpleActions);
+            }
+
+           /**
+             * @brief Request information about the controllable joints of the robot.
+             * 
+             * @param jointState where to write the data to
+             * @return void
+             */
+            void requestControllableJoints(JointState &jointState) {
+                requestTelemetry(CONTROLLABLE_JOINTS, jointState);
+            }
+
+
+
+            /**
              * @brief Request information about the name of the robot.
              *
              * @param robotName where to write the data to
