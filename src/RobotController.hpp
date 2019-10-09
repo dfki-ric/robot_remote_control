@@ -12,7 +12,7 @@ namespace controlledRobot
     {
         public: 
 
-            RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr());
+            RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr(), size_t recv_buffer_size = 10);
             virtual ~RobotController();
             
             /**

@@ -5,11 +5,11 @@ using namespace std;
 using namespace controlledRobot;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
+RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t recv_buffer_size):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
-    std::shared_ptr<TelemetryBuffer> buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(10));
+    std::shared_ptr<TelemetryBuffer> buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(recv_buffer_size));
 }
 
 RobotController::~RobotController(){
