@@ -72,7 +72,7 @@ enum ComplexActionType {
 message ComplexAction{
     string name = 1;
     ComplexActionType type = 2;
-    Poses poses = 3;
+    repeated Pose poses = 3;
 }
 
 message ComplexActions {
