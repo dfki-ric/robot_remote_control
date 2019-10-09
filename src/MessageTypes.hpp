@@ -8,7 +8,7 @@ namespace controlledRobot
      * @brief The data channel type
      * 
      */
-    enum ControlMessageType{NO_DATA=0,
+    enum ControlMessageType{NO_CONTROL_DATA=0,
                             TARGET_POSE_COMMAND,    //target Pose the robot should move to
                             TWIST_COMMAND,           //directly moce the robot Base
                             JOINTS_COMMAND,

@@ -16,7 +16,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSh
 
 void ControlledRobot::update()
 {
-    while (receiveRequest() != NO_DATA){};
+    while (receiveRequest() != NO_CONTROL_DATA){};
 }
 
 ControlMessageType ControlledRobot::receiveRequest()
@@ -31,7 +31,7 @@ ControlMessageType ControlledRobot::receiveRequest()
         ControlMessageType reqestType = evaluateRequest(msg);
         return reqestType;
     }
-    return NO_DATA;
+    return NO_CONTROL_DATA;
 }
 
 ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
@@ -89,7 +89,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
         }
         
         default:{
-            commandTransport->send(serializeControlMessageType(NO_DATA));
+            commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
             return msgtype;
         } 
     }

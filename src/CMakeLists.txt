@@ -17,7 +17,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command( OUTPUT Types/controlledRobot.pb.cc Types/controlledRobot.pb.h
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Types
-                    COMMAND protoc --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/Types controlledRobot.proto 
+                    COMMAND protoc --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/Types controlledRobot.proto
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Types/controlledRobot.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/Types/controlledRobot.pb.cc 
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/Types/controlledRobot.pb.h ${CMAKE_CURRENT_BINARY_DIR}/Types/controlledRobot.pb.h
                     MAIN_DEPENDENCY Types/controlledRobot.proto
