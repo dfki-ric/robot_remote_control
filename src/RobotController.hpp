@@ -46,67 +46,14 @@ namespace controlledRobot
              *
              * @param simpleActionsCommand
              */
-            void setSimpleActionsCommand(const SimpleActions &simpleActionsCommand);
+            void setSimpleActionCommand(const SimpleAction &simpleActionCommand);
 
             /**
              * @brief Set the ComplexActions command that the controlled robot should execute
              *
              * @param complexActionsCommand
              */
-            void setComplexActionsCommand(const ComplexActions &complexActionsCommand);
-
-
-            /**
-             * @brief Get the Number of pending messages for a specific Telemetry type
-             * 
-             * @param TelemetryMessageType  
-             * @return unsigned int number of messages in the buffer
-             */
-            unsigned int getBufferSize(const TelemetryMessageType &type){
-                buffers.lock();
-                int size = buffers.get_ref()[type]->size();
-                buffers.unlock();
-                return size;
-            }
-
-            /**
-             * @brief Get the TelemetryMessages
-             * @warning This should not be called directly
-             * 
-             * @tparam DATATYPE 
-             * @param type 
-             * @param data 
-             * @return unsigned int 
-             */
-
-            template< class DATATYPE > unsigned int getTelemetry(const TelemetryMessageType &type, DATATYPE &data ){
-                buffers.lock();
-                bool result = RingBufferAccess::popData(buffers.get_ref()[type],data);
-                buffers.unlock();
-                return result;
-            }
-
-            template< class DATATYPE > void requestTelemetry(const TelemetryMessageType &type, DATATYPE &result){
-                std::string buf;
-                buf.resize(sizeof(uint16_t)*2);
-                uint16_t uint_type;
-                uint16_t* data = (uint16_t*)buf.data();
-
-                uint_type = TELEMETRY_REQUEST;
-                *data = uint_type;
-                
-                data++;
-
-                //add the requested type int
-                uint_type = type;
-                *data = uint_type;
-
-                std::string replybuf = sendRequest(buf);
-                result.ParseFromString(replybuf);
-
-
-            }
-            
+            void setComplexActionCommand(const ComplexAction &complexActionCommand);
 
             /**
              * @brief Get the last sent Pose of the robot
@@ -158,8 +105,6 @@ namespace controlledRobot
                 requestTelemetry(CONTROLLABLE_JOINTS, jointState);
             }
 
-
-
             /**
              * @brief Request information about the name of the robot.
              *
@@ -170,6 +115,56 @@ namespace controlledRobot
                 requestTelemetry(ROBOT_NAME, robotName);
             }
 
+            /**
+             * @brief Get the Number of pending messages for a specific Telemetry type
+             * 
+             * @param TelemetryMessageType  
+             * @return unsigned int number of messages in the buffer
+             */
+            unsigned int getBufferSize(const TelemetryMessageType &type){
+                buffers.lock();
+                int size = buffers.get_ref()[type]->size();
+                buffers.unlock();
+                return size;
+            }
+
+            /**
+             * @brief Get the TelemetryMessages
+             * @warning This should not be called directly
+             * 
+             * @tparam DATATYPE 
+             * @param type 
+             * @param data 
+             * @return unsigned int 
+             */
+
+            template< class DATATYPE > unsigned int getTelemetry(const TelemetryMessageType &type, DATATYPE &data ){
+                buffers.lock();
+                bool result = RingBufferAccess::popData(buffers.get_ref()[type],data);
+                buffers.unlock();
+                return result;
+            }
+
+            template< class DATATYPE > void requestTelemetry(const TelemetryMessageType &type, DATATYPE &result){
+                std::string buf;
+                buf.resize(sizeof(uint16_t)*2);
+                uint16_t uint_type;
+                uint16_t* data = (uint16_t*)buf.data();
+
+                uint_type = TELEMETRY_REQUEST;
+                *data = uint_type;
+                
+                data++;
+
+                //add the requested type int
+                uint_type = type;
+                *data = uint_type;
+
+                std::string replybuf = sendRequest(buf);
+                result.ParseFromString(replybuf);
+
+
+            }
 
 
         protected:

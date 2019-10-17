@@ -32,12 +32,12 @@ void RobotController::setGoToCommand(const GoTo &goToCommand) {
     sendProtobufData(goToCommand, GOTO_COMMAND);
 }
 
-void RobotController::setSimpleActionsCommand(const SimpleActions &simpleActionsCommand) {
-    sendProtobufData(simpleActionsCommand, SIMPLE_ACTIONS_COMMAND);
+void RobotController::setSimpleActionCommand(const SimpleAction &simpleActionCommand) {
+    sendProtobufData(simpleActionCommand, SIMPLE_ACTIONS_COMMAND);
 }
 
- void RobotController::setComplexActionsCommand(const ComplexActions &complexActionsCommand) {
-     sendProtobufData(complexActionsCommand, COMPLEX_ACTIONS_COMMAND);
+ void RobotController::setComplexActionCommand(const ComplexAction &complexActionCommand) {
+     sendProtobufData(complexActionCommand, COMPLEX_ACTIONS_COMMAND);
  }
 
 void RobotController::update(){
