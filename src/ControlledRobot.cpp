@@ -9,6 +9,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSh
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
+    twistCommandGetCounter.set(0);
     goToCommandGetCounter.set(0);
     simpleActionsCommandGetCounter.set(0);
     complexActionsCommandGetCounter.set(0);
@@ -54,6 +55,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             twistCommand.get_ref().ParseFromString(serializedMessage);
             twistCommand.unlock();
             commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
+            twistCommandGetCounter.set(0);
             return TWIST_COMMAND;
         }
         case GOTO_COMMAND: {
