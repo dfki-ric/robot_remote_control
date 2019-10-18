@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(Checking_twist_command_transfer)
 	robot.startUpdateThread(10);
   
   Twist sendtwistcommand;
-  Twist receivetwistcommand;
+  std::pair<unsigned long long int, Twist> receivetwistcommand;
   sendtwistcommand.mutable_angular()->set_z(0.4);
   sendtwistcommand.mutable_linear()->set_x(0.6);
   
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(Checking_twist_command_transfer)
 	
   robot.stopUpdateThread();
  
-  COMPARE_PROTOBUF(sendtwistcommand,receivetwistcommand);
+  COMPARE_PROTOBUF(sendtwistcommand,receivetwistcommand.second);
 
 }
 
