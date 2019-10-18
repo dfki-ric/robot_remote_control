@@ -10,7 +10,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSh
     telemetryTransport(telemetryTransport)
 {
     twistCommandGetCounter.set(0);
-    goToCommandGetCounter.set(0);
+    goToCommandGetCounter.set(-1);
     simpleActionsCommandGetCounter.set(0);
     complexActionsCommandGetCounter.set(0);
 }
