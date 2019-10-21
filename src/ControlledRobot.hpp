@@ -37,8 +37,10 @@ namespace controlledRobot
              * 
              * @return controlledRobot::Twist 
              */
-            controlledRobot::Twist getTwistCommand(){
-                return twistCommand.get();
+            std::pair<unsigned long long int, controlledRobot::Twist> getTwistCommand(){
+                unsigned long long int counter = twistCommandGetCounter.get();
+                twistCommandGetCounter.set(counter + 1);
+                return std::pair<unsigned long long int, controlledRobot::Twist>(counter, twistCommand.get());
             }
 
             /**
@@ -46,10 +48,10 @@ namespace controlledRobot
              *
              * @return std::pair<unsigned long long int, controlledRobot::GoTo>
              */
-            std::pair<unsigned long long int, controlledRobot::GoTo> getGoToCommand() {
-                unsigned long long int counter = goToCommandGetCounter.get();
-                goToCommandGetCounter.set(counter + 1);
-                return std::pair<unsigned long long int, controlledRobot::GoTo>(counter, goToCommand.get());
+            std::pair<long long int, controlledRobot::GoTo> getGoToCommand() {
+                long long int counter = goToCommandGetCounter.get();
+                if (counter != -1) goToCommandGetCounter.set(counter + 1);
+                return std::pair<long long int, controlledRobot::GoTo>(counter, goToCommand.get());
             }
 
             /**
@@ -157,8 +159,9 @@ namespace controlledRobot
             ThreadProtecetedVar<controlledRobot::Pose> targetPose;
             // ThreadProtecetedVar<controlledRobot::Pose> currentPose;
             ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
+            ThreadProtecetedVar<unsigned long long int> twistCommandGetCounter;
             ThreadProtecetedVar<controlledRobot::GoTo> goToCommand;
-            ThreadProtecetedVar<unsigned long long int> goToCommandGetCounter;
+            ThreadProtecetedVar<long long int> goToCommandGetCounter;
             ThreadProtecetedVar<controlledRobot::SimpleActions> simpleActionsCommand;
             ThreadProtecetedVar<unsigned long long int> simpleActionsCommandGetCounter;
             ThreadProtecetedVar<controlledRobot::ComplexActions> complexActionsCommand;
