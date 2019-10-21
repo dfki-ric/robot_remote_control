@@ -53,6 +53,18 @@ namespace controlledRobot
             }
 
             /**
+             * @brief Get the Joints Command the robot should execute
+             *
+             * @return std::pair<unsigned long long int, controlledRobot::JointState>
+             */
+            std::pair<unsigned long long int, controlledRobot::JointState> getJointsCommand() {
+                unsigned long long int counter = jointsCommandGetCounter.get();
+                jointsCommandGetCounter.set(counter + 1);
+                return std::pair<unsigned long long int, controlledRobot::JointState>(counter, jointsCommand.get());
+            }
+
+
+            /**
              * @brief Get the SimpleActions Command the robot should execute
              *
              * @return std::pair<unsigned long long int, controlledRobot::SimpleActions>
@@ -151,6 +163,9 @@ namespace controlledRobot
             ThreadProtecetedVar<unsigned long long int> simpleActionsCommandGetCounter;
             ThreadProtecetedVar<controlledRobot::ComplexActions> complexActionsCommand;
             ThreadProtecetedVar<unsigned long long int> complexActionsCommandGetCounter;
+            ThreadProtecetedVar<controlledRobot::JointState> jointsCommand;
+            ThreadProtecetedVar<unsigned long long int> jointsCommandGetCounter;
+
 
             TelemetryBuffer buffers;
 

@@ -32,6 +32,10 @@ void RobotController::setGoToCommand(const GoTo &goToCommand) {
     sendProtobufData(goToCommand, GOTO_COMMAND);
 }
 
+void RobotController::setJointCommand(const JointState &jointsCommand){
+    sendProtobufData(jointsCommand, JOINTS_COMMAND);
+}
+
 void RobotController::setSimpleActionCommand(const SimpleAction &simpleActionCommand) {
     sendProtobufData(simpleActionCommand, SIMPLE_ACTIONS_COMMAND);
 }

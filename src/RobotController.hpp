@@ -42,6 +42,13 @@ namespace controlledRobot
             void setGoToCommand(const GoTo &goToCommand);
 
             /**
+             * @brief Set the Joint Command object
+             * 
+             * @param jointsCommand 
+             */
+            void setJointCommand(const JointState &jointsCommand);
+
+            /**
              * @brief Set the SimpleActions command that the controlled robot should execute
              *
              * @param simpleActionsCommand
