@@ -63,6 +63,13 @@ namespace controlledRobot
             void setComplexActionCommand(const ComplexAction &complexActionCommand);
 
             /**
+             * @brief Set the LogLevel of the controlled robot
+             * 
+             * @param level the desired log level
+             */
+            void setLogLevel(const uint32_t &level);
+
+            /**
              * @brief Get the last sent Pose of the robot
              * 
              * @param pose the pose to write the data to
@@ -80,6 +87,17 @@ namespace controlledRobot
              */
             unsigned int getCurrentJointState(JointState & jointState){
                 return getTelemetry(JOINT_STATE,jointState);
+            }
+
+            unsigned int getLogMessage(LogMessage & msg){
+                return getTelemetry(LOG_MESSAGE,msg);
+            }
+
+            unsigned int getRobotState(std::string & state){
+                RobotState protostate;
+                int statesleft = getTelemetry(ROBOT_STATE,protostate);
+                state = protostate.state();
+                return statesleft;
             }
 
             /**

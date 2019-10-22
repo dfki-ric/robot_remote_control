@@ -40,9 +40,17 @@ void RobotController::setSimpleActionCommand(const SimpleAction &simpleActionCom
     sendProtobufData(simpleActionCommand, SIMPLE_ACTIONS_COMMAND);
 }
 
- void RobotController::setComplexActionCommand(const ComplexAction &complexActionCommand) {
-     sendProtobufData(complexActionCommand, COMPLEX_ACTIONS_COMMAND);
- }
+void RobotController::setComplexActionCommand(const ComplexAction &complexActionCommand) {
+    sendProtobufData(complexActionCommand, COMPLEX_ACTIONS_COMMAND);
+}
+
+void RobotController::setLogLevel(const uint32_t &level){
+    std::string buf;
+    buf.resize(sizeof(uint32_t));
+    uint32_t *levelptr = (uint32_t*)buf.data();
+    *levelptr = level;
+    sendRequest(buf);
+}
 
 void RobotController::update(){
     if (telemetryTransport.get()){
@@ -125,6 +133,22 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
             robotName.ParseFromString(serializedMessage);
             buffers.lock();
             RingBufferAccess::pushData(buffers.get_ref()[ROBOT_NAME],robotName);
+            buffers.unlock();
+            return msgtype;
+        }
+        case ROBOT_STATE: {
+            RobotState state;
+            state.ParseFromString(serializedMessage);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[ROBOT_STATE],state);
+            buffers.unlock();
+            return msgtype;
+        }
+        case LOG_MESSAGE: {
+            LogMessage msg;
+            msg.ParseFromString(serializedMessage);
+            buffers.lock();
+            RingBufferAccess::pushData(buffers.get_ref()[LOG_MESSAGE],msg);
             buffers.unlock();
             return msgtype;
         }

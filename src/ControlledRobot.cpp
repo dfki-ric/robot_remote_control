@@ -7,7 +7,8 @@ using namespace controlledRobot;
 
 ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
-    telemetryTransport(telemetryTransport)
+    telemetryTransport(telemetryTransport),
+    logLevel(CUSTOM-1)
 {
     twistCommandGetCounter.set(0);
     goToCommandGetCounter.set(-1);
@@ -89,6 +90,10 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             commandTransport->send(reply);
             return TELEMETRY_REQUEST;
         }
+        case LOG_LEVEL_SELECT:{
+            logLevel = *(uint32_t*)(request.data()+sizeof(uint16_t));
+            return LOG_LEVEL_SELECT;
+        }
         
         default:{
             commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
@@ -121,6 +126,22 @@ int ControlledRobot::setComplexActions(const ComplexActions& complexActions) {
 
 int ControlledRobot::setRobotName(const RobotName& robotName) {
     return sendTelemetry(robotName, ROBOT_NAME);
+}
+
+int ControlledRobot::setRobotState(const std::string& state){
+    controlledRobot::RobotState protostate;
+    protostate.set_state(state);
+    return sendTelemetry(protostate, ROBOT_STATE);
+
+}
+
+int ControlledRobot::setLogMessage(enum LogLevel lvl, const std::string& message){
+    if (lvl <= logLevel){
+        controlledRobot::LogMessage msg;
+        msg.set_type(lvl);
+        msg.set_meassage(message);
+        return sendTelemetry(msg, LOG_MESSAGE);
+    }
 }
 
 void ControlledRobot::addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type){

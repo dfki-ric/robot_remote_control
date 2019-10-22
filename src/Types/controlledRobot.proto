@@ -82,3 +82,12 @@ message ComplexActions {
 message RobotName {
     string value = 1;
 }
+
+message RobotState{
+    string state = 1;
+}
+
+message LogMessage{
+    uint32 type = 1;
+    string meassage = 2; 
+}

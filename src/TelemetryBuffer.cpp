@@ -30,6 +30,12 @@ using namespace controlledRobot;
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::RobotName>(size));
         get_ref()[ROBOT_NAME] = newbuf;
 
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::RobotName>(size));
+        get_ref()[ROBOT_STATE] = newbuf;
+
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::RobotName>(size));
+        get_ref()[LOG_MESSAGE] = newbuf;
+
         unlock();
     }
 

@@ -139,6 +139,11 @@ namespace controlledRobot
             int setRobotName(const RobotName& robotName);
 
 
+            int setRobotState(const std::string& state);
+
+            int setLogMessage(enum LogLevel lvl, const std::string& message);
+
+
 
         protected:
             virtual ControlMessageType receiveRequest();
@@ -171,6 +176,8 @@ namespace controlledRobot
 
 
             TelemetryBuffer buffers;
+
+            uint32_t logLevel;
 
 
             /**

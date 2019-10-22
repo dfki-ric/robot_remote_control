@@ -15,7 +15,8 @@ namespace controlledRobot
                             SIMPLE_ACTIONS_COMMAND,
                             COMPLEX_ACTIONS_COMMAND,
                             GOTO_COMMAND,
-                            TELEMETRY_REQUEST
+                            TELEMETRY_REQUEST,
+                            LOG_LEVEL_SELECT
                             };
 
     enum TelemetryMessageType{  NO_TELEMETRY_DATA=0,
@@ -25,9 +26,17 @@ namespace controlledRobot
                                 SIMPLE_ACTIONS, // info about the simple actions of the robot
                                 COMPLEX_ACTIONS, // info about the complex actions of the robot
                                 ROBOT_NAME, // the name of the robot
+                                ROBOT_STATE, //robot state description (string)
+                                LOG_MESSAGE, //log messages
                                 TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
                             };
 
+    /**
+     * @brief 
+     * 
+     * use Custom+x for curtom messages
+     */
+    enum LogLevel{NONE=0,FATAL,ERROR,WARN,INFO,DEBUG,CUSTOM=20};
 
 //http://docs.ros.org/api/sensor_msgs/html/msg/JointState.html
 
