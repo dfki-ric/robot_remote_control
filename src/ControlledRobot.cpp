@@ -139,9 +139,15 @@ int ControlledRobot::setLogMessage(enum LogLevel lvl, const std::string& message
     if (lvl <= logLevel){
         controlledRobot::LogMessage msg;
         msg.set_type(lvl);
-        msg.set_meassage(message);
+        msg.set_message(message);
         return sendTelemetry(msg, LOG_MESSAGE);
-    }
+    } else return -1;
+}
+
+int ControlledRobot::setLogMessage(const controlledRobot::LogMessage& log_message){
+    if (log_message.type() <= logLevel){
+        return sendTelemetry(log_message, LOG_MESSAGE);
+    } else return -1;
 }
 
 void ControlledRobot::addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type){

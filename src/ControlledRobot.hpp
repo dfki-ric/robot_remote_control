@@ -143,6 +143,8 @@ namespace controlledRobot
 
             int setLogMessage(enum LogLevel lvl, const std::string& message);
 
+            int setLogMessage(const controlledRobot::LogMessage& log_message);
+
 
 
         protected:
