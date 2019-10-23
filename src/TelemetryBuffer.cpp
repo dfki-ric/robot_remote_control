@@ -80,6 +80,16 @@ using namespace controlledRobot;
                 fillBuffer(ROBOT_NAME,data,buf);
                 break;
             }
+            case ROBOT_STATE:{
+                controlledRobot::RobotState data;
+                fillBuffer(ROBOT_STATE,data,buf);
+                break;
+            }
+            case LOG_MESSAGE:{
+                controlledRobot::LogMessage data;
+                fillBuffer(LOG_MESSAGE,data,buf);
+                break;
+            }
             case NO_TELEMETRY_DATA:
             case TELEMETRY_MESSAGE_TYPES_NUMBER:
             break;

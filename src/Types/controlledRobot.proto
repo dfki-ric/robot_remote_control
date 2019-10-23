@@ -89,5 +89,5 @@ message RobotState{
 
 message LogMessage{
     uint32 type = 1;
-    string meassage = 2; 
+    string message = 2; 
 }
