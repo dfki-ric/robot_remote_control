@@ -84,14 +84,16 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             return COMPLEX_ACTIONS_COMMAND;
         }
         case TELEMETRY_REQUEST:{
-            uint16_t* requestedtype = (uint16_t*)(request.data()+sizeof(uint16_t));
+            uint16_t* requestedtype = (uint16_t*)(serializedMessage.data());
             TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
             std::string reply = buffers.peekSerialized(type);
             commandTransport->send(reply);
             return TELEMETRY_REQUEST;
         }
         case LOG_LEVEL_SELECT:{
-            logLevel = *(uint32_t*)(request.data()+sizeof(uint16_t));
+            logLevel = *(uint32_t*)(serializedMessage.data());
+            printf("%s \n\t%i\n",__PRETTY_FUNCTION__,logLevel);
+            commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
             return LOG_LEVEL_SELECT;
         }
         

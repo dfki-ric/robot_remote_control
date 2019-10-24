@@ -46,8 +46,10 @@ void RobotController::setComplexActionCommand(const ComplexAction &complexAction
 
 void RobotController::setLogLevel(const uint32_t &level){
     std::string buf;
-    buf.resize(sizeof(uint32_t));
-    uint32_t *levelptr = (uint32_t*)buf.data();
+    buf.resize(sizeof(uint16_t) + sizeof(uint32_t));
+    uint16_t* data = (uint16_t*)buf.data();
+    *data = LOG_LEVEL_SELECT;
+    uint32_t *levelptr = (uint32_t*)(buf.data()+sizeof(uint16_t));
     *levelptr = level;
     sendRequest(buf);
 }
