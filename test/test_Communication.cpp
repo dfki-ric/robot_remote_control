@@ -59,7 +59,7 @@ controlledRobot::JointState initTestJointState(){
 }
 
 
-BOOST_AUTO_TEST_CASE(Checking_twist_command_transfer)
+BOOST_AUTO_TEST_CASE(checking_twist_command_transfer)
 {
   initComms();
 
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   std::string buf;
   pose.SerializeToString(&buf);
  
-  //send tememetry data
+  //send telemetry data
   int sent = robot.setCurrentPose(pose);
     
   //wait a little for data transfer
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data)
   JointState jointstate = initTestJointState();
 
   
-  //send tememetry data
+  //send telemetry data
   int sent;
   sent = robot.setCurrentPose(pose);
   sent = robot.setJointState(jointstate);
@@ -172,6 +172,78 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data)
   JointState requestedJointState;
   controller.requestTelemetry(JOINT_STATE,requestedJointState);
   COMPARE_PROTOBUF(jointstate,requestedJointState);
+
+
+  robot.stopUpdateThread();
+  controller.stopUpdateThread();
+}
+
+BOOST_AUTO_TEST_CASE(check_log_message)
+{
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+
+  LogMessage requested_log_message;
+
+
+
+  //test debug message, should go through
+  controller.setLogLevel(DEBUG);
+
+  LogMessage debug_message;
+  debug_message.set_type(DEBUG);
+  debug_message.set_message("[DEBUG] This is a debug message.");
+  robot.setLogMessage(debug_message);
+
+  //wait a little for data transfer (Telemetry is non-blocking)
+  usleep(100 * 1000);
+  controller.getLogMessage(requested_log_message);
+  COMPARE_PROTOBUF(debug_message, requested_log_message);
+
+
+
+  //test fatal message, should go through
+  controller.setLogLevel(FATAL);
+
+  LogMessage fatal_message;
+  fatal_message.set_type(FATAL);
+  fatal_message.set_message("[FATAL] This is a fatal message.");
+  robot.setLogMessage(fatal_message);
+
+  usleep(100 * 1000);
+  controller.getLogMessage(requested_log_message);
+  COMPARE_PROTOBUF(fatal_message, requested_log_message);
+
+
+
+  //test error message, should not go through (because LogLevel is still at FATAL)
+  LogMessage error_message;
+  error_message.set_type(ERROR);
+  error_message.set_message("[ERROR] This is an error message.");
+  robot.setLogMessage(error_message);
+
+  usleep(100 * 1000);
+  controller.getLogMessage(requested_log_message);
+  //compare if message is still the fatal message, not the error message
+  COMPARE_PROTOBUF(fatal_message, requested_log_message);
+
+
+
+  //test logLevel NONE, fatal message should not go through
+  controller.setLogLevel(NONE);
+
+  LogMessage another_fatal_message;
+  another_fatal_message.set_type(FATAL);
+  another_fatal_message.set_message("[FATAL] This is another fatal message.");
+  robot.setLogMessage(another_fatal_message);
+
+  usleep(100 * 1000);
+  controller.getLogMessage(requested_log_message);
+  //compare if message is still the first fatal message, not the second one
+  COMPARE_PROTOBUF(fatal_message, requested_log_message);
 
 
   robot.stopUpdateThread();
