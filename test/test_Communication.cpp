@@ -249,3 +249,89 @@ BOOST_AUTO_TEST_CASE(check_log_message)
   robot.stopUpdateThread();
   controller.stopUpdateThread();
 }
+
+BOOST_AUTO_TEST_CASE(checking_robot_state){
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+  
+  std::string requested_robot_state;
+  std::string gotten_robot_state;
+
+
+
+  std::cout << "RUNNING" << std::endl;
+  robot.setRobotState("ROBOT_DEMO_RUNNING");
+  //wait a little for data transfer (Telemetry is non-blocking)
+  usleep(100 * 1000);
+
+  controller.getRobotState(gotten_robot_state);
+  std::cout << gotten_robot_state << std::endl;
+
+  controller.requestRobotState(requested_robot_state);
+  std::cout << requested_robot_state << std::endl;
+
+  BOOST_TEST(requested_robot_state == gotten_robot_state);
+
+
+  controller.getRobotState(gotten_robot_state);
+  std::cout << gotten_robot_state << std::endl;
+
+  //should be empty because state was already recieved
+  BOOST_TEST(gotten_robot_state == "");
+
+
+
+  std::cout << "FINISHED" << std::endl;
+  robot.setRobotState("ROBOT_DEMO_FINISHED");
+  usleep(100 * 1000);
+
+  controller.getRobotState(gotten_robot_state);
+  std::cout << gotten_robot_state << std::endl;
+
+  //requestRobotState always gets first setted robot state (wanted behaviour?)
+  controller.requestRobotState(requested_robot_state);
+  std::cout << requested_robot_state << std::endl;
+
+  controller.requestRobotState(requested_robot_state);
+  std::cout << requested_robot_state << std::endl;
+
+  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_FINISHED");
+  //wanted behaviour?
+  BOOST_TEST(requested_robot_state == "ROBOT_DEMO_RUNNING");
+
+
+
+  std::cout << "RUNNING_AGAIN THEN STOPPED" << std::endl;
+  robot.setRobotState("ROBOT_DEMO_RUNNING_AGAIN");
+  usleep(100 * 1000);
+  robot.setRobotState("ROBOT_DEMO_STOPPED");
+  usleep(100 * 1000);
+
+  //getRobotState recieves RUNNING_AGAIN first time, then nothing (wanted behaviour?)
+  controller.getRobotState(gotten_robot_state);
+  std::cout << gotten_robot_state << std::endl;
+
+  //wanted behaviour? 
+  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_RUNNING_AGAIN");
+
+
+  controller.getRobotState(gotten_robot_state);
+  std::cout << gotten_robot_state << std::endl;
+
+  //wanted behaviour? ROBOT_DEMO_STOPPED is lost
+  BOOST_TEST(gotten_robot_state == "");
+
+
+  //requestRobotState still outputs first robot state
+  controller.requestRobotState(requested_robot_state);
+  std::cout << requested_robot_state << std::endl;
+
+  BOOST_TEST(requested_robot_state == "ROBOT_DEMO_RUNNING");
+
+
+  robot.stopUpdateThread();
+  controller.stopUpdateThread();
+}
