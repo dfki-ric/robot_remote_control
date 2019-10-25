@@ -3,6 +3,7 @@
 #include <interaction-library-controlled_robot/ControlledRobot.hpp>
 #include <interaction-library-controlled_robot/RobotController.hpp>
 #include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
+#include <iostream>
 
 
 using namespace controlledRobot;
