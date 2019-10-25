@@ -60,20 +60,21 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
 
         }
 
-        bool pushData(const TYPE & data){
+        bool pushData(const TYPE & data, bool overwriteIfFull = false){
             if (contentsize != buffersize){
                 buffer[in] = data;
                 contentsize++;
                 in++;
                 in %= buffersize;
                 return true;
-            }else{
+            } else if (overwriteIfFull){
                 //buffer full, force-push (overwrite latest)
                 buffer[in] = data;
                 out++;
                 out %= buffersize;
                 in++;
                 in %= buffersize;
+                return true;
             }
             return false;
         }
@@ -84,6 +85,7 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
                 contentsize--;
                 out++;
                 out %= buffersize;
+                
                 return true;
             }
             return false;
@@ -108,9 +110,9 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
 class RingBufferAccess{
     public:
         
-        template<class DATATYPE> static bool pushData(std::shared_ptr<RingBufferBase> &buffer, const DATATYPE & data){
+        template<class DATATYPE> static bool pushData(std::shared_ptr<RingBufferBase> &buffer, const DATATYPE & data, bool overwrite = false){
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
-            return dataclass->pushData(data);
+            return dataclass->pushData(data,overwrite);
         }
 
         template<class DATATYPE> static bool popData(std::shared_ptr<RingBufferBase> &buffer, DATATYPE & data){

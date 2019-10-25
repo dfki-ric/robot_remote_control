@@ -200,7 +200,7 @@ namespace controlledRobot
                     protodata.AppendToString(&buf);
                     //store latest data for future requests
                     buffers.lock();
-                    RingBufferAccess::pushData(buffers.get_ref()[type],protodata);
+                    RingBufferAccess::pushData(buffers.get_ref()[type],protodata, true);
                     buffers.unlock();
                     return telemetryTransport->send(buf) - sizeof(uint16_t);
                 }

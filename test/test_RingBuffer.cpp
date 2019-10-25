@@ -6,9 +6,9 @@
  * @brief helper function to fill buffer with increasing numbers
  */
 
-void fillBuffer(unsigned int size, RingBuffer<int>& buffer){
+void fillBuffer(unsigned int size, RingBuffer<int>& buffer, bool overwrite = false){
     for (unsigned int i = 0;i<size;i++){
-        buffer.pushData(i);
+        buffer.pushData(i,overwrite);
     }
 };
 
@@ -72,8 +72,32 @@ BOOST_AUTO_TEST_CASE(push_pop)
 
     BOOST_CHECK_EQUAL(buffer.size(),0);
 
-    //oldest items are overwritten so a size 5 buffer schoud have 15-19
+    //no new items are added, until the buffer was read, so a size5 buffer schoud have 0-4 
     fillBuffer(20,buffer);
+
+    BOOST_CHECK_EQUAL(buffer.size(),5);
+
+    //checks if first 5 are in order
+    CHECK_BUFFER(5,buffer,0);
+
+    BOOST_CHECK_EQUAL(buffer.size(),0);
+
+}
+
+BOOST_AUTO_TEST_CASE(push_pop_overwrite)
+{
+
+    RingBuffer<int> buffer(5);
+    
+    fillBuffer(2,buffer,true);
+    BOOST_CHECK_EQUAL(buffer.size(),2);
+
+    CHECK_BUFFER(2,buffer,0);
+
+    BOOST_CHECK_EQUAL(buffer.size(),0);
+
+    //oldest items are overwritten so a size 5 buffer schoud have 15-19
+    fillBuffer(20,buffer,true);
 
     BOOST_CHECK_EQUAL(buffer.size(),5);
 
@@ -113,7 +137,10 @@ BOOST_AUTO_TEST_CASE(resize_buffer)
     BOOST_CHECK_EQUAL(buffer.capacity(),1);
 
     fillBuffer(5,buffer); //further adds fail
-    CHECK_BUFFER(1,buffer,4); //has last value, push overwrites oldest if  buffer is full, fill starts with 0
+    CHECK_BUFFER(1,buffer,0); //has first value, push fails if buffer is full
+
+    fillBuffer(5,buffer,true); //fill with overwrite
+    CHECK_BUFFER(1,buffer,4); //has first value, push fails if buffer is full
 
     buffer.resize(10);
     BOOST_CHECK_EQUAL(buffer.capacity(),10);
