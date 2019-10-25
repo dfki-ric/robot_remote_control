@@ -73,9 +73,9 @@ namespace controlledRobot
              * @brief Get the last sent Pose of the robot
              * 
              * @param pose the pose to write the data to
-             * @return unsigned int the number of pending messages in the buffer after read
+             * @return bool true if new data was read
              */
-            unsigned int getCurrentPose(Pose & pose){
+            bool getCurrentPose(Pose & pose){
                 return getTelemetry(CURRENT_POSE,pose);
             }
 
@@ -83,9 +83,9 @@ namespace controlledRobot
              * @brief Get the last sent joint state of the robot
              * 
              * @param pose the JointState to write the data to
-             * @return unsigned int the number of pending messages in the buffer after read
+             * @return bool true if new data was read
              */
-            unsigned int getCurrentJointState(JointState & jointState){
+            bool getCurrentJointState(JointState & jointState){
                 return getTelemetry(JOINT_STATE,jointState);
             }
 
@@ -93,9 +93,9 @@ namespace controlledRobot
              * @brief Get the Log Message object
              * 
              * @param msg LogMessage to write the data to
-             * @return unsigned int the number of pending messages in the buffer after read
+             * @return bool true if new data was read
              */
-            unsigned int getLogMessage(LogMessage & msg){
+            bool getLogMessage(LogMessage & msg){
                 return getTelemetry(LOG_MESSAGE,msg);
             }
 
@@ -103,9 +103,9 @@ namespace controlledRobot
              * @brief Get the Robot State
              * 
              * @param state the string to write the state to
-             * @return unsigned int the number of pending messages in the buffer after read
+             * @return bool true if new data was read
              */
-            unsigned int getRobotState(std::string & state){
+            bool getRobotState(std::string & state){
                 RobotState protostate;
                 int statesleft = getTelemetry(ROBOT_STATE,protostate);
                 state = protostate.state();
