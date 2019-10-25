@@ -170,9 +170,9 @@ namespace controlledRobot
              * @return unsigned int number of messages in the buffer
              */
             unsigned int getBufferSize(const TelemetryMessageType &type){
-                buffers.lock();
-                int size = buffers.get_ref()[type]->size();
-                buffers.unlock();
+                buffers->lock();
+                int size = buffers->get_ref()[type]->size();
+                buffers->unlock();
                 return size;
             }
 
@@ -187,9 +187,9 @@ namespace controlledRobot
              */
 
             template< class DATATYPE > unsigned int getTelemetry(const TelemetryMessageType &type, DATATYPE &data ){
-                buffers.lock();
-                bool result = RingBufferAccess::popData(buffers.get_ref()[type],data);
-                buffers.unlock();
+                buffers->lock();
+                bool result = RingBufferAccess::popData(buffers->get_ref()[type],data);
+                buffers->unlock();
                 return result;
             }
 
@@ -227,7 +227,7 @@ namespace controlledRobot
 
             
 
-            TelemetryBuffer buffers;
+            std::shared_ptr<TelemetryBuffer>  buffers;
             //void initBuffers(const unsigned int &defaultSize);
 
 

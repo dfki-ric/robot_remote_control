@@ -9,7 +9,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
 {
-    std::shared_ptr<TelemetryBuffer> buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(recv_buffer_size));
+    buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(recv_buffer_size));
 }
 
 RobotController::~RobotController(){
@@ -93,65 +93,65 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         case CURRENT_POSE:{
             Pose currentPose;
             currentPose.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[CURRENT_POSE],currentPose);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[CURRENT_POSE],currentPose);
+            buffers->unlock();
             return msgtype;
         }
         case JOINT_STATE:{
             JointState currentJointState;
             currentJointState.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[JOINT_STATE],currentJointState);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[JOINT_STATE],currentJointState);
+            buffers->unlock();
             return msgtype;
         }
         case CONTROLLABLE_JOINTS: {
             JointState controllableJoints;
             controllableJoints.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[CONTROLLABLE_JOINTS],controllableJoints);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[CONTROLLABLE_JOINTS],controllableJoints);
+            buffers->unlock();
             return msgtype;
         }
         case SIMPLE_ACTIONS: {
             SimpleActions simpleActions;
             simpleActions.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[SIMPLE_ACTIONS],simpleActions);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[SIMPLE_ACTIONS],simpleActions);
+            buffers->unlock();
             return msgtype;
         }
         case COMPLEX_ACTIONS: {
             ComplexActions complexActions;
             complexActions.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[COMPLEX_ACTIONS],complexActions);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[COMPLEX_ACTIONS],complexActions);
+            buffers->unlock();
             return msgtype;
         }
         case ROBOT_NAME: {
             RobotName robotName;
             robotName.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[ROBOT_NAME],robotName);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[ROBOT_NAME],robotName);
+            buffers->unlock();
             return msgtype;
         }
         case ROBOT_STATE: {
             RobotState state;
             state.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[ROBOT_STATE],state);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[ROBOT_STATE],state);
+            buffers->unlock();
             return msgtype;
         }
         case LOG_MESSAGE: {
             LogMessage msg;
             msg.ParseFromString(serializedMessage);
-            buffers.lock();
-            RingBufferAccess::pushData(buffers.get_ref()[LOG_MESSAGE],msg);
-            buffers.unlock();
+            buffers->lock();
+            RingBufferAccess::pushData(buffers->get_ref()[LOG_MESSAGE],msg);
+            buffers->unlock();
             return msgtype;
         }
         
