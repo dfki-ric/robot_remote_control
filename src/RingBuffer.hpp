@@ -67,6 +67,13 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
                 in++;
                 in %= buffersize;
                 return true;
+            }else{
+                //buffer full, force-push (overwrite latest)
+                buffer[in] = data;
+                out++;
+                out %= buffersize;
+                in++;
+                in %= buffersize;
             }
             return false;
         }

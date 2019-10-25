@@ -11,7 +11,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSh
     logLevel(CUSTOM-1)
 {
     twistCommandGetCounter.set(0);
-    goToCommandGetCounter.set(-1);
+    goToCommandGetCounter.set(0);
     simpleActionsCommandGetCounter.set(0);
     complexActionsCommandGetCounter.set(0);
 }

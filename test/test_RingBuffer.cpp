@@ -14,22 +14,19 @@ void fillBuffer(unsigned int size, RingBuffer<int>& buffer){
 
 /**
  * @brief helper function to check buffer content if it has increasing numbers
- * 
+ * as defne to get proper line numbers wen errors occur
  */
-void checkBuffer(unsigned int size, RingBuffer<int>& buffer, unsigned int startwith = 0){
-
-    int content;
-    for (unsigned int i = startwith;i<startwith+size;i++){
-        
-        if (buffer.popData(content)){
-            BOOST_CHECK_EQUAL(content,i);
-        }else{
-            //should not happen
-            BOOST_CHECK_EQUAL(true,false);
-        }
-        
+#define CHECK_BUFFER(SIZE,BUFFER,STARTWITH) \
+    { \
+        int content; \
+        for (unsigned int i = STARTWITH;i<STARTWITH+SIZE;i++){ \
+            if (BUFFER.popData(content)){ \
+                BOOST_CHECK_EQUAL(content,i); \
+            }else{ \
+                BOOST_CHECK_EQUAL(true,false); \
+            } \
+        } \
     }
-}
 
 
 BOOST_AUTO_TEST_CASE(retrun_correctly_on_pop)
@@ -71,17 +68,17 @@ BOOST_AUTO_TEST_CASE(push_pop)
     fillBuffer(2,buffer);
     BOOST_CHECK_EQUAL(buffer.size(),2);
 
-    checkBuffer(2,buffer);
+    CHECK_BUFFER(2,buffer,0);
 
     BOOST_CHECK_EQUAL(buffer.size(),0);
 
-    //no new items are added, until the buffer was read, so a size5 buffer schoud have 0-4 
+    //oldest items are overwritten so a size 5 buffer schoud have 15-19
     fillBuffer(20,buffer);
 
     BOOST_CHECK_EQUAL(buffer.size(),5);
 
     //checks if first 5 are in order
-    checkBuffer(5,buffer);
+    CHECK_BUFFER(5,buffer,15);
 
     BOOST_CHECK_EQUAL(buffer.size(),0);
 
@@ -96,14 +93,14 @@ BOOST_AUTO_TEST_CASE(preserve_content_multiuse)
         if (!(i%2)){
             //run first
             fillBuffer(5,buffer);
-            checkBuffer(3,buffer);
+            CHECK_BUFFER(3,buffer,0);
             BOOST_CHECK_EQUAL(buffer.size(),2);
         }else{
             //run second
             fillBuffer(5,buffer);
             //2 left to read, startgin with 3
-            checkBuffer(2,buffer,3);
-            checkBuffer(5,buffer);
+            CHECK_BUFFER(2,buffer,3);
+            CHECK_BUFFER(5,buffer,0);
             BOOST_CHECK_EQUAL(buffer.size(),0);
         }   
     }
@@ -116,21 +113,21 @@ BOOST_AUTO_TEST_CASE(resize_buffer)
     BOOST_CHECK_EQUAL(buffer.capacity(),1);
 
     fillBuffer(5,buffer); //further adds fail
-    checkBuffer(1,buffer); //has first value, push fails if buffer is full
+    CHECK_BUFFER(1,buffer,4); //has last value, push overwrites oldest if  buffer is full, fill starts with 0
 
     buffer.resize(10);
     BOOST_CHECK_EQUAL(buffer.capacity(),10);
 
     fillBuffer(10,buffer); //fill
-    checkBuffer(10,buffer); //check
+    CHECK_BUFFER(10,buffer,0); //check
 
     fillBuffer(10,buffer); //fill again
     buffer.resize(5);
     BOOST_CHECK_EQUAL(buffer.capacity(),5);
-    checkBuffer(5,buffer); //has oldest values (resize chops at the end of buffer)
+    CHECK_BUFFER(5,buffer,0); //has oldest values (resize chops at the end of buffer)
 
     //works as before
     fillBuffer(5,buffer);
-    checkBuffer(5,buffer);
+    CHECK_BUFFER(5,buffer,0);
 
 }
