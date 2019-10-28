@@ -9,6 +9,7 @@
   <url>https://github.com/dfki-ric/robot_control_interface</url>
   <logo>http://</logo>
   <depend package="base/cmake" />
+  <depend package="protobuf" />
   <depend package="zmq" />
   <keywords>
     <keyword>communication</keyword>
