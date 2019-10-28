@@ -7,6 +7,6 @@ Name: @TARGET_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 Requires: @PKGCONFIG_REQUIRES@
-Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@ -linteraction-library-update_thread -linteraction-library-types
+Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@ -lrobot_remote_control-update_thread -lrobot_remote_control-types
 Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
 
