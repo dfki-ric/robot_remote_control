@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-namespace controlledRobot
+namespace robot_remote_control
 {
 
     

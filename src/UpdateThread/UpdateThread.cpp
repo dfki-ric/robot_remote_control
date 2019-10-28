@@ -3,7 +3,7 @@
 #include "UpdateThread.hpp"
 #include <unistd.h>
 
-using namespace controlledRobot;
+using namespace robot_remote_control;
 
 
 UpdateThread::UpdateThread():running(false){

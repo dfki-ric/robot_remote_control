@@ -6,7 +6,7 @@
 #include "UpdateThread/UpdateThread.hpp"
 
 
-namespace controlledRobot
+namespace robot_remote_control
 {
     class RobotController: public UpdateThread
     {

@@ -1,10 +1,10 @@
 #include <iostream>
-#include <interaction-library-controlled_robot/RobotController.hpp>
-#include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
+#include "RobotController.hpp"
+#include "Transports/TransportZmq.hpp"
 #include <unistd.h>
 
 
-using namespace controlledRobot;
+using namespace robot_remote_control;
 
 int main(int argc, char** argv)
 {

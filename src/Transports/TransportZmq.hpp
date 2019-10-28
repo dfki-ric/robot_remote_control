@@ -10,7 +10,7 @@ namespace zmq{
     class socket_t;
 }
 
-namespace controlledRobot
+namespace robot_remote_control
 {
 
     class TransportZmq: public Transport{

@@ -4,7 +4,7 @@
 #include "RingBuffer.hpp"
 #include "MessageTypes.hpp"
 
-namespace controlledRobot
+namespace robot_remote_control
 {
 
 class TelemetryBuffer: public ThreadProtecetedVar< std::vector< std::shared_ptr<RingBufferBase> > >{

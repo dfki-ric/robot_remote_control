@@ -5,7 +5,7 @@
 #include "UpdateThread/UpdateThread.hpp"
 #include "TelemetryBuffer.hpp"
 
-namespace controlledRobot
+namespace robot_remote_control
 {
     class ControlledRobot: public UpdateThread
     {
@@ -25,67 +25,67 @@ namespace controlledRobot
             /**
              * @brief Get the Target Pose the robot should move to
              * 
-             * @return controlledRobot::Pose the target pose
+             * @return Pose the target pose
              * @TODO isNEW?
              */
-            controlledRobot::Pose getTargetPose(){
+            Pose getTargetPose(){
                 return targetPose.get();
             }
 
             /**
              * @brief Get the Twist Command with velocities to robe should move at
              * 
-             * @return controlledRobot::Twist 
+             * @return Twist 
              */
-            std::pair<unsigned long long int, controlledRobot::Twist> getTwistCommand(){
+            std::pair<unsigned long long int, Twist> getTwistCommand(){
                 unsigned long long int counter = twistCommandGetCounter.get();
                 twistCommandGetCounter.set(counter + 1);
-                return std::pair<unsigned long long int, controlledRobot::Twist>(counter, twistCommand.get());
+                return std::pair<unsigned long long int, Twist>(counter, twistCommand.get());
             }
 
             /**
              * @brief Get the GoTo Command the robot should execute
              *
-             * @return std::pair<unsigned long long int, controlledRobot::GoTo>
+             * @return std::pair<unsigned long long int, GoTo>
              */
-            std::pair<long long int, controlledRobot::GoTo> getGoToCommand() {
+            std::pair<long long int, GoTo> getGoToCommand() {
                 long long int counter = goToCommandGetCounter.get();
                 if (counter != -1) goToCommandGetCounter.set(counter + 1);
-                return std::pair<long long int, controlledRobot::GoTo>(counter, goToCommand.get());
+                return std::pair<long long int, GoTo>(counter, goToCommand.get());
             }
 
             /**
              * @brief Get the Joints Command the robot should execute
              *
-             * @return std::pair<unsigned long long int, controlledRobot::JointState>
+             * @return std::pair<unsigned long long int, JointState>
              */
-            std::pair<unsigned long long int, controlledRobot::JointState> getJointsCommand() {
+            std::pair<unsigned long long int, JointState> getJointsCommand() {
                 unsigned long long int counter = jointsCommandGetCounter.get();
                 jointsCommandGetCounter.set(counter + 1);
-                return std::pair<unsigned long long int, controlledRobot::JointState>(counter, jointsCommand.get());
+                return std::pair<unsigned long long int, JointState>(counter, jointsCommand.get());
             }
 
 
             /**
              * @brief Get the SimpleActions Command the robot should execute
              *
-             * @return std::pair<unsigned long long int, controlledRobot::SimpleActions>
+             * @return std::pair<unsigned long long int, SimpleActions>
              */
-            std::pair<unsigned long long int, controlledRobot::SimpleActions> getSimpleActionsCommand() {
+            std::pair<unsigned long long int, SimpleActions> getSimpleActionsCommand() {
                 unsigned long long int counter = simpleActionsCommandGetCounter.get();
                 simpleActionsCommandGetCounter.set(counter + 1);
-                return std::pair<unsigned long long int, controlledRobot::SimpleActions>(counter, simpleActionsCommand.get());
+                return std::pair<unsigned long long int, SimpleActions>(counter, simpleActionsCommand.get());
             }
 
             /**
              * @brief Get the ComplexActions Command the robot should execute
              *
-             * @return std::pair<unsigned long long int, controlledRobot::ComplexActions>
+             * @return std::pair<unsigned long long int, ComplexActions>
              */
-            std::pair<unsigned long long int, controlledRobot::ComplexActions> getComplexActionsCommand() {
+            std::pair<unsigned long long int, ComplexActions> getComplexActionsCommand() {
                 unsigned long long int counter = complexActionsCommandGetCounter.get();
                 complexActionsCommandGetCounter.set(counter + 1);
-                return std::pair<unsigned long long int, controlledRobot::ComplexActions>(counter, complexActionsCommand.get());
+                return std::pair<unsigned long long int, ComplexActions>(counter, complexActionsCommand.get());
             }
 
             // Telemetry setters
@@ -96,7 +96,7 @@ namespace controlledRobot
              * @param pose current pose
              * @return int number of bytes sent
              */
-            int setCurrentPose(const controlledRobot::Pose& pose);
+            int setCurrentPose(const Pose& pose);
 
             /**
              * @brief Set the curretn JointState of the robot
@@ -104,7 +104,7 @@ namespace controlledRobot
              * @param pose current JointState
              * @return int number of bytes sent
              */
-            int setJointState(const controlledRobot::JointState& state);
+            int setJointState(const JointState& state);
 
             /**
              * @brief The robot uses this method to provide information about its controllable joints
@@ -143,7 +143,7 @@ namespace controlledRobot
 
             int setLogMessage(enum LogLevel lvl, const std::string& message);
 
-            int setLogMessage(const controlledRobot::LogMessage& log_message);
+            int setLogMessage(const LogMessage& log_message);
 
 
 
@@ -163,17 +163,17 @@ namespace controlledRobot
             //std::string serializeCurrentPose();
 
             //buffers
-            ThreadProtecetedVar<controlledRobot::Pose> targetPose;
-            // ThreadProtecetedVar<controlledRobot::Pose> currentPose;
-            ThreadProtecetedVar<controlledRobot::Twist> twistCommand;
+            ThreadProtecetedVar<Pose> targetPose;
+            // ThreadProtecetedVar<Pose> currentPose;
+            ThreadProtecetedVar<Twist> twistCommand;
             ThreadProtecetedVar<unsigned long long int> twistCommandGetCounter;
-            ThreadProtecetedVar<controlledRobot::GoTo> goToCommand;
+            ThreadProtecetedVar<GoTo> goToCommand;
             ThreadProtecetedVar<long long int> goToCommandGetCounter;
-            ThreadProtecetedVar<controlledRobot::SimpleActions> simpleActionsCommand;
+            ThreadProtecetedVar<SimpleActions> simpleActionsCommand;
             ThreadProtecetedVar<unsigned long long int> simpleActionsCommandGetCounter;
-            ThreadProtecetedVar<controlledRobot::ComplexActions> complexActionsCommand;
+            ThreadProtecetedVar<ComplexActions> complexActionsCommand;
             ThreadProtecetedVar<unsigned long long int> complexActionsCommandGetCounter;
-            ThreadProtecetedVar<controlledRobot::JointState> jointsCommand;
+            ThreadProtecetedVar<JointState> jointsCommand;
             ThreadProtecetedVar<unsigned long long int> jointsCommandGetCounter;
 
 

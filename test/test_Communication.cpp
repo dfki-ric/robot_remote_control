@@ -1,11 +1,11 @@
 #include <boost/test/unit_test.hpp>
 
-#include <interaction-library-controlled_robot/ControlledRobot.hpp>
-#include <interaction-library-controlled_robot/RobotController.hpp>
-#include <interaction-library-controlled_robot/Transports/TransportZmq.hpp>
+#include <robot_remote_control/ControlledRobot.hpp>
+#include <robot_remote_control/RobotController.hpp>
+#include <robot_remote_control/Transports/TransportZmq.hpp>
 
 
-using namespace controlledRobot;
+using namespace robot_remote_control;
  
 TransportSharedPtr commands;
 TransportSharedPtr telemetry;
@@ -29,7 +29,7 @@ void initComms(){
   if (!telemetri.get()){telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004",TransportZmq::PUB));}
 }
 
-controlledRobot::Pose initTestPose(){
+Pose initTestPose(){
   Position position;
   Orientation orientation;
   Pose pose;
@@ -49,7 +49,7 @@ controlledRobot::Pose initTestPose(){
   return pose;
 }
 
-controlledRobot::JointState initTestJointState(){
+JointState initTestJointState(){
   JointState state;
   state.add_name("test");
   state.add_position(1);

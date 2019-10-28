@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace controlledRobot;
+using namespace robot_remote_control;
 
 
 ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport):UpdateThread(),
@@ -24,7 +24,7 @@ void ControlledRobot::update()
 ControlMessageType ControlledRobot::receiveRequest()
 {
     std::string msg;
-    controlledRobot::Transport::Flags flags = Transport::NONE;
+    Transport::Flags flags = Transport::NONE;
     //if (!this->threaded()){
         flags = Transport::NOBLOCK;
     //}
@@ -130,7 +130,7 @@ int ControlledRobot::setRobotName(const RobotName& robotName) {
 }
 
 int ControlledRobot::setRobotState(const std::string& state){
-    controlledRobot::RobotState protostate;
+    RobotState protostate;
     protostate.set_state(state);
     return sendTelemetry(protostate, ROBOT_STATE);
 
@@ -138,14 +138,14 @@ int ControlledRobot::setRobotState(const std::string& state){
 
 int ControlledRobot::setLogMessage(enum LogLevel lvl, const std::string& message){
     if (lvl <= logLevel){
-        controlledRobot::LogMessage msg;
+        LogMessage msg;
         msg.set_type(lvl);
         msg.set_message(message);
         return sendTelemetry(msg, LOG_MESSAGE);
     } else return -1;
 }
 
-int ControlledRobot::setLogMessage(const controlledRobot::LogMessage& log_message){
+int ControlledRobot::setLogMessage(const LogMessage& log_message){
     if (log_message.type() <= logLevel){
         return sendTelemetry(log_message, LOG_MESSAGE);
     } else return -1;

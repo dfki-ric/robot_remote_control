@@ -6,9 +6,8 @@
 
 #include "ThreadProtectedVar.hpp"
 
-namespace controlledRobot
+namespace robot_remote_control
 {
-
 
 /**
  * @brief base class to have a threaded update by repeated calls to the virtual update() function

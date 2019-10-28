@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace controlledRobot;
+using namespace robot_remote_control;
 
 
 RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t recv_buffer_size):UpdateThread(),
@@ -57,7 +57,7 @@ void RobotController::setLogLevel(const uint32_t &level){
 void RobotController::update(){
     if (telemetryTransport.get()){
         std::string buf;
-        controlledRobot::Transport::Flags flags = Transport::NONE;
+        Transport::Flags flags = Transport::NONE;
         //if (!this->threaded()){
             flags = Transport::NOBLOCK;
         //}

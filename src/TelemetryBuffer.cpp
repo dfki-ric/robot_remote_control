@@ -1,7 +1,7 @@
 #include "TelemetryBuffer.hpp"
 
 
-using namespace controlledRobot;
+using namespace robot_remote_control;
 
 
     TelemetryBuffer::TelemetryBuffer(const size_t &size){
@@ -12,28 +12,28 @@ using namespace controlledRobot;
         std::shared_ptr<RingBufferBase> newbuf;
 
         //fill shared pointers with objects
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::Pose>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<Pose>(size));
         get_ref()[CURRENT_POSE] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::JointState>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<JointState>(size));
         get_ref()[JOINT_STATE] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::JointState>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<JointState>(size));
         get_ref()[CONTROLLABLE_JOINTS] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::SimpleActions>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleActions>(size));
         get_ref()[SIMPLE_ACTIONS] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::ComplexActions>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<ComplexActions>(size));
         get_ref()[COMPLEX_ACTIONS] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::RobotName>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<RobotName>(size));
         get_ref()[ROBOT_NAME] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::RobotState>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<RobotState>(size));
         get_ref()[ROBOT_STATE] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<controlledRobot::LogMessage>(size));
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<LogMessage>(size));
         get_ref()[LOG_MESSAGE] = newbuf;
 
         unlock();
@@ -51,42 +51,42 @@ using namespace controlledRobot;
         
         switch (type){
             case CURRENT_POSE:{
-                controlledRobot::Pose pose;
+                Pose pose;
                 fillBuffer(CURRENT_POSE,pose,buf);
                 break;
             }
             case JOINT_STATE:{
-                controlledRobot::JointState data;
+                JointState data;
                 fillBuffer(JOINT_STATE,data,buf);
                 break;
             }
             case CONTROLLABLE_JOINTS:{
-                controlledRobot::JointState data;
+                JointState data;
                 fillBuffer(CONTROLLABLE_JOINTS,data,buf);
                 break;
             }
             case SIMPLE_ACTIONS:{
-                controlledRobot::SimpleActions data;
+                SimpleActions data;
                 fillBuffer(SIMPLE_ACTIONS,data,buf);
                 break;
             }
             case COMPLEX_ACTIONS:{
-                controlledRobot::ComplexActions data;
+                ComplexActions data;
                 fillBuffer(COMPLEX_ACTIONS,data,buf);
                 break;
             }
             case ROBOT_NAME:{
-                controlledRobot::RobotName data;
+                RobotName data;
                 fillBuffer(ROBOT_NAME,data,buf);
                 break;
             }
             case ROBOT_STATE:{
-                controlledRobot::RobotState data;
+                RobotState data;
                 fillBuffer(ROBOT_STATE,data,buf);
                 break;
             }
             case LOG_MESSAGE:{
-                controlledRobot::LogMessage data;
+                LogMessage data;
                 fillBuffer(LOG_MESSAGE,data,buf);
                 break;
             }

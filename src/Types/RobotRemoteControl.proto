@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package controlledRobot;
+package robot_remote_control;
 
 message Vector3 {
     float x = 1;

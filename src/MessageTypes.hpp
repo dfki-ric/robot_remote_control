@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Types/controlledRobot.pb.h"
+#include "Types/RobotRemoteControl.pb.h"
 
-namespace controlledRobot
+namespace robot_remote_control
 {   
     /**
      * @brief The data channel type

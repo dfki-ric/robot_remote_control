@@ -2,6 +2,9 @@
 
 #include <mutex>
 
+namespace robot_remote_control
+{
+
 /**
  * @brief Template class to make variables thread save
  * 
@@ -72,3 +75,5 @@ template <class C> class ThreadProtecetedVar{
         std::mutex mutex;
 
 };
+
+}

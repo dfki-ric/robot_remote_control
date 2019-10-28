@@ -3,6 +3,10 @@
 #include <vector>
 #include <memory>
 
+
+namespace robot_remote_control
+{
+
 /**
  * @brief base class to be able to hold buffers of different types in a vector 
  */
@@ -125,3 +129,5 @@ class RingBufferAccess{
             return dataclass->peekData(data);
         }
 };
+
+}

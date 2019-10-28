@@ -1,5 +1,9 @@
 #include <boost/test/unit_test.hpp>
-#include <interaction-library-controlled_robot/RingBuffer.hpp>
+#include <robot_remote_control/RingBuffer.hpp>
+
+
+using namespace robot_remote_control;
+
 
 
 /**

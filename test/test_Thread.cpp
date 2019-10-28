@@ -1,8 +1,8 @@
 #include <boost/test/unit_test.hpp>
 
-#include <interaction-library-controlled_robot/UpdateThread/UpdateThread.hpp>
+#include <robot_remote_control/UpdateThread/UpdateThread.hpp>
 
-using namespace controlledRobot;
+using namespace robot_remote_control;
 
 class TestThread: public UpdateThread{
 
