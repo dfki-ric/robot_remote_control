@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data)
   controller.stopUpdateThread();
 }
 
-BOOST_AUTO_TEST_CASE(check_log_message)
+BOOST_AUTO_TEST_CASE(checking_log_message)
 {
   initComms();
   RobotController controller(commands, telemetry);
@@ -244,6 +244,71 @@ BOOST_AUTO_TEST_CASE(check_log_message)
   controller.getLogMessage(requested_log_message);
   //compare if message is still the first fatal message, not the second one
   COMPARE_PROTOBUF(fatal_message, requested_log_message);
+
+
+  robot.stopUpdateThread();
+  controller.stopUpdateThread();
+}
+
+BOOST_AUTO_TEST_CASE(checking_robot_state){
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+  
+  std::string requested_robot_state;
+  std::string gotten_robot_state;
+  std::string second_requested_robot_state;
+
+
+
+  //test basic getRobotState and requestRobotState
+  robot.setRobotState("ROBOT_DEMO_RUNNING");
+  //wait a little for data transfer (Telemetry is non-blocking)
+  usleep(100 * 1000);
+
+  controller.getRobotState(gotten_robot_state);
+  controller.requestRobotState(requested_robot_state);
+  BOOST_TEST(requested_robot_state == gotten_robot_state);
+
+
+  controller.getRobotState(gotten_robot_state);
+  //should be empty because state was already recieved
+  BOOST_TEST(gotten_robot_state == "");
+
+
+
+  //test multiple requestRobotState calls
+  robot.setRobotState("ROBOT_DEMO_FINISHED");
+  usleep(100 * 1000);
+
+  controller.getRobotState(gotten_robot_state);
+  controller.requestRobotState(requested_robot_state);
+  controller.requestRobotState(second_requested_robot_state);
+  
+  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_FINISHED");
+  BOOST_TEST(requested_robot_state == gotten_robot_state);
+  BOOST_TEST(requested_robot_state == second_requested_robot_state);
+
+
+
+  //test multiple setRobotState calls without getRobotState or requestRobotState inbetween
+  robot.setRobotState("ROBOT_DEMO_RUNNING_AGAIN");
+  usleep(100 * 1000);
+  robot.setRobotState("ROBOT_DEMO_STOPPED");
+  usleep(100 * 1000);
+
+  controller.requestRobotState(requested_robot_state);
+  controller.getRobotState(gotten_robot_state);
+  //request should return most recent state, get should return the oldest not retrieved one
+  BOOST_TEST(requested_robot_state == "ROBOT_DEMO_STOPPED");
+  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_RUNNING_AGAIN");
+
+
+  controller.getRobotState(gotten_robot_state);
+  //now they should be equal
+  BOOST_TEST(gotten_robot_state == requested_robot_state);
 
 
   robot.stopUpdateThread();
