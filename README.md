@@ -1,6 +1,6 @@
 # Robot Remote Control
 
-This is a library for framework independent control of semi-autonomous robots.
+This is a library for framework independent remote control of semi-autonomous robots.
 
 This library was initiated and is currently developed at the
 [Robotics Innovation Center](http://robotik.dfki-bremen.de/en/startpage.html) of the
@@ -119,4 +119,4 @@ In order to run the tests you can either run all by executing (in /build/test) `
 
 ## Bug Reports
 
-To search for bugs or report them, please use GitHubs [Issue-Tracker](https://github.com/dfki-ric/robot_control_interface/issues)
+To search for bugs or report them, please use GitHubs [Issue-Tracker](https://github.com/dfki-ric/robot_remote_control/issues)
