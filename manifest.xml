@@ -6,7 +6,7 @@
   </description>
   <author>Steffen Planthaber/Steffen.Planthaber@dfki.de</author>
   <license>BSD-3-Clause</license>
-  <url>https://github.com/dfki-ric/robot_control_interface</url>
+  <url>https://github.com/dfki-ric/robot_remote_control</url>
   <logo>http://</logo>
   <depend package="base/cmake" />
   <depend package="protobuf" />
@@ -14,7 +14,6 @@
   <keywords>
     <keyword>communication</keyword>
     <keyword>control</keyword>
-    <keyword>cave</keyword>
   </keywords>
   <stage>1</stage>
   <use>multi project</use>
