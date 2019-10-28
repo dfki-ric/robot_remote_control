@@ -1,6 +1,6 @@
-# interaction-library-controlled_robot
+# Robot Remote Control
 
-This is a library for Framework independent control of semi-autonomous robots.
+This is a library for framework independent control of semi-autonomous robots.
 
 This library was initiated and is currently developed at the
 [Robotics Innovation Center](http://robotik.dfki-bremen.de/en/startpage.html) of the
@@ -21,8 +21,6 @@ This library defines an interface to those robots and supports externally progra
 
 [BSD Clause 3](https://opensource.org/licenses/BSD-3-Clause)<br> - Copyright DFKI GmbH
 
-[GPLv3](https://opensource.org/licenses/GPL-3.0)<br> - for ZMQ Transport, Tests, and examples (which include the ZeroMQ header) 
-
 ## Installation
 
 The easiest way to build and install this package is to use Rock's build system.
@@ -33,9 +31,15 @@ You can also build the Library without rock, by using the rock CMake marcos.
 
 As a reference you can also have a look into the gitlab-ci.yml file.
 
-## Rock CMake Macros
+### Dependencies
 
-The ./install_dependencies.sh script will install the rock cmake macros, if you provide a path to that script, the macros will be installed there.
+Additionally you need to manually install the following OS dependencies: protobuf and zeromq
+
+    sudo apt install libprotobuf-dev protobuf-compiler libzmqpp-dev
+
+### Building
+
+The ./install_source_dependencies.sh script will install the rock cmake macros, if you provide a path to that script, the macros will be installed there.
 In this case an env.sh script is generated, which sets up the environment to find the macros, please source it before using cmake to compile this library.
 
 To compile it manually:
@@ -49,11 +53,6 @@ To compile it manually:
 
 Documentations on the rock cmake macros is available on [this page](http://rock-robotics.org/documentation/packages/cmake_macros.html).
 
-### Dependencies
-
-Additionally you need to manually install the following OS dependencies:
-
-    sudo apt install libprotobuf-dev protobuf-compiler libzmqpp-dev
 
 ### Rock Standard Layout
 
@@ -66,22 +65,14 @@ install setup properly.
 
 | directory         |       purpose                                                        |
 | ----------------- | ------------------------------------------------------               |
-| src/              | Contains all header (*.h/*.hpp) and source files                     |
+| src/              | Contains all header (*.hpp) and source (*.cpp) files                     |
 | build/ *          | The target directory for the build process, temporary content        |
-| bindings/         | Language bindings for this package, e.g. put into subfolders such as |
-| ruby/             | Ruby language bindings                                               |
-| viz/              | Source files for a vizkit plugin / widget related to this library    |
-| resources/        | General resources such as images that are needed by the program      |
-| configuration/    | Configuration files for running the program                          |
-| external/         | When including software that needs a non standard installation process, or one that can be easily embedded include the external software directly here |
-| doc/              | should contain the existing doxygen file: doxygen.conf               |
-
-
+| test/             | contains the boost_test based unit tests                       |
 
 
 ## Gettings started
 
-have a look into the provided Main examples
+Please have a look into the provided Main examples
 
 * src/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
 * src/RobotControllerMain.cpp (controller that sets the desired robot position)
@@ -107,7 +98,7 @@ Transports are seperated into two directions: commands and telemetry.
 While commands from RobotController to ControlledRobot are getting acknowledged on retrieval, the retrieval of telemetry is not confirmed.
 
 These Transports are given to the RobotController and ControlledRobot in their contructor and only implement an send() and receive() function.
-So it is easy to implement other means of connections between those.
+So it is easy to implement other means of connections between those by implementing the Transport.hpp interface.
 
 
 ## Testing
