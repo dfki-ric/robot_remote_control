@@ -59,10 +59,10 @@ namespace robot_remote_control
              *
              * @return std::pair<unsigned long long int, JointState>
              */
-            std::pair<unsigned long long int, JointState> getJointsCommand() {
-                unsigned long long int counter = jointsCommandGetCounter.get();
-                jointsCommandGetCounter.set(counter + 1);
-                return std::pair<unsigned long long int, JointState>(counter, jointsCommand.get());
+            std::pair<long long int, JointState> getJointsCommand() {
+                long long int counter = jointsCommandGetCounter.get();
+                if (counter != -1) jointsCommandGetCounter.set(counter + 1);
+                return std::pair<long long int, JointState>(counter, jointsCommand.get());
             }
 
 
@@ -174,7 +174,7 @@ namespace robot_remote_control
             ThreadProtecetedVar<ComplexActions> complexActionsCommand;
             ThreadProtecetedVar<unsigned long long int> complexActionsCommandGetCounter;
             ThreadProtecetedVar<JointState> jointsCommand;
-            ThreadProtecetedVar<unsigned long long int> jointsCommandGetCounter;
+            ThreadProtecetedVar<long long int> jointsCommandGetCounter;
 
 
             TelemetryBuffer buffers;

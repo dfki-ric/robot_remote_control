@@ -11,7 +11,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSh
     logLevel(CUSTOM-1)
 {
     twistCommandGetCounter.set(0);
-    goToCommandGetCounter.set(0);
+    jointsCommandGetCounter.set(-1);
+    goToCommandGetCounter.set(-1);
     simpleActionsCommandGetCounter.set(0);
     complexActionsCommandGetCounter.set(0);
 }
@@ -58,6 +59,15 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
             twistCommandGetCounter.set(0);
             return TWIST_COMMAND;
+        }
+        case JOINTS_COMMAND: {
+            jointsCommand.lock();
+            jointsCommand.get_ref().ParseFromString(serializedMessage);
+            jointsCommand.unlock();
+            commandTransport->send(serializeControlMessageType(JOINTS_COMMAND));
+            jointsCommandGetCounter.set(0);
+            std::cout << "Received a new jointsCommand!" << std::endl;
+            return JOINTS_COMMAND;
         }
         case GOTO_COMMAND: {
             goToCommand.lock();
