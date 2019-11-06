@@ -164,6 +164,16 @@ namespace robot_remote_control
             }
 
             /**
+             * @brief Request the curretn pose of the robot.
+             *
+             * @param robotName where to write the data to
+             * @return void
+             */
+            void requestCurrentPose(Pose &pose) {
+                requestTelemetry(CURRENT_POSE, pose);
+            }
+
+            /**
              * @brief Get the Number of pending messages for a specific Telemetry type
              * 
              * @param TelemetryMessageType  
