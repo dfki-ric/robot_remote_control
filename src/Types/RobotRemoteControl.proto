@@ -54,9 +54,19 @@ message GoTo {
     double waypoint_max_forward_speed = 3;
 }
 
+enum SimpleActionType {
+    VALUE = 0;
+    TRIGGER = 1;
+}
+message SimpleActionDef{
+    SimpleActionType type = 1;
+    uint64 max_state = 2;
+}
+
 message SimpleAction {
     string name = 1;
-    uint64 state = 2;
+    SimpleActionDef type = 2;
+    uint64 state = 3;
 }
 
 message SimpleActions {
@@ -64,9 +74,10 @@ message SimpleActions {
 }
 
 enum ComplexActionType {
-    LIST = 0;
-    AREA = 1;
-    VOLUME = 2;
+    POSE = 0;
+    POSE_LIST = 1;
+    AREA = 2;
+    VOLUME = 3;
 }
 
 message ComplexAction {

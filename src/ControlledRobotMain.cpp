@@ -29,11 +29,21 @@ int main(int argc, char** argv)
     SimpleAction* action;
     action = simpleActions.add_actions();
     action->set_name("EmergencyStop");
-    action->set_state(1);
+    action->mutable_type()->set_type(SimpleActionType::TRIGGER);
+    action->set_state(0); //set current state
     
     action = simpleActions.add_actions();
     action->set_name("Light");
-    action->set_state(0);
+    action->mutable_type()->set_type(SimpleActionType::VALUE);
+    action->mutable_type()->set_max_state(1); //is just a switch on/off
+    action->set_state(1); //current state
+
+    action = simpleActions.add_actions();
+    action->set_name("Light Dimmer");
+    action->mutable_type()->set_type(SimpleActionType::VALUE);
+    action->mutable_type()->set_max_state(100); //values from 0-100
+    action->set_state(100); //current state
+
     
 
     robot.setSimpleActions(simpleActions);

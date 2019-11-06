@@ -117,7 +117,8 @@ namespace robot_remote_control
             /**
              * @brief The robot uses this method to provide information about its set of simple actions
              *
-             * @param simpleActions the simple actions of the robot as a SimpleActions
+             * @param simpleActions the simple actions of the robot to report to the controler
+             * the state field of the SimpleActions class should be filled with the max value
              * @return int number of bytes sent
              */
             int setSimpleActions(const SimpleActions& simpleActions);
