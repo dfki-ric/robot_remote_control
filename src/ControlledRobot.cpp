@@ -66,7 +66,6 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             jointsCommand.unlock();
             commandTransport->send(serializeControlMessageType(JOINTS_COMMAND));
             jointsCommandGetCounter.set(0);
-            std::cout << "Received a new jointsCommand!" << std::endl;
             return JOINTS_COMMAND;
         }
         case GOTO_COMMAND: {
