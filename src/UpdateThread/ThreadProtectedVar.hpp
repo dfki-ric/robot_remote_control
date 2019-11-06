@@ -18,6 +18,12 @@ template <class C> class ThreadProtecetedVar{
             islocked(false)
         {};
 
+        ThreadProtecetedVar(const C &init):
+            var(init),
+            islocked(false)
+        {
+        };
+
         virtual ~ThreadProtecetedVar(){};
 
         /**

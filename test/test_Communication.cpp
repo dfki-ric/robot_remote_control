@@ -68,18 +68,20 @@ BOOST_AUTO_TEST_CASE(checking_twist_command_transfer)
 
 	robot.startUpdateThread(10);
   
-  Twist sendtwistcommand;
-  std::pair<unsigned long long int, Twist> receivetwistcommand;
+  Twist sendtwistcommand,receivetwistcommand;
   sendtwistcommand.mutable_angular()->set_z(0.4);
   sendtwistcommand.mutable_linear()->set_x(0.6);
   
   controller.setTwistCommand(sendtwistcommand);	
   
-  receivetwistcommand = robot.getTwistCommand();
+  //wait for command
+  while (!robot.getTwistCommand(receivetwistcommand)){
+    usleep(10000);
+  };
 	
   robot.stopUpdateThread();
  
-  COMPARE_PROTOBUF(sendtwistcommand,receivetwistcommand.second);
+  COMPARE_PROTOBUF(sendtwistcommand,receivetwistcommand);
 
 }
 
@@ -97,7 +99,7 @@ BOOST_AUTO_TEST_CASE(checking_target_pose)
 
   controller.setTargetPose(pose);
     
-  pose2 = robot.getTargetPose();
+  robot.getTargetPoseCommand(pose2);
 
   robot.stopUpdateThread();
 	

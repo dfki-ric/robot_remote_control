@@ -20,7 +20,18 @@ int main(int argc, char** argv)
 
 
     JointState controllableJoints;
-    //TODO: set some values
+    //add a position controlled joint
+    controllableJoints.add_name("testJoint1");
+    controllableJoints.add_position(1);
+    controllableJoints.add_velocity(0);
+    controllableJoints.add_effort(0);
+
+    //add a position velocity joint
+    controllableJoints.add_name("testJoint2");
+    controllableJoints.add_position(0);
+    controllableJoints.add_velocity(1);
+    controllableJoints.add_effort(0);
+    
     robot.setControllableJoints(controllableJoints);
 
     SimpleActions simpleActions;
@@ -52,16 +63,22 @@ int main(int argc, char** argv)
     robot.setComplexActions(complexActions);
 
 
-    JointState joints = controllableJoints;
+    //init done, now fake a robot
 
+
+    JointState joints = controllableJoints;
 
   
     //consruct type
     Position position;
     Orientation orientation;
-    Pose pose;
+    Pose currentpose,targetpose;
+    Twist twistcommand;
 
-    //fill
+
+
+
+    //fill inital robot state
     position.set_x(0);
     position.set_y(0);
     position.set_z(0);
@@ -71,23 +88,35 @@ int main(int argc, char** argv)
     orientation.set_z(0);
     orientation.set_w(1);
     
-    *(pose.mutable_position()) = position;
-    *(pose.mutable_orientation()) = orientation; 
-    robot.setCurrentPose(pose);
+    *(currentpose.mutable_position()) = position;
+    *(currentpose.mutable_orientation()) = orientation; 
+    robot.setCurrentPose(currentpose);
 
 
     while (true){
-        //robot.update(); //blocking
 
-        pose = robot.getTargetPose();
+        //get and print commands
+        if (robot.getTargetPoseCommand(targetpose)){
+            printf("received new target pose %.2f %.2f %.2f\n",targetpose.position().x(),targetpose.position().y(),targetpose.position().z());
+        }
         
-        //fake-write requested pose to curretn pose
-        robot.setCurrentPose(pose);
+        if (robot.getTwistCommand(twistcommand)){
+            printf("received new twist command %.2f %.2f %.2f\n",twistcommand.linear().x(),twistcommand.linear().y(),twistcommand.linear().z());
+        }
+
+
+        //set and send fake telemetry
+
+        currentpose.mutable_position()->set_x(currentpose.mutable_position()->x() + 0.01);
+        currentpose.mutable_position()->set_y(currentpose.mutable_position()->y() + 0.01);
+        currentpose.mutable_position()->set_z(currentpose.mutable_position()->z() + 0.01);
+        robot.setCurrentPose(currentpose);
 
         //fake some joint movement
+        //joints.InitAsDefaultInstance
         robot.setJointState(joints);
 
-        printf("%.2f %.2f %.2f\n",pose.position().x(),pose.position().y(),pose.position().z());
+        
 
         usleep(100000);
     }

@@ -10,11 +10,6 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSh
     telemetryTransport(telemetryTransport),
     logLevel(CUSTOM-1)
 {
-    twistCommandGetCounter.set(0);
-    jointsCommandGetCounter.set(-1);
-    goToCommandGetCounter.set(-1);
-    simpleActionsCommandGetCounter.set(0);
-    complexActionsCommandGetCounter.set(0);
 }
 
 void ControlledRobot::update()
@@ -46,51 +41,33 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 
     switch (msgtype){
         case TARGET_POSE_COMMAND:{
-            targetPose.lock();
-            targetPose.get_ref().ParseFromString(serializedMessage);
-            targetPose.unlock();
+            poseCommand.write(serializedMessage);
             commandTransport->send(serializeControlMessageType(TARGET_POSE_COMMAND));
             return TARGET_POSE_COMMAND;
         }
         case TWIST_COMMAND:{
-            twistCommand.lock();
-            twistCommand.get_ref().ParseFromString(serializedMessage);
-            twistCommand.unlock();
+            twistCommand.write(serializedMessage);
             commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
-            twistCommandGetCounter.set(0);
             return TWIST_COMMAND;
         }
         case JOINTS_COMMAND: {
-            jointsCommand.lock();
-            jointsCommand.get_ref().ParseFromString(serializedMessage);
-            jointsCommand.unlock();
+            jointsCommand.write(serializedMessage);
             commandTransport->send(serializeControlMessageType(JOINTS_COMMAND));
-            jointsCommandGetCounter.set(0);
-            std::cout << "Received a new jointsCommand!" << std::endl;
             return JOINTS_COMMAND;
         }
         case GOTO_COMMAND: {
-            goToCommand.lock();
-            goToCommand.get_ref().ParseFromString(serializedMessage);
-            goToCommand.unlock();
+            goToCommand.write(serializedMessage);
             commandTransport->send(serializeControlMessageType(GOTO_COMMAND));
-            goToCommandGetCounter.set(0);
             return GOTO_COMMAND;
         }
         case SIMPLE_ACTIONS_COMMAND: {
-            simpleActionsCommand.lock();
-            simpleActionsCommand.get_ref().ParseFromString(serializedMessage);
-            simpleActionsCommand.unlock();
+            simpleActionsCommand.write(serializedMessage);
             commandTransport->send(serializeControlMessageType(SIMPLE_ACTIONS_COMMAND));
-            simpleActionsCommandGetCounter.set(0);
             return SIMPLE_ACTIONS_COMMAND;
         }
         case COMPLEX_ACTIONS_COMMAND: {
-            complexActionsCommand.lock();
-            complexActionsCommand.get_ref().ParseFromString(serializedMessage);
-            complexActionsCommand.unlock();
+            complexActionsCommand.write(serializedMessage);
             commandTransport->send(serializeControlMessageType(COMPLEX_ACTIONS_COMMAND));
-            complexActionsCommandGetCounter.set(0);
             return COMPLEX_ACTIONS_COMMAND;
         }
         case TELEMETRY_REQUEST:{
@@ -114,30 +91,6 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
 
 }
 
-
-int ControlledRobot::setCurrentPose(const Pose& pose){
-    return sendTelemetry(pose,CURRENT_POSE);
-}
-
-int ControlledRobot::setJointState(const JointState& state){
-    return sendTelemetry(state,JOINT_STATE);
-}
-
-int ControlledRobot::setControllableJoints(const JointState& controllableJoints) {
-    return sendTelemetry(controllableJoints, CONTROLLABLE_JOINTS);
-}
-
-int ControlledRobot::setSimpleActions(const SimpleActions& simpleActions) {
-    return sendTelemetry(simpleActions, SIMPLE_ACTIONS);
-}
-
-int ControlledRobot::setComplexActions(const ComplexActions& complexActions) {
-    return sendTelemetry(complexActions, COMPLEX_ACTIONS);
-}
-
-int ControlledRobot::setRobotName(const RobotName& robotName) {
-    return sendTelemetry(robotName, ROBOT_NAME);
-}
 
 int ControlledRobot::setRobotState(const std::string& state){
     RobotState protostate;
