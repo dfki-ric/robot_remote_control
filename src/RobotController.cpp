@@ -93,24 +93,15 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     switch (msgtype){
 
-        case CURRENT_POSE:          addToTelemetryBuffer<Pose>(msgtype,serializedMessage);
-                                    return msgtype;
-        case JOINT_STATE:           addToTelemetryBuffer<JointState>(msgtype,serializedMessage);
-                                    return msgtype;
-        case CONTROLLABLE_JOINTS:   addToTelemetryBuffer<JointState>(msgtype,serializedMessage);
-                                    return msgtype;
-        case SIMPLE_ACTIONS:        addToTelemetryBuffer<SimpleActions>(msgtype,serializedMessage);
-                                    return msgtype;
-        case COMPLEX_ACTIONS:       addToTelemetryBuffer<ComplexActions>(msgtype,serializedMessage);
-                                    return msgtype;
-        case ROBOT_NAME:            addToTelemetryBuffer<RobotName>(msgtype,serializedMessage);
-                                    return msgtype;
-        case ROBOT_STATE:           addToTelemetryBuffer<RobotState>(msgtype,serializedMessage);
-                                    return msgtype;
-        case LOG_MESSAGE:           addToTelemetryBuffer<LogMessage>(msgtype,serializedMessage);
-                                    return msgtype;
-        case VIDEO_STREAMS:         addToTelemetryBuffer<VideoStreams>(msgtype,serializedMessage);
-                                    return msgtype;
+        case CURRENT_POSE:          addToTelemetryBuffer<Pose>(msgtype,serializedMessage);              return msgtype;
+        case JOINT_STATE:           addToTelemetryBuffer<JointState>(msgtype,serializedMessage);        return msgtype;
+        case CONTROLLABLE_JOINTS:   addToTelemetryBuffer<JointState>(msgtype,serializedMessage);        return msgtype;
+        case SIMPLE_ACTIONS:        addToTelemetryBuffer<SimpleActions>(msgtype,serializedMessage);     return msgtype;
+        case COMPLEX_ACTIONS:       addToTelemetryBuffer<ComplexActions>(msgtype,serializedMessage);    return msgtype;
+        case ROBOT_NAME:            addToTelemetryBuffer<RobotName>(msgtype,serializedMessage);         return msgtype;
+        case ROBOT_STATE:           addToTelemetryBuffer<RobotState>(msgtype,serializedMessage);        return msgtype;
+        case LOG_MESSAGE:           addToTelemetryBuffer<LogMessage>(msgtype,serializedMessage);        return msgtype;
+        case VIDEO_STREAMS:         addToTelemetryBuffer<VideoStreams>(msgtype,serializedMessage);      return msgtype;
         
         case TELEMETRY_MESSAGE_TYPES_NUMBER:
         case NO_TELEMETRY_DATA:
