@@ -159,9 +159,8 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data)
 
   
   //send telemetry data
-  int sent;
-  sent = robot.setCurrentPose(pose);
-  sent = robot.setJointState(jointstate);
+  robot.setCurrentPose(pose);
+  robot.setJointState(jointstate);
 
 
 
@@ -196,7 +195,7 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
   controller.setLogLevel(DEBUG);
 
   LogMessage debug_message;
-  debug_message.set_type(DEBUG);
+  debug_message.set_level(DEBUG);
   debug_message.set_message("[DEBUG] This is a debug message.");
   robot.setLogMessage(debug_message);
 
@@ -211,7 +210,7 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
   controller.setLogLevel(FATAL);
 
   LogMessage fatal_message;
-  fatal_message.set_type(FATAL);
+  fatal_message.set_level(FATAL);
   fatal_message.set_message("[FATAL] This is a fatal message.");
   robot.setLogMessage(fatal_message);
 
@@ -223,7 +222,7 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
 
   //test error message, should not go through (because LogLevel is still at FATAL)
   LogMessage error_message;
-  error_message.set_type(ERROR);
+  error_message.set_level(ERROR);
   error_message.set_message("[ERROR] This is an error message.");
   robot.setLogMessage(error_message);
 
@@ -238,7 +237,7 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
   controller.setLogLevel(NONE);
 
   LogMessage another_fatal_message;
-  another_fatal_message.set_type(FATAL);
+  another_fatal_message.set_level(FATAL);
   another_fatal_message.set_message("[FATAL] This is another fatal message.");
   robot.setLogMessage(another_fatal_message);
 

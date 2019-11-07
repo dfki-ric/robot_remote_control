@@ -99,6 +99,6 @@ message RobotState {
 }
 
 message LogMessage {
-    uint32 type = 1;
+    uint32 level = 1;
     string message = 2; 
 }
