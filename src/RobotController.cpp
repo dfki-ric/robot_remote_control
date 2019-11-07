@@ -37,11 +37,15 @@ void RobotController::setJointCommand(const JointState &jointsCommand){
 }
 
 void RobotController::setSimpleActionCommand(const SimpleAction &simpleActionCommand) {
-    sendProtobufData(simpleActionCommand, SIMPLE_ACTIONS_COMMAND);
+    SimpleActions action;
+    (*action.add_actions()) = simpleActionCommand;
+    sendProtobufData(action, SIMPLE_ACTIONS_COMMAND);
 }
 
 void RobotController::setComplexActionCommand(const ComplexAction &complexActionCommand) {
-    sendProtobufData(complexActionCommand, COMPLEX_ACTIONS_COMMAND);
+    ComplexActions action;
+     (*action.add_actions()) = complexActionCommand;
+    sendProtobufData(action, COMPLEX_ACTIONS_COMMAND);
 }
 
 void RobotController::setLogLevel(const uint32_t &level){

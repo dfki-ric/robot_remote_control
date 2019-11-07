@@ -15,7 +15,8 @@ int main(int argc, char** argv)
 
     RobotName name;
     name.set_value("TestRobot");
-    robot.setRobotName(name);
+    robot.initRobotName(name);
+    robot.setRobotState("INIT");
 
 
 
@@ -32,7 +33,7 @@ int main(int argc, char** argv)
     controllableJoints.add_velocity(1);
     controllableJoints.add_effort(0);
     
-    robot.setControllableJoints(controllableJoints);
+    robot.initControllableJoints(controllableJoints);
 
     SimpleActions simpleActions;
     // SimpleAction action;
@@ -57,23 +58,27 @@ int main(int argc, char** argv)
 
     
 
-    robot.setSimpleActions(simpleActions);
+    robot.initSimpleActions(simpleActions);
 
     ComplexActions complexActions;
-    robot.setComplexActions(complexActions);
+    robot.initComplexActions(complexActions);
 
 
     //init done, now fake a robot
 
-
-    JointState joints = controllableJoints;
-
-  
-    //consruct type
+    //robot state
+    JointState jointsstate = controllableJoints;
     Position position;
     Orientation orientation;
     Pose currentpose,targetpose;
+    
+    //commands
     Twist twistcommand;
+    GoTo gotocommand;
+    JointState jointscommand;
+    SimpleActions simpleactionscommand;
+    ComplexActions complexactionscommand;
+
 
 
 
@@ -97,24 +102,51 @@ int main(int argc, char** argv)
 
         //get and print commands
         if (robot.getTargetPoseCommand(targetpose)){
-            printf("received new target pose %.2f %.2f %.2f\n",targetpose.position().x(),targetpose.position().y(),targetpose.position().z());
+            printf("\ngot target pose command:\n%s\n",targetpose.ShortDebugString().c_str());
+            robot.setLogMessage(INFO, "warping fake robot to target position\n");
+            currentpose = targetpose;
         }
         
         if (robot.getTwistCommand(twistcommand)){
-            printf("received new twist command %.2f %.2f %.2f\n",twistcommand.linear().x(),twistcommand.linear().y(),twistcommand.linear().z());
+            printf("\ngot twist command:\n%s\n",twistcommand.ShortDebugString().c_str());
+            robot.setLogMessage(ERROR, "twist not supported for fake robot\n");
+        }
+
+        if (robot.getGoToCommand(gotocommand)){
+            printf("\ngot goto command:\n%s\n",gotocommand.ShortDebugString().c_str());
+            robot.setLogMessage(ERROR, "goto not supported for fake robot\n");
+        }
+
+        if (robot.getJointsCommand(jointscommand)){
+            printf("\ngot joints command:\n%s\n",jointscommand.ShortDebugString().c_str());
+            robot.setLogMessage(INFO, "setting fake robot joints to target position\n");
+            jointsstate = jointscommand;
+        }
+
+        if (robot.getSimpleActionsCommand(simpleactionscommand)){
+            printf("\ngot simple actions command:\n%s\n",simpleactionscommand.ShortDebugString().c_str());
+            robot.setLogMessage(INFO, "setting simple action state\n");
+            //do it
+        }
+
+        if (robot.getComplexActionsCommand(complexactionscommand)){
+            printf("\ngot complex actions command:\n%s\n",complexactionscommand.ShortDebugString().c_str());
+            robot.setLogMessage(INFO, "setting complex action state\n");
+            //do it
         }
 
 
-        //set and send fake telemetry
 
-        currentpose.mutable_position()->set_x(currentpose.mutable_position()->x() + 0.01);
-        currentpose.mutable_position()->set_y(currentpose.mutable_position()->y() + 0.01);
-        currentpose.mutable_position()->set_z(currentpose.mutable_position()->z() + 0.01);
+        // set/send and send fake telemetry
         robot.setCurrentPose(currentpose);
 
-        //fake some joint movement
-        //joints.InitAsDefaultInstance
-        robot.setJointState(joints);
+        // fake some joint movement
+        robot.setJointState(jointsstate);
+
+
+        robot.setRobotState("RUNNING");
+
+        
 
         
 

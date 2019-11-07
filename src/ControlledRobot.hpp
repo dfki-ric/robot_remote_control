@@ -115,6 +115,55 @@ namespace robot_remote_control
         public:
 
             /**
+             * @brief The robot uses this method to provide information about its controllable joints
+             *
+             * @param controllableJoints the controllable joints of the robot as a JointState
+             * @return int number of bytes sent
+             */
+            int initControllableJoints(const JointState& telemetry){
+                return sendTelemetry(telemetry, CONTROLLABLE_JOINTS);
+            }
+
+            /**
+             * @brief The robot uses this method to provide information about its set of simple actions
+             *
+             * @param simpleActions the simple actions of the robot to report to the controler
+             * the state field of the SimpleActions class should be filled with the max value
+             * @return int number of bytes sent
+             */
+            int initSimpleActions(const SimpleActions& telemetry){
+                return sendTelemetry(telemetry, SIMPLE_ACTIONS);
+            }
+
+            /**
+             * @brief The robot uses this method to provide information about its set of complex actions
+             *
+             * @param complexActions the complex actions of the robot as a ComplexActions
+             * @return int number of bytes sent
+             */
+            int initComplexActions(const ComplexActions& telemetry){
+                return sendTelemetry(telemetry, COMPLEX_ACTIONS);
+            }
+
+            /**
+             * @brief The robot uses this method to provide information about its name
+             *
+             * @param robotName the name of the robot as a RobotName
+             * @return int number of bytes sent
+             */
+            int initRobotName(const RobotName& telemetry){
+                return sendTelemetry(telemetry, ROBOT_NAME);
+            }
+
+
+            int setRobotState(const std::string& state);
+
+            int setLogMessage(enum LogLevel lvl, const std::string& message);
+
+            int setLogMessage(const LogMessage& log_message);
+
+
+            /**
              * @brief Set the current Pose of the robot
              * 
              * @param pose current pose
@@ -134,52 +183,20 @@ namespace robot_remote_control
                  return sendTelemetry(telemetry,JOINT_STATE);
             }
 
-            /**
-             * @brief The robot uses this method to provide information about its controllable joints
-             *
-             * @param controllableJoints the controllable joints of the robot as a JointState
-             * @return int number of bytes sent
-             */
-            int setControllableJoints(const JointState& telemetry){
-                return sendTelemetry(telemetry, CONTROLLABLE_JOINTS);
+
+            int setSimpleActionState(SimpleAction &telemetry){
+                SimpleActions action;
+                (*action.add_actions()) = telemetry;
+                return sendTelemetry(action, SIMPLE_ACTIONS);
             }
 
-            /**
-             * @brief The robot uses this method to provide information about its set of simple actions
-             *
-             * @param simpleActions the simple actions of the robot to report to the controler
-             * the state field of the SimpleActions class should be filled with the max value
-             * @return int number of bytes sent
-             */
-            int setSimpleActions(const SimpleActions& telemetry){
-                return sendTelemetry(telemetry, SIMPLE_ACTIONS);
+            int setComplexActionState(ComplexAction &telemetry){
+                ComplexActions action;
+                (*action.add_actions()) = telemetry;
+                return sendTelemetry(action, COMPLEX_ACTIONS);
             }
 
-            /**
-             * @brief The robot uses this method to provide information about its set of complex actions
-             *
-             * @param complexActions the complex actions of the robot as a ComplexActions
-             * @return int number of bytes sent
-             */
-            int setComplexActions(const ComplexActions& telemetry){
-                return sendTelemetry(telemetry, COMPLEX_ACTIONS);
-            }
 
-            /**
-             * @brief The robot uses this method to provide information about its name
-             *
-             * @param robotName the name of the robot as a RobotName
-             * @return int number of bytes sent
-             */
-            int setRobotName(const RobotName& telemetry){
-                return sendTelemetry(telemetry, ROBOT_NAME);
-            }
-
-            int setRobotState(const std::string& state);
-
-            int setLogMessage(enum LogLevel lvl, const std::string& message);
-
-            int setLogMessage(const LogMessage& log_message);
 
 
 
