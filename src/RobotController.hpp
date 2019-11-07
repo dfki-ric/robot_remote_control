@@ -260,6 +260,14 @@ namespace robot_remote_control
                 return sendRequest(buf);
             }
 
+            template <class CLASS > void addToTelemetryBuffer(const TelemetryMessageType &type, const std::string &serializedMessage){
+                CLASS data;
+                data.ParseFromString(serializedMessage);
+                buffers->lock();
+                RingBufferAccess::pushData(buffers->get_ref()[type],data);
+                buffers->unlock();
+            }
+
     };
 
 } // end namespace interaction-library-controlled_robot
