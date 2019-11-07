@@ -84,17 +84,8 @@ int main(int argc, char** argv)
 
 
     //fill inital robot state
-    position.set_x(0);
-    position.set_y(0);
-    position.set_z(0);
-
-    orientation.set_x(0);
-    orientation.set_y(0);
-    orientation.set_z(0);
-    orientation.set_w(1);
-    
-    *(currentpose.mutable_position()) = position;
-    *(currentpose.mutable_orientation()) = orientation; 
+    currentpose.mutable_position();
+    currentpose.mutable_orientation()->set_w(1);
     robot.setCurrentPose(currentpose);
 
 
@@ -135,6 +126,8 @@ int main(int argc, char** argv)
             //do it
         }
 
+        //set state
+        robot.setRobotState("RUNNING");
 
 
         // set/send and send fake telemetry
@@ -143,9 +136,7 @@ int main(int argc, char** argv)
         // fake some joint movement
         robot.setJointState(jointsstate);
 
-
-        robot.setRobotState("RUNNING");
-
+        
         
 
         

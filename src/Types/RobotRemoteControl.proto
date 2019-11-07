@@ -102,3 +102,12 @@ message LogMessage {
     uint32 level = 1;
     string message = 2; 
 }
+
+message VideoStream{
+    string url = 1;
+    Pose camerapose = 2;
+}
+
+message VideoStreams{
+    repeated VideoStream stream = 1;
+}

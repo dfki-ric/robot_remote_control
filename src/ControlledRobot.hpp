@@ -155,18 +155,47 @@ namespace robot_remote_control
                 return sendTelemetry(telemetry, ROBOT_NAME);
             }
 
+            /**
+             * @brief submit the video strem urls
+             * 
+             * @param telemetry list of streams and camera poses
+             * @return int number of bytes sent
+             */
+            int initVideoStreams(const VideoStreams& telemetry){
+                return sendTelemetry(telemetry, VIDEO_STREAMS);
+            }
 
-            int setRobotState(const std::string& state);
-
+            /**
+             * @brief Send a log message, is only send, if the log level set by the controller is higher
+             * or equal to the lvl or higher than CUSTOM in these parameters. CUSTOM Messages can be 20 or higher
+             * 
+             * @param lvl LogLevel (NONE=0,FATAL,ERROR,WARN,INFO,DEBUG,CUSTOM=20)
+             * @param message the message to send
+             * @return int number of bytes sent
+             */
             int setLogMessage(enum LogLevel lvl, const std::string& message);
 
+            /**
+             * @brief Set the Log Message object, 
+             * 
+             * @param log_message 
+             * @return int number of bytes sent
+             */
             int setLogMessage(const LogMessage& log_message);
+
+            /**
+             * @brief Set the Robot State string
+             * 
+             * @param state the state description
+             * @return int number of bytes sent
+             */
+            int setRobotState(const std::string& state);
 
 
             /**
              * @brief Set the current Pose of the robot
              * 
-             * @param pose current pose
+             * @param telemetry current pose
              * @return int number of bytes sent
              */
             int setCurrentPose(const Pose& telemetry){
@@ -176,27 +205,12 @@ namespace robot_remote_control
             /**
              * @brief Set the curretn JointState of the robot
              * 
-             * @param pose current JointState
+             * @param telemetry current JointState
              * @return int number of bytes sent
              */
             int setJointState(const JointState& telemetry){
                  return sendTelemetry(telemetry,JOINT_STATE);
             }
-
-
-            int setSimpleActionState(SimpleAction &telemetry){
-                SimpleActions action;
-                (*action.add_actions()) = telemetry;
-                return sendTelemetry(action, SIMPLE_ACTIONS);
-            }
-
-            int setComplexActionState(ComplexAction &telemetry){
-                ComplexActions action;
-                (*action.add_actions()) = telemetry;
-                return sendTelemetry(action, COMPLEX_ACTIONS);
-            }
-
-
 
 
 

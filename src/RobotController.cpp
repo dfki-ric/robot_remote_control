@@ -5,6 +5,17 @@ using namespace std;
 using namespace robot_remote_control;
 
 
+#define HANDLE_TELEMETRY(TELEMETRY,TYPE) \
+        case TELEMETRY:{ \
+            TYPE data; \
+            data.ParseFromString(serializedMessage); \
+            buffers->lock(); \
+            RingBufferAccess::pushData(buffers->get_ref()[TELEMETRY],data); \
+            buffers->unlock(); \
+            return TELEMETRY; \
+        }
+
+
 RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t recv_buffer_size):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport)
@@ -94,72 +105,21 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
 
     switch (msgtype){
-        case CURRENT_POSE:{
-            Pose currentPose;
-            currentPose.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[CURRENT_POSE],currentPose);
-            buffers->unlock();
-            return msgtype;
-        }
-        case JOINT_STATE:{
-            JointState currentJointState;
-            currentJointState.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[JOINT_STATE],currentJointState);
-            buffers->unlock();
-            return msgtype;
-        }
-        case CONTROLLABLE_JOINTS: {
-            JointState controllableJoints;
-            controllableJoints.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[CONTROLLABLE_JOINTS],controllableJoints);
-            buffers->unlock();
-            return msgtype;
-        }
-        case SIMPLE_ACTIONS: {
-            SimpleActions simpleActions;
-            simpleActions.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[SIMPLE_ACTIONS],simpleActions);
-            buffers->unlock();
-            return msgtype;
-        }
-        case COMPLEX_ACTIONS: {
-            ComplexActions complexActions;
-            complexActions.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[COMPLEX_ACTIONS],complexActions);
-            buffers->unlock();
-            return msgtype;
-        }
-        case ROBOT_NAME: {
-            RobotName robotName;
-            robotName.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[ROBOT_NAME],robotName);
-            buffers->unlock();
-            return msgtype;
-        }
-        case ROBOT_STATE: {
-            RobotState state;
-            state.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[ROBOT_STATE],state);
-            buffers->unlock();
-            return msgtype;
-        }
-        case LOG_MESSAGE: {
-            LogMessage msg;
-            msg.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[LOG_MESSAGE],msg);
-            buffers->unlock();
-            return msgtype;
-        }
+        HANDLE_TELEMETRY(CURRENT_POSE,Pose)
+        HANDLE_TELEMETRY(JOINT_STATE,JointState)
+        HANDLE_TELEMETRY(CONTROLLABLE_JOINTS,JointState)
+        HANDLE_TELEMETRY(SIMPLE_ACTIONS,SimpleActions)
+        HANDLE_TELEMETRY(COMPLEX_ACTIONS,ComplexActions)
+        HANDLE_TELEMETRY(ROBOT_NAME,RobotName)
+        HANDLE_TELEMETRY(ROBOT_STATE,RobotState)
+        HANDLE_TELEMETRY(LOG_MESSAGE,LogMessage)
+        HANDLE_TELEMETRY(VIDEO_STREAMS,VideoStreams)
         
-        default: return msgtype;
+        case TELEMETRY_MESSAGE_TYPES_NUMBER:
+        case NO_TELEMETRY_DATA:
+        {
+            return msgtype;
+        } 
     }
 
     //should never reach this

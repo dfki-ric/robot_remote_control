@@ -36,6 +36,9 @@ using namespace robot_remote_control;
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<LogMessage>(size));
         get_ref()[LOG_MESSAGE] = newbuf;
 
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<VideoStreams>(size));
+        get_ref()[VIDEO_STREAMS] = newbuf;
+
         unlock();
     }
 
@@ -88,6 +91,11 @@ using namespace robot_remote_control;
             case LOG_MESSAGE:{
                 LogMessage data;
                 fillBuffer(LOG_MESSAGE,data,buf);
+                break;
+            }
+            case VIDEO_STREAMS:{
+                VideoStreams data;
+                fillBuffer(VIDEO_STREAMS,data,buf);
                 break;
             }
             case NO_TELEMETRY_DATA:

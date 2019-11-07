@@ -164,6 +164,15 @@ namespace robot_remote_control
             }
 
             /**
+             * @brief Request information about the video streams of the robot.
+             * 
+             * @param streams where to write the data to
+             */
+            void requestVideoStreams(VideoStreams & streams){
+                requestTelemetry(VIDEO_STREAMS, streams);
+            }
+
+            /**
              * @brief Request the curretn pose of the robot.
              *
              * @param robotName where to write the data to

@@ -27,7 +27,8 @@ namespace robot_remote_control
                                 COMPLEX_ACTIONS, // info about the complex actions of the robot
                                 ROBOT_NAME, // the name of the robot
                                 ROBOT_STATE, //robot state description (string)
-                                LOG_MESSAGE, //log messages
+                                LOG_MESSAGE, //log messages,
+                                VIDEO_STREAMS,
                                 TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
                             };
 
