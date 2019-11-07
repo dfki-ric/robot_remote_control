@@ -64,8 +64,23 @@ int main(int argc, char** argv)
     robot.initSimpleActions(simpleActions);
 
     ComplexActions complexActions;
+    //TODO fill data
     robot.initComplexActions(complexActions);
 
+
+    SimpleSensors sensors;
+    SimpleSensor* sens;
+    sens = sensors.add_sensors();
+    sens->set_name("temperature");
+    sens->set_id(1);
+    sens->mutable_size()->set_x(1); //only single value
+
+    sens = sensors.add_sensors();
+    sens->set_name("velocity");
+    sens->set_id(2);
+    sens->mutable_size()->set_x(3); // 3 value vector
+
+    robot.initSimpleSensors(sensors);
 
     //init done, now fake a robot
 
@@ -74,6 +89,17 @@ int main(int argc, char** argv)
     Position position;
     Orientation orientation;
     Pose currentpose,targetpose;
+
+    SimpleSensor temperature,velocity;
+    temperature.set_id(1);
+    //init value
+    temperature.add_value(42);
+
+    velocity.set_id(2);
+    //init value
+    velocity.add_value(0);
+    velocity.add_value(0);
+    velocity.add_value(0);
     
     //commands
     Twist twistcommand;
@@ -138,6 +164,13 @@ int main(int argc, char** argv)
         // fake some joint movement
         robot.setJointState(jointsstate);
 
+        temperature.set_value(0,42);
+        robot.setSimpleSensor(temperature);
+
+        velocity.set_value(0,0.1);
+        velocity.set_value(1,0.1);
+        velocity.set_value(2,0.1);
+        robot.setSimpleSensor(velocity);
         
 
         usleep(100000);

@@ -90,6 +90,17 @@ namespace robot_remote_control
             }
 
             /**
+             * @brief Get a Simple Sensor object
+             * 
+             * @param simplesensor SimpleSensor to write data to
+             * @return true 
+             * @return false 
+             */
+            bool getSimpleSensor(SimpleSensor &simplesensor){
+                return getTelemetry(SIMPLE_SENSOR_VALUE,simplesensor);
+            }
+
+            /**
              * @brief Get the Log Message object
              * 
              * @param msg LogMessage to write the data to
@@ -110,6 +121,10 @@ namespace robot_remote_control
                 int statesleft = getTelemetry(ROBOT_STATE,protostate);
                 state = protostate.state();
                 return statesleft;
+            }
+
+            bool getRobotState(RobotState &state){
+                return getTelemetry(ROBOT_STATE,state);
             }
 
             /**
@@ -151,6 +166,15 @@ namespace robot_remote_control
              */
             void requestControllableJoints(JointState &jointState) {
                 requestTelemetry(CONTROLLABLE_JOINTS, jointState);
+            }
+
+            /**
+             * @brief Request information about the simple sensors of the robot.
+             * 
+             * @param sensors sensord array to wtite the information to
+             */
+            void requestSimpleSensors(SimpleSensors &sensors){
+                requestTelemetry(SIMPLE_SENSOR_DEFINITION, sensors);
             }
 
             /**
