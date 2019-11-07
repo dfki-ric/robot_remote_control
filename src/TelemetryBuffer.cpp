@@ -39,6 +39,12 @@ using namespace robot_remote_control;
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<VideoStreams>(size));
         get_ref()[VIDEO_STREAMS] = newbuf;
 
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleSensors>(size));
+        get_ref()[SIMPLE_SENSOR_DEFINITION] = newbuf;
+
+        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleSensor>(size));
+        get_ref()[SIMPLE_SENSOR_VALUE] = newbuf;
+
         unlock();
     }
 
@@ -96,6 +102,16 @@ using namespace robot_remote_control;
             case VIDEO_STREAMS:{
                 VideoStreams data;
                 fillBuffer(VIDEO_STREAMS,data,buf);
+                break;
+            }
+            case SIMPLE_SENSOR_DEFINITION:{
+                SimpleSensors data;
+                fillBuffer(SIMPLE_SENSOR_DEFINITION,data,buf);
+                break;
+            }
+            case SIMPLE_SENSOR_VALUE:{
+                SimpleSensors data;
+                fillBuffer(SIMPLE_SENSOR_VALUE,data,buf);
                 break;
             }
             case NO_TELEMETRY_DATA:

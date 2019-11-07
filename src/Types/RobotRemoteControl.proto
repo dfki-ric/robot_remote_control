@@ -2,6 +2,11 @@ syntax = "proto3";
 
 package robot_remote_control;
 
+message Vectror2{
+    float x = 1;
+    float y = 2;
+}
+
 message Vector3 {
     float x = 1;
     float y = 2;
@@ -111,3 +116,17 @@ message VideoStream{
 message VideoStreams{
     repeated VideoStream stream = 1;
 }
+
+message SimpleSensor{
+    string name = 1;
+    int32 id = 2;
+    Vectror2 size = 3;
+    repeated float value = 4;
+}
+
+message SimpleSensors{
+    repeated SimpleSensor sensors = 1;
+}
+
+
+

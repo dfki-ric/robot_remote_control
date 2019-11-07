@@ -18,7 +18,10 @@ int main(int argc, char** argv)
     robot.initRobotName(name);
     robot.setRobotState("INIT");
 
-
+    VideoStreams streams;
+    VideoStream* stream = streams.add_stream();
+    stream->set_url("http://robot/stream");
+    robot.initVideoStreams(streams);
 
     JointState controllableJoints;
     //add a position controlled joint
@@ -129,15 +132,11 @@ int main(int argc, char** argv)
         //set state
         robot.setRobotState("RUNNING");
 
-
         // set/send and send fake telemetry
         robot.setCurrentPose(currentpose);
 
         // fake some joint movement
         robot.setJointState(jointsstate);
-
-        
-        
 
         
 

@@ -28,7 +28,9 @@ namespace robot_remote_control
                                 ROBOT_NAME, // the name of the robot
                                 ROBOT_STATE, //robot state description (string)
                                 LOG_MESSAGE, //log messages,
-                                VIDEO_STREAMS,
+                                VIDEO_STREAMS, //definition of video streams
+                                SIMPLE_SENSOR_DEFINITION,
+                                SIMPLE_SENSOR_VALUE,
                                 TELEMETRY_MESSAGE_TYPES_NUMBER //LAST element
                             };
 

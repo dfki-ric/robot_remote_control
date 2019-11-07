@@ -146,6 +146,17 @@ namespace robot_remote_control
             }
 
             /**
+             * @brief The robot uses this method to provide information about its sensors
+             * The name is only mandatory here, setSimpleSnsor() may omit this value and identify by id
+             * 
+             * @param telemetry a list of simple sensors and their names/ids, other firelds not nessecary
+             * @return int  number of bytes sent
+             */
+            int initSimpleSensors(const SimpleSensors &telemetry){
+                return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION);
+            }
+
+            /**
              * @brief The robot uses this method to provide information about its name
              *
              * @param robotName the name of the robot as a RobotName
@@ -212,6 +223,16 @@ namespace robot_remote_control
                  return sendTelemetry(telemetry,JOINT_STATE);
             }
 
+            /**
+             * @brief Set a single Simple Sensor value
+             * the name strin can be omitted, if it was provided using initSimpleSensors()
+             * 
+             * @param telemetry a single sensor value
+             * @return int number of bytes sent
+             */
+            int setSimpleSensor(const SimpleSensor &telemetry ){
+                return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE);
+            }
 
 
         protected:
