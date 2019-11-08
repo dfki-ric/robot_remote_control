@@ -119,7 +119,7 @@ message VideoStreams{
 
 message SimpleSensor{
     string name = 1;
-    int32 id = 2;
+    uint32 id = 2;
     Vectror2 size = 3;
     repeated float value = 4;
 }

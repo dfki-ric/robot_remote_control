@@ -1,6 +1,7 @@
 #include "RobotController.hpp"
 #include <iostream>
 
+
 using namespace std;
 using namespace robot_remote_control;
 
@@ -10,6 +11,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     telemetryTransport(telemetryTransport)
 {
     buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(recv_buffer_size));
+    simplesensorbuffer = std::shared_ptr<SimpleSensorBuffer>(new SimpleSensorBuffer());
 }
 
 RobotController::~RobotController(){
@@ -103,7 +105,9 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         case LOG_MESSAGE:               addToTelemetryBuffer< LogMessage        >(msgtype,serializedMessage); return msgtype;
         case VIDEO_STREAMS:             addToTelemetryBuffer< VideoStreams      >(msgtype,serializedMessage); return msgtype;
         case SIMPLE_SENSOR_DEFINITION:  addToTelemetryBuffer< SimpleSensors     >(msgtype,serializedMessage); return msgtype;
-        case SIMPLE_SENSOR_VALUE:       addToTelemetryBuffer< SimpleSensor      >(msgtype,serializedMessage); return msgtype;
+
+        //multi values in single stream
+        case SIMPLE_SENSOR_VALUE:       addToSimpleSensorBuffer(serializedMessage); return msgtype;
         
         case TELEMETRY_MESSAGE_TYPES_NUMBER:
         case NO_TELEMETRY_DATA:
@@ -114,4 +118,20 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     //should never reach this
     return NO_TELEMETRY_DATA;
+}
+
+ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessage){   
+    SimpleSensor data;
+    data.ParseFromString(serializedMessage);
+    //check if buffer number is big enough
+    //size must be id+1 (id 0 needs size 1)
+    simplesensorbuffer->initBufferID(data.id());
+    // if (simplesensorbuffer->size() <= data.id()){
+    //     simplesensorbuffer->resize(data.id());
+    // }
+
+    simplesensorbuffer->lock();
+    RingBufferAccess::pushData(simplesensorbuffer->get_ref()[data.id()],data,true);
+    simplesensorbuffer->unlock();
+
 }

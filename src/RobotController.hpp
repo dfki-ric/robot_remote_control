@@ -3,6 +3,7 @@
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
+#include "SimpleSensorBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 
 
@@ -96,8 +97,21 @@ namespace robot_remote_control
              * @return true 
              * @return false 
              */
-            bool getSimpleSensor(SimpleSensor &simplesensor){
-                return getTelemetry(SIMPLE_SENSOR_VALUE,simplesensor);
+            bool getSimpleSensor(const int & id, SimpleSensor &simplesensor){
+
+                simplesensorbuffer->lock();
+                
+                bool result = false;
+                if (simplesensorbuffer->get_ref().size() > id){
+                    std::shared_ptr<RingBufferBase> bufferptr = simplesensorbuffer->get_ref()[id];
+                    if (bufferptr.get()){
+                        result = RingBufferAccess::popData(bufferptr,simplesensor);
+                    }
+                }
+
+                simplesensorbuffer->unlock();
+
+                return result;
             }
 
             /**
@@ -271,6 +285,7 @@ namespace robot_remote_control
             
 
             std::shared_ptr<TelemetryBuffer>  buffers;
+            std::shared_ptr<SimpleSensorBuffer>  simplesensorbuffer;
             //void initBuffers(const unsigned int &defaultSize);
 
 
@@ -291,6 +306,8 @@ namespace robot_remote_control
                 RingBufferAccess::pushData(buffers->get_ref()[type],data);
                 buffers->unlock();
             }
+
+            void addToSimpleSensorBuffer(const std::string &serializedMessage);
 
     };
 

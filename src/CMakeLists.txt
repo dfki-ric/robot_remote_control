@@ -40,8 +40,8 @@ rock_library(robot_remote_control-controlled_robot
     )
 
 rock_library(robot_remote_control-robot_controller
-    SOURCES RobotController.cpp TelemetryBuffer.cpp
-    HEADERS RobotController.hpp MessageTypes.hpp RingBuffer.hpp TelemetryBuffer.hpp Transports/Transport.hpp
+    SOURCES RobotController.cpp TelemetryBuffer.cpp SimpleSensorBuffer.cpp
+    HEADERS RobotController.hpp MessageTypes.hpp RingBuffer.hpp TelemetryBuffer.hpp SimpleSensorBuffer.hpp Transports/Transport.hpp 
     DEPS robot_remote_control-update_thread robot_remote_control-types
     )
 

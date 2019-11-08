@@ -15,6 +15,12 @@ class TelemetryBuffer: public ThreadProtecetedVar< std::vector< std::shared_ptr<
     ~TelemetryBuffer();
 
 
+    /**
+     * @brief get the serializes buffer value, so the calling function does not need to know the datatype.
+     * 
+     * @param type 
+     * @return std::string 
+     */
     std::string peekSerialized(const TelemetryMessageType &type);
     
 
