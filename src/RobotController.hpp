@@ -97,7 +97,7 @@ namespace robot_remote_control
              * @return true 
              * @return false 
              */
-            bool getSimpleSensor(const int & id, SimpleSensor &simplesensor){
+            bool getSimpleSensor(const unsigned int & id, SimpleSensor &simplesensor){
 
                 simplesensorbuffer->lock();
                 
