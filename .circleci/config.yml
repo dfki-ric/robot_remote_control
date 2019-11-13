@@ -1,20 +1,16 @@
 version: 2
 
-#function to install dependencies (before_script also allies to includes)
-.dep_install: &dep_install |
-  - run: apt-get install -y build-essential libprotobuf-dev protobuf-compiler libzmqpp-dev
-  - run: ./install_source_dependencies.sh .
-  - run: . env.sh
-  - run: mkdir build
-  - run: cd build
-
 jobs:
   build:
     docker:
       - image: ubuntu:latest
     steps:
       - checkout
-      - *dep_install
+      - run: apt-get install -y build-essential libprotobuf-dev protobuf-compiler libzmqpp-dev
+      - run: ./install_source_dependencies.sh .
+      - run: . env.sh
+      - run: mkdir build
+      - run: cd build
       - run: cmake ..
       - run: make -j
 
