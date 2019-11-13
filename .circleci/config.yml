@@ -6,9 +6,21 @@ jobs:
       - image: ubuntu:latest
     steps:
       - checkout
-      - run: apt-get update && apt-get install -y build-essential git cmake pkg-config libboost-test-dev libboost-system-dev libprotobuf-dev protobuf-compiler libzmqpp-dev
-      - run: ./install_source_dependencies.sh ./external
-      - run: mkdir build
-      - run: . env.sh && cd build && cmake -D ROCK_TEST_ENABLED=ON ..
+      - run: ./.circleci/prepare_build.sh
+      - run: make -j -C build/
+
+  test:
+    docker:
+      - image: ubuntu:latest
+    steps:
+      - checkout
+      - run: ./.circleci/prepare_build.sh -D ROCK_TEST_ENABLED=ON
       - run: make -j -C build/
       - run: . env.sh && ./build/test/test_suite
+
+workflows:
+   version: 2
+   build_and_test:
+     jobs:
+       - build
+       - test
