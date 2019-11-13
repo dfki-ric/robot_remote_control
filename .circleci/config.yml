@@ -9,7 +9,7 @@ version: 2
   cd build
 
 jobs:
-  build_standalone:
+  build:
     docker:
       - image: d-reg.hb.dfki.de:5000/gitlab-ci/docker-build_essentials_ubuntu:latest
     steps:
