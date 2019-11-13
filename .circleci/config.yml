@@ -7,7 +7,8 @@ jobs:
     steps:
       - checkout
       - run: apt-get update && apt-get install -y build-essential libprotobuf-dev protobuf-compiler libzmqpp-dev
-      - run: ./install_source_dependencies.sh .
+      - run: ls -a
+      - run: ./install_source_dependencies.sh ./external
       - run: . env.sh
       - run: mkdir build
       - run: cd build
