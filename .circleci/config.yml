@@ -6,7 +6,7 @@ jobs:
       - image: ubuntu:latest
     steps:
       - checkout
-      - run: apt-get install -y build-essential libprotobuf-dev protobuf-compiler libzmqpp-dev
+      - run: apt-get update && apt-get install -y build-essential libprotobuf-dev protobuf-compiler libzmqpp-dev
       - run: ./install_source_dependencies.sh .
       - run: . env.sh
       - run: mkdir build
