@@ -1,5 +1,7 @@
 # Robot Remote Control
 
+[![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control)
+
 This is a library for framework independent remote control of semi-autonomous robots.
 
 This library was initiated and is currently developed at the
