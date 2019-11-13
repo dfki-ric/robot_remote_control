@@ -6,14 +6,13 @@ jobs:
       - image: ubuntu:latest
     steps:
       - checkout
-      - run: ls -a
       - run: apt-get update && apt-get install -y build-essential git cmake pkg-config libprotobuf-dev protobuf-compiler libzmqpp-dev
       - run: ./install_source_dependencies.sh ./external
       - run: . env.sh
       - run: mkdir build
-      - run: cd build
-      - run: cmake ..
-      - run: make -j
+      - run: cd build && cmake -D ROCK_TEST_ENABLED=ON ..
+      - run: make -j -C build/
+      - run: .build/test/test_suite
 
 #test_standalone:
 #  image: d-reg.hb.dfki.de:5000/gitlab-ci/docker-build_essentials_ubuntu:latest
