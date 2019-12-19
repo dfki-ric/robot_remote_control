@@ -16,7 +16,8 @@ namespace robot_remote_control
                             COMPLEX_ACTIONS_COMMAND,
                             GOTO_COMMAND,
                             TELEMETRY_REQUEST,
-                            LOG_LEVEL_SELECT
+                            LOG_LEVEL_SELECT,
+                            CONTROL_MESSAGE_TYPE_NUMBER
                             };
 
     enum TelemetryMessageType{  NO_TELEMETRY_DATA=0,

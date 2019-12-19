@@ -1,9 +1,14 @@
 #include <boost/test/unit_test.hpp>
 
-#include <robot_remote_control/ControlledRobot.hpp>
-#include <robot_remote_control/RobotController.hpp>
 #include <robot_remote_control/Transports/TransportZmq.hpp>
 
+#include "TypeGenerator.hpp"
+
+#include <iostream>
+
+#define private public // :-|
+#include <robot_remote_control/RobotController.hpp>
+#include <robot_remote_control/ControlledRobot.hpp>
 
 using namespace robot_remote_control;
  
@@ -12,6 +17,8 @@ TransportSharedPtr telemetry;
 
 TransportSharedPtr command;
 TransportSharedPtr telemetri;
+
+
 
 
 #define COMPARE_PROTOBUF(VAR1,VAR2) BOOST_TEST(VAR1.SerializeAsString() == VAR2.SerializeAsString())
@@ -29,33 +36,84 @@ void initComms(){
   if (!telemetri.get()){telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004",TransportZmq::PUB));}
 }
 
-Pose initTestPose(){
-  Position position;
-  Orientation orientation;
-  Pose pose;
-  
-	
-  position.set_x(4);
-  position.set_y(2);
-  position.set_z(7);
+template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, const ControlMessageType &type){
 
-  orientation.set_x(8);
-  orientation.set_y(1);
-  orientation.set_z(3);
-  orientation.set_w(4);
-    
-  *(pose.mutable_position()) = position;
-  *(pose.mutable_orientation()) = orientation;
-  return pose;
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+	robot.startUpdateThread(10);
+  
+  PROTOBUFDATA received;
+  // sendtwistcommand.mutable_angular()->set_z(0.4);
+  // sendtwistcommand.mutable_linear()->set_x(0.6);
+  
+  controller.sendProtobufData( protodata, type );
+
+  
+  //wait for command
+
+  std::string recv;
+
+  while (!robot.commandbuffers[type]->read(recv)){
+    usleep(10000);
+  };
+	
+  robot.stopUpdateThread();
+  received.ParseFromString(recv);
+
+
+  // protodata.PrintDebugString();
+  // std::cout << std::endl;
+  // received.PrintDebugString();
+  // std::cout << std::endl << std::endl << std::endl;
+
+  return received;
+
 }
 
-JointState initTestJointState(){
-  JointState state;
-  state.add_name("test");
-  state.add_position(1);
-  state.add_velocity(2);
-  state.add_effort(3);
-  return state;
+BOOST_AUTO_TEST_CASE(check_pose_command){
+  //not using the set/get functions
+  Pose posecmd,poserecv;
+  posecmd = TypeGenerator::genPose();
+  poserecv = testCommand(posecmd,TARGET_POSE_COMMAND); 
+  COMPARE_PROTOBUF(posecmd,poserecv);  
+}
+
+BOOST_AUTO_TEST_CASE(check_twist_command){
+  Twist twistcmd,twistrecv;
+  twistcmd = TypeGenerator::genTwist();
+  twistrecv = testCommand(twistcmd,TWIST_COMMAND);
+  COMPARE_PROTOBUF(twistcmd,twistrecv);
+}
+
+BOOST_AUTO_TEST_CASE(check_goto_command){
+  GoTo gotocmd,gotorecv;
+  gotocmd = TypeGenerator::genGoTo();
+  gotorecv = testCommand(gotocmd,GOTO_COMMAND); 
+  COMPARE_PROTOBUF(gotocmd,gotorecv);  
+}
+
+BOOST_AUTO_TEST_CASE(check_joint_command){
+  JointState cmd,recv;
+  cmd = TypeGenerator::genJointState();
+  recv = testCommand(cmd,JOINTS_COMMAND); 
+  COMPARE_PROTOBUF(cmd,recv);  
+}
+
+BOOST_AUTO_TEST_CASE(check_simple_action_command){
+  SimpleAction cmd,recv;
+  cmd = TypeGenerator::genSimpleAction();
+  recv = testCommand(cmd,SIMPLE_ACTIONS_COMMAND); 
+  COMPARE_PROTOBUF(cmd,recv);  
+}
+
+BOOST_AUTO_TEST_CASE(check_complex_action_command){
+  ComplexAction cmd,recv;
+  cmd = TypeGenerator::genComplexAction();
+  recv = testCommand(cmd,COMPLEX_ACTIONS_COMMAND); 
+  COMPARE_PROTOBUF(cmd,recv);  
 }
 
 
@@ -92,7 +150,7 @@ BOOST_AUTO_TEST_CASE(checking_target_pose)
   RobotController controller(commands, telemetry);
 	ControlledRobot robot(command, telemetri);
 	
-  Pose pose = initTestPose();
+  Pose pose = TypeGenerator::genPose();
   Pose pose2; 
 	
   robot.startUpdateThread(10);
@@ -119,7 +177,7 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   usleep(100 * 1000);
 
   
-  Pose pose = initTestPose();
+  Pose pose = TypeGenerator::genPose();
   Pose currentpose;
 
   //buffer for size comparsion
@@ -154,8 +212,8 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data)
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
   
-  Pose pose = initTestPose();
-  JointState jointstate = initTestJointState();
+  Pose pose = TypeGenerator::genPose();
+  JointState jointstate = TypeGenerator::genJointState();
 
   
   //send telemetry data

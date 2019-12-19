@@ -10,6 +10,14 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport,TransportSh
     telemetryTransport(telemetryTransport),
     logLevel(CUSTOM-1)
 {
+
+    registerCommandBuffer(TARGET_POSE_COMMAND, poseCommand);
+    registerCommandBuffer(TWIST_COMMAND, twistCommand);
+    registerCommandBuffer(GOTO_COMMAND, goToCommand);
+    registerCommandBuffer(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand);
+    registerCommandBuffer(COMPLEX_ACTIONS_COMMAND, complexActionsCommand);
+    registerCommandBuffer(JOINTS_COMMAND, jointsCommand);
+
 }
 
 void ControlledRobot::update()
@@ -40,36 +48,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
     std::string serializedMessage(request.data()+sizeof(uint16_t),request.size()-sizeof(uint16_t));
 
     switch (msgtype){
-        case TARGET_POSE_COMMAND:{
-            poseCommand.write(serializedMessage);
-            commandTransport->send(serializeControlMessageType(TARGET_POSE_COMMAND));
-            return TARGET_POSE_COMMAND;
-        }
-        case TWIST_COMMAND:{
-            twistCommand.write(serializedMessage);
-            commandTransport->send(serializeControlMessageType(TWIST_COMMAND));
-            return TWIST_COMMAND;
-        }
-        case JOINTS_COMMAND: {
-            jointsCommand.write(serializedMessage);
-            commandTransport->send(serializeControlMessageType(JOINTS_COMMAND));
-            return JOINTS_COMMAND;
-        }
-        case GOTO_COMMAND: {
-            goToCommand.write(serializedMessage);
-            commandTransport->send(serializeControlMessageType(GOTO_COMMAND));
-            return GOTO_COMMAND;
-        }
-        case SIMPLE_ACTIONS_COMMAND: {
-            simpleActionsCommand.write(serializedMessage);
-            commandTransport->send(serializeControlMessageType(SIMPLE_ACTIONS_COMMAND));
-            return SIMPLE_ACTIONS_COMMAND;
-        }
-        case COMPLEX_ACTIONS_COMMAND: {
-            complexActionsCommand.write(serializedMessage);
-            commandTransport->send(serializeControlMessageType(COMPLEX_ACTIONS_COMMAND));
-            return COMPLEX_ACTIONS_COMMAND;
-        }
+
         case TELEMETRY_REQUEST:{
             uint16_t* requestedtype = (uint16_t*)(serializedMessage.data());
             TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
@@ -84,8 +63,17 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
         }
         
         default:{
-            commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
-            return msgtype;
+            
+            CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
+            if (cmdbuffer){
+                cmdbuffer->write(serializedMessage);
+                commandTransport->send(serializeControlMessageType(msgtype));
+                return msgtype;
+
+            } else {
+                commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
+                return msgtype;
+            }
         } 
     }
 

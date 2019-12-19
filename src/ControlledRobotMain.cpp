@@ -105,8 +105,8 @@ int main(int argc, char** argv)
     Twist twistcommand;
     GoTo gotocommand;
     JointState jointscommand;
-    SimpleActions simpleactionscommand;
-    ComplexActions complexactionscommand;
+    SimpleAction simpleactionscommand;
+    ComplexAction complexactionscommand;
 
 
 
@@ -143,13 +143,13 @@ int main(int argc, char** argv)
             jointsstate = jointscommand;
         }
 
-        if (robot.getSimpleActionsCommand(simpleactionscommand)){
+        if (robot.getSimpleActionCommand(simpleactionscommand)){
             printf("\ngot simple actions command:\n%s\n",simpleactionscommand.ShortDebugString().c_str());
             robot.setLogMessage(INFO, "setting simple action state\n");
             //do it
         }
 
-        if (robot.getComplexActionsCommand(complexactionscommand)){
+        if (robot.getComplexActionCommand(complexactionscommand)){
             printf("\ngot complex actions command:\n%s\n",complexactionscommand.ShortDebugString().c_str());
             robot.setLogMessage(INFO, "setting complex action state\n");
             //do it

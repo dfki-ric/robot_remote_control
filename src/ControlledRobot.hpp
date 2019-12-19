@@ -69,7 +69,7 @@ namespace robot_remote_control
              * @return true if the command was not read before
              * @param command the last received command
              */
-            bool getSimpleActionsCommand(SimpleActions & command) {
+            bool getSimpleActionCommand(SimpleAction & command) {
                 return simpleActionsCommand.read(command);
             }
 
@@ -79,7 +79,7 @@ namespace robot_remote_control
              * @return true if the command was not read before
              * @param command the last received command
              */
-            bool getComplexActionsCommand(ComplexActions &command) {
+            bool getComplexActionCommand(ComplexAction &command) {
                 return complexActionsCommand.read(command);
             }
 
@@ -242,9 +242,18 @@ namespace robot_remote_control
 
         private:
 
-            template<class COMMAND> struct CommandBuffer{
+            struct CommandBufferBase{
+                CommandBufferBase(){};
+                virtual ~CommandBufferBase(){};
+                virtual void write(const std::string &serializedMessage) = 0;
+                virtual bool read(std::string &receivedMessage) = 0;
+            };
+
+            template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
                 public: 
                     CommandBuffer():isnew(false){};
+
+                    virtual ~CommandBuffer(){};
 
                     bool read(COMMAND &target){
                         bool oldval = isnew.get();
@@ -258,11 +267,22 @@ namespace robot_remote_control
                         isnew.set(true);
                     }
 
-                    void write(const std::string &serializedMessage){
+                    virtual void write(const std::string &serializedMessage){
                         command.lock();
-                        command.get_ref().ParseFromString(serializedMessage);
+                        if (!command.get_ref().ParseFromString(serializedMessage)){
+                            printf("unable to parrse messate of type\n");
+                        }
                         command.unlock();
                         isnew.set(true);
+                    }
+
+                    virtual bool read(std::string& receivedMessage){
+                        bool oldval = isnew.get();
+                        command.lock();
+                        command.get_ref().SerializeToString(&receivedMessage);
+                        command.unlock();
+                        isnew.set(false);
+                        return oldval;
                     }
 
                 private:
@@ -275,10 +295,16 @@ namespace robot_remote_control
             CommandBuffer<Pose> poseCommand;
             CommandBuffer<Twist> twistCommand;
             CommandBuffer<GoTo> goToCommand;
-            CommandBuffer<SimpleActions> simpleActionsCommand;
-            CommandBuffer<ComplexActions> complexActionsCommand;
+            CommandBuffer<SimpleAction> simpleActionsCommand;
+            CommandBuffer<ComplexAction> complexActionsCommand;
             CommandBuffer<JointState> jointsCommand;
-            
+
+            std::map<uint32_t,CommandBufferBase*> commandbuffers;
+            void registerCommandBuffer(const uint32_t & ID, CommandBufferBase &bufptr){
+                commandbuffers[ID] = &bufptr;
+            }
+
+
 
             void addControlMessageType(std::string &buf, const ControlMessageType& type);
             void addTelemetryMessageType(std::string &buf, const TelemetryMessageType& type);
