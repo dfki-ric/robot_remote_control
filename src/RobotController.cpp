@@ -80,7 +80,10 @@ std::string RobotController::sendRequest(const std::string& serializedMessage){
     std::string replystr;
 
     //blocking receive
-    commandTransport->receive(&replystr);
+    while (commandTransport->receive(&replystr) == 0){
+        //wait time depends on how long the transports recv blocks
+    }
+    
 
     return replystr;
 }
