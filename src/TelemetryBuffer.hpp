@@ -7,7 +7,7 @@
 namespace robot_remote_control
 {
 
-class TelemetryBuffer: public ThreadProtecetedVar< std::vector< std::shared_ptr<RingBufferBase> > >{
+class TelemetryBuffer: public ThreadProtectedVar< std::vector< std::shared_ptr<RingBufferBase> > >{
     public:
     
     TelemetryBuffer(const size_t &size = 1);

@@ -286,8 +286,8 @@ namespace robot_remote_control
                     }
 
                 private:
-                    ThreadProtecetedVar<COMMAND> command;
-                    ThreadProtecetedVar<bool> isnew;
+                    ThreadProtectedVar<COMMAND> command;
+                    ThreadProtectedVar<bool> isnew;
 
             };
 

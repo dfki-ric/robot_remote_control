@@ -10,21 +10,21 @@ namespace robot_remote_control
  * 
  * @tparam C The class type to have thread save
  */
-template <class C> class ThreadProtecetedVar{
+template <class C> class ThreadProtectedVar{
 
     public:
 
-        ThreadProtecetedVar():
+        ThreadProtectedVar():
             islocked(false)
         {};
 
-        ThreadProtecetedVar(const C &init):
+        ThreadProtectedVar(const C &init):
             var(init),
             islocked(false)
         {
         };
 
-        virtual ~ThreadProtecetedVar(){};
+        virtual ~ThreadProtectedVar(){};
 
         /**
          * @brief get a copy of the contained variable
@@ -73,6 +73,12 @@ template <class C> class ThreadProtecetedVar{
                 throw std::runtime_error("ThreadProtecetedVar must be locked before get_ref() is used");
             }
             return var;
+        }
+
+        C& operator=(const C& other){
+            std::lock_guard<std::mutex> lock(mutex);
+            var = other;
+            return *this;
         }
         
     private:

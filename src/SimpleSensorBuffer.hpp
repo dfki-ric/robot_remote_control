@@ -7,7 +7,7 @@
 namespace robot_remote_control
 {
 
-class SimpleSensorBuffer: public ThreadProtecetedVar< std::vector< std::shared_ptr<RingBufferBase> > >{
+class SimpleSensorBuffer: public ThreadProtectedVar< std::vector< std::shared_ptr<RingBufferBase> > >{
     public:
     
     SimpleSensorBuffer();
