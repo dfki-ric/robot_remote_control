@@ -245,7 +245,7 @@ namespace robot_remote_control
             struct CommandBufferBase{
                 CommandBufferBase(){};
                 virtual ~CommandBufferBase(){};
-                virtual void write(const std::string &serializedMessage) = 0;
+                virtual bool write(const std::string &serializedMessage) = 0;
                 virtual bool read(std::string &receivedMessage) = 0;
             };
 
@@ -267,13 +267,16 @@ namespace robot_remote_control
                         isnew.set(true);
                     }
 
-                    virtual void write(const std::string &serializedMessage){
+                    virtual bool write(const std::string &serializedMessage){
                         command.lock();
                         if (!command.get_ref().ParseFromString(serializedMessage)){
-                            printf("unable to parrse messate of type\n");
+                            command.unlock();
+                            isnew.set(false);
+                            return false;
                         }
                         command.unlock();
                         isnew.set(true);
+                        return true;
                     }
 
                     virtual bool read(std::string& receivedMessage){

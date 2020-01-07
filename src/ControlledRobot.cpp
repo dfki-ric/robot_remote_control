@@ -66,7 +66,11 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request)
             
             CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
             if (cmdbuffer){
-                cmdbuffer->write(serializedMessage);
+                if (!cmdbuffer->write(serializedMessage)){
+                    printf("unable to parse message of type %i in %s:%i\n",msgtype,__FILE__,__LINE__);
+                    commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
+                    return NO_CONTROL_DATA;
+                }
                 commandTransport->send(serializeControlMessageType(msgtype));
                 return msgtype;
 
