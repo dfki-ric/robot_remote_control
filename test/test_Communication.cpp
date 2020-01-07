@@ -157,7 +157,9 @@ BOOST_AUTO_TEST_CASE(checking_target_pose)
 
   controller.setTargetPose(pose);
     
-  robot.getTargetPoseCommand(pose2);
+  while (!robot.getTargetPoseCommand(pose2)){
+    usleep(10000);
+  }
 
   robot.stopUpdateThread();
 	
@@ -193,7 +195,9 @@ BOOST_AUTO_TEST_CASE(checking_current_pose)
   //receive pending data
   controller.update();
 
-  controller.getCurrentPose(currentpose);
+  while (!controller.getCurrentPose(currentpose)){
+    usleep(10000);
+  };
  
   
   //data was sent completely
@@ -220,8 +224,19 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data)
   robot.setCurrentPose(pose);
   robot.setJointState(jointstate);
 
+  Pose telemetryPose;
+  while (!controller.getCurrentPose(telemetryPose)){
+    usleep(10000);
+  }
+  COMPARE_PROTOBUF(pose,telemetryPose);
 
+  JointState telemetryJointstate;
+  while (!controller.getCurrentJointState(telemetryJointstate)){
+    usleep(10000);
+  }
+  COMPARE_PROTOBUF(jointstate,telemetryJointstate);
 
+  
   //test single request
   Pose requestedpose;
   controller.requestTelemetry(CURRENT_POSE,requestedpose);
@@ -258,8 +273,9 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
   robot.setLogMessage(debug_message);
 
   //wait a little for data transfer (Telemetry is non-blocking)
-  usleep(100 * 1000);
-  controller.getLogMessage(requested_log_message);
+  while (!controller.getLogMessage(requested_log_message)){
+    usleep(100 * 1000);
+  }
   COMPARE_PROTOBUF(debug_message, requested_log_message);
 
 
@@ -272,8 +288,9 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
   fatal_message.set_message("[FATAL] This is a fatal message.");
   robot.setLogMessage(fatal_message);
 
-  usleep(100 * 1000);
-  controller.getLogMessage(requested_log_message);
+  while (!controller.getLogMessage(requested_log_message)){
+    usleep(100 * 1000);
+  }
   COMPARE_PROTOBUF(fatal_message, requested_log_message);
 
 
@@ -284,8 +301,12 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
   error_message.set_message("[ERROR] This is an error message.");
   robot.setLogMessage(error_message);
 
+  ////some time to be able to receive
   usleep(100 * 1000);
-  controller.getLogMessage(requested_log_message);
+  bool received =  controller.getLogMessage(requested_log_message);
+
+  //no message should have arrived
+  BOOST_CHECK_EQUAL(received, false);
   //compare if message is still the fatal message, not the error message
   COMPARE_PROTOBUF(fatal_message, requested_log_message);
 
@@ -299,8 +320,12 @@ BOOST_AUTO_TEST_CASE(checking_log_message)
   another_fatal_message.set_message("[FATAL] This is another fatal message.");
   robot.setLogMessage(another_fatal_message);
 
+  //some time to be able to receive
   usleep(100 * 1000);
-  controller.getLogMessage(requested_log_message);
+  received = controller.getLogMessage(requested_log_message);
+
+  //no message should have arrived
+  BOOST_CHECK_EQUAL(received, false);
   //compare if message is still the first fatal message, not the second one
   COMPARE_PROTOBUF(fatal_message, requested_log_message);
 
@@ -324,16 +349,19 @@ BOOST_AUTO_TEST_CASE(checking_robot_state){
 
   //test basic getRobotState and requestRobotState
   robot.setRobotState("ROBOT_DEMO_RUNNING");
-  //wait a little for data transfer (Telemetry is non-blocking)
-  usleep(100 * 1000);
 
-  controller.getRobotState(gotten_robot_state);
+  while(!controller.getRobotState(gotten_robot_state)){
+    usleep(10000);
+  }
   controller.requestRobotState(requested_robot_state);
+  
   BOOST_TEST(requested_robot_state == gotten_robot_state);
 
 
-  controller.getRobotState(gotten_robot_state);
+  bool result = controller.getRobotState(gotten_robot_state);
+      
   //should be empty because state was already recieved
+  BOOST_CHECK_EQUAL(result,false);
   BOOST_TEST(gotten_robot_state == "");
 
 
@@ -342,7 +370,9 @@ BOOST_AUTO_TEST_CASE(checking_robot_state){
   robot.setRobotState("ROBOT_DEMO_FINISHED");
   usleep(100 * 1000);
 
-  controller.getRobotState(gotten_robot_state);
+  while (!controller.getRobotState(gotten_robot_state)){
+    usleep(10000);
+  }
   controller.requestRobotState(requested_robot_state);
   controller.requestRobotState(second_requested_robot_state);
   
@@ -359,13 +389,18 @@ BOOST_AUTO_TEST_CASE(checking_robot_state){
   usleep(100 * 1000);
 
   controller.requestRobotState(requested_robot_state);
-  controller.getRobotState(gotten_robot_state);
+
+  while (!controller.getRobotState(gotten_robot_state)){
+    usleep(10000);
+  }
   //request should return most recent state, get should return the oldest not retrieved one
   BOOST_TEST(requested_robot_state == "ROBOT_DEMO_STOPPED");
   BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_RUNNING_AGAIN");
 
 
-  controller.getRobotState(gotten_robot_state);
+  while (!controller.getRobotState(gotten_robot_state)){
+    usleep(10000);
+  }
   //now they should be equal
   BOOST_TEST(gotten_robot_state == requested_robot_state);
 
