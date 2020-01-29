@@ -46,7 +46,7 @@ In this case an env.sh script is generated, which sets up the environment to fin
 
 To compile it manually:
 
-    ./install_dependencies.sh ./
+    ./install_source_dependencies.sh ./
     source env.sh
     mkdir build
     cd build
@@ -54,6 +54,23 @@ To compile it manually:
     make
 
 Documentations on the rock cmake macros is available on [this page](http://rock-robotics.org/documentation/packages/cmake_macros.html).
+
+#### Builddin on systems without protobuf3
+
+You need to install protobuf3 from source, to do so, install its build dependencies:
+
+    apt-get install autoconf automake libtool curl make g++ unzip
+
+And edit the install_source_dependencies.sh script to uncomment the protobuf install line
+
+    build_protobuf "$ABS_PREFIX/install"
+
+This will install protobuf 3 in the selected install folder (parameter of the install_source_dependencies.sh script)
+
+
+
+
+
 
 
 ### Rock Standard Layout

@@ -16,6 +16,17 @@ function build {
   cd ../../
 }
 
+function build_protobuf {
+  wget https://github.com/protocolbuffers/protobuf/archive/v3.1.0.tar.gz
+  tar xzf v3.1.0.tar.gz
+  cd protobuf-3.1.0
+  ./autogen.sh
+  ./configure --prefix=$1
+  make
+  make install
+  cd ../
+}
+
 
 
 PREFIX=""
@@ -26,15 +37,20 @@ PREFIX="-DCMAKE_INSTALL_PREFIX=$ABS_PREFIX"
 
 echo "" > env.sh #create empty env.sh
 echo "export CMAKE_PREFIX_PATH=$ABS_PREFIX" >> env.sh
-echo "export PKG_CONFIG_PATH=$ABS_PREFIX/lib/pkgconfig:$ABS_PREFIX/share/pkgconfig:$ABS_PREFIX/lib64/pkgconfig:$PKG_CONFIG_PATH" >> env.sh
-echo "export LD_LIBRARY_PATH=$ABS_PREFIX/lib:$ABS_PREFIX/lib64:$LD_LIBRARY_PATH" >> env.sh
-echo "export PATH=$ABS_PREFIX/bin:$PATH" >> env.sh
+echo "export PKG_CONFIG_PATH=$ABS_PREFIX/install/lib/pkgconfig:$ABS_PREFIX/install/share/pkgconfig:$ABS_PREFIX/install/lib64/pkgconfig:$PKG_CONFIG_PATH" >> env.sh
+echo "export LD_LIBRARY_PATH=$ABS_PREFIX/install/lib:$ABS_PREFIX/install/lib64:$LD_LIBRARY_PATH" >> env.sh
+echo "export PATH=$ABS_PREFIX/install/bin:$PATH" >> env.sh
 
 source env.sh
-  
+
 fi
 
 build https://github.com/rock-core/base-cmake.git master base-cmake "$PREFIX"
+
+# In case your OS does not provide Protobuf 3, install the build dependencies of protobuf:
+# $> sudo apt-get install autoconf automake libtool curl make g++ unzip
+# and uncomment the next line
+# build_protobuf "$ABS_PREFIX/install"
 
 echo "please also install following OS dependencies:"
 echo "protobuf and zmqpp for development"
