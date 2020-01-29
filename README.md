@@ -46,24 +46,28 @@ In this case an env.sh script is generated, which sets up the environment to fin
 
 To compile it manually:
 
-    ./install_source_dependencies.sh ./
+    ./install_source_dependencies.sh ./install
     source env.sh
     mkdir build
     cd build
-    cmake ..
+    cmake .. -DCMAKE_CXX_STANDARD=11
     make
+
+If you have chosen a local install of the dependencies, add `-DCMAKE_INSTALL_PREFIX=$(pwd)/../install` to the cmake command
 
 Documentations on the rock cmake macros is available on [this page](http://rock-robotics.org/documentation/packages/cmake_macros.html).
 
 #### Builddin on systems without protobuf3
 
-You need to install protobuf3 from source, to do so, install its build dependencies:
+You need to install protobuf3 from source you need additional dependencies:
 
     apt-get install autoconf automake libtool curl make g++ unzip
 
-And edit the install_source_dependencies.sh script to uncomment the protobuf install line
+The script will automatically detect ubuntu 16.04, if you have anoter OS, edit the install_source_dependencies.sh script accortingly so
 
-    build_protobuf "$ABS_PREFIX/install"
+    build_protobuf "$ABS_PREFIX"
+
+is exected
 
 This will install protobuf 3 in the selected install folder (parameter of the install_source_dependencies.sh script)
 
