@@ -61,7 +61,7 @@ Documentations on the rock cmake macros is available on [this page](http://rock-
 
 You need to install protobuf3 from source you need additional dependencies:
 
-    apt-get install autoconf automake libtool curl make g++ unzip
+    apt-get install autoconf automake libtool curl make g++ unzip lsb-release
 
 The script will automatically detect ubuntu 16.04, if you have anoter OS, edit the install_source_dependencies.sh script accortingly so
 
