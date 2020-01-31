@@ -1,17 +1,17 @@
 #include "TelemetryBuffer.hpp"
 
 
-using namespace robot_remote_control;
+namespace robot_remote_control {
 
 
-    TelemetryBuffer::TelemetryBuffer(const size_t &size){
-        //create vector of shared ptr
+    TelemetryBuffer::TelemetryBuffer(const size_t &size) {
+        // create vector of shared ptr
         lock();
         get_ref().resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
 
         std::shared_ptr<RingBufferBase> newbuf;
 
-        //fill shared pointers with objects
+        // fill shared pointers with objects
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<Pose>(size));
         get_ref()[CURRENT_POSE] = newbuf;
 
@@ -41,89 +41,85 @@ using namespace robot_remote_control;
 
         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleSensors>(size));
         get_ref()[SIMPLE_SENSOR_DEFINITION] = newbuf;
-        
-        //simple sensors are stored in separate buffer when receiving, but sending requires this for requests
+
+        // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
          newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleSensor>(size));
          get_ref()[SIMPLE_SENSOR_VALUE] = newbuf;
 
         unlock();
     }
 
-    TelemetryBuffer::~TelemetryBuffer(){
-
+    TelemetryBuffer::~TelemetryBuffer() {
     }
 
 
-    std::string TelemetryBuffer::peekSerialized(const TelemetryMessageType &type){
-        
+    std::string TelemetryBuffer::peekSerialized(const TelemetryMessageType &type) {
         std::string buf("");
         lock();
-        
-        switch (type){
-            case CURRENT_POSE:{
-                Pose pose;
-                fillBuffer(CURRENT_POSE,pose,buf);
+
+        switch (type) {
+            case CURRENT_POSE: {
+                Pose data;
+                fillBuffer(CURRENT_POSE, &data, &buf);
                 break;
             }
-            case JOINT_STATE:{
+            case JOINT_STATE: {
                 JointState data;
-                fillBuffer(JOINT_STATE,data,buf);
+                fillBuffer(JOINT_STATE, &data, &buf);
                 break;
             }
-            case CONTROLLABLE_JOINTS:{
+            case CONTROLLABLE_JOINTS: {
                 JointState data;
-                fillBuffer(CONTROLLABLE_JOINTS,data,buf);
+                fillBuffer(CONTROLLABLE_JOINTS, &data, &buf);
                 break;
             }
-            case SIMPLE_ACTIONS:{
+            case SIMPLE_ACTIONS: {
                 SimpleActions data;
-                fillBuffer(SIMPLE_ACTIONS,data,buf);
+                fillBuffer(SIMPLE_ACTIONS, &data, &buf);
                 break;
             }
-            case COMPLEX_ACTIONS:{
+            case COMPLEX_ACTIONS: {
                 ComplexActions data;
-                fillBuffer(COMPLEX_ACTIONS,data,buf);
+                fillBuffer(COMPLEX_ACTIONS, &data, &buf);
                 break;
             }
-            case ROBOT_NAME:{
+            case ROBOT_NAME: {
                 RobotName data;
-                fillBuffer(ROBOT_NAME,data,buf);
+                fillBuffer(ROBOT_NAME, &data, &buf);
                 break;
             }
-            case ROBOT_STATE:{
+            case ROBOT_STATE: {
                 RobotState data;
-                fillBuffer(ROBOT_STATE,data,buf);
+                fillBuffer(ROBOT_STATE, &data, &buf);
                 break;
             }
-            case LOG_MESSAGE:{
+            case LOG_MESSAGE: {
                 LogMessage data;
-                fillBuffer(LOG_MESSAGE,data,buf);
+                fillBuffer(LOG_MESSAGE, &data, &buf);
                 break;
             }
-            case VIDEO_STREAMS:{
+            case VIDEO_STREAMS: {
                 VideoStreams data;
-                fillBuffer(VIDEO_STREAMS,data,buf);
+                fillBuffer(VIDEO_STREAMS, &data, &buf);
                 break;
             }
-            case SIMPLE_SENSOR_DEFINITION:{
+            case SIMPLE_SENSOR_DEFINITION: {
                 SimpleSensors data;
-                fillBuffer(SIMPLE_SENSOR_DEFINITION,data,buf);
+                fillBuffer(SIMPLE_SENSOR_DEFINITION, &data, &buf);
                 break;
             }
-            //simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-            case SIMPLE_SENSOR_VALUE:{
+            // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
+            case SIMPLE_SENSOR_VALUE: {
                 SimpleSensors data;
-                fillBuffer(SIMPLE_SENSOR_VALUE,data,buf);
+                fillBuffer(SIMPLE_SENSOR_VALUE, &data, &buf);
                 break;
             }
             case NO_TELEMETRY_DATA:
             case TELEMETRY_MESSAGE_TYPES_NUMBER:
             break;
-
         }
-
-        
         unlock();
         return buf;
     }
 
+}  // namespace robot_remote_control

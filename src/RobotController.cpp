@@ -51,90 +51,98 @@ void RobotController::setComplexActionCommand(const ComplexAction &complexAction
 void RobotController::setLogLevel(const uint32_t &level){
     std::string buf;
     buf.resize(sizeof(uint16_t) + sizeof(uint32_t));
-    uint16_t* data = (uint16_t*)buf.data();
+    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
     *data = LOG_LEVEL_SELECT;
-    uint32_t *levelptr = (uint32_t*)(buf.data()+sizeof(uint16_t));
+
+    uint32_t *levelptr = reinterpret_cast<uint32_t*>(const_cast<char*>(buf.data()+sizeof(uint16_t)));
     *levelptr = level;
     sendRequest(buf);
 }
 
-void RobotController::update(){
-    if (telemetryTransport.get()){
+void RobotController::update() {
+    if (telemetryTransport.get()) {
         std::string buf;
         Transport::Flags flags = Transport::NONE;
-        //if (!this->threaded()){
+        // if (!this->threaded()){
             flags = Transport::NOBLOCK;
-        //}
-        while(telemetryTransport->receive(&buf,flags)){
+        // }
+        while (telemetryTransport->receive(&buf, flags)) {
             evaluateTelemetry(buf);
         }
-    }else{
+    } else {
         printf("ERROR no telemetry Transport set\n");
     }
 }
 
 
-std::string RobotController::sendRequest(const std::string& serializedMessage){
-    
+std::string RobotController::sendRequest(const std::string& serializedMessage) {
     commandTransport->send(serializedMessage);
     std::string replystr;
 
-    //blocking receive
-    while (commandTransport->receive(&replystr) == 0){
-        //wait time depends on how long the transports recv blocks
+    // blocking receive
+    while (commandTransport->receive(&replystr) == 0) {
+        // wait time depends on how long the transports recv blocks
     }
-    
 
     return replystr;
 }
 
-TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply){
+TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
+    uint16_t* type = reinterpret_cast<uint16_t*>(const_cast<char*>(reply.data()));
 
-    uint16_t* type = (uint16_t*)reply.data();
-
-    std::string serializedMessage(reply.data()+sizeof(uint16_t),reply.size()-sizeof(uint16_t));
+    std::string serializedMessage(reply.data()+sizeof(uint16_t), reply.size()-sizeof(uint16_t));
 
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
 
-    switch (msgtype){
+    switch (msgtype) {
+        case CURRENT_POSE:              addToTelemetryBuffer< Pose              >(msgtype, serializedMessage);
+                                        return msgtype;
+        case JOINT_STATE:               addToTelemetryBuffer< JointState        >(msgtype, serializedMessage);
+                                        return msgtype;
+        case CONTROLLABLE_JOINTS:       addToTelemetryBuffer< JointState        >(msgtype, serializedMessage);
+                                        return msgtype;
+        case SIMPLE_ACTIONS:            addToTelemetryBuffer< SimpleActions     >(msgtype, serializedMessage);
+                                        return msgtype;
+        case COMPLEX_ACTIONS:           addToTelemetryBuffer< ComplexActions    >(msgtype, serializedMessage);
+                                        return msgtype;
+        case ROBOT_NAME:                addToTelemetryBuffer< RobotName         >(msgtype, serializedMessage);
+                                        return msgtype;
+        case ROBOT_STATE:               addToTelemetryBuffer< RobotState        >(msgtype, serializedMessage);
+                                        return msgtype;
+        case LOG_MESSAGE:               addToTelemetryBuffer< LogMessage        >(msgtype, serializedMessage);
+                                        return msgtype;
+        case VIDEO_STREAMS:             addToTelemetryBuffer< VideoStreams      >(msgtype, serializedMessage);
+                                        return msgtype;
+        case SIMPLE_SENSOR_DEFINITION:  addToTelemetryBuffer< SimpleSensors     >(msgtype, serializedMessage);
+                                        return msgtype;
 
-        case CURRENT_POSE:              addToTelemetryBuffer< Pose              >(msgtype,serializedMessage); return msgtype;
-        case JOINT_STATE:               addToTelemetryBuffer< JointState        >(msgtype,serializedMessage); return msgtype;
-        case CONTROLLABLE_JOINTS:       addToTelemetryBuffer< JointState        >(msgtype,serializedMessage); return msgtype;
-        case SIMPLE_ACTIONS:            addToTelemetryBuffer< SimpleActions     >(msgtype,serializedMessage); return msgtype;
-        case COMPLEX_ACTIONS:           addToTelemetryBuffer< ComplexActions    >(msgtype,serializedMessage); return msgtype;
-        case ROBOT_NAME:                addToTelemetryBuffer< RobotName         >(msgtype,serializedMessage); return msgtype;
-        case ROBOT_STATE:               addToTelemetryBuffer< RobotState        >(msgtype,serializedMessage); return msgtype;
-        case LOG_MESSAGE:               addToTelemetryBuffer< LogMessage        >(msgtype,serializedMessage); return msgtype;
-        case VIDEO_STREAMS:             addToTelemetryBuffer< VideoStreams      >(msgtype,serializedMessage); return msgtype;
-        case SIMPLE_SENSOR_DEFINITION:  addToTelemetryBuffer< SimpleSensors     >(msgtype,serializedMessage); return msgtype;
+        // multi values in single stream
+        case SIMPLE_SENSOR_VALUE:       addToSimpleSensorBuffer(serializedMessage);
+                                        return msgtype;
 
-        //multi values in single stream
-        case SIMPLE_SENSOR_VALUE:       addToSimpleSensorBuffer(serializedMessage); return msgtype;
-        
         case TELEMETRY_MESSAGE_TYPES_NUMBER:
         case NO_TELEMETRY_DATA:
         {
             return msgtype;
-        } 
+        }
     }
 
-    //should never reach this
+    // should never reach this
     return NO_TELEMETRY_DATA;
 }
 
- void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessage){   
+void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessage) {
     SimpleSensor data;
     data.ParseFromString(serializedMessage);
-    //check if buffer number is big enough
-    //size must be id+1 (id 0 needs size 1)
+    // check if buffer number is big enough
+    // size must be id+1 (id 0 needs size 1)
     simplesensorbuffer->initBufferID(data.id());
     // if (simplesensorbuffer->size() <= data.id()){
     //     simplesensorbuffer->resize(data.id());
     // }
 
     simplesensorbuffer->lock();
-    RingBufferAccess::pushData(simplesensorbuffer->get_ref()[data.id()],data,true);
+    RingBufferAccess::pushData(simplesensorbuffer->get_ref()[data.id()], data, true);
     simplesensorbuffer->unlock();
 
 }

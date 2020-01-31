@@ -1,24 +1,24 @@
+
 #pragma once
 
 #include <vector>
 #include <memory>
 
 
-namespace robot_remote_control
-{
+namespace robot_remote_control {
 
 /**
  * @brief base class to be able to hold buffers of different types in a vector 
  */
 class RingBufferBase{
     public:
-        RingBufferBase(){};
-        virtual ~RingBufferBase(){};
+        RingBufferBase() {}
+        virtual ~RingBufferBase() {}
 
-        virtual unsigned int size() = 0;
-        virtual unsigned int capacity() = 0;
-        virtual void resize(const unsigned int &newsize) = 0;
-        //virtual void clear();
+        virtual size_t size() = 0;
+        virtual size_t capacity() = 0;
+        virtual void resize(const size_t &newsize) = 0;
+        // virtual void clear();
 };
 
 /**
@@ -28,51 +28,48 @@ class RingBufferBase{
  * 
  */
 
-template <class TYPE> class RingBuffer: public RingBufferBase{
+template <class TYPE> class RingBuffer: public RingBufferBase {
     public:
-        
-        RingBuffer(const unsigned int & buffersize):RingBufferBase(),buffersize(buffersize),contentsize(0),in(0),out(0){
+        explicit RingBuffer(const size_t & buffersize): RingBufferBase(), buffersize(buffersize), contentsize(0), in(0), out(0) {
             buffer.resize(buffersize);
         }
 
-        virtual ~RingBuffer(){}
+        virtual ~RingBuffer() {}
 
-        unsigned int size(){
+        size_t size() {
             return contentsize;
         }
 
-        unsigned int capacity(){
+        size_t capacity() {
             return buffersize;
         }
 
-        void resize(const unsigned int &newsize){
-
-            if (contentsize > 0){
+        void resize(const size_t &newsize) {
+            if (contentsize > 0) {
                 printf("possible data loss due to resize on nonemty buffer\n");
             }
 
             buffersize = newsize;
             buffer.resize(buffersize);
 
-            if (in > buffersize){
+            if (in > buffersize) {
                 in = buffersize;
             }
 
-            if (out > buffersize){
+            if (out > buffersize) {
                 out = 0;
             }
-
         }
 
-        bool pushData(const TYPE & data, bool overwriteIfFull = false){
-            if (contentsize != buffersize){
+        bool pushData(const TYPE & data, bool overwriteIfFull = false) {
+            if (contentsize != buffersize) {
                 buffer[in] = data;
                 contentsize++;
                 in++;
                 in %= buffersize;
                 return true;
-            } else if (overwriteIfFull){
-                //buffer full, force-push (overwrite latest)
+            } else if (overwriteIfFull) {
+                // buffer full, force-push (overwrite latest)
                 buffer[in] = data;
                 out++;
                 out %= buffersize;
@@ -83,29 +80,27 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
             return false;
         }
 
-        bool popData(TYPE& data){
-            if (contentsize>0){
-                data = buffer[out];
+        bool popData(TYPE *data) {
+            if (contentsize > 0) {
+                *data = buffer[out];
                 contentsize--;
                 out++;
                 out %= buffersize;
-                
                 return true;
             }
             return false;
         }
 
-        bool peekData(TYPE& data){
-            if (contentsize>0){
-                data = buffer[out];
+        bool peekData(TYPE *data) {
+            if (contentsize > 0) {
+                *data = buffer[out];
                 return true;
             }
             return false;
         }
 
     private:
-        unsigned int buffersize,contentsize,in,out;
-        
+        size_t buffersize, contentsize, in, out;
         std::vector<TYPE> buffer;
 
 };
@@ -113,21 +108,20 @@ template <class TYPE> class RingBuffer: public RingBufferBase{
 
 class RingBufferAccess{
     public:
-        
-        template<class DATATYPE> static bool pushData(std::shared_ptr<RingBufferBase> &buffer, const DATATYPE & data, bool overwrite = false){
+        template<class DATATYPE> static bool pushData(std::shared_ptr<RingBufferBase> buffer, const DATATYPE & data, bool overwrite = false) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
-            return dataclass->pushData(data,overwrite);
+            return dataclass->pushData(data, overwrite);
         }
 
-        template<class DATATYPE> static bool popData(std::shared_ptr<RingBufferBase> &buffer, DATATYPE & data){
+        template<class DATATYPE> static bool popData(std::shared_ptr<RingBufferBase> buffer, DATATYPE *data) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             return dataclass->popData(data);
         }
 
-        template<class DATATYPE> static bool peekData(std::shared_ptr<RingBufferBase> &buffer, DATATYPE & data){
+        template<class DATATYPE> static bool peekData(const std::shared_ptr<RingBufferBase> &buffer, DATATYPE *data){
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             return dataclass->peekData(data);
         }
 };
 
-}
+}  // namespace robot_remote_control
