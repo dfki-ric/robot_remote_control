@@ -47,7 +47,7 @@ if [ "$#" -eq 1 ]; then
 
 fi
 
-build https://github.com/rock-core/base-cmake.git master base-cmake "$PREFIX"
+#build https://github.com/rock-core/base-cmake.git master base-cmake "$PREFIX"
 
 # In case your OS does not provide Protobuf 3, install the build dependencies of protobuf:
 # $> sudo apt-get install autoconf automake libtool curl make g++ unzip
