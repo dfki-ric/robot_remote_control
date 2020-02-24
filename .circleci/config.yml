@@ -14,8 +14,9 @@ jobs:
       - image: ubuntu:latest
     steps:
       - checkout
-      - run: ./.circleci/prepare_build.sh -D ROCK_TEST_ENABLED=ON
+      - run: ./.circleci/prepare_build.sh
       - run: make -j -C build/
+      - run: make -j -C build/ test_suite
       - run: . env.sh && ./build/test/test_suite
 
 workflows:
