@@ -1,6 +1,8 @@
 
 set(CMAKE_BUILD_TYPE Release)
 
+
+
 find_package(Protobuf REQUIRED)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -32,7 +34,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/UpdateThread
 add_library(robot_remote_control-types 
             Types/RobotRemoteControl.pb.cc
 )
-#target_link_libraries (robot_remote_control-types ${PROTOBUF_LIBRARIES})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Types/RobotRemoteControl.pb.h
 	DESTINATION include/robot_remote_control/Types
 )
@@ -43,7 +44,7 @@ pkg_check_modules(ZMQ REQUIRED libzmq)
 add_library(robot_remote_control-transport_zmq 
             Transports/TransportZmq.cpp
 )
-target_link_libraries (robot_remote_control-types ${ZMQ_LIBRARIES})
+target_link_libraries (robot_remote_control-transport_zmq ${ZMQ_LIBRARIES})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Transports
 	DESTINATION include/robot_remote_control
 	FILES_MATCHING PATTERN "*.hpp"
@@ -92,7 +93,6 @@ target_link_libraries(robot_remote_control-controlled_robot_bin
 #rock_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp
 #    DEPS robot_remote_control-controlled_robot robot_remote_control-transport_zmq)
 
-
 install (TARGETS 
         robot_remote_control-types
         robot_remote_control-update_thread
@@ -111,3 +111,17 @@ install (TARGETS
 #    "${PROJECT_SOURCE_DIR}/cmake/mylibConfig.cmake.in"
 #    "${PROJECT_BINARY_DIR}/mylibConfig.cmake"
 #)
+
+# Install pkg-config file
+#get_property(PKG_REQUIRES GLOBAL PROPERTY robot_remote_control_ALL_LIBRARIES)
+
+configure_file(robot_remote_control-types.pc.in robot_remote_control-types.pc @ONLY)
+configure_file(robot_remote_control-update_thread.pc.in robot_remote_control-update_thread.pc @ONLY)
+configure_file(robot_remote_control-transport_zmq.pc.in robot_remote_control-transport_zmq.pc @ONLY)
+configure_file(robot_remote_control-controlled_robot.pc.in robot_remote_control-controlled_robot.pc @ONLY)
+configure_file(robot_remote_control-robot_controller.pc.in robot_remote_control-robot_controller.pc @ONLY)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION lib/pkgconfig
+	FILES_MATCHING PATTERN "*.pc"
+)

@@ -1,14 +1,14 @@
 #include <boost/test/unit_test.hpp>
 
-#include <robot_remote_control/Transports/TransportZmq.hpp>
+#include "../src/Transports/TransportZmq.hpp"
 
 #include "TypeGenerator.hpp"
 
 #include <iostream>
 
 #define private public // :-|
-#include <robot_remote_control/RobotController.hpp>
-#include <robot_remote_control/ControlledRobot.hpp>
+#include "../src/RobotController.hpp"
+#include "../src/ControlledRobot.hpp"
 
 using namespace robot_remote_control;
  

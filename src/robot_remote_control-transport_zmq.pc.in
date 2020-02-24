@@ -3,10 +3,10 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: @TARGET_NAME@
+Name: robot_remote_control-transport_zmq
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
-Requires: @PKGCONFIG_REQUIRES@
-Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@
+Requires: libzmq
+Libs: -L${libdir} -lrobot_remote_control-transport_zmq @PKGCONFIG_LIBS@
 Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
 

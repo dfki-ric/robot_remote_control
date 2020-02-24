@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <robot_remote_control/UpdateThread/UpdateThread.hpp>
+#include "../src/UpdateThread/UpdateThread.hpp"
 
 using namespace robot_remote_control;
 
