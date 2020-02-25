@@ -24,6 +24,7 @@ target_include_directories(robot_remote_control-controlled_robot
 add_library(robot_remote_control-robot_controller
             RobotController.cpp TelemetryBuffer.cpp SimpleSensorBuffer.cpp
 )
+target_link_libraries (robot_remote_control-robot_controller robot_remote_control-types robot_remote_control-update_thread)
 target_include_directories(robot_remote_control-robot_controller
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -39,40 +40,24 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
 
-# add_executable(robot_remote_control-robot_controller_bin RobotControllerMain.cpp)
-# target_link_libraries(robot_remote_control-robot_controller_bin
-#     robot_remote_control-robot_controller
-#     robot_remote_control-transport_zmq
-#     robot_remote_control-types
-#     robot_remote_control-update_thread 
-#     ${PROTOBUF_LIBRARIES}
-# )
+add_executable(robot_remote_control-robot_controller_bin RobotControllerMain.cpp)
+target_link_libraries(robot_remote_control-robot_controller_bin
+    robot_remote_control-robot_controller
+    robot_remote_control-transport_zmq
+)
 
-# #rock_executable(robot_remote_control-robot_controller_bin RobotControllerMain.cpp
-# #    DEPS robot_remote_control-robot_controller robot_remote_control-transport_zmq)
+add_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp)
+target_link_libraries(robot_remote_control-controlled_robot_bin
+    robot_remote_control-controlled_robot
+    robot_remote_control-transport_zmq
+)
 
-# add_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp)
-# target_link_libraries(robot_remote_control-controlled_robot_bin
-#     robot_remote_control-controlled_robot
-#     robot_remote_control-transport_zmq
-#     robot_remote_control-types
-#     robot_remote_control-update_thread 
-#     ${PROTOBUF_LIBRARIES}
-# )
-
-
-#rock_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp
-#    DEPS robot_remote_control-controlled_robot robot_remote_control-transport_zmq)
-#set_target_properties(robot_remote_control-controlled_robot_bin PROPERTIES PUBLIC_HEADER "ControlledRobot.hpp;RobotController.hpp")
 
 install (TARGETS
-#         #robot_remote_control-types
-#         #robot_remote_control-update_thread
-#         #robot_remote_control-transport_zmq 
         robot_remote_control-controlled_robot
         robot_remote_control-robot_controller
-#         robot_remote_control-robot_controller_bin
-#         robot_remote_control-controlled_robot_bin
+        robot_remote_control-robot_controller_bin
+        robot_remote_control-controlled_robot_bin
         EXPORT robot_remote_control-targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -102,16 +87,14 @@ install(
 )
 
 
-# Install pkg-config file
-#get_property(PKG_REQUIRES GLOBAL PROPERTY robot_remote_control_ALL_LIBRARIES)
+# Install pkg-config files
+configure_file(robot_remote_control-types.pc.in robot_remote_control-types.pc @ONLY)
+configure_file(robot_remote_control-update_thread.pc.in robot_remote_control-update_thread.pc @ONLY)
+configure_file(robot_remote_control-transport_zmq.pc.in robot_remote_control-transport_zmq.pc @ONLY)
+configure_file(robot_remote_control-controlled_robot.pc.in robot_remote_control-controlled_robot.pc @ONLY)
+configure_file(robot_remote_control-robot_controller.pc.in robot_remote_control-robot_controller.pc @ONLY)
 
-# configure_file(robot_remote_control-types.pc.in robot_remote_control-types.pc @ONLY)
-# configure_file(robot_remote_control-update_thread.pc.in robot_remote_control-update_thread.pc @ONLY)
-# configure_file(robot_remote_control-transport_zmq.pc.in robot_remote_control-transport_zmq.pc @ONLY)
-# configure_file(robot_remote_control-controlled_robot.pc.in robot_remote_control-controlled_robot.pc @ONLY)
-# configure_file(robot_remote_control-robot_controller.pc.in robot_remote_control-robot_controller.pc @ONLY)
-
-# install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-# 	DESTINATION lib/pkgconfig
-# 	FILES_MATCHING PATTERN "*.pc"
-# )
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION lib/pkgconfig
+	FILES_MATCHING PATTERN "*.pc"
+)
