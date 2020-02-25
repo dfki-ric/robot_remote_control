@@ -14,9 +14,8 @@ jobs:
       - image: ubuntu:latest
     steps:
       - checkout
-      - run: ./.circleci/prepare_build.sh
+      - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON
       - run: make -j -C build/
-      - run: make -j -C build/ test_suite
       - run: . env.sh && ./build/test/test_suite
 
 workflows:

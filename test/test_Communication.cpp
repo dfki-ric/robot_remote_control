@@ -7,8 +7,8 @@
 #include <iostream>
 
 #define private public // :-|
-#include "../src/RobotController.hpp"
-#include "../src/ControlledRobot.hpp"
+#include "../src/RobotController/RobotController.hpp"
+#include "../src/ControlledRobot/ControlledRobot.hpp"
 
 using namespace robot_remote_control;
  
