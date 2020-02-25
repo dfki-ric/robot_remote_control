@@ -1,7 +1,7 @@
 
 set(CMAKE_BUILD_TYPE Release)
 
-
+include(GNUInstallDirs)
 
 find_package(Protobuf REQUIRED)
 
@@ -71,7 +71,7 @@ add_library(robot_remote_control-controlled_robot
 #target_link_libraries (robot_remote_control-controlled_robot robot_remote_control-types robot_remote_control-update_thread ${PROTOBUF_LIBRARIES})
 target_include_directories(robot_remote_control-controlled_robot
 	PUBLIC
-		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include>
 )
 
@@ -127,14 +127,14 @@ install (TARGETS
         robot_remote_control-robot_controller_bin
         robot_remote_control-controlled_robot_bin
         EXPORT robot_remote_control-targets
-        LIBRARY DESTINATION lib/
-        RUNTIME DESTINATION bin/
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 #Export the library interface
 install(EXPORT robot_remote_control-targets
-	NAMESPACE robot_remote_control::
-	DESTINATION lib/cmake/robot_remote_control
+	#NAMESPACE robot_remote_control::
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/robot_remote_control
 )
 
 
@@ -148,9 +148,9 @@ write_basic_package_version_file("robot_remote_control-version.cmake"
 install(
 	FILES
 		robot_remote_control-config.cmake
-        ${PROJECT_BINARY_DIR}/src/robot_remote_control-version.cmake
+        ${PROJECT_BINARY_DIR}/robot_remote_control/robot_remote_control-version.cmake
 	DESTINATION
-		lib/cmake/robot_remote_control
+		${CMAKE_INSTALL_LIBDIR}/cmake/robot_remote_control
 )
 
 
