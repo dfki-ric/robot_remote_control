@@ -87,10 +87,10 @@ target_include_directories(robot_remote_control-robot_controller
 
 #target_link_libraries (robot_remote_control-robot_controller ${PROTOBUF_LIBRARIES} )
 
-#install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-#	DESTINATION include/robot_remote_control
-#	FILES_MATCHING PATTERN "*.hpp"
-#)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION include/robot_remote_control
+	FILES_MATCHING PATTERN "*.hpp"
+)
 
 
 add_executable(robot_remote_control-robot_controller_bin RobotControllerMain.cpp)
