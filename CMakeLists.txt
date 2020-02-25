@@ -10,7 +10,7 @@ project(robot_remote_control VERSION "0.0.9")
 
 set(BUILD_SHARED_LIBS ON)
 
-add_subdirectory(robot_remote_control)
+add_subdirectory(src)
 
 
 if(BUILD_TESTS)
