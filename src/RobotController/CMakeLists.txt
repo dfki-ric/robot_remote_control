@@ -5,15 +5,15 @@ add_library(robot_remote_control-robot_controller
 target_link_libraries (robot_remote_control-robot_controller robot_remote_control-types robot_remote_control-update_thread)
 target_include_directories(robot_remote_control-robot_controller
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
-		$<INSTALL_INTERFACE:include>
+		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 
 # #target_link_libraries (robot_remote_control-robot_controller ${PROTOBUF_LIBRARIES} )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-	DESTINATION include/robot_remote_control
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 	FILES_MATCHING PATTERN "*.hpp"
 )
 

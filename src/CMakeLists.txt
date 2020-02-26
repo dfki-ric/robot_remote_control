@@ -10,17 +10,16 @@ add_subdirectory(Transports)
 add_subdirectory(ControlledRobot)
 add_subdirectory(RobotController)
 
+#install src folder headers
+install(FILES 
+	MessageTypes.hpp
+	RingBuffer.hpp
+	TelemetryBuffer.hpp
+	SimpleSensorBuffer.hpp
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
+)
 
 
-
-
-# install (TARGETS
-#         robot_remote_control-robot_controller
-#         robot_remote_control-controlled_robot_bin
-#         EXPORT robot_remote_control-targets
-#         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-# )
 
 #Export the library interface
 install(
@@ -53,7 +52,16 @@ configure_file(robot_remote_control-transport_zmq.pc.in robot_remote_control-tra
 configure_file(robot_remote_control-controlled_robot.pc.in robot_remote_control-controlled_robot.pc @ONLY)
 configure_file(robot_remote_control-robot_controller.pc.in robot_remote_control-robot_controller.pc @ONLY)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-	DESTINATION lib/pkgconfig
-	FILES_MATCHING PATTERN "*.pc"
+install(FILES 
+	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-types.pc
+	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-update_thread.pc
+	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-transport_zmq.pc
+	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-controlled_robot.pc
+	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-robot_controller.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
+
+# install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+# 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+# 	FILES_MATCHING PATTERN "*.pc"
+# )

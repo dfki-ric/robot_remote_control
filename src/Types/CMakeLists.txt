@@ -10,7 +10,7 @@ add_custom_command( OUTPUT Types/RobotRemoteControl.pb.cc RobotRemoteControl.pb.
                     MAIN_DEPENDENCY RobotRemoteControl.proto
                     )
 
-INSTALL(FILES RobotRemoteControl.proto DESTINATION protobuf)
+INSTALL(FILES RobotRemoteControl.proto DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/protobuf)
 
 
 add_library(robot_remote_control-types 
@@ -19,13 +19,13 @@ add_library(robot_remote_control-types
 target_include_directories(robot_remote_control-types
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<INSTALL_INTERFACE:include>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(robot_remote_control-types protobuf)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/RobotRemoteControl.pb.h
-	DESTINATION include/robot_remote_control/Types
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control/Types
 )
 
 install (TARGETS robot_remote_control-types

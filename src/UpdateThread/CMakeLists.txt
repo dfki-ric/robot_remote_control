@@ -5,11 +5,11 @@ add_library(robot_remote_control-update_thread
 target_include_directories(robot_remote_control-update_thread
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<INSTALL_INTERFACE:include>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	DESTINATION include/robot_remote_control/UpdateThread
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 	FILES_MATCHING PATTERN "*.hpp"
 )
 

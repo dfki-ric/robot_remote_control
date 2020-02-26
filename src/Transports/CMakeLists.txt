@@ -8,11 +8,11 @@ add_library(robot_remote_control-transport_zmq
 target_include_directories(robot_remote_control-transport_zmq 
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<INSTALL_INTERFACE:include>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_link_libraries (robot_remote_control-transport_zmq ${ZMQ_LIBRARIES})
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Transports
-	DESTINATION include/robot_remote_control
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 	FILES_MATCHING PATTERN "*.hpp"
 )
 
