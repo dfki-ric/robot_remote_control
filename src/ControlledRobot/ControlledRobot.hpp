@@ -33,6 +33,10 @@ class ControlledRobot: public UpdateThread{
             return poseCommand.read(command);
         }
 
+        bool getLeftArmEndEffectorTargetPoseCommand(Pose *command) {
+            return leftArmEndEffectorTargetPoseCommand.read(command);
+        }
+
         /**
          * @brief Get the Twist Command with velocities to robe should move at
          * 
@@ -294,6 +298,7 @@ class ControlledRobot: public UpdateThread{
 
         // command buffers
         CommandBuffer<Pose> poseCommand;
+        CommandBuffer<Pose> leftArmEndEffectorTargetPoseCommand;
         CommandBuffer<Twist> twistCommand;
         CommandBuffer<GoTo> goToCommand;
         CommandBuffer<SimpleAction> simpleActionsCommand;

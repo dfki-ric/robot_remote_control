@@ -10,6 +10,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     telemetryTransport(telemetryTransport),
     logLevel(CUSTOM-1) {
     registerCommandBuffer(TARGET_POSE_COMMAND, &poseCommand);
+    registerCommandBuffer(LEFT_ARM_END_EFFECTOR_TARGET_POSE_COMMAND, &leftArmEndEffectorTargetPoseCommand);
     registerCommandBuffer(TWIST_COMMAND, &twistCommand);
     registerCommandBuffer(GOTO_COMMAND, &goToCommand);
     registerCommandBuffer(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
