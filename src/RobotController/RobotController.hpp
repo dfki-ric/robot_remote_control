@@ -28,6 +28,8 @@ class RobotController: public UpdateThread {
          */
         void setTargetPose(const Pose & pose);
 
+        void setLeftArmEndEffectorTargetPose(const Pose & pose);
+
         /**
          * @brief Set the Twist Command for direct remote control based on velocities
          * 
