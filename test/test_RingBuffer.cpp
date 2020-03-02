@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-#include <robot_remote_control/RingBuffer.hpp>
+#include "../src/RingBuffer.hpp"
 
 
 namespace robot_remote_control {

@@ -10,5 +10,8 @@
 
   <license>BSD-3-Clause</license>
 
-  <build_depend>base-cmake</build_depend>
+	<export>
+		<build_type>cmake</build_type>
+	</export>
+  
 </package>
