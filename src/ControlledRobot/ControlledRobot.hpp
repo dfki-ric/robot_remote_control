@@ -48,6 +48,16 @@ class ControlledRobot: public UpdateThread{
         }
 
         /**
+         * @brief Get the Twist command with velocities for the left arm end effector
+         *
+         * @return true if the command was not read before
+         * @param command the last received command
+         */
+        bool getLeftArmEndEffectorTwistCommand(Twist *leftArmEndEffectorTwistCommand) {
+            return leftArmEndEffectorTwistCommandBuffer.read(leftArmEndEffectorTwistCommand);
+        }
+
+        /**
          * @brief Get the GoTo Command the robot should execute
          *
          * @return true if the command was not read before
@@ -299,7 +309,7 @@ class ControlledRobot: public UpdateThread{
         // command buffers
         CommandBuffer<Pose> poseCommand;
         CommandBuffer<Pose> leftArmEndEffectorTargetPoseCommand;
-        CommandBuffer<Twist> twistCommand;
+        CommandBuffer<Twist> twistCommand, leftArmEndEffectorTwistCommandBuffer;
         CommandBuffer<GoTo> goToCommand;
         CommandBuffer<SimpleAction> simpleActionsCommand;
         CommandBuffer<ComplexAction> complexActionsCommand;
