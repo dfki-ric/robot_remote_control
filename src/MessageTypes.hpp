@@ -12,6 +12,7 @@ namespace robot_remote_control
                             TARGET_POSE_COMMAND,    //target Pose the robot should move to
                             LEFT_ARM_END_EFFECTOR_TARGET_POSE_COMMAND,
                             TWIST_COMMAND,           //directly moce the robot Base
+                            LEFT_ARM_END_EFFECTOR_TWIST_COMMAND,
                             JOINTS_COMMAND,
                             SIMPLE_ACTIONS_COMMAND,
                             COMPLEX_ACTIONS_COMMAND,
