@@ -10,6 +10,9 @@
 
   <license>BSD-3-Clause</license>
 
+  <build_depend>protobuf-dev</build_depend>
+  <build_depend>libzmqpp-dev</build_depend>
+  
 	<export>
 		<build_type>cmake</build_type>
 	</export>
