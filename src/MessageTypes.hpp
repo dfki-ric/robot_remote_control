@@ -15,6 +15,7 @@ namespace robot_remote_control
                             LEFT_ARM_END_EFFECTOR_TWIST_COMMAND,
                             JOINTS_COMMAND,
                             SIMPLE_ACTIONS_COMMAND,
+                            COMPLEX_ACTION_COMMAND,
                             COMPLEX_ACTIONS_COMMAND,
                             GOTO_COMMAND,
                             TELEMETRY_REQUEST,

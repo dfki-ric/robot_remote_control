@@ -52,9 +52,7 @@ void RobotController::setSimpleActionCommand(const SimpleAction &simpleActionCom
 }
 
 void RobotController::setComplexActionCommand(const ComplexAction &complexActionCommand) {
-    ComplexActions action;
-     (*action.add_actions()) = complexActionCommand;
-    sendProtobufData(action, COMPLEX_ACTIONS_COMMAND);
+    sendProtobufData(complexActionCommand, COMPLEX_ACTION_COMMAND);
 }
 
 void RobotController::setLogLevel(const uint32_t &level){
