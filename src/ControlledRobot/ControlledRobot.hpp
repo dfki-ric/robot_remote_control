@@ -95,7 +95,7 @@ class ControlledRobot: public UpdateThread{
          * @param command the last received command
          */
         bool getComplexActionCommand(ComplexAction *command) {
-            return complexActionsCommand.read(command);
+            return complexActionCommandBuffer.read(command);
         }
 
         // Telemetry setters
@@ -312,7 +312,7 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<Twist> twistCommand, leftArmEndEffectorTwistCommandBuffer;
         CommandBuffer<GoTo> goToCommand;
         CommandBuffer<SimpleAction> simpleActionsCommand;
-        CommandBuffer<ComplexAction> complexActionsCommand;
+        CommandBuffer<ComplexAction> complexActionCommandBuffer;
         CommandBuffer<JointState> jointsCommand;
 
         std::map<uint32_t, CommandBufferBase*> commandbuffers;
