@@ -23,11 +23,6 @@ void RobotController::setTargetPose(const Pose & pose)
     sendProtobufData(pose,TARGET_POSE_COMMAND);
 }
 
-void RobotController::setLeftArmEndEffectorTargetPose(const Pose & pose)
-{
-    sendProtobufData(pose, LEFT_ARM_END_EFFECTOR_TARGET_POSE_COMMAND);
-}
-
 void RobotController::setTwistCommand(const Twist &twistCommand)
 {
     sendProtobufData(twistCommand,TWIST_COMMAND);
