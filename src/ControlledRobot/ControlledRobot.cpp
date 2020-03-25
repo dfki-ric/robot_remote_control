@@ -5,9 +5,10 @@
 namespace robot_remote_control {
 
 
-ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport):UpdateThread(),
+ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, std::shared_ptr<TelemetryBuffer> buffer):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
+    buffers(buffer),
     logLevel(CUSTOM-1) {
     registerCommandBuffer(TARGET_POSE_COMMAND, &poseCommand);
     registerCommandBuffer(TWIST_COMMAND, &twistCommand);
@@ -45,7 +46,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case TELEMETRY_REQUEST: {
             uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
-            std::string reply = buffers.peekSerialized(type);
+            std::string reply = buffers->peekSerialized(type);
             commandTransport->send(reply);
             return TELEMETRY_REQUEST;
         }

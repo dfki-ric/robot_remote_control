@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package myrobot;
+
+
+message NewControlMessage{
+    int32 sequence_no = 1;
+    string msg = 2;
+}
+
+message NewTelemetryMessage{
+    int32 sequence_no = 1;
+    string msg = 2;
+}
+
+
+
+

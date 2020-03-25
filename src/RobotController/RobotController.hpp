@@ -13,7 +13,9 @@ namespace robot_remote_control {
 
 class RobotController: public UpdateThread {
     public:
-        explicit RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr(), size_t recv_buffer_size = 10);
+        explicit RobotController(TransportSharedPtr commandTransport,
+                                TransportSharedPtr telemetryTransport = TransportSharedPtr(),
+                                std::shared_ptr<TelemetryBuffer> buffer = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(10)));
         virtual ~RobotController();
 
         /**
@@ -248,14 +250,14 @@ class RobotController: public UpdateThread {
          * @return unsigned int 
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const TelemetryMessageType &type, DATATYPE *data ) {
+        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
             buffers->lock();
             bool result = RingBufferAccess::popData(buffers->get_ref()[type], data);
             buffers->unlock();
             return result;
         }
 
-        template< class DATATYPE > void requestTelemetry(const TelemetryMessageType &type, DATATYPE *result) {
+        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result) {
             std::string buf;
             buf.resize(sizeof(uint16_t)*2);
             uint16_t uint_type;
@@ -278,11 +280,10 @@ class RobotController: public UpdateThread {
 
 
     protected:
+
         virtual std::string sendRequest(const std::string& serializedMessage);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
-
-    private:
 
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
@@ -294,7 +295,7 @@ class RobotController: public UpdateThread {
         // void initBuffers(const unsigned int &defaultSize);
 
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type ) {
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type ) {
             std::string buf;
             buf.resize(sizeof(uint16_t));
             uint16_t uint_type = type;
@@ -304,7 +305,7 @@ class RobotController: public UpdateThread {
             return sendRequest(buf);
         }
 
-        template <class CLASS > void addToTelemetryBuffer(const TelemetryMessageType &type, const std::string &serializedMessage) {
+        template <class CLASS > void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
             CLASS data;
             data.ParseFromString(serializedMessage);
             buffers->lock();

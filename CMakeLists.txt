@@ -12,7 +12,10 @@ set(BUILD_SHARED_LIBS ON)
 
 add_subdirectory(src)
 
-add_subdirectory(examples)
+set(BUILD_EXAMPLES TRUE)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif(BUILD_EXAMPLES)
 
 if(BUILD_TESTS)
     add_subdirectory(test)

@@ -53,7 +53,7 @@ namespace robot_remote_control {
     }
 
 
-    std::string TelemetryBuffer::peekSerialized(const TelemetryMessageType &type) {
+    std::string TelemetryBuffer::peekSerialized(const uint16_t &type) {
         std::string buf("");
         lock();
 
