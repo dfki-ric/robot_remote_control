@@ -81,14 +81,17 @@ message SimpleActions {
 enum ComplexActionType {
     POSE = 0;
     POSE_LIST = 1;
-    AREA = 2;
-    VOLUME = 3;
+    TWIST = 2;
+    TWIST_LIST = 3;
+    AREA = 4;
+    VOLUME = 5;
 }
 
 message ComplexAction {
     string name = 1;
     ComplexActionType type = 2;
     repeated Pose poses = 3;
+    repeated Twist twists = 4;
 }
 
 message ComplexActions {
