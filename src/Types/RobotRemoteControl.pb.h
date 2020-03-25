@@ -84,8 +84,10 @@ inline bool SimpleActionType_Parse(
 enum ComplexActionType {
   POSE = 0,
   POSE_LIST = 1,
-  AREA = 2,
-  VOLUME = 3,
+  TWIST = 2,
+  TWIST_LIST = 3,
+  AREA = 4,
+  VOLUME = 5,
   ComplexActionType_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
   ComplexActionType_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
@@ -1480,6 +1482,18 @@ class ComplexAction : public ::google::protobuf::Message /* @@protoc_insertion_p
   const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Pose >&
       poses() const;
 
+  // repeated .robot_remote_control.Twist twists = 4;
+  int twists_size() const;
+  void clear_twists();
+  static const int kTwistsFieldNumber = 4;
+  const ::robot_remote_control::Twist& twists(int index) const;
+  ::robot_remote_control::Twist* mutable_twists(int index);
+  ::robot_remote_control::Twist* add_twists();
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Twist >*
+      mutable_twists();
+  const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Twist >&
+      twists() const;
+
   // @@protoc_insertion_point(class_scope:robot_remote_control.ComplexAction)
  private:
 
@@ -1487,6 +1501,7 @@ class ComplexAction : public ::google::protobuf::Message /* @@protoc_insertion_p
   bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Pose > poses_;
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Twist > twists_;
   int type_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
@@ -3230,6 +3245,36 @@ inline const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Pose 
 ComplexAction::poses() const {
   // @@protoc_insertion_point(field_list:robot_remote_control.ComplexAction.poses)
   return poses_;
+}
+
+// repeated .robot_remote_control.Twist twists = 4;
+inline int ComplexAction::twists_size() const {
+  return twists_.size();
+}
+inline void ComplexAction::clear_twists() {
+  twists_.Clear();
+}
+inline const ::robot_remote_control::Twist& ComplexAction::twists(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.ComplexAction.twists)
+  return twists_.Get(index);
+}
+inline ::robot_remote_control::Twist* ComplexAction::mutable_twists(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.ComplexAction.twists)
+  return twists_.Mutable(index);
+}
+inline ::robot_remote_control::Twist* ComplexAction::add_twists() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.ComplexAction.twists)
+  return twists_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Twist >*
+ComplexAction::mutable_twists() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.ComplexAction.twists)
+  return &twists_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Twist >&
+ComplexAction::twists() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.ComplexAction.twists)
+  return twists_;
 }
 
 // -------------------------------------------------------------------
