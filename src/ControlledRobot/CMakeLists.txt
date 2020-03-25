@@ -13,16 +13,8 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
 	FILES_MATCHING PATTERN "*.hpp"
 )
 
-
-add_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp)
-target_link_libraries(robot_remote_control-controlled_robot_bin
-    robot_remote_control-controlled_robot
-    robot_remote_control-transport_zmq
-)
-
 install (TARGETS
         robot_remote_control-controlled_robot
-        robot_remote_control-controlled_robot_bin
         EXPORT robot_remote_control-targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
