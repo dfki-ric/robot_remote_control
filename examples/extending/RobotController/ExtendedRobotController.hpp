@@ -9,10 +9,11 @@ namespace robot_remote_control {
 
 class ExtendedRobotController : public RobotController {
  public:
-    ExtendedRobotController(TransportSharedPtr commandTransport,
-                            TransportSharedPtr telemetryTransport = TransportSharedPtr());
+    explicit ExtendedRobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr());
 
-    void setNewControlMessage(const myrobot::NewControlMessage & msg);
+    void setNewControlMessage(const myrobot::NewControlMessage & msg) {
+        sendProtobufData(msg, NEW_CONTROL_MESSAGE);
+    }
 
     void requestNewTelemetryMessage(myrobot::NewTelemetryMessage *msg) {
         requestTelemetry(NEW_TELEMETRY_MESSAGE, msg);
