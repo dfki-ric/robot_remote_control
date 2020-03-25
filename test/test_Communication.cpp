@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(check_simple_action_command) {
 BOOST_AUTO_TEST_CASE(check_complex_action_command) {
   ComplexAction cmd, recv;
   cmd = TypeGenerator::genComplexAction();
-  recv = testCommand(cmd, COMPLEX_ACTIONS_COMMAND);
+  recv = testCommand(cmd, COMPLEX_ACTION_COMMAND);
   COMPARE_PROTOBUF(cmd, recv);
 }
 
