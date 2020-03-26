@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "RobotController.hpp"
-#include "ExtendedTelemetryBuffer.hpp"
+#include "ExtendedMessageTypes.hpp"
 
 namespace robot_remote_control {
 

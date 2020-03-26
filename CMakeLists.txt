@@ -12,7 +12,6 @@ set(BUILD_SHARED_LIBS ON)
 
 add_subdirectory(src)
 
-set(BUILD_EXAMPLES TRUE)
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif(BUILD_EXAMPLES)

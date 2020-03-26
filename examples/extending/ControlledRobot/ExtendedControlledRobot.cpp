@@ -4,8 +4,11 @@
 namespace robot_remote_control {
 
 ExtendedControlledRobot::ExtendedControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport):
-    ControlledRobot(commandTransport, telemetryTransport, std::dynamic_pointer_cast<TelemetryBuffer>(std::shared_ptr<ExtendedTelemetryBuffer>(new ExtendedTelemetryBuffer()))) {
-        registerCommandBuffer(NEW_CONTROL_MESSAGE, &newControlMessageCommand);
+    ControlledRobot(commandTransport, telemetryTransport) {
+
+        registerCommandType(NEW_CONTROL_MESSAGE, &newControlMessageCommand);
+
+        registerTelemetryType<myrobot::NewTelemetryMessage>(NEW_TELEMETRY_MESSAGE, 10);
     }
 
 

@@ -289,7 +289,9 @@ class RobotController: public UpdateThread {
         TransportSharedPtr telemetryTransport;
 
 
-
+        template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize) {
+            buffers->registerType<PROTO>(type, buffersize);
+        }
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::shared_ptr<SimpleSensorBuffer>  simplesensorbuffer;
         // void initBuffers(const unsigned int &defaultSize);

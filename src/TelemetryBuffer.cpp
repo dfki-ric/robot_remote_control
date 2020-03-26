@@ -7,46 +7,27 @@ namespace robot_remote_control {
     TelemetryBuffer::TelemetryBuffer(const size_t &size) {
         // create vector of shared ptr
         lock();
+        //just pre-set sizes to minimize resize calls in registerType
         get_ref().resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
+        unlock();
 
-        std::shared_ptr<RingBufferBase> newbuf;
+        converters.resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
 
         // fill shared pointers with objects
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<Pose>(size));
-        get_ref()[CURRENT_POSE] = newbuf;
 
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<JointState>(size));
-        get_ref()[JOINT_STATE] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<JointState>(size));
-        get_ref()[CONTROLLABLE_JOINTS] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleActions>(size));
-        get_ref()[SIMPLE_ACTIONS] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<ComplexActions>(size));
-        get_ref()[COMPLEX_ACTIONS] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<RobotName>(size));
-        get_ref()[ROBOT_NAME] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<RobotState>(size));
-        get_ref()[ROBOT_STATE] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<LogMessage>(size));
-        get_ref()[LOG_MESSAGE] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<VideoStreams>(size));
-        get_ref()[VIDEO_STREAMS] = newbuf;
-
-        newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleSensors>(size));
-        get_ref()[SIMPLE_SENSOR_DEFINITION] = newbuf;
-
+        registerType<Pose>(CURRENT_POSE, size);
+        registerType<JointState>(JOINT_STATE, size);
+        registerType<JointState>(CONTROLLABLE_JOINTS, size);
+        registerType<SimpleActions>(SIMPLE_ACTIONS, size);
+        registerType<ComplexActions>(COMPLEX_ACTIONS, size);
+        registerType<RobotName>(ROBOT_NAME, size);
+        registerType<RobotState>(ROBOT_STATE, size);
+        registerType<LogMessage>(LOG_MESSAGE, size);
+        registerType<VideoStreams>(VIDEO_STREAMS, size);
+        registerType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, size);
         // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-         newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleSensor>(size));
-         get_ref()[SIMPLE_SENSOR_VALUE] = newbuf;
+        registerType<SimpleSensor>(SIMPLE_SENSOR_VALUE, size);
 
-        unlock();
     }
 
     TelemetryBuffer::~TelemetryBuffer() {
@@ -57,67 +38,10 @@ namespace robot_remote_control {
         std::string buf("");
         lock();
 
-        switch (type) {
-            case CURRENT_POSE: {
-                Pose data;
-                fillBuffer(CURRENT_POSE, &data, &buf);
-                break;
-            }
-            case JOINT_STATE: {
-                JointState data;
-                fillBuffer(JOINT_STATE, &data, &buf);
-                break;
-            }
-            case CONTROLLABLE_JOINTS: {
-                JointState data;
-                fillBuffer(CONTROLLABLE_JOINTS, &data, &buf);
-                break;
-            }
-            case SIMPLE_ACTIONS: {
-                SimpleActions data;
-                fillBuffer(SIMPLE_ACTIONS, &data, &buf);
-                break;
-            }
-            case COMPLEX_ACTIONS: {
-                ComplexActions data;
-                fillBuffer(COMPLEX_ACTIONS, &data, &buf);
-                break;
-            }
-            case ROBOT_NAME: {
-                RobotName data;
-                fillBuffer(ROBOT_NAME, &data, &buf);
-                break;
-            }
-            case ROBOT_STATE: {
-                RobotState data;
-                fillBuffer(ROBOT_STATE, &data, &buf);
-                break;
-            }
-            case LOG_MESSAGE: {
-                LogMessage data;
-                fillBuffer(LOG_MESSAGE, &data, &buf);
-                break;
-            }
-            case VIDEO_STREAMS: {
-                VideoStreams data;
-                fillBuffer(VIDEO_STREAMS, &data, &buf);
-                break;
-            }
-            case SIMPLE_SENSOR_DEFINITION: {
-                SimpleSensors data;
-                fillBuffer(SIMPLE_SENSOR_DEFINITION, &data, &buf);
-                break;
-            }
-            // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-            case SIMPLE_SENSOR_VALUE: {
-                SimpleSensors data;
-                fillBuffer(SIMPLE_SENSOR_VALUE, &data, &buf);
-                break;
-            }
-            case NO_TELEMETRY_DATA:
-            case TELEMETRY_MESSAGE_TYPES_NUMBER:
-            break;
+        if (type != NO_TELEMETRY_DATA || type != TELEMETRY_MESSAGE_TYPES_NUMBER) {
+            buf = converters[type]->get();
         }
+
         unlock();
         return buf;
     }

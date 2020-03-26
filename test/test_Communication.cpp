@@ -7,6 +7,7 @@
 #include <iostream>
 
 #define private public // :-|
+#define protected public // :-|
 #include "../src/RobotController/RobotController.hpp"
 #include "../src/ControlledRobot/ControlledRobot.hpp"
 

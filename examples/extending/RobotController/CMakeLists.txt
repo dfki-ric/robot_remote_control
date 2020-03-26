@@ -1,6 +1,5 @@
 add_library(robot_remote_control-extended_robot_controller
 ExtendedRobotController.cpp
-../ExtendedTelemetryBuffer.cpp
 )
 
 target_link_libraries (robot_remote_control-extended_robot_controller
