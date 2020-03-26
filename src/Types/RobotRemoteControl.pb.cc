@@ -316,10 +316,11 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActions, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActions, _is_default_instance_));
   ComplexAction_descriptor_ = file->message_type(13);
-  static const int ComplexAction_offsets_[3] = {
+  static const int ComplexAction_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, poses_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, twists_),
   };
   ComplexAction_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -601,25 +602,27 @@ void protobuf_AddDesc_RobotRemoteControl_2eproto() {
     "\030\002 \001(\0132%.robot_remote_control.SimpleActi"
     "onDef\022\r\n\005state\030\003 \001(\004\"D\n\rSimpleActions\0223\n"
     "\007actions\030\001 \003(\0132\".robot_remote_control.Si"
-    "mpleAction\"\177\n\rComplexAction\022\014\n\004name\030\001 \001("
-    "\t\0225\n\004type\030\002 \001(\0162\'.robot_remote_control.C"
-    "omplexActionType\022)\n\005poses\030\003 \003(\0132\032.robot_"
-    "remote_control.Pose\"F\n\016ComplexActions\0224\n"
-    "\007actions\030\001 \003(\0132#.robot_remote_control.Co"
-    "mplexAction\"\032\n\tRobotName\022\r\n\005value\030\001 \001(\t\""
-    "\033\n\nRobotState\022\r\n\005state\030\001 \001(\t\",\n\nLogMessa"
-    "ge\022\r\n\005level\030\001 \001(\r\022\017\n\007message\030\002 \001(\t\"J\n\013Vi"
-    "deoStream\022\013\n\003url\030\001 \001(\t\022.\n\ncamerapose\030\002 \001"
-    "(\0132\032.robot_remote_control.Pose\"A\n\014VideoS"
-    "treams\0221\n\006stream\030\001 \003(\0132!.robot_remote_co"
-    "ntrol.VideoStream\"d\n\014SimpleSensor\022\014\n\004nam"
-    "e\030\001 \001(\t\022\n\n\002id\030\002 \001(\r\022+\n\004size\030\003 \001(\0132\035.robo"
-    "t_remote_control.Vector2\022\r\n\005value\030\004 \003(\002\""
-    "D\n\rSimpleSensors\0223\n\007sensors\030\001 \003(\0132\".robo"
-    "t_remote_control.SimpleSensor**\n\020SimpleA"
-    "ctionType\022\t\n\005VALUE\020\000\022\013\n\007TRIGGER\020\001*B\n\021Com"
-    "plexActionType\022\010\n\004POSE\020\000\022\r\n\tPOSE_LIST\020\001\022"
-    "\010\n\004AREA\020\002\022\n\n\006VOLUME\020\003b\006proto3", 1789);
+    "mpleAction\"\254\001\n\rComplexAction\022\014\n\004name\030\001 \001"
+    "(\t\0225\n\004type\030\002 \001(\0162\'.robot_remote_control."
+    "ComplexActionType\022)\n\005poses\030\003 \003(\0132\032.robot"
+    "_remote_control.Pose\022+\n\006twists\030\004 \003(\0132\033.r"
+    "obot_remote_control.Twist\"F\n\016ComplexActi"
+    "ons\0224\n\007actions\030\001 \003(\0132#.robot_remote_cont"
+    "rol.ComplexAction\"\032\n\tRobotName\022\r\n\005value\030"
+    "\001 \001(\t\"\033\n\nRobotState\022\r\n\005state\030\001 \001(\t\",\n\nLo"
+    "gMessage\022\r\n\005level\030\001 \001(\r\022\017\n\007message\030\002 \001(\t"
+    "\"J\n\013VideoStream\022\013\n\003url\030\001 \001(\t\022.\n\ncamerapo"
+    "se\030\002 \001(\0132\032.robot_remote_control.Pose\"A\n\014"
+    "VideoStreams\0221\n\006stream\030\001 \003(\0132!.robot_rem"
+    "ote_control.VideoStream\"d\n\014SimpleSensor\022"
+    "\014\n\004name\030\001 \001(\t\022\n\n\002id\030\002 \001(\r\022+\n\004size\030\003 \001(\0132"
+    "\035.robot_remote_control.Vector2\022\r\n\005value\030"
+    "\004 \003(\002\"D\n\rSimpleSensors\0223\n\007sensors\030\001 \003(\0132"
+    "\".robot_remote_control.SimpleSensor**\n\020S"
+    "impleActionType\022\t\n\005VALUE\020\000\022\013\n\007TRIGGER\020\001*"
+    "]\n\021ComplexActionType\022\010\n\004POSE\020\000\022\r\n\tPOSE_L"
+    "IST\020\001\022\t\n\005TWIST\020\002\022\016\n\nTWIST_LIST\020\003\022\010\n\004AREA"
+    "\020\004\022\n\n\006VOLUME\020\005b\006proto3", 1862);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "RobotRemoteControl.proto", &protobuf_RegisterTypes);
   Vector2::default_instance_ = new Vector2();
@@ -699,6 +702,8 @@ bool ComplexActionType_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
+    case 5:
       return true;
     default:
       return false;
@@ -5467,6 +5472,7 @@ SimpleActions::actions() const {
 const int ComplexAction::kNameFieldNumber;
 const int ComplexAction::kTypeFieldNumber;
 const int ComplexAction::kPosesFieldNumber;
+const int ComplexAction::kTwistsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ComplexAction::ComplexAction()
@@ -5536,6 +5542,7 @@ void ComplexAction::Clear() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   type_ = 0;
   poses_.Clear();
+  twists_.Clear();
 }
 
 bool ComplexAction::MergePartialFromCodedStream(
@@ -5592,6 +5599,22 @@ bool ComplexAction::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(26)) goto parse_loop_poses;
+        if (input->ExpectTag(34)) goto parse_loop_twists;
+        input->UnsafeDecrementRecursionDepth();
+        break;
+      }
+
+      // repeated .robot_remote_control.Twist twists = 4;
+      case 4: {
+        if (tag == 34) {
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_twists:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+                input, add_twists()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(34)) goto parse_loop_twists;
         input->UnsafeDecrementRecursionDepth();
         if (input->ExpectAtEnd()) goto success;
         break;
@@ -5643,6 +5666,12 @@ void ComplexAction::SerializeWithCachedSizes(
       3, this->poses(i), output);
   }
 
+  // repeated .robot_remote_control.Twist twists = 4;
+  for (unsigned int i = 0, n = this->twists_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->twists(i), output);
+  }
+
   // @@protoc_insertion_point(serialize_end:robot_remote_control.ComplexAction)
 }
 
@@ -5671,6 +5700,13 @@ void ComplexAction::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
         3, this->poses(i), false, target);
+  }
+
+  // repeated .robot_remote_control.Twist twists = 4;
+  for (unsigned int i = 0, n = this->twists_size(); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        4, this->twists(i), false, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.ComplexAction)
@@ -5702,6 +5738,14 @@ int ComplexAction::ByteSize() const {
         this->poses(i));
   }
 
+  // repeated .robot_remote_control.Twist twists = 4;
+  total_size += 1 * this->twists_size();
+  for (int i = 0; i < this->twists_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->twists(i));
+  }
+
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
@@ -5731,6 +5775,7 @@ void ComplexAction::MergeFrom(const ComplexAction& from) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
   poses_.MergeFrom(from.poses_);
+  twists_.MergeFrom(from.twists_);
   if (from.name().size() > 0) {
 
     name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
@@ -5767,6 +5812,7 @@ void ComplexAction::InternalSwap(ComplexAction* other) {
   name_.Swap(&other->name_);
   std::swap(type_, other->type_);
   poses_.UnsafeArenaSwap(&other->poses_);
+  twists_.UnsafeArenaSwap(&other->twists_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -5868,6 +5914,36 @@ const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Pose >&
 ComplexAction::poses() const {
   // @@protoc_insertion_point(field_list:robot_remote_control.ComplexAction.poses)
   return poses_;
+}
+
+// repeated .robot_remote_control.Twist twists = 4;
+int ComplexAction::twists_size() const {
+  return twists_.size();
+}
+void ComplexAction::clear_twists() {
+  twists_.Clear();
+}
+const ::robot_remote_control::Twist& ComplexAction::twists(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.ComplexAction.twists)
+  return twists_.Get(index);
+}
+::robot_remote_control::Twist* ComplexAction::mutable_twists(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.ComplexAction.twists)
+  return twists_.Mutable(index);
+}
+::robot_remote_control::Twist* ComplexAction::add_twists() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.ComplexAction.twists)
+  return twists_.Add();
+}
+::google::protobuf::RepeatedPtrField< ::robot_remote_control::Twist >*
+ComplexAction::mutable_twists() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.ComplexAction.twists)
+  return &twists_;
+}
+const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Twist >&
+ComplexAction::twists() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.ComplexAction.twists)
+  return twists_;
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

@@ -1,31 +1,26 @@
 #include "RobotController.hpp"
 #include <iostream>
+#include <memory>
 
-
-using namespace std;
 using namespace robot_remote_control;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t recv_buffer_size):UpdateThread(),
+RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, std::shared_ptr<TelemetryBuffer> buffer):UpdateThread(),
     commandTransport(commandTransport),
-    telemetryTransport(telemetryTransport)
-{
-    buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(recv_buffer_size));
+    telemetryTransport(telemetryTransport),
+    buffers(buffer) {
     simplesensorbuffer = std::shared_ptr<SimpleSensorBuffer>(new SimpleSensorBuffer());
 }
 
-RobotController::~RobotController(){
-
+RobotController::~RobotController() {
 }
 
-void RobotController::setTargetPose(const Pose & pose)
-{
-    sendProtobufData(pose,TARGET_POSE_COMMAND);
+void RobotController::setTargetPose(const Pose & pose) {
+    sendProtobufData(pose, TARGET_POSE_COMMAND);
 }
 
-void RobotController::setTwistCommand(const Twist &twistCommand)
-{
-    sendProtobufData(twistCommand,TWIST_COMMAND);
+void RobotController::setTwistCommand(const Twist &twistCommand) {
+    sendProtobufData(twistCommand, TWIST_COMMAND);
 }
 
 void RobotController::setLeftArmEndeffectorTwistCommand(const Twist &leftArmEndeffectorTwistCommand) {

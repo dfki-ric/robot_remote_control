@@ -22,13 +22,13 @@ class TelemetryBuffer: public ThreadProtectedVar< std::vector < std::shared_ptr 
         /**
          * @brief get the serializes buffer value, so the calling function does not need to know the datatype.
          * 
-         * @param type 
+         * @param type The TelemetryMessageType, using a size_t to be able to extent the function
          * @return std::string 
          */
-        std::string peekSerialized(const TelemetryMessageType &type);
+        virtual std::string peekSerialized(const uint16_t &type);
 
-    private:
-        template <class PROTO> void fillBuffer(const TelemetryMessageType &type, PROTO *proto, std::string *targetbuffer){
+    protected:
+        template <class PROTO> void fillBuffer(const uint16_t &type, PROTO *proto, std::string *targetbuffer){
             if (RingBufferAccess::peekData(get_ref()[type], proto)){
                 proto->SerializeToString(targetbuffer);
             }

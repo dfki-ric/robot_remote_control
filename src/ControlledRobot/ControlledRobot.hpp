@@ -6,13 +6,14 @@
 #include "TelemetryBuffer.hpp"
 #include <map>
 #include <string>
+#include <memory>
 
 
 namespace robot_remote_control {
 
 class ControlledRobot: public UpdateThread{
     public:
-        ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
+        ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, std::shared_ptr<TelemetryBuffer> buffer = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer()));
         virtual ~ControlledRobot() {}
 
         /**
@@ -96,7 +97,7 @@ class ControlledRobot: public UpdateThread{
 
         // Telemetry setters
 
-    private:
+    protected:
         /**
          * @brief generic send of telemetry types
          * 
@@ -105,7 +106,7 @@ class ControlledRobot: public UpdateThread{
          * @param type 
          * @return int size sent
          */
-        template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type) {
+        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type) {
             if (telemetryTransport.get()) {
                 std::string buf;
                 buf.resize(sizeof(uint16_t));
@@ -114,9 +115,9 @@ class ControlledRobot: public UpdateThread{
                 *data = uint_type;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                buffers.lock();
-                RingBufferAccess::pushData(buffers.get_ref()[type], protodata, true);
-                buffers.unlock();
+                buffers->lock();
+                RingBufferAccess::pushData(buffers->get_ref()[type], protodata, true);
+                buffers->unlock();
                 return telemetryTransport->send(buf) - sizeof(uint16_t);
             }
             printf("ERROR Transport invalid\n");
@@ -250,7 +251,6 @@ class ControlledRobot: public UpdateThread{
 
         virtual ControlMessageType evaluateRequest(const std::string& request);
 
-    private:
         struct CommandBufferBase{
             CommandBufferBase() {}
             virtual ~CommandBufferBase() {}
@@ -328,7 +328,7 @@ class ControlledRobot: public UpdateThread{
 
 
         // buffer of sent telemetry (used for telemetry requests)
-        TelemetryBuffer buffers;
+        std::shared_ptr<TelemetryBuffer> buffers;
 
         uint32_t logLevel;
 };
