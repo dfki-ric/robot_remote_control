@@ -311,7 +311,7 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<JointState> jointsCommand;
 
         std::map<uint32_t, CommandBufferBase*> commandbuffers;
-        void registerCommandBuffer(const uint32_t & ID, CommandBufferBase *bufptr) {
+        void registerCommandType(const uint32_t & ID, CommandBufferBase *bufptr) {
             commandbuffers[ID] = bufptr;
         }
 
@@ -326,7 +326,9 @@ class ControlledRobot: public UpdateThread{
         std::string serializeControlMessageType(const ControlMessageType& type);
         // std::string serializeCurrentPose();
 
-
+        template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize) {
+            buffers->registerType<PROTO>(type, buffersize);
+        }
         // buffer of sent telemetry (used for telemetry requests)
         std::shared_ptr<TelemetryBuffer> buffers;
 

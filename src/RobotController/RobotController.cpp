@@ -9,7 +9,11 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     buffers(buffer) {
+
     simplesensorbuffer = std::shared_ptr<SimpleSensorBuffer>(new SimpleSensorBuffer());
+
+
+    
 }
 
 RobotController::~RobotController() {

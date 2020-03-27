@@ -10,13 +10,13 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     telemetryTransport(telemetryTransport),
     buffers(buffer),
     logLevel(CUSTOM-1) {
-    registerCommandBuffer(TARGET_POSE_COMMAND, &poseCommand);
-    registerCommandBuffer(TWIST_COMMAND, &twistCommand);
-    registerCommandBuffer(LEFT_ARM_END_EFFECTOR_TWIST_COMMAND, &leftArmEndEffectorTwistCommandBuffer);
-    registerCommandBuffer(GOTO_COMMAND, &goToCommand);
-    registerCommandBuffer(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
-    registerCommandBuffer(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
-    registerCommandBuffer(JOINTS_COMMAND, &jointsCommand);
+    registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
+    registerCommandType(TWIST_COMMAND, &twistCommand);
+    registerCommandType(LEFT_ARM_END_EFFECTOR_TWIST_COMMAND, &leftArmEndEffectorTwistCommandBuffer);
+    registerCommandType(GOTO_COMMAND, &goToCommand);
+    registerCommandType(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
+    registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
+    registerCommandType(JOINTS_COMMAND, &jointsCommand);
 }
 
 void ControlledRobot::update() {

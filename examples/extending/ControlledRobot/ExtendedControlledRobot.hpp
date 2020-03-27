@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ControlledRobot.hpp"
-
-#include "ExtendedTelemetryBuffer.hpp"
+#include "ExtendedMessageTypes.hpp"
 
 namespace robot_remote_control {
 
