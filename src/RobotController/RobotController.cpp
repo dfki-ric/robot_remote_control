@@ -27,10 +27,6 @@ void RobotController::setTwistCommand(const Twist &twistCommand) {
     sendProtobufData(twistCommand, TWIST_COMMAND);
 }
 
-void RobotController::setLeftArmEndeffectorTwistCommand(const Twist &leftArmEndeffectorTwistCommand) {
-    sendProtobufData(leftArmEndeffectorTwistCommand, LEFT_ARM_END_EFFECTOR_TWIST_COMMAND);
-}
-
 void RobotController::setGoToCommand(const GoTo &goToCommand) {
     sendProtobufData(goToCommand, GOTO_COMMAND);
 }

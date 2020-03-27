@@ -38,13 +38,6 @@ class RobotController: public UpdateThread {
         void setTwistCommand(const Twist &twistCommand);
 
         /**
-         * @brief Set the twist command for the left arm end effector, for direct remote control based on velocities
-         *
-         * @param leftArmEndeffectorTwistCommand
-         */
-        void setLeftArmEndeffectorTwistCommand(const Twist &leftArmEndeffectorTwistCommand);
-
-        /**
          * @brief Set the GoTo Command of the ControlledRobot
          *
          * @param goToCommand

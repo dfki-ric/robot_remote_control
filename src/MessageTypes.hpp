@@ -11,7 +11,6 @@ namespace robot_remote_control {
     enum ControlMessageType{NO_CONTROL_DATA = 0,
                             TARGET_POSE_COMMAND,     // target Pose the robot should move to
                             TWIST_COMMAND,           // directly moce the robot Base
-                            LEFT_ARM_END_EFFECTOR_TWIST_COMMAND,
                             JOINTS_COMMAND,
                             SIMPLE_ACTIONS_COMMAND,
                             COMPLEX_ACTION_COMMAND,
