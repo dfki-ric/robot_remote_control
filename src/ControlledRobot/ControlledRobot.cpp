@@ -12,7 +12,6 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     logLevel(CUSTOM-1) {
     registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
     registerCommandType(TWIST_COMMAND, &twistCommand);
-    registerCommandType(LEFT_ARM_END_EFFECTOR_TWIST_COMMAND, &leftArmEndEffectorTwistCommandBuffer);
     registerCommandType(GOTO_COMMAND, &goToCommand);
     registerCommandType(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
     registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
