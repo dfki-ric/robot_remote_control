@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ControlledRobot.hpp"
+#include <robot_remote_control/ControlledRobot.hpp>
 #include "ExtendedMessageTypes.hpp"
 
 namespace robot_remote_control {

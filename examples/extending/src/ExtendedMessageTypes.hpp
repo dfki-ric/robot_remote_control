@@ -2,7 +2,7 @@
 
 #include "Types/myrobot.pb.h"
 
-#include "MessageTypes.hpp"
+#include <robot_remote_control/MessageTypes.hpp>
 
 namespace robot_remote_control {
 

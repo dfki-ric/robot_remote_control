@@ -1,29 +1,12 @@
+# CMakeLists.txt has to be located in the project folder and cmake has to be
+# executed from 'project/build' with 'cmake ../'.
+cmake_minimum_required(VERSION 3.1.0)
+#find_package(Rock)
+#rock_init(mantis_remote_control 0.1)
+#rock_standard_layout()
 
-add_subdirectory(Types)
+project(mantis_remote_control VERSION "0.0.9")
 
-add_subdirectory(RobotController)
-add_subdirectory(ControlledRobot)
+set(BUILD_SHARED_LIBS ON)
 
-add_executable(robot_remote_control-extended_robot_controller_bin ExtendedRobotControllerMain.cpp)
-target_link_libraries(robot_remote_control-extended_robot_controller_bin
-    robot_remote_control-extended_robot_controller
-    robot_remote_control-transport_zmq
-)
-target_include_directories(robot_remote_control-extended_robot_controller_bin
-	PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/RobotController>
-)
-
-add_executable(robot_remote_control-extended_controlled_robot_bin ExtendedControlledRobotMain.cpp)
-target_link_libraries(robot_remote_control-extended_controlled_robot_bin
-    robot_remote_control-extended_controlled_robot
-    robot_remote_control-transport_zmq
-)
-target_include_directories(robot_remote_control-extended_controlled_robot_bin
-	PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/ControlledRobot>
-)
-
-
+add_subdirectory(src)

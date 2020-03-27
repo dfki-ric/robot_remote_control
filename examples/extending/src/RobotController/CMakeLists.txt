@@ -13,8 +13,6 @@ target_include_directories(robot_remote_control-extended_robot_controller
 PUBLIC
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/RobotController>
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/examples/extending/>
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/examples/extending/RobotController>
 
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
