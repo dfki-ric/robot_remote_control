@@ -1,5 +1,5 @@
 
-add_subdirectory(extending)
+#add_subdirectory(extending/src)
 
 add_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp)
 target_link_libraries(robot_remote_control-controlled_robot_bin

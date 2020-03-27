@@ -5,8 +5,13 @@ cmake_minimum_required(VERSION 3.1.0)
 #rock_init(mantis_remote_control 0.1)
 #rock_standard_layout()
 
-project(mantis_remote_control VERSION "0.0.9")
+project(extended_remote_control VERSION "0.0.9")
 
 set(BUILD_SHARED_LIBS ON)
 
 add_subdirectory(src)
+
+set(BUILD_EXAMPLES ON)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif(BUILD_EXAMPLES)
