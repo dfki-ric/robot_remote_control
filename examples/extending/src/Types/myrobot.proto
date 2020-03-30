@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package myrobot;
 
-import "RobotRemoteControl.proto"
+import "RobotRemoteControl.proto";
 
 message NewControlMessage{
     int32 sequence_no = 1;
