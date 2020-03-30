@@ -1,14 +1,17 @@
 
 
 find_package(Protobuf REQUIRED)
+find_package(robot_remote_control REQUIRED)
 
 set(PROTOBUF_PACKAGENAME myrobot)
+set(robot_remote_control_DIR myrobot)
 
 add_custom_command( OUTPUT ${PROTOBUF_PACKAGENAME}.pb.cc ${PROTOBUF_PACKAGENAME}.pb.h
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                    COMMAND protoc --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${PROTOBUF_PACKAGENAME}.proto
+		    COMMAND protoc -I ${robot_remote_control_DIR}/src/Types -I ${CMAKE_CURRENT_SOURCE_DIR} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_PACKAGENAME}.proto
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_PACKAGENAME}.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/${PROTOBUF_PACKAGENAME}.pb.cc 
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_PACKAGENAME}.pb.h ${CMAKE_CURRENT_BINARY_DIR}/${PROTOBUF_PACKAGENAME}.pb.h
+		    COMMAND ${CMAKE_COMMAND} -E copy ${robot_remote_control_DIR}/src/Types/RobotRemoteControl.pb.h ${CMAKE_CURRENT_SOURCE_DIR}/
                     MAIN_DEPENDENCY ${PROTOBUF_PACKAGENAME}.proto
                     )
 
