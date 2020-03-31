@@ -1,6 +1,7 @@
 
 
 find_package(Protobuf REQUIRED)
+find_package(robot_remote_control REQUIRED)
 
 set(PROTOBUF_PACKAGENAME myrobot)
 
@@ -18,13 +19,14 @@ INSTALL(FILES ${PROTOBUF_PACKAGENAME}.proto DESTINATION ${CMAKE_INSTALL_INCLUDED
 add_library(${PROTOBUF_PACKAGENAME}-types 
 ${PROTOBUF_PACKAGENAME}.pb.cc
 )
+
 target_include_directories(${PROTOBUF_PACKAGENAME}-types
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(${PROTOBUF_PACKAGENAME}-types protobuf)
+target_link_libraries(${PROTOBUF_PACKAGENAME}-types robot_remote_control-types protobuf)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${PROTOBUF_PACKAGENAME}.pb.h
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROTOBUF_PACKAGENAME}/Types

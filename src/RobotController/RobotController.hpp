@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <memory>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -15,7 +17,7 @@ class RobotController: public UpdateThread {
     public:
         explicit RobotController(TransportSharedPtr commandTransport,
                                 TransportSharedPtr telemetryTransport = TransportSharedPtr(),
-                                std::shared_ptr<TelemetryBuffer> buffer = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(10)));
+                                size_t buffersize = 10);
         virtual ~RobotController();
 
         /**
@@ -281,10 +283,6 @@ class RobotController: public UpdateThread {
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
 
-
-        template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize) {
-            buffers->registerType<PROTO>(type, buffersize);
-        }
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::shared_ptr<SimpleSensorBuffer>  simplesensorbuffer;
         // void initBuffers(const unsigned int &defaultSize);
@@ -300,15 +298,38 @@ class RobotController: public UpdateThread {
             return sendRequest(buf);
         }
 
-        template <class CLASS > void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
-            CLASS data;
-            data.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[type], data);
-            buffers->unlock();
-        }
+
+        class TelemetryAdderBase{
+         public:
+            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers) {}
+            virtual ~TelemetryAdderBase() {}
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
+         protected:
+            std::shared_ptr<TelemetryBuffer>  buffers;
+        };
+        template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
+         public:
+            explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
+                CLASS data;
+                data.ParseFromString(serializedMessage);
+                buffers->lock();
+                RingBufferAccess::pushData(buffers->get_ref()[type], data);
+                buffers->unlock();
+            }
+        };
+
+        std::vector< std::shared_ptr<TelemetryAdderBase> > telemetryAdders;
 
         void addToSimpleSensorBuffer(const std::string &serializedMessage);
+
+        template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize = 10) {
+            buffers->registerType<PROTO>(type, buffersize);
+            if (type >= telemetryAdders.size()) {  // e.g. type == 42, for index 42, size must be 43
+                telemetryAdders.resize(type+1);
+            }
+            telemetryAdders[type] = std::shared_ptr<TelemetryAdderBase>(new TelemetryAdder<PROTO>(buffers));
+        }
 
 };
 
