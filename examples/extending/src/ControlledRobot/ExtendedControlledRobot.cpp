@@ -8,7 +8,7 @@ ExtendedControlledRobot::ExtendedControlledRobot(TransportSharedPtr commandTrans
 
         registerCommandType(NEW_CONTROL_MESSAGE, &newControlMessageCommand);
 
-        registerTelemetryType<myrobot::NewTelemetryMessage>(NEW_TELEMETRY_MESSAGE, 10);
+        registerTelemetryType<myrobot::NewTelemetryMessage>(NEW_TELEMETRY_MESSAGE);
     }
 
 

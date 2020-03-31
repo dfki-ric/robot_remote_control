@@ -13,7 +13,7 @@ namespace robot_remote_control {
 
 class ControlledRobot: public UpdateThread{
     public:
-        ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, std::shared_ptr<TelemetryBuffer> buffer = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer()));
+        ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
         virtual ~ControlledRobot() {}
 
         /**
@@ -316,8 +316,8 @@ class ControlledRobot: public UpdateThread{
         std::string serializeControlMessageType(const ControlMessageType& type);
         // std::string serializeCurrentPose();
 
-        template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize) {
-            buffers->registerType<PROTO>(type, buffersize);
+        template <class PROTO> void registerTelemetryType(const uint16_t &type) {
+            buffers->registerType<PROTO>(type, 1);
         }
         // buffer of sent telemetry (used for telemetry requests)
         std::shared_ptr<TelemetryBuffer> buffers;

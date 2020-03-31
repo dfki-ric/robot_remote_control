@@ -3,7 +3,7 @@
 #include <memory>
 
 #include <robot_remote_control/RobotController.hpp>
-#include "ExtendedMessageTypes.hpp"
+#include "../ExtendedMessageTypes.hpp"
 
 namespace robot_remote_control {
 

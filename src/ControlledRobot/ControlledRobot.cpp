@@ -5,10 +5,10 @@
 namespace robot_remote_control {
 
 
-ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, std::shared_ptr<TelemetryBuffer> buffer):UpdateThread(),
+ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
-    buffers(buffer),
+    buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1) {
     registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
     registerCommandType(TWIST_COMMAND, &twistCommand);
@@ -16,6 +16,19 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerCommandType(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
     registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
     registerCommandType(JOINTS_COMMAND, &jointsCommand);
+
+    registerTelemetryType<Pose>(CURRENT_POSE);
+    registerTelemetryType<JointState>(JOINT_STATE);
+    registerTelemetryType<JointState>(CONTROLLABLE_JOINTS);
+    registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS);
+    registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS);
+    registerTelemetryType<RobotName>(ROBOT_NAME);
+    registerTelemetryType<RobotState>(ROBOT_STATE);
+    registerTelemetryType<LogMessage>(LOG_MESSAGE);
+    registerTelemetryType<VideoStreams>(VIDEO_STREAMS);
+    registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION);
+    // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
+    registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE);
 }
 
 void ControlledRobot::update() {
