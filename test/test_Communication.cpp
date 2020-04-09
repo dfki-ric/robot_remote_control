@@ -484,33 +484,11 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
-    robot_remote_control::SimpleSensors sensors;
-    robot_remote_control::SimpleSensor* sens;
-    sens = sensors.add_sensors();
-    sens->set_name("temperature");
-    sens->set_id(1);
-    sens->mutable_size()->set_x(1);  // only single value
-
-    sens = sensors.add_sensors();
-    sens->set_name("velocity");
-    sens->set_id(2);
-    sens->mutable_size()->set_x(3);  // 3 value vector
-
-    robot.initSimpleSensors(sensors);
-
-
-
   // send unregistered sensor
   SimpleSensor temp;
   temp.set_id(1);
   robot.setSimpleSensor(temp);
 
-        //   int setSimpleSensor(const SimpleSensor &telemetry ) {
-        //     return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE);
-        // }
-  // initSimpleSensors(const SimpleSensors &telemetry) {
-
-  SimpleSensors sensor_definition;
 
   SimpleSensor temp_recv;
   while (!controller.getSimpleSensor(1, &temp_recv)) {
@@ -519,6 +497,32 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
     // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
   }
   COMPARE_PROTOBUF(temp, temp_recv);
+
+
+  robot_remote_control::SimpleSensors sensors;
+  robot_remote_control::SimpleSensor* sens;
+  sens = sensors.add_sensors();
+  sens->set_name("temperature");
+  sens->set_id(1);
+  sens->mutable_size()->set_x(1);  // only single value
+
+  sens = sensors.add_sensors();
+  sens->set_name("velocity");
+  sens->set_id(2);
+  sens->mutable_size()->set_x(3);  // 3 value vector
+
+  robot.initSimpleSensors(sensors);
+
+  // send unregistered sensor
+  SimpleSensor velocity, velocity_recv;
+  velocity.set_id(2);
+  velocity.add_value(std::rand());
+  robot.setSimpleSensor(velocity);
+
+  while (!controller.getSimpleSensor(2, &velocity_recv)) {
+    usleep(10000);
+  }
+  COMPARE_PROTOBUF(velocity, velocity_recv);
 
   controller.stopUpdateThread();
 
