@@ -96,7 +96,7 @@ class ControlledRobot: public UpdateThread{
          * @param type 
          * @return int size sent
          */
-        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type) {
+        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type, bool requestOnly = false) {
             if (telemetryTransport.get()) {
                 std::string buf;
                 buf.resize(sizeof(uint16_t));
@@ -108,7 +108,10 @@ class ControlledRobot: public UpdateThread{
                 buffers->lock();
                 RingBufferAccess::pushData(buffers->get_ref()[type], protodata, true);
                 buffers->unlock();
-                return telemetryTransport->send(buf) - sizeof(uint16_t);
+                if (!requestOnly) {
+                    return telemetryTransport->send(buf) - sizeof(uint16_t);
+                }
+                return buf.size();
             }
             printf("ERROR Transport invalid\n");
             return 0;
@@ -215,13 +218,23 @@ class ControlledRobot: public UpdateThread{
         }
 
         /**
-         * @brief Set the curretn JointState of the robot
+         * @brief Set the current JointState of the robot
          * 
          * @param telemetry current JointState
          * @return int number of bytes sent
          */
         int setJointState(const JointState& telemetry) {
-                return sendTelemetry(telemetry, JOINT_STATE);
+            return sendTelemetry(telemetry, JOINT_STATE);
+        }
+
+        /**
+         * @brief Set the current WrenchState of the robot
+         * 
+         * @param telemetry current WrenchState
+         * @return int number of bytes sent
+         */
+        int setWrenchState(const WrenchState& telemetry) {
+            return sendTelemetry(telemetry, WRENCH_STATE);
         }
 
         /**

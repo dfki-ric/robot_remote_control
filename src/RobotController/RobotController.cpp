@@ -24,6 +24,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
     // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
     registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
+    registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
 }
 
 RobotController::~RobotController() {

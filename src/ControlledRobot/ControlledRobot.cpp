@@ -29,6 +29,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION);
     // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
     registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE);
+    registerTelemetryType<WrenchState>(WRENCH_STATE);
 }
 
 void ControlledRobot::update() {
