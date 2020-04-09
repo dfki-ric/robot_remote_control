@@ -37,12 +37,14 @@ void protobuf_AddDesc_RobotRemoteControl_2eproto();
 void protobuf_AssignDesc_RobotRemoteControl_2eproto();
 void protobuf_ShutdownFile_RobotRemoteControl_2eproto();
 
+class ChannelFloat;
 class ComplexAction;
 class ComplexActions;
 class GoTo;
 class JointState;
 class LogMessage;
 class Orientation;
+class PointCloud;
 class Pose;
 class Poses;
 class Position;
@@ -53,12 +55,15 @@ class SimpleActionDef;
 class SimpleActions;
 class SimpleSensor;
 class SimpleSensors;
+class TimeStamp;
 class Transform;
 class Twist;
 class Vector2;
 class Vector3;
 class VideoStream;
 class VideoStreams;
+class Wrench;
+class WrenchState;
 
 enum SimpleActionType {
   VALUE = 0,
@@ -107,6 +112,95 @@ inline bool ComplexActionType_Parse(
     ComplexActionType_descriptor(), name, value);
 }
 // ===================================================================
+
+class TimeStamp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:robot_remote_control.TimeStamp) */ {
+ public:
+  TimeStamp();
+  virtual ~TimeStamp();
+
+  TimeStamp(const TimeStamp& from);
+
+  inline TimeStamp& operator=(const TimeStamp& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const TimeStamp& default_instance();
+
+  void Swap(TimeStamp* other);
+
+  // implements Message ----------------------------------------------
+
+  inline TimeStamp* New() const { return New(NULL); }
+
+  TimeStamp* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const TimeStamp& from);
+  void MergeFrom(const TimeStamp& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(TimeStamp* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 secs = 1;
+  void clear_secs();
+  static const int kSecsFieldNumber = 1;
+  ::google::protobuf::int32 secs() const;
+  void set_secs(::google::protobuf::int32 value);
+
+  // optional int32 nsecs = 2;
+  void clear_nsecs();
+  static const int kNsecsFieldNumber = 2;
+  ::google::protobuf::int32 nsecs() const;
+  void set_nsecs(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:robot_remote_control.TimeStamp)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::int32 secs_;
+  ::google::protobuf::int32 nsecs_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_AssignDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_ShutdownFile_RobotRemoteControl_2eproto();
+
+  void InitAsDefaultInstance();
+  static TimeStamp* default_instance_;
+};
+// -------------------------------------------------------------------
 
 class Vector2 : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:robot_remote_control.Vector2) */ {
  public:
@@ -991,6 +1085,15 @@ class JointState : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::google::protobuf::RepeatedField< double >*
       mutable_effort();
 
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  bool has_timestamp() const;
+  void clear_timestamp();
+  static const int kTimestampFieldNumber = 5;
+  const ::robot_remote_control::TimeStamp& timestamp() const;
+  ::robot_remote_control::TimeStamp* mutable_timestamp();
+  ::robot_remote_control::TimeStamp* release_timestamp();
+  void set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp);
+
   // @@protoc_insertion_point(class_scope:robot_remote_control.JointState)
  private:
 
@@ -1003,6 +1106,7 @@ class JointState : public ::google::protobuf::Message /* @@protoc_insertion_poin
   mutable int _velocity_cached_byte_size_;
   ::google::protobuf::RepeatedField< double > effort_;
   mutable int _effort_cached_byte_size_;
+  ::robot_remote_control::TimeStamp* timestamp_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
   friend void protobuf_AssignDesc_RobotRemoteControl_2eproto();
@@ -1852,12 +1956,22 @@ class LogMessage : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::std::string* release_message();
   void set_allocated_message(::std::string* message);
 
+  // optional .robot_remote_control.TimeStamp timestamp = 3;
+  bool has_timestamp() const;
+  void clear_timestamp();
+  static const int kTimestampFieldNumber = 3;
+  const ::robot_remote_control::TimeStamp& timestamp() const;
+  ::robot_remote_control::TimeStamp* mutable_timestamp();
+  ::robot_remote_control::TimeStamp* release_timestamp();
+  void set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp);
+
   // @@protoc_insertion_point(class_scope:robot_remote_control.LogMessage)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr message_;
+  ::robot_remote_control::TimeStamp* timestamp_;
   ::google::protobuf::uint32 level_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
@@ -2152,6 +2266,15 @@ class SimpleSensor : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::RepeatedField< float >*
       mutable_value();
 
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  bool has_timestamp() const;
+  void clear_timestamp();
+  static const int kTimestampFieldNumber = 5;
+  const ::robot_remote_control::TimeStamp& timestamp() const;
+  ::robot_remote_control::TimeStamp* mutable_timestamp();
+  ::robot_remote_control::TimeStamp* release_timestamp();
+  void set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp);
+
   // @@protoc_insertion_point(class_scope:robot_remote_control.SimpleSensor)
  private:
 
@@ -2161,6 +2284,7 @@ class SimpleSensor : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::robot_remote_control::Vector2* size_;
   ::google::protobuf::RepeatedField< float > value_;
   mutable int _value_cached_byte_size_;
+  ::robot_remote_control::TimeStamp* timestamp_;
   ::google::protobuf::uint32 id_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
@@ -2258,12 +2382,488 @@ class SimpleSensors : public ::google::protobuf::Message /* @@protoc_insertion_p
   void InitAsDefaultInstance();
   static SimpleSensors* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class ChannelFloat : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:robot_remote_control.ChannelFloat) */ {
+ public:
+  ChannelFloat();
+  virtual ~ChannelFloat();
+
+  ChannelFloat(const ChannelFloat& from);
+
+  inline ChannelFloat& operator=(const ChannelFloat& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ChannelFloat& default_instance();
+
+  void Swap(ChannelFloat* other);
+
+  // implements Message ----------------------------------------------
+
+  inline ChannelFloat* New() const { return New(NULL); }
+
+  ChannelFloat* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ChannelFloat& from);
+  void MergeFrom(const ChannelFloat& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(ChannelFloat* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  void clear_name();
+  static const int kNameFieldNumber = 1;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
+
+  // repeated float values = 2;
+  int values_size() const;
+  void clear_values();
+  static const int kValuesFieldNumber = 2;
+  float values(int index) const;
+  void set_values(int index, float value);
+  void add_values(float value);
+  const ::google::protobuf::RepeatedField< float >&
+      values() const;
+  ::google::protobuf::RepeatedField< float >*
+      mutable_values();
+
+  // @@protoc_insertion_point(class_scope:robot_remote_control.ChannelFloat)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
+  ::google::protobuf::RepeatedField< float > values_;
+  mutable int _values_cached_byte_size_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_AssignDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_ShutdownFile_RobotRemoteControl_2eproto();
+
+  void InitAsDefaultInstance();
+  static ChannelFloat* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class PointCloud : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:robot_remote_control.PointCloud) */ {
+ public:
+  PointCloud();
+  virtual ~PointCloud();
+
+  PointCloud(const PointCloud& from);
+
+  inline PointCloud& operator=(const PointCloud& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const PointCloud& default_instance();
+
+  void Swap(PointCloud* other);
+
+  // implements Message ----------------------------------------------
+
+  inline PointCloud* New() const { return New(NULL); }
+
+  PointCloud* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const PointCloud& from);
+  void MergeFrom(const PointCloud& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(PointCloud* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  bool has_timestamp() const;
+  void clear_timestamp();
+  static const int kTimestampFieldNumber = 1;
+  const ::robot_remote_control::TimeStamp& timestamp() const;
+  ::robot_remote_control::TimeStamp* mutable_timestamp();
+  ::robot_remote_control::TimeStamp* release_timestamp();
+  void set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp);
+
+  // optional string frame = 2;
+  void clear_frame();
+  static const int kFrameFieldNumber = 2;
+  const ::std::string& frame() const;
+  void set_frame(const ::std::string& value);
+  void set_frame(const char* value);
+  void set_frame(const char* value, size_t size);
+  ::std::string* mutable_frame();
+  ::std::string* release_frame();
+  void set_allocated_frame(::std::string* frame);
+
+  // optional .robot_remote_control.Position origin = 3;
+  bool has_origin() const;
+  void clear_origin();
+  static const int kOriginFieldNumber = 3;
+  const ::robot_remote_control::Position& origin() const;
+  ::robot_remote_control::Position* mutable_origin();
+  ::robot_remote_control::Position* release_origin();
+  void set_allocated_origin(::robot_remote_control::Position* origin);
+
+  // repeated .robot_remote_control.Position points = 4;
+  int points_size() const;
+  void clear_points();
+  static const int kPointsFieldNumber = 4;
+  const ::robot_remote_control::Position& points(int index) const;
+  ::robot_remote_control::Position* mutable_points(int index);
+  ::robot_remote_control::Position* add_points();
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Position >*
+      mutable_points();
+  const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Position >&
+      points() const;
+
+  // repeated .robot_remote_control.ChannelFloat channels = 5;
+  int channels_size() const;
+  void clear_channels();
+  static const int kChannelsFieldNumber = 5;
+  const ::robot_remote_control::ChannelFloat& channels(int index) const;
+  ::robot_remote_control::ChannelFloat* mutable_channels(int index);
+  ::robot_remote_control::ChannelFloat* add_channels();
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::ChannelFloat >*
+      mutable_channels();
+  const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::ChannelFloat >&
+      channels() const;
+
+  // @@protoc_insertion_point(class_scope:robot_remote_control.PointCloud)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::robot_remote_control::TimeStamp* timestamp_;
+  ::google::protobuf::internal::ArenaStringPtr frame_;
+  ::robot_remote_control::Position* origin_;
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Position > points_;
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::ChannelFloat > channels_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_AssignDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_ShutdownFile_RobotRemoteControl_2eproto();
+
+  void InitAsDefaultInstance();
+  static PointCloud* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class Wrench : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:robot_remote_control.Wrench) */ {
+ public:
+  Wrench();
+  virtual ~Wrench();
+
+  Wrench(const Wrench& from);
+
+  inline Wrench& operator=(const Wrench& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Wrench& default_instance();
+
+  void Swap(Wrench* other);
+
+  // implements Message ----------------------------------------------
+
+  inline Wrench* New() const { return New(NULL); }
+
+  Wrench* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Wrench& from);
+  void MergeFrom(const Wrench& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(Wrench* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .robot_remote_control.Vector3 force = 1;
+  bool has_force() const;
+  void clear_force();
+  static const int kForceFieldNumber = 1;
+  const ::robot_remote_control::Vector3& force() const;
+  ::robot_remote_control::Vector3* mutable_force();
+  ::robot_remote_control::Vector3* release_force();
+  void set_allocated_force(::robot_remote_control::Vector3* force);
+
+  // optional .robot_remote_control.Vector3 torque = 2;
+  bool has_torque() const;
+  void clear_torque();
+  static const int kTorqueFieldNumber = 2;
+  const ::robot_remote_control::Vector3& torque() const;
+  ::robot_remote_control::Vector3* mutable_torque();
+  ::robot_remote_control::Vector3* release_torque();
+  void set_allocated_torque(::robot_remote_control::Vector3* torque);
+
+  // @@protoc_insertion_point(class_scope:robot_remote_control.Wrench)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::robot_remote_control::Vector3* force_;
+  ::robot_remote_control::Vector3* torque_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_AssignDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_ShutdownFile_RobotRemoteControl_2eproto();
+
+  void InitAsDefaultInstance();
+  static Wrench* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class WrenchState : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:robot_remote_control.WrenchState) */ {
+ public:
+  WrenchState();
+  virtual ~WrenchState();
+
+  WrenchState(const WrenchState& from);
+
+  inline WrenchState& operator=(const WrenchState& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const WrenchState& default_instance();
+
+  void Swap(WrenchState* other);
+
+  // implements Message ----------------------------------------------
+
+  inline WrenchState* New() const { return New(NULL); }
+
+  WrenchState* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const WrenchState& from);
+  void MergeFrom(const WrenchState& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(WrenchState* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  bool has_timestamp() const;
+  void clear_timestamp();
+  static const int kTimestampFieldNumber = 1;
+  const ::robot_remote_control::TimeStamp& timestamp() const;
+  ::robot_remote_control::TimeStamp* mutable_timestamp();
+  ::robot_remote_control::TimeStamp* release_timestamp();
+  void set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp);
+
+  // repeated string name = 2;
+  int name_size() const;
+  void clear_name();
+  static const int kNameFieldNumber = 2;
+  const ::std::string& name(int index) const;
+  ::std::string* mutable_name(int index);
+  void set_name(int index, const ::std::string& value);
+  void set_name(int index, const char* value);
+  void set_name(int index, const char* value, size_t size);
+  ::std::string* add_name();
+  void add_name(const ::std::string& value);
+  void add_name(const char* value);
+  void add_name(const char* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& name() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_name();
+
+  // repeated .robot_remote_control.Wrench wrenches = 3;
+  int wrenches_size() const;
+  void clear_wrenches();
+  static const int kWrenchesFieldNumber = 3;
+  const ::robot_remote_control::Wrench& wrenches(int index) const;
+  ::robot_remote_control::Wrench* mutable_wrenches(int index);
+  ::robot_remote_control::Wrench* add_wrenches();
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Wrench >*
+      mutable_wrenches();
+  const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Wrench >&
+      wrenches() const;
+
+  // @@protoc_insertion_point(class_scope:robot_remote_control.WrenchState)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::robot_remote_control::TimeStamp* timestamp_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> name_;
+  ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Wrench > wrenches_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_AssignDesc_RobotRemoteControl_2eproto();
+  friend void protobuf_ShutdownFile_RobotRemoteControl_2eproto();
+
+  void InitAsDefaultInstance();
+  static WrenchState* default_instance_;
+};
 // ===================================================================
 
 
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+// TimeStamp
+
+// optional int32 secs = 1;
+inline void TimeStamp::clear_secs() {
+  secs_ = 0;
+}
+inline ::google::protobuf::int32 TimeStamp::secs() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.TimeStamp.secs)
+  return secs_;
+}
+inline void TimeStamp::set_secs(::google::protobuf::int32 value) {
+  
+  secs_ = value;
+  // @@protoc_insertion_point(field_set:robot_remote_control.TimeStamp.secs)
+}
+
+// optional int32 nsecs = 2;
+inline void TimeStamp::clear_nsecs() {
+  nsecs_ = 0;
+}
+inline ::google::protobuf::int32 TimeStamp::nsecs() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.TimeStamp.nsecs)
+  return nsecs_;
+}
+inline void TimeStamp::set_nsecs(::google::protobuf::int32 value) {
+  
+  nsecs_ = value;
+  // @@protoc_insertion_point(field_set:robot_remote_control.TimeStamp.nsecs)
+}
+
+// -------------------------------------------------------------------
+
 // Vector2
 
 // optional float x = 1;
@@ -2919,6 +3519,44 @@ JointState::mutable_effort() {
   return &effort_;
 }
 
+// optional .robot_remote_control.TimeStamp timestamp = 5;
+inline bool JointState::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+inline void JointState::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+inline const ::robot_remote_control::TimeStamp& JointState::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.JointState.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* JointState::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.JointState.timestamp)
+  return timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* JointState::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.JointState.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+inline void JointState::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.JointState.timestamp)
+}
+
 // -------------------------------------------------------------------
 
 // GoTo
@@ -3469,6 +4107,44 @@ inline void LogMessage::set_allocated_message(::std::string* message) {
   // @@protoc_insertion_point(field_set_allocated:robot_remote_control.LogMessage.message)
 }
 
+// optional .robot_remote_control.TimeStamp timestamp = 3;
+inline bool LogMessage::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+inline void LogMessage::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+inline const ::robot_remote_control::TimeStamp& LogMessage::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.LogMessage.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* LogMessage::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.LogMessage.timestamp)
+  return timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* LogMessage::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.LogMessage.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+inline void LogMessage::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.LogMessage.timestamp)
+}
+
 // -------------------------------------------------------------------
 
 // VideoStream
@@ -3719,6 +4395,44 @@ SimpleSensor::mutable_value() {
   return &value_;
 }
 
+// optional .robot_remote_control.TimeStamp timestamp = 5;
+inline bool SimpleSensor::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+inline void SimpleSensor::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+inline const ::robot_remote_control::TimeStamp& SimpleSensor::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.SimpleSensor.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* SimpleSensor::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.SimpleSensor.timestamp)
+  return timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* SimpleSensor::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.SimpleSensor.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+inline void SimpleSensor::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.SimpleSensor.timestamp)
+}
+
 // -------------------------------------------------------------------
 
 // SimpleSensors
@@ -3753,7 +4467,486 @@ SimpleSensors::sensors() const {
   return sensors_;
 }
 
+// -------------------------------------------------------------------
+
+// ChannelFloat
+
+// optional string name = 1;
+inline void ChannelFloat::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& ChannelFloat::name() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.ChannelFloat.name)
+  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ChannelFloat::set_name(const ::std::string& value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:robot_remote_control.ChannelFloat.name)
+}
+inline void ChannelFloat::set_name(const char* value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:robot_remote_control.ChannelFloat.name)
+}
+inline void ChannelFloat::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:robot_remote_control.ChannelFloat.name)
+}
+inline ::std::string* ChannelFloat::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.ChannelFloat.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ChannelFloat::release_name() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.ChannelFloat.name)
+  
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ChannelFloat::set_allocated_name(::std::string* name) {
+  if (name != NULL) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.ChannelFloat.name)
+}
+
+// repeated float values = 2;
+inline int ChannelFloat::values_size() const {
+  return values_.size();
+}
+inline void ChannelFloat::clear_values() {
+  values_.Clear();
+}
+inline float ChannelFloat::values(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.ChannelFloat.values)
+  return values_.Get(index);
+}
+inline void ChannelFloat::set_values(int index, float value) {
+  values_.Set(index, value);
+  // @@protoc_insertion_point(field_set:robot_remote_control.ChannelFloat.values)
+}
+inline void ChannelFloat::add_values(float value) {
+  values_.Add(value);
+  // @@protoc_insertion_point(field_add:robot_remote_control.ChannelFloat.values)
+}
+inline const ::google::protobuf::RepeatedField< float >&
+ChannelFloat::values() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.ChannelFloat.values)
+  return values_;
+}
+inline ::google::protobuf::RepeatedField< float >*
+ChannelFloat::mutable_values() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.ChannelFloat.values)
+  return &values_;
+}
+
+// -------------------------------------------------------------------
+
+// PointCloud
+
+// optional .robot_remote_control.TimeStamp timestamp = 1;
+inline bool PointCloud::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+inline void PointCloud::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+inline const ::robot_remote_control::TimeStamp& PointCloud::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* PointCloud::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.timestamp)
+  return timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* PointCloud::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.PointCloud.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+inline void PointCloud::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.PointCloud.timestamp)
+}
+
+// optional string frame = 2;
+inline void PointCloud::clear_frame() {
+  frame_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& PointCloud::frame() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.frame)
+  return frame_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void PointCloud::set_frame(const ::std::string& value) {
+  
+  frame_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:robot_remote_control.PointCloud.frame)
+}
+inline void PointCloud::set_frame(const char* value) {
+  
+  frame_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:robot_remote_control.PointCloud.frame)
+}
+inline void PointCloud::set_frame(const char* value, size_t size) {
+  
+  frame_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:robot_remote_control.PointCloud.frame)
+}
+inline ::std::string* PointCloud::mutable_frame() {
+  
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.frame)
+  return frame_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* PointCloud::release_frame() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.PointCloud.frame)
+  
+  return frame_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void PointCloud::set_allocated_frame(::std::string* frame) {
+  if (frame != NULL) {
+    
+  } else {
+    
+  }
+  frame_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), frame);
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.PointCloud.frame)
+}
+
+// optional .robot_remote_control.Position origin = 3;
+inline bool PointCloud::has_origin() const {
+  return !_is_default_instance_ && origin_ != NULL;
+}
+inline void PointCloud::clear_origin() {
+  if (GetArenaNoVirtual() == NULL && origin_ != NULL) delete origin_;
+  origin_ = NULL;
+}
+inline const ::robot_remote_control::Position& PointCloud::origin() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.origin)
+  return origin_ != NULL ? *origin_ : *default_instance_->origin_;
+}
+inline ::robot_remote_control::Position* PointCloud::mutable_origin() {
+  
+  if (origin_ == NULL) {
+    origin_ = new ::robot_remote_control::Position;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.origin)
+  return origin_;
+}
+inline ::robot_remote_control::Position* PointCloud::release_origin() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.PointCloud.origin)
+  
+  ::robot_remote_control::Position* temp = origin_;
+  origin_ = NULL;
+  return temp;
+}
+inline void PointCloud::set_allocated_origin(::robot_remote_control::Position* origin) {
+  delete origin_;
+  origin_ = origin;
+  if (origin) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.PointCloud.origin)
+}
+
+// repeated .robot_remote_control.Position points = 4;
+inline int PointCloud::points_size() const {
+  return points_.size();
+}
+inline void PointCloud::clear_points() {
+  points_.Clear();
+}
+inline const ::robot_remote_control::Position& PointCloud::points(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.points)
+  return points_.Get(index);
+}
+inline ::robot_remote_control::Position* PointCloud::mutable_points(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.points)
+  return points_.Mutable(index);
+}
+inline ::robot_remote_control::Position* PointCloud::add_points() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.PointCloud.points)
+  return points_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Position >*
+PointCloud::mutable_points() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.PointCloud.points)
+  return &points_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Position >&
+PointCloud::points() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.PointCloud.points)
+  return points_;
+}
+
+// repeated .robot_remote_control.ChannelFloat channels = 5;
+inline int PointCloud::channels_size() const {
+  return channels_.size();
+}
+inline void PointCloud::clear_channels() {
+  channels_.Clear();
+}
+inline const ::robot_remote_control::ChannelFloat& PointCloud::channels(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.channels)
+  return channels_.Get(index);
+}
+inline ::robot_remote_control::ChannelFloat* PointCloud::mutable_channels(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.channels)
+  return channels_.Mutable(index);
+}
+inline ::robot_remote_control::ChannelFloat* PointCloud::add_channels() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.PointCloud.channels)
+  return channels_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::robot_remote_control::ChannelFloat >*
+PointCloud::mutable_channels() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.PointCloud.channels)
+  return &channels_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::ChannelFloat >&
+PointCloud::channels() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.PointCloud.channels)
+  return channels_;
+}
+
+// -------------------------------------------------------------------
+
+// Wrench
+
+// optional .robot_remote_control.Vector3 force = 1;
+inline bool Wrench::has_force() const {
+  return !_is_default_instance_ && force_ != NULL;
+}
+inline void Wrench::clear_force() {
+  if (GetArenaNoVirtual() == NULL && force_ != NULL) delete force_;
+  force_ = NULL;
+}
+inline const ::robot_remote_control::Vector3& Wrench::force() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.Wrench.force)
+  return force_ != NULL ? *force_ : *default_instance_->force_;
+}
+inline ::robot_remote_control::Vector3* Wrench::mutable_force() {
+  
+  if (force_ == NULL) {
+    force_ = new ::robot_remote_control::Vector3;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.Wrench.force)
+  return force_;
+}
+inline ::robot_remote_control::Vector3* Wrench::release_force() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.Wrench.force)
+  
+  ::robot_remote_control::Vector3* temp = force_;
+  force_ = NULL;
+  return temp;
+}
+inline void Wrench::set_allocated_force(::robot_remote_control::Vector3* force) {
+  delete force_;
+  force_ = force;
+  if (force) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.Wrench.force)
+}
+
+// optional .robot_remote_control.Vector3 torque = 2;
+inline bool Wrench::has_torque() const {
+  return !_is_default_instance_ && torque_ != NULL;
+}
+inline void Wrench::clear_torque() {
+  if (GetArenaNoVirtual() == NULL && torque_ != NULL) delete torque_;
+  torque_ = NULL;
+}
+inline const ::robot_remote_control::Vector3& Wrench::torque() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.Wrench.torque)
+  return torque_ != NULL ? *torque_ : *default_instance_->torque_;
+}
+inline ::robot_remote_control::Vector3* Wrench::mutable_torque() {
+  
+  if (torque_ == NULL) {
+    torque_ = new ::robot_remote_control::Vector3;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.Wrench.torque)
+  return torque_;
+}
+inline ::robot_remote_control::Vector3* Wrench::release_torque() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.Wrench.torque)
+  
+  ::robot_remote_control::Vector3* temp = torque_;
+  torque_ = NULL;
+  return temp;
+}
+inline void Wrench::set_allocated_torque(::robot_remote_control::Vector3* torque) {
+  delete torque_;
+  torque_ = torque;
+  if (torque) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.Wrench.torque)
+}
+
+// -------------------------------------------------------------------
+
+// WrenchState
+
+// optional .robot_remote_control.TimeStamp timestamp = 1;
+inline bool WrenchState::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+inline void WrenchState::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+inline const ::robot_remote_control::TimeStamp& WrenchState::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.WrenchState.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* WrenchState::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.WrenchState.timestamp)
+  return timestamp_;
+}
+inline ::robot_remote_control::TimeStamp* WrenchState::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.WrenchState.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+inline void WrenchState::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.WrenchState.timestamp)
+}
+
+// repeated string name = 2;
+inline int WrenchState::name_size() const {
+  return name_.size();
+}
+inline void WrenchState::clear_name() {
+  name_.Clear();
+}
+inline const ::std::string& WrenchState::name(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.WrenchState.name)
+  return name_.Get(index);
+}
+inline ::std::string* WrenchState::mutable_name(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.WrenchState.name)
+  return name_.Mutable(index);
+}
+inline void WrenchState::set_name(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:robot_remote_control.WrenchState.name)
+  name_.Mutable(index)->assign(value);
+}
+inline void WrenchState::set_name(int index, const char* value) {
+  name_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:robot_remote_control.WrenchState.name)
+}
+inline void WrenchState::set_name(int index, const char* value, size_t size) {
+  name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:robot_remote_control.WrenchState.name)
+}
+inline ::std::string* WrenchState::add_name() {
+  // @@protoc_insertion_point(field_add_mutable:robot_remote_control.WrenchState.name)
+  return name_.Add();
+}
+inline void WrenchState::add_name(const ::std::string& value) {
+  name_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:robot_remote_control.WrenchState.name)
+}
+inline void WrenchState::add_name(const char* value) {
+  name_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:robot_remote_control.WrenchState.name)
+}
+inline void WrenchState::add_name(const char* value, size_t size) {
+  name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:robot_remote_control.WrenchState.name)
+}
+inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
+WrenchState::name() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.WrenchState.name)
+  return name_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::std::string>*
+WrenchState::mutable_name() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.WrenchState.name)
+  return &name_;
+}
+
+// repeated .robot_remote_control.Wrench wrenches = 3;
+inline int WrenchState::wrenches_size() const {
+  return wrenches_.size();
+}
+inline void WrenchState::clear_wrenches() {
+  wrenches_.Clear();
+}
+inline const ::robot_remote_control::Wrench& WrenchState::wrenches(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.WrenchState.wrenches)
+  return wrenches_.Get(index);
+}
+inline ::robot_remote_control::Wrench* WrenchState::mutable_wrenches(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.WrenchState.wrenches)
+  return wrenches_.Mutable(index);
+}
+inline ::robot_remote_control::Wrench* WrenchState::add_wrenches() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.WrenchState.wrenches)
+  return wrenches_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Wrench >*
+WrenchState::mutable_wrenches() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.WrenchState.wrenches)
+  return &wrenches_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Wrench >&
+WrenchState::wrenches() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.WrenchState.wrenches)
+  return wrenches_;
+}
+
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

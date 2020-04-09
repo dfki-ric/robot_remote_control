@@ -21,6 +21,9 @@ namespace robot_remote_control {
 
 namespace {
 
+const ::google::protobuf::Descriptor* TimeStamp_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  TimeStamp_reflection_ = NULL;
 const ::google::protobuf::Descriptor* Vector2_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Vector2_reflection_ = NULL;
@@ -87,6 +90,18 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* SimpleSensors_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   SimpleSensors_reflection_ = NULL;
+const ::google::protobuf::Descriptor* ChannelFloat_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  ChannelFloat_reflection_ = NULL;
+const ::google::protobuf::Descriptor* PointCloud_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  PointCloud_reflection_ = NULL;
+const ::google::protobuf::Descriptor* Wrench_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  Wrench_reflection_ = NULL;
+const ::google::protobuf::Descriptor* WrenchState_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  WrenchState_reflection_ = NULL;
 const ::google::protobuf::EnumDescriptor* SimpleActionType_descriptor_ = NULL;
 const ::google::protobuf::EnumDescriptor* ComplexActionType_descriptor_ = NULL;
 
@@ -100,7 +115,23 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
     ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
       "RobotRemoteControl.proto");
   GOOGLE_CHECK(file != NULL);
-  Vector2_descriptor_ = file->message_type(0);
+  TimeStamp_descriptor_ = file->message_type(0);
+  static const int TimeStamp_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TimeStamp, secs_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TimeStamp, nsecs_),
+  };
+  TimeStamp_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      TimeStamp_descriptor_,
+      TimeStamp::default_instance_,
+      TimeStamp_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(TimeStamp),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TimeStamp, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TimeStamp, _is_default_instance_));
+  Vector2_descriptor_ = file->message_type(1);
   static const int Vector2_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector2, x_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector2, y_),
@@ -116,7 +147,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Vector2),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector2, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector2, _is_default_instance_));
-  Vector3_descriptor_ = file->message_type(1);
+  Vector3_descriptor_ = file->message_type(2);
   static const int Vector3_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector3, x_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector3, y_),
@@ -133,7 +164,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Vector3),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector3, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Vector3, _is_default_instance_));
-  Position_descriptor_ = file->message_type(2);
+  Position_descriptor_ = file->message_type(3);
   static const int Position_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Position, x_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Position, y_),
@@ -150,7 +181,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Position),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Position, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Position, _is_default_instance_));
-  Orientation_descriptor_ = file->message_type(3);
+  Orientation_descriptor_ = file->message_type(4);
   static const int Orientation_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Orientation, x_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Orientation, y_),
@@ -168,7 +199,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Orientation),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Orientation, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Orientation, _is_default_instance_));
-  Pose_descriptor_ = file->message_type(4);
+  Pose_descriptor_ = file->message_type(5);
   static const int Pose_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Pose, position_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Pose, orientation_),
@@ -184,7 +215,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Pose),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Pose, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Pose, _is_default_instance_));
-  Poses_descriptor_ = file->message_type(5);
+  Poses_descriptor_ = file->message_type(6);
   static const int Poses_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Poses, pose_),
   };
@@ -199,7 +230,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Poses),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Poses, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Poses, _is_default_instance_));
-  Transform_descriptor_ = file->message_type(6);
+  Transform_descriptor_ = file->message_type(7);
   static const int Transform_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transform, transform_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transform, from_),
@@ -216,7 +247,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Transform),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transform, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Transform, _is_default_instance_));
-  Twist_descriptor_ = file->message_type(7);
+  Twist_descriptor_ = file->message_type(8);
   static const int Twist_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Twist, linear_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Twist, angular_),
@@ -232,12 +263,13 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(Twist),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Twist, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Twist, _is_default_instance_));
-  JointState_descriptor_ = file->message_type(8);
-  static const int JointState_offsets_[4] = {
+  JointState_descriptor_ = file->message_type(9);
+  static const int JointState_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JointState, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JointState, position_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JointState, velocity_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JointState, effort_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JointState, timestamp_),
   };
   JointState_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -250,7 +282,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(JointState),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JointState, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(JointState, _is_default_instance_));
-  GoTo_descriptor_ = file->message_type(9);
+  GoTo_descriptor_ = file->message_type(10);
   static const int GoTo_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GoTo, max_forward_speed_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GoTo, waypoint_point_),
@@ -267,7 +299,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(GoTo),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GoTo, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GoTo, _is_default_instance_));
-  SimpleActionDef_descriptor_ = file->message_type(10);
+  SimpleActionDef_descriptor_ = file->message_type(11);
   static const int SimpleActionDef_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActionDef, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActionDef, max_state_),
@@ -283,7 +315,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(SimpleActionDef),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActionDef, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActionDef, _is_default_instance_));
-  SimpleAction_descriptor_ = file->message_type(11);
+  SimpleAction_descriptor_ = file->message_type(12);
   static const int SimpleAction_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAction, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAction, type_),
@@ -300,7 +332,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(SimpleAction),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAction, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleAction, _is_default_instance_));
-  SimpleActions_descriptor_ = file->message_type(12);
+  SimpleActions_descriptor_ = file->message_type(13);
   static const int SimpleActions_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActions, actions_),
   };
@@ -315,7 +347,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(SimpleActions),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActions, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleActions, _is_default_instance_));
-  ComplexAction_descriptor_ = file->message_type(13);
+  ComplexAction_descriptor_ = file->message_type(14);
   static const int ComplexAction_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, type_),
@@ -333,7 +365,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(ComplexAction),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexAction, _is_default_instance_));
-  ComplexActions_descriptor_ = file->message_type(14);
+  ComplexActions_descriptor_ = file->message_type(15);
   static const int ComplexActions_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexActions, actions_),
   };
@@ -348,7 +380,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(ComplexActions),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexActions, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ComplexActions, _is_default_instance_));
-  RobotName_descriptor_ = file->message_type(15);
+  RobotName_descriptor_ = file->message_type(16);
   static const int RobotName_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RobotName, value_),
   };
@@ -363,7 +395,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(RobotName),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RobotName, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RobotName, _is_default_instance_));
-  RobotState_descriptor_ = file->message_type(16);
+  RobotState_descriptor_ = file->message_type(17);
   static const int RobotState_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RobotState, state_),
   };
@@ -378,10 +410,11 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(RobotState),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RobotState, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(RobotState, _is_default_instance_));
-  LogMessage_descriptor_ = file->message_type(17);
-  static const int LogMessage_offsets_[2] = {
+  LogMessage_descriptor_ = file->message_type(18);
+  static const int LogMessage_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogMessage, level_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogMessage, message_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogMessage, timestamp_),
   };
   LogMessage_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -394,7 +427,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(LogMessage),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogMessage, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogMessage, _is_default_instance_));
-  VideoStream_descriptor_ = file->message_type(18);
+  VideoStream_descriptor_ = file->message_type(19);
   static const int VideoStream_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VideoStream, url_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VideoStream, camerapose_),
@@ -410,7 +443,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(VideoStream),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VideoStream, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VideoStream, _is_default_instance_));
-  VideoStreams_descriptor_ = file->message_type(19);
+  VideoStreams_descriptor_ = file->message_type(20);
   static const int VideoStreams_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VideoStreams, stream_),
   };
@@ -425,12 +458,13 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(VideoStreams),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VideoStreams, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(VideoStreams, _is_default_instance_));
-  SimpleSensor_descriptor_ = file->message_type(20);
-  static const int SimpleSensor_offsets_[4] = {
+  SimpleSensor_descriptor_ = file->message_type(21);
+  static const int SimpleSensor_offsets_[5] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensor, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensor, id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensor, size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensor, value_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensor, timestamp_),
   };
   SimpleSensor_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -443,7 +477,7 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(SimpleSensor),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensor, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensor, _is_default_instance_));
-  SimpleSensors_descriptor_ = file->message_type(21);
+  SimpleSensors_descriptor_ = file->message_type(22);
   static const int SimpleSensors_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensors, sensors_),
   };
@@ -458,6 +492,74 @@ void protobuf_AssignDesc_RobotRemoteControl_2eproto() {
       sizeof(SimpleSensors),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensors, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SimpleSensors, _is_default_instance_));
+  ChannelFloat_descriptor_ = file->message_type(23);
+  static const int ChannelFloat_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChannelFloat, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChannelFloat, values_),
+  };
+  ChannelFloat_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      ChannelFloat_descriptor_,
+      ChannelFloat::default_instance_,
+      ChannelFloat_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(ChannelFloat),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChannelFloat, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ChannelFloat, _is_default_instance_));
+  PointCloud_descriptor_ = file->message_type(24);
+  static const int PointCloud_offsets_[5] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PointCloud, timestamp_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PointCloud, frame_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PointCloud, origin_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PointCloud, points_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PointCloud, channels_),
+  };
+  PointCloud_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      PointCloud_descriptor_,
+      PointCloud::default_instance_,
+      PointCloud_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(PointCloud),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PointCloud, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(PointCloud, _is_default_instance_));
+  Wrench_descriptor_ = file->message_type(25);
+  static const int Wrench_offsets_[2] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Wrench, force_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Wrench, torque_),
+  };
+  Wrench_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      Wrench_descriptor_,
+      Wrench::default_instance_,
+      Wrench_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(Wrench),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Wrench, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Wrench, _is_default_instance_));
+  WrenchState_descriptor_ = file->message_type(26);
+  static const int WrenchState_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WrenchState, timestamp_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WrenchState, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WrenchState, wrenches_),
+  };
+  WrenchState_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      WrenchState_descriptor_,
+      WrenchState::default_instance_,
+      WrenchState_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(WrenchState),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WrenchState, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WrenchState, _is_default_instance_));
   SimpleActionType_descriptor_ = file->enum_type(0);
   ComplexActionType_descriptor_ = file->enum_type(1);
 }
@@ -473,6 +575,8 @@ inline void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      TimeStamp_descriptor_, &TimeStamp::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       Vector2_descriptor_, &Vector2::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -517,11 +621,21 @@ void protobuf_RegisterTypes(const ::std::string&) {
       SimpleSensor_descriptor_, &SimpleSensor::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       SimpleSensors_descriptor_, &SimpleSensors::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      ChannelFloat_descriptor_, &ChannelFloat::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      PointCloud_descriptor_, &PointCloud::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      Wrench_descriptor_, &Wrench::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      WrenchState_descriptor_, &WrenchState::default_instance());
 }
 
 }  // namespace
 
 void protobuf_ShutdownFile_RobotRemoteControl_2eproto() {
+  delete TimeStamp::default_instance_;
+  delete TimeStamp_reflection_;
   delete Vector2::default_instance_;
   delete Vector2_reflection_;
   delete Vector3::default_instance_;
@@ -566,6 +680,14 @@ void protobuf_ShutdownFile_RobotRemoteControl_2eproto() {
   delete SimpleSensor_reflection_;
   delete SimpleSensors::default_instance_;
   delete SimpleSensors_reflection_;
+  delete ChannelFloat::default_instance_;
+  delete ChannelFloat_reflection_;
+  delete PointCloud::default_instance_;
+  delete PointCloud_reflection_;
+  delete Wrench::default_instance_;
+  delete Wrench_reflection_;
+  delete WrenchState::default_instance_;
+  delete WrenchState_reflection_;
 }
 
 void protobuf_AddDesc_RobotRemoteControl_2eproto() GOOGLE_ATTRIBUTE_COLD;
@@ -577,54 +699,73 @@ void protobuf_AddDesc_RobotRemoteControl_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\030RobotRemoteControl.proto\022\024robot_remote"
-    "_control\"\037\n\007Vector2\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001("
-    "\002\"*\n\007Vector3\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\022\t\n\001z\030"
-    "\003 \001(\002\"+\n\010Position\022\t\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001(\001\022"
-    "\t\n\001z\030\003 \001(\001\"9\n\013Orientation\022\t\n\001x\030\001 \001(\001\022\t\n\001"
-    "y\030\002 \001(\001\022\t\n\001z\030\003 \001(\001\022\t\n\001w\030\004 \001(\001\"p\n\004Pose\0220\n"
-    "\010position\030\001 \001(\0132\036.robot_remote_control.P"
-    "osition\0226\n\013orientation\030\002 \001(\0132!.robot_rem"
-    "ote_control.Orientation\"1\n\005Poses\022(\n\004pose"
-    "\030\001 \003(\0132\032.robot_remote_control.Pose\"T\n\tTr"
-    "ansform\022-\n\ttransform\030\001 \001(\0132\032.robot_remot"
-    "e_control.Pose\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\003 \001(\t"
-    "\"f\n\005Twist\022-\n\006linear\030\001 \001(\0132\035.robot_remote"
-    "_control.Vector3\022.\n\007angular\030\002 \001(\0132\035.robo"
-    "t_remote_control.Vector3\"N\n\nJointState\022\014"
-    "\n\004name\030\001 \003(\t\022\020\n\010position\030\002 \003(\001\022\020\n\010veloci"
-    "ty\030\003 \003(\001\022\016\n\006effort\030\004 \003(\001\"|\n\004GoTo\022\031\n\021max_"
-    "forward_speed\030\001 \001(\001\0225\n\016waypoint_point\030\002 "
-    "\001(\0132\035.robot_remote_control.Vector3\022\"\n\032wa"
-    "ypoint_max_forward_speed\030\003 \001(\001\"Z\n\017Simple"
-    "ActionDef\0224\n\004type\030\001 \001(\0162&.robot_remote_c"
-    "ontrol.SimpleActionType\022\021\n\tmax_state\030\002 \001"
-    "(\004\"`\n\014SimpleAction\022\014\n\004name\030\001 \001(\t\0223\n\004type"
-    "\030\002 \001(\0132%.robot_remote_control.SimpleActi"
-    "onDef\022\r\n\005state\030\003 \001(\004\"D\n\rSimpleActions\0223\n"
-    "\007actions\030\001 \003(\0132\".robot_remote_control.Si"
-    "mpleAction\"\254\001\n\rComplexAction\022\014\n\004name\030\001 \001"
-    "(\t\0225\n\004type\030\002 \001(\0162\'.robot_remote_control."
-    "ComplexActionType\022)\n\005poses\030\003 \003(\0132\032.robot"
-    "_remote_control.Pose\022+\n\006twists\030\004 \003(\0132\033.r"
-    "obot_remote_control.Twist\"F\n\016ComplexActi"
-    "ons\0224\n\007actions\030\001 \003(\0132#.robot_remote_cont"
-    "rol.ComplexAction\"\032\n\tRobotName\022\r\n\005value\030"
-    "\001 \001(\t\"\033\n\nRobotState\022\r\n\005state\030\001 \001(\t\",\n\nLo"
-    "gMessage\022\r\n\005level\030\001 \001(\r\022\017\n\007message\030\002 \001(\t"
-    "\"J\n\013VideoStream\022\013\n\003url\030\001 \001(\t\022.\n\ncamerapo"
-    "se\030\002 \001(\0132\032.robot_remote_control.Pose\"A\n\014"
-    "VideoStreams\0221\n\006stream\030\001 \003(\0132!.robot_rem"
-    "ote_control.VideoStream\"d\n\014SimpleSensor\022"
-    "\014\n\004name\030\001 \001(\t\022\n\n\002id\030\002 \001(\r\022+\n\004size\030\003 \001(\0132"
-    "\035.robot_remote_control.Vector2\022\r\n\005value\030"
-    "\004 \003(\002\"D\n\rSimpleSensors\0223\n\007sensors\030\001 \003(\0132"
-    "\".robot_remote_control.SimpleSensor**\n\020S"
-    "impleActionType\022\t\n\005VALUE\020\000\022\013\n\007TRIGGER\020\001*"
-    "]\n\021ComplexActionType\022\010\n\004POSE\020\000\022\r\n\tPOSE_L"
-    "IST\020\001\022\t\n\005TWIST\020\002\022\016\n\nTWIST_LIST\020\003\022\010\n\004AREA"
-    "\020\004\022\n\n\006VOLUME\020\005b\006proto3", 1862);
+    "_control\"(\n\tTimeStamp\022\014\n\004secs\030\001 \001(\005\022\r\n\005n"
+    "secs\030\002 \001(\005\"\037\n\007Vector2\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 "
+    "\001(\002\"*\n\007Vector3\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\022\t\n\001"
+    "z\030\003 \001(\002\"+\n\010Position\022\t\n\001x\030\001 \001(\001\022\t\n\001y\030\002 \001("
+    "\001\022\t\n\001z\030\003 \001(\001\"9\n\013Orientation\022\t\n\001x\030\001 \001(\001\022\t"
+    "\n\001y\030\002 \001(\001\022\t\n\001z\030\003 \001(\001\022\t\n\001w\030\004 \001(\001\"p\n\004Pose\022"
+    "0\n\010position\030\001 \001(\0132\036.robot_remote_control"
+    ".Position\0226\n\013orientation\030\002 \001(\0132!.robot_r"
+    "emote_control.Orientation\"1\n\005Poses\022(\n\004po"
+    "se\030\001 \003(\0132\032.robot_remote_control.Pose\"T\n\t"
+    "Transform\022-\n\ttransform\030\001 \001(\0132\032.robot_rem"
+    "ote_control.Pose\022\014\n\004from\030\002 \001(\t\022\n\n\002to\030\003 \001"
+    "(\t\"f\n\005Twist\022-\n\006linear\030\001 \001(\0132\035.robot_remo"
+    "te_control.Vector3\022.\n\007angular\030\002 \001(\0132\035.ro"
+    "bot_remote_control.Vector3\"\202\001\n\nJointStat"
+    "e\022\014\n\004name\030\001 \003(\t\022\020\n\010position\030\002 \003(\001\022\020\n\010vel"
+    "ocity\030\003 \003(\001\022\016\n\006effort\030\004 \003(\001\0222\n\ttimestamp"
+    "\030\005 \001(\0132\037.robot_remote_control.TimeStamp\""
+    "|\n\004GoTo\022\031\n\021max_forward_speed\030\001 \001(\001\0225\n\016wa"
+    "ypoint_point\030\002 \001(\0132\035.robot_remote_contro"
+    "l.Vector3\022\"\n\032waypoint_max_forward_speed\030"
+    "\003 \001(\001\"Z\n\017SimpleActionDef\0224\n\004type\030\001 \001(\0162&"
+    ".robot_remote_control.SimpleActionType\022\021"
+    "\n\tmax_state\030\002 \001(\004\"`\n\014SimpleAction\022\014\n\004nam"
+    "e\030\001 \001(\t\0223\n\004type\030\002 \001(\0132%.robot_remote_con"
+    "trol.SimpleActionDef\022\r\n\005state\030\003 \001(\004\"D\n\rS"
+    "impleActions\0223\n\007actions\030\001 \003(\0132\".robot_re"
+    "mote_control.SimpleAction\"\254\001\n\rComplexAct"
+    "ion\022\014\n\004name\030\001 \001(\t\0225\n\004type\030\002 \001(\0162\'.robot_"
+    "remote_control.ComplexActionType\022)\n\005pose"
+    "s\030\003 \003(\0132\032.robot_remote_control.Pose\022+\n\006t"
+    "wists\030\004 \003(\0132\033.robot_remote_control.Twist"
+    "\"F\n\016ComplexActions\0224\n\007actions\030\001 \003(\0132#.ro"
+    "bot_remote_control.ComplexAction\"\032\n\tRobo"
+    "tName\022\r\n\005value\030\001 \001(\t\"\033\n\nRobotState\022\r\n\005st"
+    "ate\030\001 \001(\t\"`\n\nLogMessage\022\r\n\005level\030\001 \001(\r\022\017"
+    "\n\007message\030\002 \001(\t\0222\n\ttimestamp\030\003 \001(\0132\037.rob"
+    "ot_remote_control.TimeStamp\"J\n\013VideoStre"
+    "am\022\013\n\003url\030\001 \001(\t\022.\n\ncamerapose\030\002 \001(\0132\032.ro"
+    "bot_remote_control.Pose\"A\n\014VideoStreams\022"
+    "1\n\006stream\030\001 \003(\0132!.robot_remote_control.V"
+    "ideoStream\"\230\001\n\014SimpleSensor\022\014\n\004name\030\001 \001("
+    "\t\022\n\n\002id\030\002 \001(\r\022+\n\004size\030\003 \001(\0132\035.robot_remo"
+    "te_control.Vector2\022\r\n\005value\030\004 \003(\002\0222\n\ttim"
+    "estamp\030\005 \001(\0132\037.robot_remote_control.Time"
+    "Stamp\"D\n\rSimpleSensors\0223\n\007sensors\030\001 \003(\0132"
+    "\".robot_remote_control.SimpleSensor\",\n\014C"
+    "hannelFloat\022\014\n\004name\030\001 \001(\t\022\016\n\006values\030\002 \003("
+    "\002\"\345\001\n\nPointCloud\0222\n\ttimestamp\030\001 \001(\0132\037.ro"
+    "bot_remote_control.TimeStamp\022\r\n\005frame\030\002 "
+    "\001(\t\022.\n\006origin\030\003 \001(\0132\036.robot_remote_contr"
+    "ol.Position\022.\n\006points\030\004 \003(\0132\036.robot_remo"
+    "te_control.Position\0224\n\010channels\030\005 \003(\0132\"."
+    "robot_remote_control.ChannelFloat\"e\n\006Wre"
+    "nch\022,\n\005force\030\001 \001(\0132\035.robot_remote_contro"
+    "l.Vector3\022-\n\006torque\030\002 \001(\0132\035.robot_remote"
+    "_control.Vector3\"\177\n\013WrenchState\0222\n\ttimes"
+    "tamp\030\001 \001(\0132\037.robot_remote_control.TimeSt"
+    "amp\022\014\n\004name\030\002 \003(\t\022.\n\010wrenches\030\003 \003(\0132\034.ro"
+    "bot_remote_control.Wrench**\n\020SimpleActio"
+    "nType\022\t\n\005VALUE\020\000\022\013\n\007TRIGGER\020\001*]\n\021Complex"
+    "ActionType\022\010\n\004POSE\020\000\022\r\n\tPOSE_LIST\020\001\022\t\n\005T"
+    "WIST\020\002\022\016\n\nTWIST_LIST\020\003\022\010\n\004AREA\020\004\022\n\n\006VOLU"
+    "ME\020\005b\006proto3", 2572);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "RobotRemoteControl.proto", &protobuf_RegisterTypes);
+  TimeStamp::default_instance_ = new TimeStamp();
   Vector2::default_instance_ = new Vector2();
   Vector3::default_instance_ = new Vector3();
   Position::default_instance_ = new Position();
@@ -647,6 +788,11 @@ void protobuf_AddDesc_RobotRemoteControl_2eproto() {
   VideoStreams::default_instance_ = new VideoStreams();
   SimpleSensor::default_instance_ = new SimpleSensor();
   SimpleSensors::default_instance_ = new SimpleSensors();
+  ChannelFloat::default_instance_ = new ChannelFloat();
+  PointCloud::default_instance_ = new PointCloud();
+  Wrench::default_instance_ = new Wrench();
+  WrenchState::default_instance_ = new WrenchState();
+  TimeStamp::default_instance_->InitAsDefaultInstance();
   Vector2::default_instance_->InitAsDefaultInstance();
   Vector3::default_instance_->InitAsDefaultInstance();
   Position::default_instance_->InitAsDefaultInstance();
@@ -669,6 +815,10 @@ void protobuf_AddDesc_RobotRemoteControl_2eproto() {
   VideoStreams::default_instance_->InitAsDefaultInstance();
   SimpleSensor::default_instance_->InitAsDefaultInstance();
   SimpleSensors::default_instance_->InitAsDefaultInstance();
+  ChannelFloat::default_instance_->InitAsDefaultInstance();
+  PointCloud::default_instance_->InitAsDefaultInstance();
+  Wrench::default_instance_->InitAsDefaultInstance();
+  WrenchState::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_RobotRemoteControl_2eproto);
 }
 
@@ -710,6 +860,316 @@ bool ComplexActionType_IsValid(int value) {
   }
 }
 
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int TimeStamp::kSecsFieldNumber;
+const int TimeStamp::kNsecsFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+TimeStamp::TimeStamp()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:robot_remote_control.TimeStamp)
+}
+
+void TimeStamp::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+}
+
+TimeStamp::TimeStamp(const TimeStamp& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:robot_remote_control.TimeStamp)
+}
+
+void TimeStamp::SharedCtor() {
+    _is_default_instance_ = false;
+  _cached_size_ = 0;
+  secs_ = 0;
+  nsecs_ = 0;
+}
+
+TimeStamp::~TimeStamp() {
+  // @@protoc_insertion_point(destructor:robot_remote_control.TimeStamp)
+  SharedDtor();
+}
+
+void TimeStamp::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void TimeStamp::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* TimeStamp::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return TimeStamp_descriptor_;
+}
+
+const TimeStamp& TimeStamp::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_RobotRemoteControl_2eproto();
+  return *default_instance_;
+}
+
+TimeStamp* TimeStamp::default_instance_ = NULL;
+
+TimeStamp* TimeStamp::New(::google::protobuf::Arena* arena) const {
+  TimeStamp* n = new TimeStamp;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void TimeStamp::Clear() {
+// @@protoc_insertion_point(message_clear_start:robot_remote_control.TimeStamp)
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(TimeStamp, f) \
+  _Pragma("clang diagnostic pop")
+#else
+#define ZR_HELPER_(f) reinterpret_cast<char*>(\
+  &reinterpret_cast<TimeStamp*>(16)->f)
+#endif
+
+#define ZR_(first, last) do {\
+  ::memset(&first, 0,\
+           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
+} while (0)
+
+  ZR_(secs_, nsecs_);
+
+#undef ZR_HELPER_
+#undef ZR_
+
+}
+
+bool TimeStamp::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:robot_remote_control.TimeStamp)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional int32 secs = 1;
+      case 1: {
+        if (tag == 8) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &secs_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(16)) goto parse_nsecs;
+        break;
+      }
+
+      // optional int32 nsecs = 2;
+      case 2: {
+        if (tag == 16) {
+         parse_nsecs:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &nsecs_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:robot_remote_control.TimeStamp)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:robot_remote_control.TimeStamp)
+  return false;
+#undef DO_
+}
+
+void TimeStamp::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:robot_remote_control.TimeStamp)
+  // optional int32 secs = 1;
+  if (this->secs() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->secs(), output);
+  }
+
+  // optional int32 nsecs = 2;
+  if (this->nsecs() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->nsecs(), output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:robot_remote_control.TimeStamp)
+}
+
+::google::protobuf::uint8* TimeStamp::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:robot_remote_control.TimeStamp)
+  // optional int32 secs = 1;
+  if (this->secs() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->secs(), target);
+  }
+
+  // optional int32 nsecs = 2;
+  if (this->nsecs() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->nsecs(), target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.TimeStamp)
+  return target;
+}
+
+int TimeStamp::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:robot_remote_control.TimeStamp)
+  int total_size = 0;
+
+  // optional int32 secs = 1;
+  if (this->secs() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::Int32Size(
+        this->secs());
+  }
+
+  // optional int32 nsecs = 2;
+  if (this->nsecs() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::Int32Size(
+        this->nsecs());
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void TimeStamp::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:robot_remote_control.TimeStamp)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const TimeStamp* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const TimeStamp>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:robot_remote_control.TimeStamp)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:robot_remote_control.TimeStamp)
+    MergeFrom(*source);
+  }
+}
+
+void TimeStamp::MergeFrom(const TimeStamp& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:robot_remote_control.TimeStamp)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  if (from.secs() != 0) {
+    set_secs(from.secs());
+  }
+  if (from.nsecs() != 0) {
+    set_nsecs(from.nsecs());
+  }
+}
+
+void TimeStamp::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:robot_remote_control.TimeStamp)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void TimeStamp::CopyFrom(const TimeStamp& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:robot_remote_control.TimeStamp)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool TimeStamp::IsInitialized() const {
+
+  return true;
+}
+
+void TimeStamp::Swap(TimeStamp* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void TimeStamp::InternalSwap(TimeStamp* other) {
+  std::swap(secs_, other->secs_);
+  std::swap(nsecs_, other->nsecs_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata TimeStamp::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = TimeStamp_descriptor_;
+  metadata.reflection = TimeStamp_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// TimeStamp
+
+// optional int32 secs = 1;
+void TimeStamp::clear_secs() {
+  secs_ = 0;
+}
+ ::google::protobuf::int32 TimeStamp::secs() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.TimeStamp.secs)
+  return secs_;
+}
+ void TimeStamp::set_secs(::google::protobuf::int32 value) {
+  
+  secs_ = value;
+  // @@protoc_insertion_point(field_set:robot_remote_control.TimeStamp.secs)
+}
+
+// optional int32 nsecs = 2;
+void TimeStamp::clear_nsecs() {
+  nsecs_ = 0;
+}
+ ::google::protobuf::int32 TimeStamp::nsecs() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.TimeStamp.nsecs)
+  return nsecs_;
+}
+ void TimeStamp::set_nsecs(::google::protobuf::int32 value) {
+  
+  nsecs_ = value;
+  // @@protoc_insertion_point(field_set:robot_remote_control.TimeStamp.nsecs)
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
 
@@ -3556,6 +4016,7 @@ const int JointState::kNameFieldNumber;
 const int JointState::kPositionFieldNumber;
 const int JointState::kVelocityFieldNumber;
 const int JointState::kEffortFieldNumber;
+const int JointState::kTimestampFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 JointState::JointState()
@@ -3566,6 +4027,7 @@ JointState::JointState()
 
 void JointState::InitAsDefaultInstance() {
   _is_default_instance_ = true;
+  timestamp_ = const_cast< ::robot_remote_control::TimeStamp*>(&::robot_remote_control::TimeStamp::default_instance());
 }
 
 JointState::JointState(const JointState& from)
@@ -3580,6 +4042,7 @@ void JointState::SharedCtor() {
     _is_default_instance_ = false;
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
+  timestamp_ = NULL;
 }
 
 JointState::~JointState() {
@@ -3589,6 +4052,7 @@ JointState::~JointState() {
 
 void JointState::SharedDtor() {
   if (this != default_instance_) {
+    delete timestamp_;
   }
 }
 
@@ -3619,6 +4083,8 @@ JointState* JointState::New(::google::protobuf::Arena* arena) const {
 
 void JointState::Clear() {
 // @@protoc_insertion_point(message_clear_start:robot_remote_control.JointState)
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
   name_.Clear();
   position_.Clear();
   velocity_.Clear();
@@ -3704,6 +4170,19 @@ bool JointState::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(42)) goto parse_timestamp;
+        break;
+      }
+
+      // optional .robot_remote_control.TimeStamp timestamp = 5;
+      case 5: {
+        if (tag == 42) {
+         parse_timestamp:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_timestamp()));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -3772,6 +4251,12 @@ void JointState::SerializeWithCachedSizes(
       this->effort(i), output);
   }
 
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  if (this->has_timestamp()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, *this->timestamp_, output);
+  }
+
   // @@protoc_insertion_point(serialize_end:robot_remote_control.JointState)
 }
 
@@ -3830,6 +4315,13 @@ void JointState::SerializeWithCachedSizes(
       WriteDoubleNoTagToArray(this->effort(i), target);
   }
 
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  if (this->has_timestamp()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        5, *this->timestamp_, false, target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.JointState)
   return target;
 }
@@ -3837,6 +4329,13 @@ void JointState::SerializeWithCachedSizes(
 int JointState::ByteSize() const {
 // @@protoc_insertion_point(message_byte_size_start:robot_remote_control.JointState)
   int total_size = 0;
+
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  if (this->has_timestamp()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->timestamp_);
+  }
 
   // repeated string name = 1;
   total_size += 1 * this->name_size();
@@ -3919,6 +4418,9 @@ void JointState::MergeFrom(const JointState& from) {
   position_.MergeFrom(from.position_);
   velocity_.MergeFrom(from.velocity_);
   effort_.MergeFrom(from.effort_);
+  if (from.has_timestamp()) {
+    mutable_timestamp()->::robot_remote_control::TimeStamp::MergeFrom(from.timestamp());
+  }
 }
 
 void JointState::CopyFrom(const ::google::protobuf::Message& from) {
@@ -3949,6 +4451,7 @@ void JointState::InternalSwap(JointState* other) {
   position_.UnsafeArenaSwap(&other->position_);
   velocity_.UnsafeArenaSwap(&other->velocity_);
   effort_.UnsafeArenaSwap(&other->effort_);
+  std::swap(timestamp_, other->timestamp_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -4107,6 +4610,44 @@ JointState::effort() const {
 JointState::mutable_effort() {
   // @@protoc_insertion_point(field_mutable_list:robot_remote_control.JointState.effort)
   return &effort_;
+}
+
+// optional .robot_remote_control.TimeStamp timestamp = 5;
+bool JointState::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+void JointState::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+const ::robot_remote_control::TimeStamp& JointState::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.JointState.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+::robot_remote_control::TimeStamp* JointState::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.JointState.timestamp)
+  return timestamp_;
+}
+::robot_remote_control::TimeStamp* JointState::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.JointState.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+void JointState::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.JointState.timestamp)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -6778,6 +7319,7 @@ void RobotState::clear_state() {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int LogMessage::kLevelFieldNumber;
 const int LogMessage::kMessageFieldNumber;
+const int LogMessage::kTimestampFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 LogMessage::LogMessage()
@@ -6788,6 +7330,7 @@ LogMessage::LogMessage()
 
 void LogMessage::InitAsDefaultInstance() {
   _is_default_instance_ = true;
+  timestamp_ = const_cast< ::robot_remote_control::TimeStamp*>(&::robot_remote_control::TimeStamp::default_instance());
 }
 
 LogMessage::LogMessage(const LogMessage& from)
@@ -6804,6 +7347,7 @@ void LogMessage::SharedCtor() {
   _cached_size_ = 0;
   level_ = 0u;
   message_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  timestamp_ = NULL;
 }
 
 LogMessage::~LogMessage() {
@@ -6814,6 +7358,7 @@ LogMessage::~LogMessage() {
 void LogMessage::SharedDtor() {
   message_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
+    delete timestamp_;
   }
 }
 
@@ -6846,6 +7391,8 @@ void LogMessage::Clear() {
 // @@protoc_insertion_point(message_clear_start:robot_remote_control.LogMessage)
   level_ = 0u;
   message_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
 }
 
 bool LogMessage::MergePartialFromCodedStream(
@@ -6882,6 +7429,19 @@ bool LogMessage::MergePartialFromCodedStream(
             this->message().data(), this->message().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "robot_remote_control.LogMessage.message"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_timestamp;
+        break;
+      }
+
+      // optional .robot_remote_control.TimeStamp timestamp = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_timestamp:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_timestamp()));
         } else {
           goto handle_unusual;
         }
@@ -6928,6 +7488,12 @@ void LogMessage::SerializeWithCachedSizes(
       2, this->message(), output);
   }
 
+  // optional .robot_remote_control.TimeStamp timestamp = 3;
+  if (this->has_timestamp()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, *this->timestamp_, output);
+  }
+
   // @@protoc_insertion_point(serialize_end:robot_remote_control.LogMessage)
 }
 
@@ -6950,6 +7516,13 @@ void LogMessage::SerializeWithCachedSizes(
         2, this->message(), target);
   }
 
+  // optional .robot_remote_control.TimeStamp timestamp = 3;
+  if (this->has_timestamp()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        3, *this->timestamp_, false, target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.LogMessage)
   return target;
 }
@@ -6970,6 +7543,13 @@ int LogMessage::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->message());
+  }
+
+  // optional .robot_remote_control.TimeStamp timestamp = 3;
+  if (this->has_timestamp()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->timestamp_);
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -7007,6 +7587,9 @@ void LogMessage::MergeFrom(const LogMessage& from) {
 
     message_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.message_);
   }
+  if (from.has_timestamp()) {
+    mutable_timestamp()->::robot_remote_control::TimeStamp::MergeFrom(from.timestamp());
+  }
 }
 
 void LogMessage::CopyFrom(const ::google::protobuf::Message& from) {
@@ -7035,6 +7618,7 @@ void LogMessage::Swap(LogMessage* other) {
 void LogMessage::InternalSwap(LogMessage* other) {
   std::swap(level_, other->level_);
   message_.Swap(&other->message_);
+  std::swap(timestamp_, other->timestamp_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -7106,6 +7690,44 @@ void LogMessage::clear_message() {
   }
   message_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), message);
   // @@protoc_insertion_point(field_set_allocated:robot_remote_control.LogMessage.message)
+}
+
+// optional .robot_remote_control.TimeStamp timestamp = 3;
+bool LogMessage::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+void LogMessage::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+const ::robot_remote_control::TimeStamp& LogMessage::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.LogMessage.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+::robot_remote_control::TimeStamp* LogMessage::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.LogMessage.timestamp)
+  return timestamp_;
+}
+::robot_remote_control::TimeStamp* LogMessage::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.LogMessage.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+void LogMessage::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.LogMessage.timestamp)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -7739,6 +8361,7 @@ const int SimpleSensor::kNameFieldNumber;
 const int SimpleSensor::kIdFieldNumber;
 const int SimpleSensor::kSizeFieldNumber;
 const int SimpleSensor::kValueFieldNumber;
+const int SimpleSensor::kTimestampFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SimpleSensor::SimpleSensor()
@@ -7750,6 +8373,7 @@ SimpleSensor::SimpleSensor()
 void SimpleSensor::InitAsDefaultInstance() {
   _is_default_instance_ = true;
   size_ = const_cast< ::robot_remote_control::Vector2*>(&::robot_remote_control::Vector2::default_instance());
+  timestamp_ = const_cast< ::robot_remote_control::TimeStamp*>(&::robot_remote_control::TimeStamp::default_instance());
 }
 
 SimpleSensor::SimpleSensor(const SimpleSensor& from)
@@ -7767,6 +8391,7 @@ void SimpleSensor::SharedCtor() {
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   id_ = 0u;
   size_ = NULL;
+  timestamp_ = NULL;
 }
 
 SimpleSensor::~SimpleSensor() {
@@ -7778,6 +8403,7 @@ void SimpleSensor::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
     delete size_;
+    delete timestamp_;
   }
 }
 
@@ -7812,6 +8438,8 @@ void SimpleSensor::Clear() {
   id_ = 0u;
   if (GetArenaNoVirtual() == NULL && size_ != NULL) delete size_;
   size_ = NULL;
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
   value_.Clear();
 }
 
@@ -7883,6 +8511,19 @@ bool SimpleSensor::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(42)) goto parse_timestamp;
+        break;
+      }
+
+      // optional .robot_remote_control.TimeStamp timestamp = 5;
+      case 5: {
+        if (tag == 42) {
+         parse_timestamp:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_timestamp()));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -7942,6 +8583,12 @@ void SimpleSensor::SerializeWithCachedSizes(
       this->value(i), output);
   }
 
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  if (this->has_timestamp()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, *this->timestamp_, output);
+  }
+
   // @@protoc_insertion_point(serialize_end:robot_remote_control.SimpleSensor)
 }
 
@@ -7985,6 +8632,13 @@ void SimpleSensor::SerializeWithCachedSizes(
       WriteFloatNoTagToArray(this->value(i), target);
   }
 
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  if (this->has_timestamp()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        5, *this->timestamp_, false, target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.SimpleSensor)
   return target;
 }
@@ -8012,6 +8666,13 @@ int SimpleSensor::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
         *this->size_);
+  }
+
+  // optional .robot_remote_control.TimeStamp timestamp = 5;
+  if (this->has_timestamp()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->timestamp_);
   }
 
   // repeated float value = 4;
@@ -8067,6 +8728,9 @@ void SimpleSensor::MergeFrom(const SimpleSensor& from) {
   if (from.has_size()) {
     mutable_size()->::robot_remote_control::Vector2::MergeFrom(from.size());
   }
+  if (from.has_timestamp()) {
+    mutable_timestamp()->::robot_remote_control::TimeStamp::MergeFrom(from.timestamp());
+  }
 }
 
 void SimpleSensor::CopyFrom(const ::google::protobuf::Message& from) {
@@ -8097,6 +8761,7 @@ void SimpleSensor::InternalSwap(SimpleSensor* other) {
   std::swap(id_, other->id_);
   std::swap(size_, other->size_);
   value_.UnsafeArenaSwap(&other->value_);
+  std::swap(timestamp_, other->timestamp_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -8236,6 +8901,44 @@ SimpleSensor::value() const {
 SimpleSensor::mutable_value() {
   // @@protoc_insertion_point(field_mutable_list:robot_remote_control.SimpleSensor.value)
   return &value_;
+}
+
+// optional .robot_remote_control.TimeStamp timestamp = 5;
+bool SimpleSensor::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+void SimpleSensor::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+const ::robot_remote_control::TimeStamp& SimpleSensor::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.SimpleSensor.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+::robot_remote_control::TimeStamp* SimpleSensor::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.SimpleSensor.timestamp)
+  return timestamp_;
+}
+::robot_remote_control::TimeStamp* SimpleSensor::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.SimpleSensor.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+void SimpleSensor::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.SimpleSensor.timestamp)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -8493,6 +9196,1760 @@ const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::SimpleSensor
 SimpleSensors::sensors() const {
   // @@protoc_insertion_point(field_list:robot_remote_control.SimpleSensors.sensors)
   return sensors_;
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int ChannelFloat::kNameFieldNumber;
+const int ChannelFloat::kValuesFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+ChannelFloat::ChannelFloat()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:robot_remote_control.ChannelFloat)
+}
+
+void ChannelFloat::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+}
+
+ChannelFloat::ChannelFloat(const ChannelFloat& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:robot_remote_control.ChannelFloat)
+}
+
+void ChannelFloat::SharedCtor() {
+    _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+
+ChannelFloat::~ChannelFloat() {
+  // @@protoc_insertion_point(destructor:robot_remote_control.ChannelFloat)
+  SharedDtor();
+}
+
+void ChannelFloat::SharedDtor() {
+  name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != default_instance_) {
+  }
+}
+
+void ChannelFloat::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* ChannelFloat::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ChannelFloat_descriptor_;
+}
+
+const ChannelFloat& ChannelFloat::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_RobotRemoteControl_2eproto();
+  return *default_instance_;
+}
+
+ChannelFloat* ChannelFloat::default_instance_ = NULL;
+
+ChannelFloat* ChannelFloat::New(::google::protobuf::Arena* arena) const {
+  ChannelFloat* n = new ChannelFloat;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void ChannelFloat::Clear() {
+// @@protoc_insertion_point(message_clear_start:robot_remote_control.ChannelFloat)
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  values_.Clear();
+}
+
+bool ChannelFloat::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:robot_remote_control.ChannelFloat)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional string name = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_name()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->name().data(), this->name().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "robot_remote_control.ChannelFloat.name"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_values;
+        break;
+      }
+
+      // repeated float values = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_values:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, this->mutable_values())));
+        } else if (tag == 21) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 1, 18, input, this->mutable_values())));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:robot_remote_control.ChannelFloat)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:robot_remote_control.ChannelFloat)
+  return false;
+#undef DO_
+}
+
+void ChannelFloat::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:robot_remote_control.ChannelFloat)
+  // optional string name = 1;
+  if (this->name().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "robot_remote_control.ChannelFloat.name");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      1, this->name(), output);
+  }
+
+  // repeated float values = 2;
+  if (this->values_size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
+    output->WriteVarint32(_values_cached_byte_size_);
+  }
+  for (int i = 0; i < this->values_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloatNoTag(
+      this->values(i), output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:robot_remote_control.ChannelFloat)
+}
+
+::google::protobuf::uint8* ChannelFloat::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:robot_remote_control.ChannelFloat)
+  // optional string name = 1;
+  if (this->name().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->name().data(), this->name().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "robot_remote_control.ChannelFloat.name");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->name(), target);
+  }
+
+  // repeated float values = 2;
+  if (this->values_size() > 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteTagToArray(
+      2,
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+      target);
+    target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      _values_cached_byte_size_, target);
+  }
+  for (int i = 0; i < this->values_size(); i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteFloatNoTagToArray(this->values(i), target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.ChannelFloat)
+  return target;
+}
+
+int ChannelFloat::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:robot_remote_control.ChannelFloat)
+  int total_size = 0;
+
+  // optional string name = 1;
+  if (this->name().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->name());
+  }
+
+  // repeated float values = 2;
+  {
+    int data_size = 0;
+    data_size = 4 * this->values_size();
+    if (data_size > 0) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);
+    }
+    GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+    _values_cached_byte_size_ = data_size;
+    GOOGLE_SAFE_CONCURRENT_WRITES_END();
+    total_size += data_size;
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void ChannelFloat::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:robot_remote_control.ChannelFloat)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const ChannelFloat* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const ChannelFloat>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:robot_remote_control.ChannelFloat)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:robot_remote_control.ChannelFloat)
+    MergeFrom(*source);
+  }
+}
+
+void ChannelFloat::MergeFrom(const ChannelFloat& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:robot_remote_control.ChannelFloat)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  values_.MergeFrom(from.values_);
+  if (from.name().size() > 0) {
+
+    name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
+  }
+}
+
+void ChannelFloat::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:robot_remote_control.ChannelFloat)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ChannelFloat::CopyFrom(const ChannelFloat& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:robot_remote_control.ChannelFloat)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ChannelFloat::IsInitialized() const {
+
+  return true;
+}
+
+void ChannelFloat::Swap(ChannelFloat* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void ChannelFloat::InternalSwap(ChannelFloat* other) {
+  name_.Swap(&other->name_);
+  values_.UnsafeArenaSwap(&other->values_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata ChannelFloat::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = ChannelFloat_descriptor_;
+  metadata.reflection = ChannelFloat_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// ChannelFloat
+
+// optional string name = 1;
+void ChannelFloat::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& ChannelFloat::name() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.ChannelFloat.name)
+  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ChannelFloat::set_name(const ::std::string& value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:robot_remote_control.ChannelFloat.name)
+}
+ void ChannelFloat::set_name(const char* value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:robot_remote_control.ChannelFloat.name)
+}
+ void ChannelFloat::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:robot_remote_control.ChannelFloat.name)
+}
+ ::std::string* ChannelFloat::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.ChannelFloat.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* ChannelFloat::release_name() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.ChannelFloat.name)
+  
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ChannelFloat::set_allocated_name(::std::string* name) {
+  if (name != NULL) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.ChannelFloat.name)
+}
+
+// repeated float values = 2;
+int ChannelFloat::values_size() const {
+  return values_.size();
+}
+void ChannelFloat::clear_values() {
+  values_.Clear();
+}
+ float ChannelFloat::values(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.ChannelFloat.values)
+  return values_.Get(index);
+}
+ void ChannelFloat::set_values(int index, float value) {
+  values_.Set(index, value);
+  // @@protoc_insertion_point(field_set:robot_remote_control.ChannelFloat.values)
+}
+ void ChannelFloat::add_values(float value) {
+  values_.Add(value);
+  // @@protoc_insertion_point(field_add:robot_remote_control.ChannelFloat.values)
+}
+ const ::google::protobuf::RepeatedField< float >&
+ChannelFloat::values() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.ChannelFloat.values)
+  return values_;
+}
+ ::google::protobuf::RepeatedField< float >*
+ChannelFloat::mutable_values() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.ChannelFloat.values)
+  return &values_;
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int PointCloud::kTimestampFieldNumber;
+const int PointCloud::kFrameFieldNumber;
+const int PointCloud::kOriginFieldNumber;
+const int PointCloud::kPointsFieldNumber;
+const int PointCloud::kChannelsFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+PointCloud::PointCloud()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:robot_remote_control.PointCloud)
+}
+
+void PointCloud::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+  timestamp_ = const_cast< ::robot_remote_control::TimeStamp*>(&::robot_remote_control::TimeStamp::default_instance());
+  origin_ = const_cast< ::robot_remote_control::Position*>(&::robot_remote_control::Position::default_instance());
+}
+
+PointCloud::PointCloud(const PointCloud& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:robot_remote_control.PointCloud)
+}
+
+void PointCloud::SharedCtor() {
+    _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  timestamp_ = NULL;
+  frame_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  origin_ = NULL;
+}
+
+PointCloud::~PointCloud() {
+  // @@protoc_insertion_point(destructor:robot_remote_control.PointCloud)
+  SharedDtor();
+}
+
+void PointCloud::SharedDtor() {
+  frame_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (this != default_instance_) {
+    delete timestamp_;
+    delete origin_;
+  }
+}
+
+void PointCloud::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* PointCloud::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return PointCloud_descriptor_;
+}
+
+const PointCloud& PointCloud::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_RobotRemoteControl_2eproto();
+  return *default_instance_;
+}
+
+PointCloud* PointCloud::default_instance_ = NULL;
+
+PointCloud* PointCloud::New(::google::protobuf::Arena* arena) const {
+  PointCloud* n = new PointCloud;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void PointCloud::Clear() {
+// @@protoc_insertion_point(message_clear_start:robot_remote_control.PointCloud)
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+  frame_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  if (GetArenaNoVirtual() == NULL && origin_ != NULL) delete origin_;
+  origin_ = NULL;
+  points_.Clear();
+  channels_.Clear();
+}
+
+bool PointCloud::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:robot_remote_control.PointCloud)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional .robot_remote_control.TimeStamp timestamp = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_timestamp()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_frame;
+        break;
+      }
+
+      // optional string frame = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_frame:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_frame()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->frame().data(), this->frame().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "robot_remote_control.PointCloud.frame"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_origin;
+        break;
+      }
+
+      // optional .robot_remote_control.Position origin = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_origin:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_origin()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(34)) goto parse_points;
+        break;
+      }
+
+      // repeated .robot_remote_control.Position points = 4;
+      case 4: {
+        if (tag == 34) {
+         parse_points:
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_points:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+                input, add_points()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(34)) goto parse_loop_points;
+        if (input->ExpectTag(42)) goto parse_loop_channels;
+        input->UnsafeDecrementRecursionDepth();
+        break;
+      }
+
+      // repeated .robot_remote_control.ChannelFloat channels = 5;
+      case 5: {
+        if (tag == 42) {
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_channels:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+                input, add_channels()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(42)) goto parse_loop_channels;
+        input->UnsafeDecrementRecursionDepth();
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:robot_remote_control.PointCloud)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:robot_remote_control.PointCloud)
+  return false;
+#undef DO_
+}
+
+void PointCloud::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:robot_remote_control.PointCloud)
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  if (this->has_timestamp()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1, *this->timestamp_, output);
+  }
+
+  // optional string frame = 2;
+  if (this->frame().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->frame().data(), this->frame().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "robot_remote_control.PointCloud.frame");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      2, this->frame(), output);
+  }
+
+  // optional .robot_remote_control.Position origin = 3;
+  if (this->has_origin()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, *this->origin_, output);
+  }
+
+  // repeated .robot_remote_control.Position points = 4;
+  for (unsigned int i = 0, n = this->points_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      4, this->points(i), output);
+  }
+
+  // repeated .robot_remote_control.ChannelFloat channels = 5;
+  for (unsigned int i = 0, n = this->channels_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      5, this->channels(i), output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:robot_remote_control.PointCloud)
+}
+
+::google::protobuf::uint8* PointCloud::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:robot_remote_control.PointCloud)
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  if (this->has_timestamp()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        1, *this->timestamp_, false, target);
+  }
+
+  // optional string frame = 2;
+  if (this->frame().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->frame().data(), this->frame().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "robot_remote_control.PointCloud.frame");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->frame(), target);
+  }
+
+  // optional .robot_remote_control.Position origin = 3;
+  if (this->has_origin()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        3, *this->origin_, false, target);
+  }
+
+  // repeated .robot_remote_control.Position points = 4;
+  for (unsigned int i = 0, n = this->points_size(); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        4, this->points(i), false, target);
+  }
+
+  // repeated .robot_remote_control.ChannelFloat channels = 5;
+  for (unsigned int i = 0, n = this->channels_size(); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        5, this->channels(i), false, target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.PointCloud)
+  return target;
+}
+
+int PointCloud::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:robot_remote_control.PointCloud)
+  int total_size = 0;
+
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  if (this->has_timestamp()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->timestamp_);
+  }
+
+  // optional string frame = 2;
+  if (this->frame().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->frame());
+  }
+
+  // optional .robot_remote_control.Position origin = 3;
+  if (this->has_origin()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->origin_);
+  }
+
+  // repeated .robot_remote_control.Position points = 4;
+  total_size += 1 * this->points_size();
+  for (int i = 0; i < this->points_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->points(i));
+  }
+
+  // repeated .robot_remote_control.ChannelFloat channels = 5;
+  total_size += 1 * this->channels_size();
+  for (int i = 0; i < this->channels_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->channels(i));
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void PointCloud::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:robot_remote_control.PointCloud)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const PointCloud* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const PointCloud>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:robot_remote_control.PointCloud)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:robot_remote_control.PointCloud)
+    MergeFrom(*source);
+  }
+}
+
+void PointCloud::MergeFrom(const PointCloud& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:robot_remote_control.PointCloud)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  points_.MergeFrom(from.points_);
+  channels_.MergeFrom(from.channels_);
+  if (from.has_timestamp()) {
+    mutable_timestamp()->::robot_remote_control::TimeStamp::MergeFrom(from.timestamp());
+  }
+  if (from.frame().size() > 0) {
+
+    frame_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.frame_);
+  }
+  if (from.has_origin()) {
+    mutable_origin()->::robot_remote_control::Position::MergeFrom(from.origin());
+  }
+}
+
+void PointCloud::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:robot_remote_control.PointCloud)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void PointCloud::CopyFrom(const PointCloud& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:robot_remote_control.PointCloud)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool PointCloud::IsInitialized() const {
+
+  return true;
+}
+
+void PointCloud::Swap(PointCloud* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void PointCloud::InternalSwap(PointCloud* other) {
+  std::swap(timestamp_, other->timestamp_);
+  frame_.Swap(&other->frame_);
+  std::swap(origin_, other->origin_);
+  points_.UnsafeArenaSwap(&other->points_);
+  channels_.UnsafeArenaSwap(&other->channels_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata PointCloud::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = PointCloud_descriptor_;
+  metadata.reflection = PointCloud_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// PointCloud
+
+// optional .robot_remote_control.TimeStamp timestamp = 1;
+bool PointCloud::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+void PointCloud::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+const ::robot_remote_control::TimeStamp& PointCloud::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+::robot_remote_control::TimeStamp* PointCloud::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.timestamp)
+  return timestamp_;
+}
+::robot_remote_control::TimeStamp* PointCloud::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.PointCloud.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+void PointCloud::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.PointCloud.timestamp)
+}
+
+// optional string frame = 2;
+void PointCloud::clear_frame() {
+  frame_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& PointCloud::frame() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.frame)
+  return frame_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void PointCloud::set_frame(const ::std::string& value) {
+  
+  frame_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:robot_remote_control.PointCloud.frame)
+}
+ void PointCloud::set_frame(const char* value) {
+  
+  frame_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:robot_remote_control.PointCloud.frame)
+}
+ void PointCloud::set_frame(const char* value, size_t size) {
+  
+  frame_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:robot_remote_control.PointCloud.frame)
+}
+ ::std::string* PointCloud::mutable_frame() {
+  
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.frame)
+  return frame_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* PointCloud::release_frame() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.PointCloud.frame)
+  
+  return frame_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void PointCloud::set_allocated_frame(::std::string* frame) {
+  if (frame != NULL) {
+    
+  } else {
+    
+  }
+  frame_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), frame);
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.PointCloud.frame)
+}
+
+// optional .robot_remote_control.Position origin = 3;
+bool PointCloud::has_origin() const {
+  return !_is_default_instance_ && origin_ != NULL;
+}
+void PointCloud::clear_origin() {
+  if (GetArenaNoVirtual() == NULL && origin_ != NULL) delete origin_;
+  origin_ = NULL;
+}
+const ::robot_remote_control::Position& PointCloud::origin() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.origin)
+  return origin_ != NULL ? *origin_ : *default_instance_->origin_;
+}
+::robot_remote_control::Position* PointCloud::mutable_origin() {
+  
+  if (origin_ == NULL) {
+    origin_ = new ::robot_remote_control::Position;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.origin)
+  return origin_;
+}
+::robot_remote_control::Position* PointCloud::release_origin() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.PointCloud.origin)
+  
+  ::robot_remote_control::Position* temp = origin_;
+  origin_ = NULL;
+  return temp;
+}
+void PointCloud::set_allocated_origin(::robot_remote_control::Position* origin) {
+  delete origin_;
+  origin_ = origin;
+  if (origin) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.PointCloud.origin)
+}
+
+// repeated .robot_remote_control.Position points = 4;
+int PointCloud::points_size() const {
+  return points_.size();
+}
+void PointCloud::clear_points() {
+  points_.Clear();
+}
+const ::robot_remote_control::Position& PointCloud::points(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.points)
+  return points_.Get(index);
+}
+::robot_remote_control::Position* PointCloud::mutable_points(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.points)
+  return points_.Mutable(index);
+}
+::robot_remote_control::Position* PointCloud::add_points() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.PointCloud.points)
+  return points_.Add();
+}
+::google::protobuf::RepeatedPtrField< ::robot_remote_control::Position >*
+PointCloud::mutable_points() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.PointCloud.points)
+  return &points_;
+}
+const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Position >&
+PointCloud::points() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.PointCloud.points)
+  return points_;
+}
+
+// repeated .robot_remote_control.ChannelFloat channels = 5;
+int PointCloud::channels_size() const {
+  return channels_.size();
+}
+void PointCloud::clear_channels() {
+  channels_.Clear();
+}
+const ::robot_remote_control::ChannelFloat& PointCloud::channels(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.PointCloud.channels)
+  return channels_.Get(index);
+}
+::robot_remote_control::ChannelFloat* PointCloud::mutable_channels(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.PointCloud.channels)
+  return channels_.Mutable(index);
+}
+::robot_remote_control::ChannelFloat* PointCloud::add_channels() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.PointCloud.channels)
+  return channels_.Add();
+}
+::google::protobuf::RepeatedPtrField< ::robot_remote_control::ChannelFloat >*
+PointCloud::mutable_channels() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.PointCloud.channels)
+  return &channels_;
+}
+const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::ChannelFloat >&
+PointCloud::channels() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.PointCloud.channels)
+  return channels_;
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int Wrench::kForceFieldNumber;
+const int Wrench::kTorqueFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+Wrench::Wrench()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:robot_remote_control.Wrench)
+}
+
+void Wrench::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+  force_ = const_cast< ::robot_remote_control::Vector3*>(&::robot_remote_control::Vector3::default_instance());
+  torque_ = const_cast< ::robot_remote_control::Vector3*>(&::robot_remote_control::Vector3::default_instance());
+}
+
+Wrench::Wrench(const Wrench& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:robot_remote_control.Wrench)
+}
+
+void Wrench::SharedCtor() {
+    _is_default_instance_ = false;
+  _cached_size_ = 0;
+  force_ = NULL;
+  torque_ = NULL;
+}
+
+Wrench::~Wrench() {
+  // @@protoc_insertion_point(destructor:robot_remote_control.Wrench)
+  SharedDtor();
+}
+
+void Wrench::SharedDtor() {
+  if (this != default_instance_) {
+    delete force_;
+    delete torque_;
+  }
+}
+
+void Wrench::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* Wrench::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return Wrench_descriptor_;
+}
+
+const Wrench& Wrench::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_RobotRemoteControl_2eproto();
+  return *default_instance_;
+}
+
+Wrench* Wrench::default_instance_ = NULL;
+
+Wrench* Wrench::New(::google::protobuf::Arena* arena) const {
+  Wrench* n = new Wrench;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void Wrench::Clear() {
+// @@protoc_insertion_point(message_clear_start:robot_remote_control.Wrench)
+  if (GetArenaNoVirtual() == NULL && force_ != NULL) delete force_;
+  force_ = NULL;
+  if (GetArenaNoVirtual() == NULL && torque_ != NULL) delete torque_;
+  torque_ = NULL;
+}
+
+bool Wrench::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:robot_remote_control.Wrench)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional .robot_remote_control.Vector3 force = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_force()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_torque;
+        break;
+      }
+
+      // optional .robot_remote_control.Vector3 torque = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_torque:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_torque()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:robot_remote_control.Wrench)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:robot_remote_control.Wrench)
+  return false;
+#undef DO_
+}
+
+void Wrench::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:robot_remote_control.Wrench)
+  // optional .robot_remote_control.Vector3 force = 1;
+  if (this->has_force()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1, *this->force_, output);
+  }
+
+  // optional .robot_remote_control.Vector3 torque = 2;
+  if (this->has_torque()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, *this->torque_, output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:robot_remote_control.Wrench)
+}
+
+::google::protobuf::uint8* Wrench::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:robot_remote_control.Wrench)
+  // optional .robot_remote_control.Vector3 force = 1;
+  if (this->has_force()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        1, *this->force_, false, target);
+  }
+
+  // optional .robot_remote_control.Vector3 torque = 2;
+  if (this->has_torque()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        2, *this->torque_, false, target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.Wrench)
+  return target;
+}
+
+int Wrench::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:robot_remote_control.Wrench)
+  int total_size = 0;
+
+  // optional .robot_remote_control.Vector3 force = 1;
+  if (this->has_force()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->force_);
+  }
+
+  // optional .robot_remote_control.Vector3 torque = 2;
+  if (this->has_torque()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->torque_);
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void Wrench::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:robot_remote_control.Wrench)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const Wrench* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Wrench>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:robot_remote_control.Wrench)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:robot_remote_control.Wrench)
+    MergeFrom(*source);
+  }
+}
+
+void Wrench::MergeFrom(const Wrench& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:robot_remote_control.Wrench)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  if (from.has_force()) {
+    mutable_force()->::robot_remote_control::Vector3::MergeFrom(from.force());
+  }
+  if (from.has_torque()) {
+    mutable_torque()->::robot_remote_control::Vector3::MergeFrom(from.torque());
+  }
+}
+
+void Wrench::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:robot_remote_control.Wrench)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void Wrench::CopyFrom(const Wrench& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:robot_remote_control.Wrench)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool Wrench::IsInitialized() const {
+
+  return true;
+}
+
+void Wrench::Swap(Wrench* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void Wrench::InternalSwap(Wrench* other) {
+  std::swap(force_, other->force_);
+  std::swap(torque_, other->torque_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata Wrench::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = Wrench_descriptor_;
+  metadata.reflection = Wrench_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// Wrench
+
+// optional .robot_remote_control.Vector3 force = 1;
+bool Wrench::has_force() const {
+  return !_is_default_instance_ && force_ != NULL;
+}
+void Wrench::clear_force() {
+  if (GetArenaNoVirtual() == NULL && force_ != NULL) delete force_;
+  force_ = NULL;
+}
+const ::robot_remote_control::Vector3& Wrench::force() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.Wrench.force)
+  return force_ != NULL ? *force_ : *default_instance_->force_;
+}
+::robot_remote_control::Vector3* Wrench::mutable_force() {
+  
+  if (force_ == NULL) {
+    force_ = new ::robot_remote_control::Vector3;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.Wrench.force)
+  return force_;
+}
+::robot_remote_control::Vector3* Wrench::release_force() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.Wrench.force)
+  
+  ::robot_remote_control::Vector3* temp = force_;
+  force_ = NULL;
+  return temp;
+}
+void Wrench::set_allocated_force(::robot_remote_control::Vector3* force) {
+  delete force_;
+  force_ = force;
+  if (force) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.Wrench.force)
+}
+
+// optional .robot_remote_control.Vector3 torque = 2;
+bool Wrench::has_torque() const {
+  return !_is_default_instance_ && torque_ != NULL;
+}
+void Wrench::clear_torque() {
+  if (GetArenaNoVirtual() == NULL && torque_ != NULL) delete torque_;
+  torque_ = NULL;
+}
+const ::robot_remote_control::Vector3& Wrench::torque() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.Wrench.torque)
+  return torque_ != NULL ? *torque_ : *default_instance_->torque_;
+}
+::robot_remote_control::Vector3* Wrench::mutable_torque() {
+  
+  if (torque_ == NULL) {
+    torque_ = new ::robot_remote_control::Vector3;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.Wrench.torque)
+  return torque_;
+}
+::robot_remote_control::Vector3* Wrench::release_torque() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.Wrench.torque)
+  
+  ::robot_remote_control::Vector3* temp = torque_;
+  torque_ = NULL;
+  return temp;
+}
+void Wrench::set_allocated_torque(::robot_remote_control::Vector3* torque) {
+  delete torque_;
+  torque_ = torque;
+  if (torque) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.Wrench.torque)
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int WrenchState::kTimestampFieldNumber;
+const int WrenchState::kNameFieldNumber;
+const int WrenchState::kWrenchesFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+WrenchState::WrenchState()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:robot_remote_control.WrenchState)
+}
+
+void WrenchState::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+  timestamp_ = const_cast< ::robot_remote_control::TimeStamp*>(&::robot_remote_control::TimeStamp::default_instance());
+}
+
+WrenchState::WrenchState(const WrenchState& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:robot_remote_control.WrenchState)
+}
+
+void WrenchState::SharedCtor() {
+    _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
+  _cached_size_ = 0;
+  timestamp_ = NULL;
+}
+
+WrenchState::~WrenchState() {
+  // @@protoc_insertion_point(destructor:robot_remote_control.WrenchState)
+  SharedDtor();
+}
+
+void WrenchState::SharedDtor() {
+  if (this != default_instance_) {
+    delete timestamp_;
+  }
+}
+
+void WrenchState::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* WrenchState::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return WrenchState_descriptor_;
+}
+
+const WrenchState& WrenchState::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_RobotRemoteControl_2eproto();
+  return *default_instance_;
+}
+
+WrenchState* WrenchState::default_instance_ = NULL;
+
+WrenchState* WrenchState::New(::google::protobuf::Arena* arena) const {
+  WrenchState* n = new WrenchState;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void WrenchState::Clear() {
+// @@protoc_insertion_point(message_clear_start:robot_remote_control.WrenchState)
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+  name_.Clear();
+  wrenches_.Clear();
+}
+
+bool WrenchState::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:robot_remote_control.WrenchState)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional .robot_remote_control.TimeStamp timestamp = 1;
+      case 1: {
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_timestamp()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_name;
+        break;
+      }
+
+      // repeated string name = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_name:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_name()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->name(this->name_size() - 1).data(),
+            this->name(this->name_size() - 1).length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "robot_remote_control.WrenchState.name"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(18)) goto parse_name;
+        if (input->ExpectTag(26)) goto parse_wrenches;
+        break;
+      }
+
+      // repeated .robot_remote_control.Wrench wrenches = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_wrenches:
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_wrenches:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+                input, add_wrenches()));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_loop_wrenches;
+        input->UnsafeDecrementRecursionDepth();
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:robot_remote_control.WrenchState)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:robot_remote_control.WrenchState)
+  return false;
+#undef DO_
+}
+
+void WrenchState::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:robot_remote_control.WrenchState)
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  if (this->has_timestamp()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      1, *this->timestamp_, output);
+  }
+
+  // repeated string name = 2;
+  for (int i = 0; i < this->name_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->name(i).data(), this->name(i).length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "robot_remote_control.WrenchState.name");
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      2, this->name(i), output);
+  }
+
+  // repeated .robot_remote_control.Wrench wrenches = 3;
+  for (unsigned int i = 0, n = this->wrenches_size(); i < n; i++) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      3, this->wrenches(i), output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:robot_remote_control.WrenchState)
+}
+
+::google::protobuf::uint8* WrenchState::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:robot_remote_control.WrenchState)
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  if (this->has_timestamp()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        1, *this->timestamp_, false, target);
+  }
+
+  // repeated string name = 2;
+  for (int i = 0; i < this->name_size(); i++) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->name(i).data(), this->name(i).length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "robot_remote_control.WrenchState.name");
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(2, this->name(i), target);
+  }
+
+  // repeated .robot_remote_control.Wrench wrenches = 3;
+  for (unsigned int i = 0, n = this->wrenches_size(); i < n; i++) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      InternalWriteMessageNoVirtualToArray(
+        3, this->wrenches(i), false, target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:robot_remote_control.WrenchState)
+  return target;
+}
+
+int WrenchState::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:robot_remote_control.WrenchState)
+  int total_size = 0;
+
+  // optional .robot_remote_control.TimeStamp timestamp = 1;
+  if (this->has_timestamp()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->timestamp_);
+  }
+
+  // repeated string name = 2;
+  total_size += 1 * this->name_size();
+  for (int i = 0; i < this->name_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->name(i));
+  }
+
+  // repeated .robot_remote_control.Wrench wrenches = 3;
+  total_size += 1 * this->wrenches_size();
+  for (int i = 0; i < this->wrenches_size(); i++) {
+    total_size +=
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        this->wrenches(i));
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void WrenchState::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:robot_remote_control.WrenchState)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const WrenchState* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const WrenchState>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:robot_remote_control.WrenchState)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:robot_remote_control.WrenchState)
+    MergeFrom(*source);
+  }
+}
+
+void WrenchState::MergeFrom(const WrenchState& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:robot_remote_control.WrenchState)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  name_.MergeFrom(from.name_);
+  wrenches_.MergeFrom(from.wrenches_);
+  if (from.has_timestamp()) {
+    mutable_timestamp()->::robot_remote_control::TimeStamp::MergeFrom(from.timestamp());
+  }
+}
+
+void WrenchState::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:robot_remote_control.WrenchState)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void WrenchState::CopyFrom(const WrenchState& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:robot_remote_control.WrenchState)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool WrenchState::IsInitialized() const {
+
+  return true;
+}
+
+void WrenchState::Swap(WrenchState* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void WrenchState::InternalSwap(WrenchState* other) {
+  std::swap(timestamp_, other->timestamp_);
+  name_.UnsafeArenaSwap(&other->name_);
+  wrenches_.UnsafeArenaSwap(&other->wrenches_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata WrenchState::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = WrenchState_descriptor_;
+  metadata.reflection = WrenchState_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// WrenchState
+
+// optional .robot_remote_control.TimeStamp timestamp = 1;
+bool WrenchState::has_timestamp() const {
+  return !_is_default_instance_ && timestamp_ != NULL;
+}
+void WrenchState::clear_timestamp() {
+  if (GetArenaNoVirtual() == NULL && timestamp_ != NULL) delete timestamp_;
+  timestamp_ = NULL;
+}
+const ::robot_remote_control::TimeStamp& WrenchState::timestamp() const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.WrenchState.timestamp)
+  return timestamp_ != NULL ? *timestamp_ : *default_instance_->timestamp_;
+}
+::robot_remote_control::TimeStamp* WrenchState::mutable_timestamp() {
+  
+  if (timestamp_ == NULL) {
+    timestamp_ = new ::robot_remote_control::TimeStamp;
+  }
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.WrenchState.timestamp)
+  return timestamp_;
+}
+::robot_remote_control::TimeStamp* WrenchState::release_timestamp() {
+  // @@protoc_insertion_point(field_release:robot_remote_control.WrenchState.timestamp)
+  
+  ::robot_remote_control::TimeStamp* temp = timestamp_;
+  timestamp_ = NULL;
+  return temp;
+}
+void WrenchState::set_allocated_timestamp(::robot_remote_control::TimeStamp* timestamp) {
+  delete timestamp_;
+  timestamp_ = timestamp;
+  if (timestamp) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:robot_remote_control.WrenchState.timestamp)
+}
+
+// repeated string name = 2;
+int WrenchState::name_size() const {
+  return name_.size();
+}
+void WrenchState::clear_name() {
+  name_.Clear();
+}
+ const ::std::string& WrenchState::name(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.WrenchState.name)
+  return name_.Get(index);
+}
+ ::std::string* WrenchState::mutable_name(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.WrenchState.name)
+  return name_.Mutable(index);
+}
+ void WrenchState::set_name(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:robot_remote_control.WrenchState.name)
+  name_.Mutable(index)->assign(value);
+}
+ void WrenchState::set_name(int index, const char* value) {
+  name_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:robot_remote_control.WrenchState.name)
+}
+ void WrenchState::set_name(int index, const char* value, size_t size) {
+  name_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:robot_remote_control.WrenchState.name)
+}
+ ::std::string* WrenchState::add_name() {
+  // @@protoc_insertion_point(field_add_mutable:robot_remote_control.WrenchState.name)
+  return name_.Add();
+}
+ void WrenchState::add_name(const ::std::string& value) {
+  name_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:robot_remote_control.WrenchState.name)
+}
+ void WrenchState::add_name(const char* value) {
+  name_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:robot_remote_control.WrenchState.name)
+}
+ void WrenchState::add_name(const char* value, size_t size) {
+  name_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:robot_remote_control.WrenchState.name)
+}
+ const ::google::protobuf::RepeatedPtrField< ::std::string>&
+WrenchState::name() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.WrenchState.name)
+  return name_;
+}
+ ::google::protobuf::RepeatedPtrField< ::std::string>*
+WrenchState::mutable_name() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.WrenchState.name)
+  return &name_;
+}
+
+// repeated .robot_remote_control.Wrench wrenches = 3;
+int WrenchState::wrenches_size() const {
+  return wrenches_.size();
+}
+void WrenchState::clear_wrenches() {
+  wrenches_.Clear();
+}
+const ::robot_remote_control::Wrench& WrenchState::wrenches(int index) const {
+  // @@protoc_insertion_point(field_get:robot_remote_control.WrenchState.wrenches)
+  return wrenches_.Get(index);
+}
+::robot_remote_control::Wrench* WrenchState::mutable_wrenches(int index) {
+  // @@protoc_insertion_point(field_mutable:robot_remote_control.WrenchState.wrenches)
+  return wrenches_.Mutable(index);
+}
+::robot_remote_control::Wrench* WrenchState::add_wrenches() {
+  // @@protoc_insertion_point(field_add:robot_remote_control.WrenchState.wrenches)
+  return wrenches_.Add();
+}
+::google::protobuf::RepeatedPtrField< ::robot_remote_control::Wrench >*
+WrenchState::mutable_wrenches() {
+  // @@protoc_insertion_point(field_mutable_list:robot_remote_control.WrenchState.wrenches)
+  return &wrenches_;
+}
+const ::google::protobuf::RepeatedPtrField< ::robot_remote_control::Wrench >&
+WrenchState::wrenches() const {
+  // @@protoc_insertion_point(field_list:robot_remote_control.WrenchState.wrenches)
+  return wrenches_;
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
