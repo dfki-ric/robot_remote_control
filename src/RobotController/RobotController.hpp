@@ -87,11 +87,21 @@ class RobotController: public UpdateThread {
         /**
          * @brief Get the last sent joint state of the robot
          * 
-         * @param pose the JointState to write the data to
+         * @param jointState the JointState to write the data to
          * @return bool true if new data was read
          */
         bool getCurrentJointState(JointState *jointState) {
             return getTelemetry(JOINT_STATE, jointState);
+        }
+
+        /**
+         * Get the last sent wrench state of the robot
+         * 
+         * @param wrenchState the WrenchState to write the data to
+         * @return bool true if new data was read
+         */
+        bool getCurrentWrenchState(WrenchState* wrenchState) {
+            return getTelemetry(WRENCH_STATE, wrenchState);
         }
 
         /**

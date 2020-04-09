@@ -12,7 +12,7 @@
 #include "../src/ControlledRobot/ControlledRobot.hpp"
 
 using namespace robot_remote_control;
- 
+
 TransportSharedPtr commands;
 TransportSharedPtr telemetry;
 
@@ -387,4 +387,90 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
 
   robot.stopUpdateThread();
   controller.stopUpdateThread();
+}
+
+
+template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata, const TelemetryMessageType &type) {
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(10);
+
+  robot.sendTelemetry(protodata, type);
+
+  // wait for telemetry
+  PROTOBUFDATA received;
+  while (!controller.getTelemetry(type, &received)) {
+    usleep(10000);
+  }
+
+  controller.stopUpdateThread();
+
+  return received;
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_pose) {
+  // not using the set/get functions
+  Pose send, recv;
+  send = TypeGenerator::genPose();
+  recv = testTelemetry(send, CURRENT_POSE);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_jointstate) {
+  // not using the set/get functions
+  JointState send, recv;
+  send = TypeGenerator::genJointState();
+  recv = testTelemetry(send, JOINT_STATE);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_controllablejoints) {
+  // not using the set/get functions
+  JointState send, recv;
+  send = TypeGenerator::genJointState();
+  recv = testTelemetry(send, CONTROLLABLE_JOINTS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_simple_actions) {
+  // not using the set/get functions
+  SimpleActions send, recv;
+  send = TypeGenerator::genSimpleActions();
+  recv = testTelemetry(send, SIMPLE_ACTIONS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_complex_actions) {
+  // not using the set/get functions
+  ComplexActions send, recv;
+  send = TypeGenerator::genComplexActions();
+  recv = testTelemetry(send, COMPLEX_ACTIONS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_robotname) {
+  // not using the set/get functions
+  RobotName send, recv;
+  send = TypeGenerator::genRobotName();
+  recv = testTelemetry(send, ROBOT_NAME);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_videostreams) {
+  // not using the set/get functions
+  VideoStreams send, recv;
+  send = TypeGenerator::genVideoStreams();
+  recv = testTelemetry(send, VIDEO_STREAMS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_wrechstate) {
+  // not using the set/get functions
+  WrenchState send, recv;
+  send = TypeGenerator::genWrenchState();
+  recv = testTelemetry(send, WRENCH_STATE);
+  COMPARE_PROTOBUF(send, recv);
 }

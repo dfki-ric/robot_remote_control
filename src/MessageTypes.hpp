@@ -21,17 +21,18 @@ namespace robot_remote_control {
                             };
 
     enum TelemetryMessageType{  NO_TELEMETRY_DATA = 0,
-                                CURRENT_POSE,         // the curretn Pose of the robot base
-                                JOINT_STATE,          // current Joint values
-                                CONTROLLABLE_JOINTS,  // info about the controllable joints of the robot
-                                SIMPLE_ACTIONS,       // info about the simple actions of the robot
-                                COMPLEX_ACTIONS,      // info about the complex actions of the robot
-                                ROBOT_NAME,           // the name of the robot
-                                ROBOT_STATE,          // robot state description (string)
-                                LOG_MESSAGE,          // log messages,
-                                VIDEO_STREAMS,        // definition of video streams
-                                SIMPLE_SENSOR_DEFINITION,
-                                SIMPLE_SENSOR_VALUE,
+                                CURRENT_POSE,               // the curretn Pose of the robot base
+                                JOINT_STATE,                // current Joint values
+                                CONTROLLABLE_JOINTS,        // info about the controllable joints of the robot
+                                SIMPLE_ACTIONS,             // info about the simple actions of the robot
+                                COMPLEX_ACTIONS,            // info about the complex actions of the robot
+                                ROBOT_NAME,                 // the name of the robot
+                                ROBOT_STATE,                // robot state description (string)
+                                LOG_MESSAGE,                // log messages,
+                                VIDEO_STREAMS,              // definition of video streams
+                                SIMPLE_SENSOR_DEFINITION,   // definition of available simple sensors
+                                SIMPLE_SENSOR_VALUE,        // actual simple sensor values
+                                WRENCH_STATE,               // current Wrench values
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

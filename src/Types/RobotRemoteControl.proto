@@ -2,6 +2,11 @@ syntax = "proto3";
 
 package robot_remote_control;
 
+message TimeStamp {
+    int32 secs = 1;
+    int32 nsecs = 2;
+}
+
 message Vector2{
     float x = 1;
     float y = 2;
@@ -51,6 +56,7 @@ message JointState {
     repeated double position = 2;
     repeated double velocity = 3;
     repeated double effort = 4;
+    TimeStamp timestamp = 5;
 }
 
 message GoTo {
@@ -108,7 +114,8 @@ message RobotState {
 
 message LogMessage {
     uint32 level = 1;
-    string message = 2; 
+    string message = 2;
+    TimeStamp timestamp = 3;
 }
 
 message VideoStream{
@@ -125,6 +132,7 @@ message SimpleSensor{
     uint32 id = 2;
     Vector2 size = 3;
     repeated float value = 4;
+    TimeStamp timestamp = 5;
 }
 
 message SimpleSensors{
@@ -132,4 +140,26 @@ message SimpleSensors{
 }
 
 
+message ChannelFloat {
+    string name = 1;
+    repeated float values = 2;
+}
 
+message PointCloud {
+    TimeStamp timestamp = 1;
+    string frame = 2;
+    Position origin  = 3;
+    repeated Position points = 4;
+    repeated ChannelFloat channels = 5;
+}
+
+message Wrench {
+    Vector3 force = 1;
+    Vector3 torque = 2;
+}
+
+message WrenchState {
+    TimeStamp timestamp = 1;
+    repeated string name = 2;
+    repeated Wrench wrenches = 3;
+}
