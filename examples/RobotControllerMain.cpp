@@ -66,6 +66,9 @@ int main(int argc, char** argv) {
 
         printf("buffer sizes %i, %i\n", buffersize_pose, buffersize_joint);
 
+        robot_remote_control::SimpleSensor sens;
+        controller.getSimpleSensor(1, &sens);
+
 
         usleep(10000);
     }

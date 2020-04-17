@@ -23,7 +23,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
     registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
     // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-    registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
+    //registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
     registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
 }
 
@@ -42,7 +42,7 @@ void RobotController::setGoToCommand(const GoTo &goToCommand) {
     sendProtobufData(goToCommand, GOTO_COMMAND);
 }
 
-void RobotController::setJointCommand(const JointState &jointsCommand){
+void RobotController::setJointCommand(const JointState &jointsCommand) {
     sendProtobufData(jointsCommand, JOINTS_COMMAND);
 }
 
@@ -56,7 +56,7 @@ void RobotController::setComplexActionCommand(const ComplexAction &complexAction
     sendProtobufData(complexActionCommand, COMPLEX_ACTION_COMMAND);
 }
 
-void RobotController::setLogLevel(const uint32_t &level){
+void RobotController::setLogLevel(const uint32_t &level) {
     std::string buf;
     buf.resize(sizeof(uint16_t) + sizeof(uint32_t));
     uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
