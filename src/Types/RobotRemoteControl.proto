@@ -160,6 +160,6 @@ message Wrench {
 
 message WrenchState {
     TimeStamp timestamp = 1;
-    repeated string name = 2;
+    repeated string frame = 2;
     repeated Wrench wrenches = 3;
 }
