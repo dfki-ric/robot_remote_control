@@ -13,7 +13,3 @@ message NewTelemetryMessage{
     int32 sequence_no = 1;
     string msg = 2;
 }
-
-
-
-
