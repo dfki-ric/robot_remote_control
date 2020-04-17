@@ -18,9 +18,12 @@ add_library(robot_remote_control-types
 )
 target_include_directories(robot_remote_control-types
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+link_directories(${CMAKE_INSTALL_PREFIX}/lib)
+
 
 target_link_libraries(robot_remote_control-types protobuf)
 
