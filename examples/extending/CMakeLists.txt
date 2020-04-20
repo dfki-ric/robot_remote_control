@@ -15,3 +15,8 @@ set(BUILD_EXAMPLES ON)
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
+
+set(BUILD_TESTS ON)
+if(BUILD_TESTS)
+    add_subdirectory(test)
+endif(BUILD_TESTS)
