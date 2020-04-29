@@ -53,13 +53,15 @@ int main(int argc, char** argv)
 
     action = simpleActions.add_actions();
     action->set_name("Light");
-    action->mutable_type()->set_type(robot_remote_control::SimpleActionType::VALUE);
+    action->mutable_type()->set_type(robot_remote_control::SimpleActionType::VALUE_INT);
+    action->mutable_type()->set_min_state(0);  // is just a switch on/off
     action->mutable_type()->set_max_state(1);  // is just a switch on/off
     action->set_state(1);  // current state
 
     action = simpleActions.add_actions();
     action->set_name("Light Dimmer");
-    action->mutable_type()->set_type(robot_remote_control::SimpleActionType::VALUE);
+    action->mutable_type()->set_type(robot_remote_control::SimpleActionType::VALUE_INT);
+    action->mutable_type()->set_min_state(0);  // values from 0-100
     action->mutable_type()->set_max_state(100);  // values from 0-100
     action->set_state(100);  // current state
 
