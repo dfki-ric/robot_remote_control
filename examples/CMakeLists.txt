@@ -1,4 +1,6 @@
+cmake_minimum_required(VERSION 3.1.0)
 
+#add_subdirectory(extending/src)
 
 add_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp)
 target_link_libraries(robot_remote_control-controlled_robot_bin
@@ -26,9 +28,9 @@ target_include_directories(robot_remote_control-robot_controller_bin
 )
 
 
-install (TARGETS
-        robot_remote_control-controlled_robot_bin
-        robot_remote_control-robot_controller_bin
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+# install (TARGETS
+#         robot_remote_control-controlled_robot_bin
+#         robot_remote_control-robot_controller_bin
+#         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+# )
 

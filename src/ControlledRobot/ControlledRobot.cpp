@@ -8,14 +8,28 @@ namespace robot_remote_control {
 ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
+    buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1) {
-    registerCommandBuffer(TARGET_POSE_COMMAND, &poseCommand);
-    registerCommandBuffer(TWIST_COMMAND, &twistCommand);
-    registerCommandBuffer(LEFT_ARM_END_EFFECTOR_TWIST_COMMAND, &leftArmEndEffectorTwistCommandBuffer);
-    registerCommandBuffer(GOTO_COMMAND, &goToCommand);
-    registerCommandBuffer(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
-    registerCommandBuffer(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
-    registerCommandBuffer(JOINTS_COMMAND, &jointsCommand);
+    registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
+    registerCommandType(TWIST_COMMAND, &twistCommand);
+    registerCommandType(GOTO_COMMAND, &goToCommand);
+    registerCommandType(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
+    registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
+    registerCommandType(JOINTS_COMMAND, &jointsCommand);
+
+    registerTelemetryType<Pose>(CURRENT_POSE);
+    registerTelemetryType<JointState>(JOINT_STATE);
+    registerTelemetryType<JointState>(CONTROLLABLE_JOINTS);
+    registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS);
+    registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS);
+    registerTelemetryType<RobotName>(ROBOT_NAME);
+    registerTelemetryType<RobotState>(ROBOT_STATE);
+    registerTelemetryType<LogMessage>(LOG_MESSAGE);
+    registerTelemetryType<VideoStreams>(VIDEO_STREAMS);
+    registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION);
+    // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
+    registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE);
+    registerTelemetryType<WrenchState>(WRENCH_STATE);
 }
 
 void ControlledRobot::update() {
@@ -45,7 +59,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case TELEMETRY_REQUEST: {
             uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
-            std::string reply = buffers.peekSerialized(type);
+            std::string reply = buffers->peekSerialized(type);
             commandTransport->send(reply);
             return TELEMETRY_REQUEST;
         }

@@ -21,7 +21,7 @@ SimpleSensorBuffer::SimpleSensorBuffer() {}
 //         // unlock();
 // }
 
-void SimpleSensorBuffer::initBufferID (const uint16_t &id) {
+void SimpleSensorBuffer::initBufferID(const uint16_t &id) {
         lock();
 
         if (get_ref().size() <= id) {

@@ -1,42 +1,48 @@
 #include "RobotController.hpp"
 #include <iostream>
+#include <memory>
 
-
-using namespace std;
 using namespace robot_remote_control;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t recv_buffer_size):UpdateThread(),
+RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t buffersize):UpdateThread(),
     commandTransport(commandTransport),
-    telemetryTransport(telemetryTransport)
-{
-    buffers = std::shared_ptr<TelemetryBuffer>(new TelemetryBuffer(recv_buffer_size));
+    telemetryTransport(telemetryTransport),
+    buffers(std::make_shared<TelemetryBuffer>()) {
+
     simplesensorbuffer = std::shared_ptr<SimpleSensorBuffer>(new SimpleSensorBuffer());
+
+    registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
+    registerTelemetryType<JointState>(JOINT_STATE, buffersize);
+    registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
+    registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, buffersize);
+    registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, buffersize);
+    registerTelemetryType<RobotName>(ROBOT_NAME, buffersize);
+    registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
+    registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
+    registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
+    registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
+    // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
+    //registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
+    registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
 }
 
-RobotController::~RobotController(){
-
+RobotController::~RobotController() {
 }
 
-void RobotController::setTargetPose(const Pose & pose)
-{
-    sendProtobufData(pose,TARGET_POSE_COMMAND);
+void RobotController::setTargetPose(const Pose & pose) {
+    sendProtobufData(pose, TARGET_POSE_COMMAND);
 }
 
-void RobotController::setTwistCommand(const Twist &twistCommand)
-{
-    sendProtobufData(twistCommand,TWIST_COMMAND);
-}
-
-void RobotController::setLeftArmEndeffectorTwistCommand(const Twist &leftArmEndeffectorTwistCommand) {
-    sendProtobufData(leftArmEndeffectorTwistCommand, LEFT_ARM_END_EFFECTOR_TWIST_COMMAND);
+void RobotController::setTwistCommand(const Twist &twistCommand) {
+    sendProtobufData(twistCommand, TWIST_COMMAND);
 }
 
 void RobotController::setGoToCommand(const GoTo &goToCommand) {
     sendProtobufData(goToCommand, GOTO_COMMAND);
 }
 
-void RobotController::setJointCommand(const JointState &jointsCommand){
+void RobotController::setJointCommand(const JointState &jointsCommand) {
     sendProtobufData(jointsCommand, JOINTS_COMMAND);
 }
 
@@ -50,7 +56,7 @@ void RobotController::setComplexActionCommand(const ComplexAction &complexAction
     sendProtobufData(complexActionCommand, COMPLEX_ACTION_COMMAND);
 }
 
-void RobotController::setLogLevel(const uint32_t &level){
+void RobotController::setLogLevel(const uint32_t &level) {
     std::string buf;
     buf.resize(sizeof(uint16_t) + sizeof(uint32_t));
     uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
@@ -96,28 +102,16 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
 
-    switch (msgtype) {
-        case CURRENT_POSE:              addToTelemetryBuffer< Pose              >(msgtype, serializedMessage);
-                                        return msgtype;
-        case JOINT_STATE:               addToTelemetryBuffer< JointState        >(msgtype, serializedMessage);
-                                        return msgtype;
-        case CONTROLLABLE_JOINTS:       addToTelemetryBuffer< JointState        >(msgtype, serializedMessage);
-                                        return msgtype;
-        case SIMPLE_ACTIONS:            addToTelemetryBuffer< SimpleActions     >(msgtype, serializedMessage);
-                                        return msgtype;
-        case COMPLEX_ACTIONS:           addToTelemetryBuffer< ComplexActions    >(msgtype, serializedMessage);
-                                        return msgtype;
-        case ROBOT_NAME:                addToTelemetryBuffer< RobotName         >(msgtype, serializedMessage);
-                                        return msgtype;
-        case ROBOT_STATE:               addToTelemetryBuffer< RobotState        >(msgtype, serializedMessage);
-                                        return msgtype;
-        case LOG_MESSAGE:               addToTelemetryBuffer< LogMessage        >(msgtype, serializedMessage);
-                                        return msgtype;
-        case VIDEO_STREAMS:             addToTelemetryBuffer< VideoStreams      >(msgtype, serializedMessage);
-                                        return msgtype;
-        case SIMPLE_SENSOR_DEFINITION:  addToTelemetryBuffer< SimpleSensors     >(msgtype, serializedMessage);
-                                        return msgtype;
+    // try to resolve through registered types
+    std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
+    if (adder.get()) {
+        adder->addToTelemetryBuffer(msgtype, serializedMessage);
+        return msgtype;
+    }
 
+    // handle special types
+
+    switch (msgtype) {
         // multi values in single stream
         case SIMPLE_SENSOR_VALUE:       addToSimpleSensorBuffer(serializedMessage);
                                         return msgtype;
@@ -127,6 +121,7 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         {
             return msgtype;
         }
+        default: return msgtype;
     }
 
     // should never reach this

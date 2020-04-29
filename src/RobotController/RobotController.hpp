@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <memory>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -13,7 +15,9 @@ namespace robot_remote_control {
 
 class RobotController: public UpdateThread {
     public:
-        explicit RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr(), size_t recv_buffer_size = 10);
+        explicit RobotController(TransportSharedPtr commandTransport,
+                                TransportSharedPtr telemetryTransport = TransportSharedPtr(),
+                                size_t buffersize = 10);
         virtual ~RobotController();
 
         /**
@@ -34,13 +38,6 @@ class RobotController: public UpdateThread {
          * @param twistCommand 
          */
         void setTwistCommand(const Twist &twistCommand);
-
-        /**
-         * @brief Set the twist command for the left arm end effector, for direct remote control based on velocities
-         *
-         * @param leftArmEndeffectorTwistCommand
-         */
-        void setLeftArmEndeffectorTwistCommand(const Twist &leftArmEndeffectorTwistCommand);
 
         /**
          * @brief Set the GoTo Command of the ControlledRobot
@@ -90,11 +87,21 @@ class RobotController: public UpdateThread {
         /**
          * @brief Get the last sent joint state of the robot
          * 
-         * @param pose the JointState to write the data to
+         * @param jointState the JointState to write the data to
          * @return bool true if new data was read
          */
         bool getCurrentJointState(JointState *jointState) {
             return getTelemetry(JOINT_STATE, jointState);
+        }
+
+        /**
+         * Get the last sent wrench state of the robot
+         * 
+         * @param wrenchState the WrenchState to write the data to
+         * @return bool true if new data was read
+         */
+        bool getCurrentWrenchState(WrenchState* wrenchState) {
+            return getTelemetry(WRENCH_STATE, wrenchState);
         }
 
         /**
@@ -248,14 +255,14 @@ class RobotController: public UpdateThread {
          * @return unsigned int 
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const TelemetryMessageType &type, DATATYPE *data ) {
+        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
             buffers->lock();
             bool result = RingBufferAccess::popData(buffers->get_ref()[type], data);
             buffers->unlock();
             return result;
         }
 
-        template< class DATATYPE > void requestTelemetry(const TelemetryMessageType &type, DATATYPE *result) {
+        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result) {
             std::string buf;
             buf.resize(sizeof(uint16_t)*2);
             uint16_t uint_type;
@@ -278,23 +285,20 @@ class RobotController: public UpdateThread {
 
 
     protected:
+
         virtual std::string sendRequest(const std::string& serializedMessage);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
-    private:
-
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
-
-
 
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::shared_ptr<SimpleSensorBuffer>  simplesensorbuffer;
         // void initBuffers(const unsigned int &defaultSize);
 
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type ) {
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type ) {
             std::string buf;
             buf.resize(sizeof(uint16_t));
             uint16_t uint_type = type;
@@ -304,15 +308,38 @@ class RobotController: public UpdateThread {
             return sendRequest(buf);
         }
 
-        template <class CLASS > void addToTelemetryBuffer(const TelemetryMessageType &type, const std::string &serializedMessage) {
-            CLASS data;
-            data.ParseFromString(serializedMessage);
-            buffers->lock();
-            RingBufferAccess::pushData(buffers->get_ref()[type], data);
-            buffers->unlock();
-        }
+
+        class TelemetryAdderBase{
+         public:
+            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers) {}
+            virtual ~TelemetryAdderBase() {}
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
+         protected:
+            std::shared_ptr<TelemetryBuffer>  buffers;
+        };
+        template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
+         public:
+            explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
+                CLASS data;
+                data.ParseFromString(serializedMessage);
+                buffers->lock();
+                RingBufferAccess::pushData(buffers->get_ref()[type], data);
+                buffers->unlock();
+            }
+        };
+
+        std::vector< std::shared_ptr<TelemetryAdderBase> > telemetryAdders;
 
         void addToSimpleSensorBuffer(const std::string &serializedMessage);
+
+        template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize = 10) {
+            buffers->registerType<PROTO>(type, buffersize);
+            if (type >= telemetryAdders.size()) {  // e.g. type == 42, for index 42, size must be 43
+                telemetryAdders.resize(type+1);
+            }
+            telemetryAdders[type] = std::shared_ptr<TelemetryAdderBase>(new TelemetryAdder<PROTO>(buffers));
+        }
 
 };
 

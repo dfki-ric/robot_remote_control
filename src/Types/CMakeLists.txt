@@ -2,7 +2,7 @@
 
 find_package(Protobuf REQUIRED)
 
-add_custom_command( OUTPUT Types/RobotRemoteControl.pb.cc RobotRemoteControl.pb.h
+add_custom_command( OUTPUT RobotRemoteControl.pb.cc RobotRemoteControl.pb.h
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                     COMMAND protoc --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} RobotRemoteControl.proto
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/RobotRemoteControl.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/RobotRemoteControl.pb.cc 
@@ -18,9 +18,12 @@ add_library(robot_remote_control-types
 )
 target_include_directories(robot_remote_control-types
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+link_directories(${CMAKE_INSTALL_PREFIX}/lib)
+
 
 target_link_libraries(robot_remote_control-types protobuf)
 

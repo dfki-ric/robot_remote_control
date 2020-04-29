@@ -37,6 +37,10 @@ template <class C> class ThreadProtectedVar{
             return returnvar;
         }
 
+        const C operator()(){
+            return get();
+        }
+
         /**
          * @brief set the protected variable
          * 

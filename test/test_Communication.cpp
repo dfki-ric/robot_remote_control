@@ -7,11 +7,12 @@
 #include <iostream>
 
 #define private public // :-|
+#define protected public // :-|
 #include "../src/RobotController/RobotController.hpp"
 #include "../src/ControlledRobot/ControlledRobot.hpp"
 
 using namespace robot_remote_control;
- 
+
 TransportSharedPtr commands;
 TransportSharedPtr telemetry;
 
@@ -387,3 +388,144 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   robot.stopUpdateThread();
   controller.stopUpdateThread();
 }
+
+
+template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata, const TelemetryMessageType &type) {
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(10);
+
+  robot.sendTelemetry(protodata, type);
+
+  // wait for telemetry
+  PROTOBUFDATA received;
+  while (!controller.getTelemetry(type, &received)) {
+    usleep(10000);
+  }
+
+  controller.stopUpdateThread();
+
+  return received;
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_pose) {
+  // not using the set/get functions
+  Pose send, recv;
+  send = TypeGenerator::genPose();
+  recv = testTelemetry(send, CURRENT_POSE);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_jointstate) {
+  // not using the set/get functions
+  JointState send, recv;
+  send = TypeGenerator::genJointState();
+  recv = testTelemetry(send, JOINT_STATE);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_controllablejoints) {
+  // not using the set/get functions
+  JointState send, recv;
+  send = TypeGenerator::genJointState();
+  recv = testTelemetry(send, CONTROLLABLE_JOINTS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_simple_actions) {
+  // not using the set/get functions
+  SimpleActions send, recv;
+  send = TypeGenerator::genSimpleActions();
+  recv = testTelemetry(send, SIMPLE_ACTIONS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_complex_actions) {
+  // not using the set/get functions
+  ComplexActions send, recv;
+  send = TypeGenerator::genComplexActions();
+  recv = testTelemetry(send, COMPLEX_ACTIONS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_robotname) {
+  // not using the set/get functions
+  RobotName send, recv;
+  send = TypeGenerator::genRobotName();
+  recv = testTelemetry(send, ROBOT_NAME);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_videostreams) {
+  // not using the set/get functions
+  VideoStreams send, recv;
+  send = TypeGenerator::genVideoStreams();
+  recv = testTelemetry(send, VIDEO_STREAMS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_wrechstate) {
+  // not using the set/get functions
+  WrenchState send, recv;
+  send = TypeGenerator::genWrenchState();
+  recv = testTelemetry(send, WRENCH_STATE);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_simple_sensors) {
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+
+  // send unregistered sensor
+  SimpleSensor temp;
+  temp.set_id(1);
+  robot.setSimpleSensor(temp);
+
+
+  SimpleSensor temp_recv;
+  while (!controller.getSimpleSensor(1, &temp_recv)) {
+    // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+    usleep(10000);
+    // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+  }
+  COMPARE_PROTOBUF(temp, temp_recv);
+
+
+  robot_remote_control::SimpleSensors sensors;
+  robot_remote_control::SimpleSensor* sens;
+  sens = sensors.add_sensors();
+  sens->set_name("temperature");
+  sens->set_id(1);
+  sens->mutable_size()->set_x(1);  // only single value
+
+  sens = sensors.add_sensors();
+  sens->set_name("velocity");
+  sens->set_id(2);
+  sens->mutable_size()->set_x(3);  // 3 value vector
+
+  robot.initSimpleSensors(sensors);
+
+  // send unregistered sensor
+  SimpleSensor velocity, velocity_recv;
+  velocity.set_id(2);
+  velocity.add_value(std::rand());
+  robot.setSimpleSensor(velocity);
+
+  while (!controller.getSimpleSensor(2, &velocity_recv)) {
+    usleep(10000);
+  }
+  COMPARE_PROTOBUF(velocity, velocity_recv);
+
+  controller.stopUpdateThread();
+
+
+}
+

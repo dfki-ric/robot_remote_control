@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package myrobot;
+
+import "RobotRemoteControl.proto";
+
+message NewControlMessage{
+    int32 sequence_no = 1;
+    string msg = 2;
+}
+
+message NewTelemetryMessage{
+    int32 sequence_no = 1;
+    string msg = 2;
+}

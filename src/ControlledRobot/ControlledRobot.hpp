@@ -6,6 +6,7 @@
 #include "TelemetryBuffer.hpp"
 #include <map>
 #include <string>
+#include <memory>
 
 
 namespace robot_remote_control {
@@ -41,16 +42,6 @@ class ControlledRobot: public UpdateThread{
          */
         bool getTwistCommand(Twist *command) {
             return twistCommand.read(command);
-        }
-
-        /**
-         * @brief Get the Twist command with velocities for the left arm end effector
-         *
-         * @return true if the command was not read before
-         * @param command the last received command
-         */
-        bool getLeftArmEndEffectorTwistCommand(Twist *leftArmEndEffectorTwistCommand) {
-            return leftArmEndEffectorTwistCommandBuffer.read(leftArmEndEffectorTwistCommand);
         }
 
         /**
@@ -96,7 +87,7 @@ class ControlledRobot: public UpdateThread{
 
         // Telemetry setters
 
-    private:
+    protected:
         /**
          * @brief generic send of telemetry types
          * 
@@ -105,7 +96,7 @@ class ControlledRobot: public UpdateThread{
          * @param type 
          * @return int size sent
          */
-        template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type) {
+        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type, bool requestOnly = false) {
             if (telemetryTransport.get()) {
                 std::string buf;
                 buf.resize(sizeof(uint16_t));
@@ -114,10 +105,13 @@ class ControlledRobot: public UpdateThread{
                 *data = uint_type;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                buffers.lock();
-                RingBufferAccess::pushData(buffers.get_ref()[type], protodata, true);
-                buffers.unlock();
-                return telemetryTransport->send(buf) - sizeof(uint16_t);
+                buffers->lock();
+                RingBufferAccess::pushData(buffers->get_ref()[type], protodata, true);
+                buffers->unlock();
+                if (!requestOnly) {
+                    return telemetryTransport->send(buf) - sizeof(uint16_t);
+                }
+                return buf.size();
             }
             printf("ERROR Transport invalid\n");
             return 0;
@@ -224,13 +218,23 @@ class ControlledRobot: public UpdateThread{
         }
 
         /**
-         * @brief Set the curretn JointState of the robot
+         * @brief Set the current JointState of the robot
          * 
          * @param telemetry current JointState
          * @return int number of bytes sent
          */
         int setJointState(const JointState& telemetry) {
-                return sendTelemetry(telemetry, JOINT_STATE);
+            return sendTelemetry(telemetry, JOINT_STATE);
+        }
+
+        /**
+         * @brief Set the current WrenchState of the robot
+         * 
+         * @param telemetry current WrenchState
+         * @return int number of bytes sent
+         */
+        int setWrenchState(const WrenchState& telemetry) {
+            return sendTelemetry(telemetry, WRENCH_STATE);
         }
 
         /**
@@ -250,7 +254,6 @@ class ControlledRobot: public UpdateThread{
 
         virtual ControlMessageType evaluateRequest(const std::string& request);
 
-    private:
         struct CommandBufferBase{
             CommandBufferBase() {}
             virtual ~CommandBufferBase() {}
@@ -304,14 +307,14 @@ class ControlledRobot: public UpdateThread{
 
         // command buffers
         CommandBuffer<Pose> poseCommand;
-        CommandBuffer<Twist> twistCommand, leftArmEndEffectorTwistCommandBuffer;
+        CommandBuffer<Twist> twistCommand;
         CommandBuffer<GoTo> goToCommand;
         CommandBuffer<SimpleAction> simpleActionsCommand;
         CommandBuffer<ComplexAction> complexActionCommandBuffer;
         CommandBuffer<JointState> jointsCommand;
 
         std::map<uint32_t, CommandBufferBase*> commandbuffers;
-        void registerCommandBuffer(const uint32_t & ID, CommandBufferBase *bufptr) {
+        void registerCommandType(const uint32_t & ID, CommandBufferBase *bufptr) {
             commandbuffers[ID] = bufptr;
         }
 
@@ -326,9 +329,11 @@ class ControlledRobot: public UpdateThread{
         std::string serializeControlMessageType(const ControlMessageType& type);
         // std::string serializeCurrentPose();
 
-
+        template <class PROTO> void registerTelemetryType(const uint16_t &type) {
+            buffers->registerType<PROTO>(type, 1);
+        }
         // buffer of sent telemetry (used for telemetry requests)
-        TelemetryBuffer buffers;
+        std::shared_ptr<TelemetryBuffer> buffers;
 
         uint32_t logLevel;
 };
