@@ -66,18 +66,20 @@ message GoTo {
 }
 
 enum SimpleActionType {
-    VALUE = 0;
-    TRIGGER = 1;
+    VALUE_INT = 0;
+    VALUE_FLOAT = 1;
+    TRIGGER = 2;
 }
 message SimpleActionDef{
     SimpleActionType type = 1;
-    uint64 max_state = 2;
+    uint64 min_state = 2;
+    uint64 max_state = 3;
 }
 
 message SimpleAction {
     string name = 1;
     SimpleActionDef type = 2;
-    uint64 state = 3;
+    float state = 3;
 }
 
 message SimpleActions {
@@ -160,6 +162,6 @@ message Wrench {
 
 message WrenchState {
     TimeStamp timestamp = 1;
-    repeated string name = 2;
+    repeated string frame = 2;
     repeated Wrench wrenches = 3;
 }

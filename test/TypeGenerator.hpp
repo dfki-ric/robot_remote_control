@@ -76,7 +76,7 @@ class TypeGenerator{
     static WrenchState genWrenchState() {
         WrenchState data;
         for (int values = 0; values < 10; ++values) {
-            *data.add_name() = std::to_string(values);
+            *data.add_frame() = std::to_string(values);
             *data.add_wrenches() = genWrench();
         }
         return data;
