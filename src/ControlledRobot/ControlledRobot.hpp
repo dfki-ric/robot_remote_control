@@ -168,7 +168,7 @@ class ControlledRobot: public UpdateThread{
          * @param telemetry a list of simple sensors and their names/ids, other firelds not nessecary
          * @return int  number of bytes sent
          */
-        int initMaps(const Maps &telemetry) {
+        int initMapsDefinition(const MapsDefinition &telemetry) {
             return sendTelemetry(telemetry, MAPS_DEFINITION, true);
         }
 
@@ -260,17 +260,26 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE);
         }
 
-        int setMap(const Map & map, uint32_t mapId) {
-            if (map.id() != mapId){
-                printf("Map id does not match\n");
-                return 0;
-            }
-            mapBuffer.initBufferID(map.id());
+        int setMap(const Map & map, const uint32_t &mapId) {
+            setMap(map.SerializeAsString(),mapId);
+        }
+
+        /**
+         * @brief Set the Binary Map object
+         * This one is not limeted to protobuf types
+         * 
+         * @param map 
+         * @param mapId 
+         * @return int 
+         */
+        int setMap(const std::string & map, const uint32_t &mapId) {
+            mapBuffer.initBufferID(mapId);
             mapBuffer.lock();
-            RingBufferAccess::pushData(mapBuffer.get_ref()[map.id()], map, true);
+            RingBufferAccess::pushData(mapBuffer.get_ref()[mapId], map, true);
             mapBuffer.unlock();
             //return sendTelemetry(map, MAP, true);
             return true;
+
         }
 
     protected:
@@ -338,7 +347,7 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<JointState> jointsCommand;
 
 
-        SimpleBuffer<Map> mapBuffer;
+        SimpleBuffer<std::string> mapBuffer;
 
         std::map<uint32_t, CommandBufferBase*> commandbuffers;
         void registerCommandType(const uint32_t & ID, CommandBufferBase *bufptr) {

@@ -144,13 +144,12 @@ message SimpleSensors{
 }
 
 message Map {
-    string name = 1;
-    uint32 id = 2;
     repeated google.protobuf.Any map = 3;
 }
 
-message Maps {
-    repeated Map maps = 1;
+message MapsDefinition {
+    repeated string name = 1;
+    repeated uint32 id = 2;
 }
 
 

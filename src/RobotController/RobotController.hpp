@@ -236,6 +236,10 @@ class RobotController: public UpdateThread {
             requestTelemetry(mapId, map, MAP_REQUEST);
         }
 
+        void requestMap(std::string *map, const uint32_t &mapId){
+            requestBinary(mapId, map, MAP_REQUEST);
+        }
+
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type
          * 
@@ -267,21 +271,25 @@ class RobotController: public UpdateThread {
         }
 
         template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+            std::string replybuf;
+            requestBinary(type, &replybuf, requestType);
+            result->ParseFromString(replybuf);
+
+        }
+
+        void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string buf;
             buf.resize(sizeof(uint16_t)*2);
 
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
             *data = requestType;
-
             data++;
 
             // add the requested type int
             uint16_t uint_type = type;
             *data = uint_type;
 
-            std::string replybuf = sendRequest(buf);
-            result->ParseFromString(replybuf);
-
+            *result = sendRequest(buf);
         }
 
 

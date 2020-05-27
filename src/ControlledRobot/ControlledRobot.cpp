@@ -30,7 +30,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
     registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE);
     registerTelemetryType<WrenchState>(WRENCH_STATE);
-    registerTelemetryType<Maps>(MAPS_DEFINITION);
+    registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
     registerTelemetryType<Map>(MAP); // TODO: needed? ()
 }
 
@@ -67,15 +67,14 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         }
         case MAP_REQUEST: {
             uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
-            printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
-            Map map;
+            std::string map;
             //get map
-            printf("map request %i\n", *requestedMap);
             mapBuffer.lock();
-            RingBufferAccess::peekData(mapBuffer.get_ref()[*requestedMap],&map);
+            if (*requestedMap < mapBuffer.get_ref().size()){
+                RingBufferAccess::peekData(mapBuffer.get_ref()[*requestedMap],&map);
+            }
             mapBuffer.unlock();
-            commandTransport->send(map.SerializeAsString());
-            
+            commandTransport->send(map);
             return MAP_REQUEST;
         }
         case LOG_LEVEL_SELECT: {
