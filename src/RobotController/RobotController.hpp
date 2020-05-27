@@ -7,7 +7,7 @@
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
-#include "SimpleSensorBuffer.hpp"
+#include "SimpleBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 
 
@@ -294,7 +294,7 @@ class RobotController: public UpdateThread {
         TransportSharedPtr telemetryTransport;
 
         std::shared_ptr<TelemetryBuffer>  buffers;
-        std::shared_ptr<SimpleSensorBuffer>  simplesensorbuffer;
+        std::shared_ptr<SimpleBuffer <SimpleSensor> >  simplesensorbuffer;
         // void initBuffers(const unsigned int &defaultSize);
 
 

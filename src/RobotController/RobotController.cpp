@@ -10,7 +10,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     telemetryTransport(telemetryTransport),
     buffers(std::make_shared<TelemetryBuffer>()) {
 
-    simplesensorbuffer = std::shared_ptr<SimpleSensorBuffer>(new SimpleSensorBuffer());
+    simplesensorbuffer = std::shared_ptr<SimpleBuffer<SimpleSensor> >(new SimpleBuffer<SimpleSensor>());
 
     registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
     registerTelemetryType<JointState>(JOINT_STATE, buffersize);
