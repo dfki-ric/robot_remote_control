@@ -144,7 +144,7 @@ message SimpleSensors{
 }
 
 message Map {
-    repeated google.protobuf.Any map = 3;
+    google.protobuf.Any map = 3;
 }
 
 message MapsDefinition {
