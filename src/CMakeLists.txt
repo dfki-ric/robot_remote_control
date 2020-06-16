@@ -20,7 +20,7 @@ install(FILES
 	MessageTypes.hpp
 	RingBuffer.hpp
 	TelemetryBuffer.hpp
-	SimpleSensorBuffer.hpp
+	SimpleBuffer.hpp
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 )
 

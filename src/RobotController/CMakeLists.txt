@@ -1,5 +1,5 @@
 add_library(robot_remote_control-robot_controller
-            RobotController.cpp ../TelemetryBuffer.cpp ../SimpleSensorBuffer.cpp
+            RobotController.cpp ../TelemetryBuffer.cpp
 )
 target_link_libraries (robot_remote_control-robot_controller robot_remote_control-types robot_remote_control-update_thread)
 target_include_directories(robot_remote_control-robot_controller

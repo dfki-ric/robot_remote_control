@@ -7,7 +7,7 @@
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
-#include "SimpleSensorBuffer.hpp"
+#include "SimpleBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 
 
@@ -232,6 +232,14 @@ class RobotController: public UpdateThread {
             requestTelemetry(CURRENT_POSE, pose);
         }
 
+        void requestMap(Map *map, const uint32_t &mapId){
+            requestTelemetry(mapId, map, MAP_REQUEST);
+        }
+
+        void requestMap(std::string *map, const uint32_t &mapId){
+            requestBinary(mapId, map, MAP_REQUEST);
+        }
+
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type
          * 
@@ -262,25 +270,26 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result) {
+        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+            std::string replybuf;
+            requestBinary(type, &replybuf, requestType);
+            result->ParseFromString(replybuf);
+
+        }
+
+        void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string buf;
             buf.resize(sizeof(uint16_t)*2);
-            uint16_t uint_type;
+
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
-
-            uint_type = TELEMETRY_REQUEST;
-            *data = uint_type;
-
+            *data = requestType;
             data++;
 
             // add the requested type int
-            uint_type = type;
+            uint16_t uint_type = type;
             *data = uint_type;
 
-            std::string replybuf = sendRequest(buf);
-            result->ParseFromString(replybuf);
-
-
+            *result = sendRequest(buf);
         }
 
 
@@ -294,7 +303,7 @@ class RobotController: public UpdateThread {
         TransportSharedPtr telemetryTransport;
 
         std::shared_ptr<TelemetryBuffer>  buffers;
-        std::shared_ptr<SimpleSensorBuffer>  simplesensorbuffer;
+        std::shared_ptr<SimpleBuffer <SimpleSensor> >  simplesensorbuffer;
         // void initBuffers(const unsigned int &defaultSize);
 
 
