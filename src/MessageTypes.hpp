@@ -17,6 +17,7 @@ namespace robot_remote_control {
                             GOTO_COMMAND,
                             TELEMETRY_REQUEST,
                             LOG_LEVEL_SELECT,
+                            MAP_REQUEST,
                             CONTROL_MESSAGE_TYPE_NUMBER
                             };
 
@@ -33,8 +34,17 @@ namespace robot_remote_control {
                                 SIMPLE_SENSOR_DEFINITION,   // definition of available simple sensors
                                 SIMPLE_SENSOR_VALUE,        // actual simple sensor values
                                 WRENCH_STATE,               // current Wrench values
+                                MAPS_DEFINITION,
+                                MAP,
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
+
+    enum MapMessageType{  
+        NO_MAP_DATA = 0,
+        POINTCLOUD_MAP,
+        MAP_MESSAGE_TYPES_NUMBER
+    };
+
 
     /**
      * @brief 
