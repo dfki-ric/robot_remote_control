@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
 
     float x = 0;
 
+    robot_remote_control::WrenchState wstate;
+
     while (true) {
         controller.setTargetPose(pose);
         // controller.setTwistCommand(twistcommand);
@@ -68,6 +70,11 @@ int main(int argc, char** argv) {
 
         robot_remote_control::SimpleSensor sens;
         controller.getSimpleSensor(1, &sens);
+
+
+        if (controller.getCurrentWrenchState(&wstate)){
+            wstate.PrintDebugString();
+        }
 
 
         usleep(10000);
