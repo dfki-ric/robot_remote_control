@@ -261,7 +261,7 @@ class ControlledRobot: public UpdateThread{
         }
 
         int setMap(const Map & map, const uint32_t &mapId) {
-            setMap(map.SerializeAsString(),mapId);
+            return setMap(map.SerializeAsString(),mapId);
         }
 
         /**
