@@ -110,17 +110,26 @@ class RingBufferAccess{
     public:
         template<class DATATYPE> static bool pushData(std::shared_ptr<RingBufferBase> buffer, const DATATYPE & data, bool overwrite = false) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
-            return dataclass->pushData(data, overwrite);
+            if (dataclass.get()) {
+                return dataclass->pushData(data, overwrite);
+            }
+            return false;
         }
 
         template<class DATATYPE> static bool popData(std::shared_ptr<RingBufferBase> buffer, DATATYPE *data) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
-            return dataclass->popData(data);
+            if (dataclass.get()) {
+                return dataclass->popData(data);
+            }
+            return false;
         }
 
         template<class DATATYPE> static bool peekData(const std::shared_ptr<RingBufferBase> &buffer, DATATYPE *data){
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
-            return dataclass->peekData(data);
+            if (dataclass.get()) {
+                return dataclass->peekData(data);
+            }
+            return false;
         }
 };
 

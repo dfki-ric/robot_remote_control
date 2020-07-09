@@ -4,6 +4,7 @@
 #include "Transports/Transport.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "TelemetryBuffer.hpp"
+#include "SimpleBuffer.hpp"
 #include <map>
 #include <string>
 #include <memory>
@@ -161,6 +162,17 @@ class ControlledRobot: public UpdateThread{
         }
 
         /**
+         * @brief The robot uses this method to provide information about its maps
+         * The name is only mandatory here, requestMaps() may omit this value and identify by id
+         * 
+         * @param telemetry a list of simple sensors and their names/ids, other firelds not nessecary
+         * @return int  number of bytes sent
+         */
+        int initMapsDefinition(const MapsDefinition &telemetry) {
+            return sendTelemetry(telemetry, MAPS_DEFINITION, true);
+        }
+
+        /**
          * @brief The robot uses this method to provide information about its name
          *
          * @param robotName the name of the robot as a RobotName
@@ -248,6 +260,27 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE);
         }
 
+        int setMap(const Map & map, const uint32_t &mapId) {
+            return setMap(map.SerializeAsString(),mapId);
+        }
+
+        /**
+         * @brief Set the Binary Map object
+         * This one is not limeted to protobuf types
+         * 
+         * @param map 
+         * @param mapId 
+         * @return int 
+         */
+        int setMap(const std::string & map, const uint32_t &mapId) {
+            mapBuffer.initBufferID(mapId);
+            mapBuffer.lock();
+            RingBufferAccess::pushData(mapBuffer.get_ref()[mapId], map, true);
+            mapBuffer.unlock();
+            //return sendTelemetry(map, MAP, true);
+            return true;
+
+        }
 
     protected:
         virtual ControlMessageType receiveRequest();
@@ -313,12 +346,13 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<ComplexAction> complexActionCommandBuffer;
         CommandBuffer<JointState> jointsCommand;
 
+
+        SimpleBuffer<std::string> mapBuffer;
+
         std::map<uint32_t, CommandBufferBase*> commandbuffers;
         void registerCommandType(const uint32_t & ID, CommandBufferBase *bufptr) {
             commandbuffers[ID] = bufptr;
         }
-
-
 
         void addControlMessageType(std::string *buf, const ControlMessageType& type);
         void addTelemetryMessageType(std::string *buf, const TelemetryMessageType& type);
