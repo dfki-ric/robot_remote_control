@@ -88,17 +88,18 @@ install setup properly.
 
 | directory         |       purpose                                                        |
 | ----------------- | ------------------------------------------------------               |
-| src/              | Contains all header (*.hpp) and source (*.cpp) files                     |
+| src/              | Contains all header (*.hpp) and source (*.cpp) files                 |
+| examples/         | Contains Example Implenetation                                       |
 | build/ *          | The target directory for the build process, temporary content        |
-| test/             | contains the boost_test based unit tests                       |
+| test/             | contains the boost_test based unit tests                             |
 
 
 ## Gettings started
 
 Please have a look into the provided Main examples
 
-* src/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
-* src/RobotControllerMain.cpp (controller that sets the desired robot position)
+* examples/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
+* examples/RobotControllerMain.cpp (controller that sets the desired robot position)
 
 You can build the Doxygen documentation using `$> doxygen Doxyfile`, it will be written to the build/doc folder.
 

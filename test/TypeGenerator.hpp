@@ -51,7 +51,7 @@ class TypeGenerator{
         GoTo data;
         data.set_max_forward_speed(std::rand());
         data.set_waypoint_max_forward_speed(std::rand());
-        *data.mutable_waypoint_point() = genVector3();
+        *data.mutable_waypoint_pose() = genPose();
         return data;
     }
 

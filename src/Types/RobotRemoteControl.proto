@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/any.proto";
+
 package robot_remote_control;
 
 message TimeStamp {
@@ -61,7 +63,7 @@ message JointState {
 
 message GoTo {
     double max_forward_speed = 1;
-    Vector3 waypoint_point = 2;
+    Pose waypoint_pose = 2; 
     double waypoint_max_forward_speed = 3;
 }
 
@@ -141,6 +143,15 @@ message SimpleSensors{
     repeated SimpleSensor sensors = 1;
 }
 
+message Map {
+    google.protobuf.Any map = 3;
+}
+
+message MapsDefinition {
+    repeated string name = 1;
+    repeated uint32 id = 2;
+}
+
 
 message ChannelFloat {
     string name = 1;
@@ -154,6 +165,11 @@ message PointCloud {
     repeated Position points = 4;
     repeated ChannelFloat channels = 5;
 }
+
+message PointCloud2 {
+
+}
+
 
 message Wrench {
     Vector3 force = 1;
