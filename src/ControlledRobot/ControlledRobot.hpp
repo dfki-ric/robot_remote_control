@@ -230,6 +230,16 @@ class ControlledRobot: public UpdateThread{
         }
 
         /**
+         * @brief Set repeated field of poses
+         * 
+         * @param telemetry several pose
+         * @return int number of bytes sent
+         */
+        int setPoses(const Poses& telemetry) {
+            return sendTelemetry(telemetry, POSES);
+        }
+
+        /**
          * @brief Set the current JointState of the robot
          * 
          * @param telemetry current JointState

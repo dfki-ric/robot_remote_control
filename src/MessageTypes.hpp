@@ -36,6 +36,7 @@ namespace robot_remote_control {
                                 WRENCH_STATE,               // current Wrench values
                                 MAPS_DEFINITION,
                                 MAP,
+				POSES,                      // number of poses
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

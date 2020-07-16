@@ -31,6 +31,14 @@ class TypeGenerator{
         return data;
     }
 
+    static Poses genPoses() {
+        Poses data;
+        for (int values = 0; values < 10; ++values) {
+            *data.add_pose() = genPose();
+        }
+        return data;
+    }
+
     static Vector3 genVector3() {
         Vector3 data;
         data.set_x(std::rand());
