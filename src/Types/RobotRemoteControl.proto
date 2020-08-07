@@ -138,9 +138,14 @@ message VideoStreams{
 message SimpleSensor{
     string name = 1;
     uint32 id = 2;
-    Vector2 size = 3;
+    //size in x and y in order to send e.g. gridmaps, indexing: val = value[x+y*sizex]
+    //if this is a single value, you omit this completely
+    Vector2 size = 3; 
     repeated float value = 4;
     TimeStamp timestamp = 5;
+    //scale for discretized arrays of values of each data point in x and y in SI units (meters, seconds etc.)
+    //omit if no scale is needed
+    Vector2 scale = 6;
 }
 
 message SimpleSensors{
