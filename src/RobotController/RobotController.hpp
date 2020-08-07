@@ -3,12 +3,14 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
 #include "SimpleBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
+#include "UpdateThread/Timer.hpp"
 
 
 namespace robot_remote_control {
@@ -24,6 +26,16 @@ class RobotController: public UpdateThread {
          * @brief in case there is a telemetry connection, receive all and fill the data fields
          */
         virtual void update();
+
+        /**
+         * @brief sets the expected next heartbeat time on the robot side
+         * The value is trasmitted with the heartbeat message and is evaluated on the robot side, (stable) latency
+         * it not an issue
+         */
+        void setHeartBeatDuration(const float &duration_seconds) {
+            heartBeatDuration = duration_seconds;
+            heartBeatTimer.start(heartBeatDuration);
+        }
 
         /**
          * @brief Set the Target Pose of the ControlledRobot
@@ -301,6 +313,10 @@ class RobotController: public UpdateThread {
 
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
+
+        float heartBeatDuration;
+        Timer heartBeatTimer;
+        std::mutex commandTransportMutex;
 
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::shared_ptr<SimpleBuffer <SimpleSensor> >  simplesensorbuffer;

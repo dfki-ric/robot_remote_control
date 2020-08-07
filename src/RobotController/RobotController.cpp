@@ -8,6 +8,7 @@ using namespace robot_remote_control;
 RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t buffersize):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
+    heartBeatDuration(0),
     buffers(std::make_shared<TelemetryBuffer>()) {
 
     simplesensorbuffer = std::shared_ptr<SimpleBuffer<SimpleSensor> >(new SimpleBuffer<SimpleSensor>());
@@ -80,10 +81,23 @@ void RobotController::update() {
     } else {
         printf("ERROR no telemetry Transport set\n");
     }
+
+    if (heartBeatDuration != 0 && heartBeatTimer.isExpired()) {
+        //TODO: check if send needed?
+        if (commandTransport.get()) {
+            HeartBeat hb;
+            hb.set_heartbeatduration(heartBeatDuration);
+            std::string rep = sendProtobufData(hb, HEARTBEAT);
+            //TODO check here? calc latency?
+        }
+        heartBeatTimer.start(heartBeatDuration);
+    }
+
 }
 
 
 std::string RobotController::sendRequest(const std::string& serializedMessage) {
+    std::lock_guard<std::mutex> lock(commandTransportMutex);
     commandTransport->send(serializedMessage);
     std::string replystr;
 
@@ -141,5 +155,4 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     simplesensorbuffer->lock();
     RingBufferAccess::pushData(simplesensorbuffer->get_ref()[data.id()], data, true);
     simplesensorbuffer->unlock();
-
 }

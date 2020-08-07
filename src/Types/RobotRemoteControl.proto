@@ -4,6 +4,10 @@ import "google/protobuf/any.proto";
 
 package robot_remote_control;
 
+message HeartBeat {
+    float heartBeatDuration = 1;
+}
+
 message TimeStamp {
     int32 secs = 1;
     int32 nsecs = 2;

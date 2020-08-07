@@ -8,6 +8,7 @@ namespace robot_remote_control {
 ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
+    heartbeatAllowedLatency(0.1),
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1) {
     registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
@@ -16,6 +17,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerCommandType(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
     registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
     registerCommandType(JOINTS_COMMAND, &jointsCommand);
+    registerCommandType(HEARTBEAT, &heartbeatCommand);
 
     registerTelemetryType<Pose>(CURRENT_POSE);
     registerTelemetryType<JointState>(JOINT_STATE);
@@ -36,6 +38,17 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
 
 void ControlledRobot::update() {
     while (receiveRequest() != NO_CONTROL_DATA) {}
+
+    if (heartbeatCommand.read(&heartbeatValues)) {
+        // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
+        heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);
+    }
+    if (heartbeatTimer.isExpired()) {
+        float elapsedTime = heartbeatTimer.getElapsedTime();
+        if (heartbeatExpiredCallback != nullptr) {
+            heartbeatExpiredCallback(elapsedTime);
+        }
+    }
 }
 
 ControlMessageType ControlledRobot::receiveRequest() {

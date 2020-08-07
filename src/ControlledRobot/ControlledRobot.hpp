@@ -3,6 +3,7 @@
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "UpdateThread/UpdateThread.hpp"
+#include "UpdateThread/Timer.hpp"
 #include "TelemetryBuffer.hpp"
 #include "SimpleBuffer.hpp"
 #include <map>
@@ -22,6 +23,11 @@ class ControlledRobot: public UpdateThread{
          */
         virtual void update();
 
+
+        void setupHeartbeatCallback(const float &alllowedLatency, const std::function<void(const float&)> &callback) {
+            heartbeatAllowedLatency = alllowedLatency;
+            heartbeatExpiredCallback = callback;
+        }
 
         // Command getters
 
@@ -345,6 +351,12 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<SimpleAction> simpleActionsCommand;
         CommandBuffer<ComplexAction> complexActionCommandBuffer;
         CommandBuffer<JointState> jointsCommand;
+        CommandBuffer<HeartBeat> heartbeatCommand;
+        HeartBeat heartbeatValues;
+        Timer heartbeatTimer;
+        float heartbeatAllowedLatency;
+        std::function<void(const float&)> heartbeatExpiredCallback;
+
 
 
         SimpleBuffer<std::string> mapBuffer;
