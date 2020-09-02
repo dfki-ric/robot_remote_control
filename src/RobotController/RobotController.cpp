@@ -1,16 +1,20 @@
 #include "RobotController.hpp"
 #include <iostream>
 #include <memory>
+#include <unistd.h>
 
 using namespace robot_remote_control;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, size_t buffersize):UpdateThread(),
+RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, const size_t &buffersize, const float &maxLatency):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
+    heartBeatDuration(0),
+    heartBreatRoundTripTime(0),
+    maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()) {
 
-    simplesensorbuffer = std::shared_ptr<SimpleBuffer<SimpleSensor> >(new SimpleBuffer<SimpleSensor>());
+    simplesensorbuffer = std::make_shared< SimpleBuffer<SimpleSensor> >();
 
     registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
     registerTelemetryType<JointState>(JOINT_STATE, buffersize);
@@ -23,8 +27,13 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
     registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
     // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-    //registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
+    // registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
     registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
+
+
+    lostConnectionCallback = [&](const float& time){
+        printf("lost connection to robot, no reply for %f seconds\n", time);
+    };
 }
 
 RobotController::~RobotController() {
@@ -80,18 +89,42 @@ void RobotController::update() {
     } else {
         printf("ERROR no telemetry Transport set\n");
     }
+
+    if (heartBeatDuration != 0 && heartBeatTimer.isExpired()) {
+        //TODO: check if send needed?
+        if (commandTransport.get()) {
+            HeartBeat hb;
+            hb.set_heartbeatduration(heartBeatDuration);
+            latencyTimer.start();
+            std::string rep = sendProtobufData(hb, HEARTBEAT);
+            float time = latencyTimer.getElapsedTime();
+            heartBreatRoundTripTime.set(time);
+        }
+        heartBeatTimer.start(heartBeatDuration);
+    }
 }
 
 
-std::string RobotController::sendRequest(const std::string& serializedMessage) {
-    commandTransport->send(serializedMessage);
+std::string RobotController::sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags) {
+    std::lock_guard<std::mutex> lock(commandTransportMutex);
+    try {
+        commandTransport->send(serializedMessage, flags);
+    }catch (const std::exception &error) {
+        lostConnectionCallback(maxLatency);
+        return "";
+    }
     std::string replystr;
 
-    // blocking receive
-    while (commandTransport->receive(&replystr) == 0) {
+    requestTimer.start(maxLatency);
+    while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
         // wait time depends on how long the transports recv blocks
+        usleep(1000);
     }
-
+    if (requestTimer.isExpired()) {
+        lostConnectionCallback(lastConnectedTimer.getElapsedTime());
+        return "";
+    }
+    lastConnectedTimer.start();
     return replystr;
 }
 
@@ -141,5 +174,4 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     simplesensorbuffer->lock();
     RingBufferAccess::pushData(simplesensorbuffer->get_ref()[data.id()], data, true);
     simplesensorbuffer->unlock();
-
 }

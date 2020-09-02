@@ -3,12 +3,14 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
 #include "SimpleBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
+#include "UpdateThread/Timer.hpp"
 
 
 namespace robot_remote_control {
@@ -17,13 +19,46 @@ class RobotController: public UpdateThread {
     public:
         explicit RobotController(TransportSharedPtr commandTransport,
                                 TransportSharedPtr telemetryTransport = TransportSharedPtr(),
-                                size_t buffersize = 10);
+                                const size_t &buffersize = 10,
+                                const float &maxLatency = 1);
         virtual ~RobotController();
 
         /**
          * @brief in case there is a telemetry connection, receive all and fill the data fields
          */
         virtual void update();
+
+        /**
+         * @brief sets the expected next heartbeat time on the robot side
+         * The value is trasmitted with the heartbeat message and is evaluated on the robot side, (stable) latency
+         * it not an issue
+         */
+        void setHeartBeatDuration(const float &duration_seconds) {
+            heartBeatDuration = duration_seconds;
+            heartBeatTimer.start(heartBeatDuration);
+        }
+
+        void setMaxLatency(const float &value) {
+            maxLatency = value;
+        }
+
+        /**
+         * @brief can be used to override the default printout when the connection timed out
+         * 
+         * @param callback 
+         */
+        void setupLostConnectionCallback(const std::function<void(const float&)> &callback) {
+            lostConnectionCallback = callback;
+        }
+
+        /**
+         * @brief Get the Heart Breat Round Trip Time
+         * 
+         * @return float time in seconds needed to send/receive the last heartbeat (if used)
+         */
+        float getHeartBreatRoundTripTime() {
+            return heartBreatRoundTripTime.get();
+        }
 
         /**
          * @brief Set the Target Pose of the ControlledRobot
@@ -305,26 +340,36 @@ class RobotController: public UpdateThread {
 
     protected:
 
-        virtual std::string sendRequest(const std::string& serializedMessage);
+        virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
 
+        float heartBeatDuration;
+        Timer heartBeatTimer;
+        ThreadProtectedVar<float> heartBreatRoundTripTime;
+        Timer latencyTimer;
+        Timer requestTimer;
+        Timer lastConnectedTimer;
+        std::mutex commandTransportMutex;
+        float maxLatency;
+
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::shared_ptr<SimpleBuffer <SimpleSensor> >  simplesensorbuffer;
         // void initBuffers(const unsigned int &defaultSize);
 
+        std::function<void(const float&)> lostConnectionCallback;
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type ) {
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
             buf.resize(sizeof(uint16_t));
             uint16_t uint_type = type;
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
             *data = uint_type;
             protodata.AppendToString(&buf);
-            return sendRequest(buf);
+            return sendRequest(buf, flags);
         }
 
 

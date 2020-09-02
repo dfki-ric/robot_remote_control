@@ -18,6 +18,7 @@ namespace robot_remote_control {
                             TELEMETRY_REQUEST,
                             LOG_LEVEL_SELECT,
                             MAP_REQUEST,
+                            HEARTBEAT,
                             CONTROL_MESSAGE_TYPE_NUMBER
                             };
 

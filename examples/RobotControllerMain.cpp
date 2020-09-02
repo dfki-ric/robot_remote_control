@@ -44,6 +44,9 @@ int main(int argc, char** argv) {
 
     robot_remote_control::WrenchState wstate;
 
+    //set Heartbeat to one second
+    controller.setHeartBeatDuration(1);
+
     while (true) {
         controller.setTargetPose(pose);
         // controller.setTwistCommand(twistcommand);
@@ -72,9 +75,11 @@ int main(int argc, char** argv) {
         controller.getSimpleSensor(1, &sens);
 
 
-        if (controller.getCurrentWrenchState(&wstate)){
+        if (controller.getCurrentWrenchState(&wstate)) {
             wstate.PrintDebugString();
         }
+
+        printf("latency %f seconds\n", controller.getHeartBreatRoundTripTime()/2.0);
 
 
         usleep(10000);
