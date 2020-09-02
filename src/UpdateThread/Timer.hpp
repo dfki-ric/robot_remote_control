@@ -8,7 +8,7 @@ class Timer {
     explicit Timer();
     virtual ~Timer();
 
-    void start(const float &interval_seconds);
+    void start(const float &interval_seconds = 0);
 
     float getElapsedTime();
 
