@@ -330,7 +330,7 @@ class RobotController: public UpdateThread {
 
     protected:
 
-        virtual std::string sendRequest(const std::string& serializedMessage);
+        virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
@@ -352,14 +352,14 @@ class RobotController: public UpdateThread {
 
         std::function<void(const float&)> lostConnectionCallback;
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type ) {
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
             buf.resize(sizeof(uint16_t));
             uint16_t uint_type = type;
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
             *data = uint_type;
             protodata.AppendToString(&buf);
-            return sendRequest(buf);
+            return sendRequest(buf, flags);
         }
 
 

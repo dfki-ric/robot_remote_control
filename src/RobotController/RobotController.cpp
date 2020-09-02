@@ -31,7 +31,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
 
 
-    lostConnectionCallback = [](const float& time){
+    lostConnectionCallback = [&](const float& time){
         printf("lost connection to robot, no reply for %f seconds\n", time);
     };
 }
@@ -105,11 +105,10 @@ void RobotController::update() {
 }
 
 
-std::string RobotController::sendRequest(const std::string& serializedMessage) {
+std::string RobotController::sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags) {
     std::lock_guard<std::mutex> lock(commandTransportMutex);
     try {
-        // commandTransport->send(serializedMessage, robot_remote_control::Transport::NOBLOCK);
-        commandTransport->send(serializedMessage);
+        commandTransport->send(serializedMessage, flags);
     }catch (const std::exception &error) {
         lostConnectionCallback(maxLatency);
         return "";
@@ -117,14 +116,15 @@ std::string RobotController::sendRequest(const std::string& serializedMessage) {
     std::string replystr;
 
     requestTimer.start(maxLatency);
-    while (commandTransport->receive(&replystr, robot_remote_control::Transport::NOBLOCK) == 0 && !requestTimer.isExpired()) {
+    while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
         // wait time depends on how long the transports recv blocks
-        // printf("still no reply\n");
         usleep(1000);
     }
     if (requestTimer.isExpired()) {
-        lostConnectionCallback(maxLatency);
+        lostConnectionCallback(lastConnectedTimer.getElapsedTime());
+        return "";
     }
+    lastConnectedTimer.start();
     return replystr;
 }
 
