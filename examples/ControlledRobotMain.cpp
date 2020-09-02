@@ -16,13 +16,13 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
-    robot.startUpdateThread(100);
+    robot.startUpdateThread(10);
 
     // set a callback for connection losses, allow 100ms of later arrival
     // (due to differences in latency between heartbetn commands)
     // the elapsed time may be used to have different stages of escalation
     robot.setupHeartbeatCallback(0.1, [](const float &elapsed){
-        printf("no heartbeat sinse %.2f seconds\n", elapsed);
+        printf("no heartbeat since %.2f seconds\n", elapsed);
     });
 
     robot_remote_control::RobotName name;

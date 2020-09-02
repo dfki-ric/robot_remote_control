@@ -19,7 +19,8 @@ class RobotController: public UpdateThread {
     public:
         explicit RobotController(TransportSharedPtr commandTransport,
                                 TransportSharedPtr telemetryTransport = TransportSharedPtr(),
-                                size_t buffersize = 10);
+                                const size_t &buffersize = 10,
+                                const float &maxLatency = 1);
         virtual ~RobotController();
 
         /**
@@ -35,6 +36,28 @@ class RobotController: public UpdateThread {
         void setHeartBeatDuration(const float &duration_seconds) {
             heartBeatDuration = duration_seconds;
             heartBeatTimer.start(heartBeatDuration);
+        }
+
+        void setMaxLatency(const float &value) {
+            maxLatency = value;
+        }
+
+        /**
+         * @brief can be used to override the default printout when the connection timed out
+         * 
+         * @param callback 
+         */
+        void setupLostConnectionCallback(const std::function<void(const float&)> &callback) {
+            lostConnectionCallback = callback;
+        }
+
+        /**
+         * @brief Get the Heart Breat Round Trip Time
+         * 
+         * @return float time in seconds needed to send/receive the last heartbeat (if used)
+         */
+        float getHeartBreatRoundTripTime() {
+            return heartBreatRoundTripTime.get();
         }
 
         /**
@@ -316,12 +339,18 @@ class RobotController: public UpdateThread {
 
         float heartBeatDuration;
         Timer heartBeatTimer;
+        ThreadProtectedVar<float> heartBreatRoundTripTime;
+        Timer latencyTimer;
+        Timer requestTimer;
+        Timer lastConnectedTimer;
         std::mutex commandTransportMutex;
+        float maxLatency;
 
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::shared_ptr<SimpleBuffer <SimpleSensor> >  simplesensorbuffer;
         // void initBuffers(const unsigned int &defaultSize);
 
+        std::function<void(const float&)> lostConnectionCallback;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type ) {
             std::string buf;
