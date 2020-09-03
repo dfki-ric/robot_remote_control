@@ -199,6 +199,16 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Get the current transforms
+         *
+         * @param Transforms object to write the transforms to
+         * @return bool true if new data was read
+         */
+        bool getCurrentTransforms(Transforms *transforms) {
+            return getTelemetry(TRANSFORMS, transforms);
+        }
+
+        /**
          * @brief request the curretn state instead of waiting for the first telemetry message
          * 
          * @param state the string to write the state to

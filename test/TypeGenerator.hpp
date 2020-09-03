@@ -47,7 +47,6 @@ class TypeGenerator{
         return data;
     }
 
-
     static Twist genTwist() {
         Twist data;
         *data.mutable_angular() = genVector3();
@@ -158,6 +157,13 @@ class TypeGenerator{
         return data;
     }
 
+    static Transform genTransform() {
+        Transform data;
+        *data.mutable_transform() = genPose();
+        data.set_from(std::to_string(std::rand()));
+        data.set_to(std::to_string(std::rand()));
+        return data;
+    }
 
 };
 

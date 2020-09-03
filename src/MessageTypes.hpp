@@ -38,6 +38,7 @@ namespace robot_remote_control {
                                 MAPS_DEFINITION,
                                 MAP,
 				POSES,                      // number of poses
+                                TRANSFORMS,                 // number of transforms
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 
