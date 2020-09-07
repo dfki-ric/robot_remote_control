@@ -44,15 +44,15 @@ Optionally you can add the flags -DBUILD_EXAMPLES=ON and -DBUILD_TESTS=ON to bui
 
 #### Building on systems without protobuf3
 
-You need to install protobuf3 from source you need additional dependencies:
+In order to install protobuf3 from source you need additional dependencies:
 
     apt-get install autoconf automake libtool curl make g++ unzip lsb-release
 
-You can use the compile_protobuf_from_source.bash script, which will automatically detect ubuntu 16.04, if you have another OS, edit the script accordingly so that it executes:
+You can use the compile_protobuf_from_source.bash script to build protobuf from source. Optionally you can path the install destination as follows:
 
-    build_protobuf "$ABS_PREFIX"
+    build_protobuf "$INSTALL_PATH"
 
-This will install protobuf 3 in the selected install folder (parameter of the install_source_dependencies.sh script)
+This will install protobuf 3 in the specified INSTALL_PATH (default is /usr/local)
 
 
 ### Directory Structure
@@ -74,8 +74,8 @@ processes and simplify reuse of this project.
 
 Please have a look into the provided Main examples
 
-* src/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
-* src/RobotControllerMain.cpp (controller that sets the desired robot position)
+* examples/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
+* examples/RobotControllerMain.cpp (controller that sets the desired robot position)
 
 You can build the Doxygen documentation using `$> doxygen Doxyfile`, it will be written to the build/doc folder.
 
