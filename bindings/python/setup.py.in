@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+
+# https://dmtn-013.lsst.io/
+import sys
+import shutil
+import os
+from distutils.core import setup, Extension
+from distutils.sysconfig import get_config_vars
+from Cython.Build import cythonize
+
+compile_args = ['-g', '-std=c++11']
+file_dir = os.path.dirname(os.path.abspath(__file__))
+include_dir = os.path.join("${CMAKE_SOURCE_DIR}","src/Transports")
+build_dir = "${CMAKE_BINARY_DIR}"
+library_dir = os.path.join(build_dir,"src/Transports")
+
+ext_files = ["_transport_zmq.pxd",
+        "transport_zmq.pyx",
+        "setup.py"
+        ]
+
+def strict_prototypes_workaround():
+    # Workaround to remove '-Wstrict-prototypes' from compiler invocation
+    opt = get_config_vars('OPT')[0]
+    os.environ['OPT'] = " ".join(flag for flag in opt.split()
+                                 if flag != '-Wstrict-prototypes')
+
+
+# https://bloerg.net/2012/11/10/cmake-and-distutils.html
+if __name__ == '__main__':
+    strict_prototypes_workaround()
+
+    extensions = Extension(
+                    'transport_zmq',
+                    [ 'transport_zmq.pyx' ],
+                    include_dirs=[include_dir],
+                    libraries=["robot_remote_control-transport_zmq"],
+                    library_dirs=[library_dir],
+                    extra_compile_args=compile_args,
+                    language='c++'
+                    )
+
+    setup(name="transport_zmq",
+          version="0.1",
+          ext_modules=cythonize(extensions))

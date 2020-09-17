@@ -11,6 +11,8 @@
 
   <depend package="protobuf" />
   <depend package="zmq" />
+  <depend package="python3" optional="1"/>
+  <depend package="cython3" optional="1"/>
   <keywords>
     <keyword>communication</keyword>
     <keyword>control</keyword>

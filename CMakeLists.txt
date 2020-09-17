@@ -22,3 +22,5 @@ if( BUILD_TESTS )
     add_subdirectory(test)
 endif( BUILD_TESTS )
 
+
+#add_subdirectory(bindings/python)
