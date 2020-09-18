@@ -9,4 +9,7 @@ cdef extern from "TransportZmq.hpp" namespace "robot_remote_control":
             PUB = 2,
             SUB = 3
         TransportZmq(string addr, ConnectionType type)
-        send(string msg)
+
+        int send(string msg)
+
+        int receive(string* msg)

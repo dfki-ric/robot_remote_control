@@ -16,7 +16,8 @@ library_dir = os.path.join(build_dir,"src/Transports")
 
 ext_files = ["_transport_zmq.pxd",
         "transport_zmq.pyx",
-        "setup.py"
+        "setup.py",
+        "RobotRemoteControl_pb2.py"
         ]
 
 def strict_prototypes_workaround():

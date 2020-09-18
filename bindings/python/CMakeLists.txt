@@ -1,6 +1,7 @@
 
 # https://github.com/rock-core/tools-graph_analysis/blob/master/bindings/python/CMakeLists.txt
 
+find_package(Protobuf REQUIRED)
 
 if(PYTHON_EXECUTABLE)
     message(STATUS "Defined python executable is: ${PYTHON_EXECUTABLE}")
@@ -27,6 +28,16 @@ set(EXT_FILES
         transport_zmq.pyx
 )
 
+message("building python types")
+message(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_custom_command( OUTPUT RobotRemoteControl_pb2.py
+                    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/src/Types/
+                    COMMAND protoc --python_out=${CMAKE_CURRENT_SOURCE_DIR} RobotRemoteControl.proto
+                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/RobotRemoteControl_pb2.py ${CMAKE_CURRENT_BINARY_DIR}/RobotRemoteControl_pb2.py
+                    MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/Types/RobotRemoteControl.proto
+                    )
+
 if(CYTHON)
     message(STATUS "Using python: ${Python_EXECUTABLE}")
     message(STATUS "Using cython: ${CYTHON}")
@@ -51,7 +62,7 @@ if(CYTHON)
         set(SETUP_PY "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
         message(STATUS "Building python extension with setup.py: ${SETUP_PY}")
 
-        add_custom_target(transport_zmq_py ALL DEPENDS robot_remote_control-transport_zmq transport_zmq_py-prepare
+        add_custom_target(transport_zmq_py ALL DEPENDS robot_remote_control-transport_zmq transport_zmq_py-prepare RobotRemoteControl_pb2.py
             COMMAND echo "Building extensions"
             COMMAND ${Python_EXECUTABLE} ${SETUP_PY} build
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
