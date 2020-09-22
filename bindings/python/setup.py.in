@@ -10,12 +10,11 @@ from Cython.Build import cythonize
 
 compile_args = ['-g', '-std=c++11']
 file_dir = os.path.dirname(os.path.abspath(__file__))
-include_dir = os.path.join("${CMAKE_SOURCE_DIR}","src/Transports")
+include_dir = os.path.join("${CMAKE_SOURCE_DIR}","src")
 build_dir = "${CMAKE_BINARY_DIR}"
-library_dir = os.path.join(build_dir,"src/Transports")
 
-ext_files = ["_transport_zmq.pxd",
-        "transport_zmq.pyx",
+ext_files = ["_robot_remote_control.pxd",
+        "robot_remote_control.pyx",
         "setup.py",
         "RobotRemoteControl_pb2.py"
         ]
@@ -32,15 +31,15 @@ if __name__ == '__main__':
     strict_prototypes_workaround()
 
     extensions = Extension(
-                    'transport_zmq',
-                    [ 'transport_zmq.pyx' ],
+                    'robot_remote_control',
+                    [ 'robot_remote_control.pyx' ],
                     include_dirs=[include_dir],
-                    libraries=["robot_remote_control-transport_zmq"],
-                    library_dirs=[library_dir],
+                    libraries=["robot_remote_control-robot_controller", "robot_remote_control-transport_zmq"],
+                    library_dirs=[os.path.join(build_dir,"src/RobotController"), os.path.join(build_dir,"src/Transports")],
                     extra_compile_args=compile_args,
                     language='c++'
                     )
 
-    setup(name="transport_zmq",
+    setup(name="robot_remote_control",
           version="0.1",
           ext_modules=cythonize(extensions))

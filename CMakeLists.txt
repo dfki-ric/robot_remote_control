@@ -23,4 +23,4 @@ if( BUILD_TESTS )
 endif( BUILD_TESTS )
 
 
-#add_subdirectory(bindings/python)
+add_subdirectory(bindings/python)

@@ -24,8 +24,8 @@ else()
 endif()
 
 set(EXT_FILES
-        _transport_zmq.pxd
-        transport_zmq.pyx
+        _robot_remote_control.pxd
+        robot_remote_control.pyx
 )
 
 message("building python types")
@@ -46,9 +46,9 @@ if(CYTHON)
     "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in"
     "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
 
-    add_custom_target(transport_zmq_py-prepare)
+    add_custom_target(robot_remote_control_py-prepare)
     foreach(file ${EXT_FILES})
-        add_custom_command(TARGET transport_zmq_py-prepare PRE_BUILD
+        add_custom_command(TARGET robot_remote_control_py-prepare PRE_BUILD
             # Preserve the timestamp with -p so that setup.py only rebuilds
             # when files have changed
             COMMAND cp -p ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${CMAKE_CURRENT_BINARY_DIR}
@@ -62,7 +62,7 @@ if(CYTHON)
         set(SETUP_PY "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
         message(STATUS "Building python extension with setup.py: ${SETUP_PY}")
 
-        add_custom_target(transport_zmq_py ALL DEPENDS robot_remote_control-transport_zmq transport_zmq_py-prepare RobotRemoteControl_pb2.py
+        add_custom_target(robot_remote_control_py ALL DEPENDS robot_remote_control-transport_zmq robot_remote_control_py-prepare RobotRemoteControl_pb2.py
             COMMAND echo "Building extensions"
             COMMAND ${Python_EXECUTABLE} ${SETUP_PY} build
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
