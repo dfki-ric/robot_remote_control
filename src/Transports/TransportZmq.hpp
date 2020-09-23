@@ -22,7 +22,7 @@ namespace robot_remote_control
         enum ConnectionType {REQ,REP,PUB,SUB};
 
         TransportZmq(const std::string &addr, const ConnectionType &type);
-        virtual ~TransportZmq(){};
+        virtual ~TransportZmq(){printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);};
 
         static std::shared_ptr<zmq::context_t> getContextInstance(unsigned int threads = 1);
 
@@ -31,12 +31,15 @@ namespace robot_remote_control
         int receive(std::string* buf, Flags flags = NONE);
 
 
-
+        virtual void printConnections();
 
         private:
 
             std::shared_ptr<zmq::context_t> context;
 	        std::shared_ptr<zmq::socket_t> socket;
+
+            std::string addr;
+            ConnectionType type;
 
     };
 }

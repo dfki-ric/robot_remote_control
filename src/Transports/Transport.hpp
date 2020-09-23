@@ -34,6 +34,8 @@ namespace robot_remote_control
          */
         virtual int receive(std::string* buf, Flags flags = NONE) = 0;
 
+        virtual void printConnections(){}
+
     };
 
     typedef std::shared_ptr<Transport> TransportSharedPtr;

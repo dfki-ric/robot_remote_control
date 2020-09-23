@@ -14,6 +14,10 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()) {
 
+    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+    commandTransport->printConnections();
+    telemetryTransport->printConnections();
+
     simplesensorbuffer = std::make_shared< SimpleBuffer<SimpleSensor> >();
 
     registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
@@ -174,4 +178,13 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     simplesensorbuffer->lock();
     RingBufferAccess::pushData(simplesensorbuffer->get_ref()[data.id()], data, true);
     simplesensorbuffer->unlock();
+}
+
+std::string RobotController::initStringWithType(const uint16_t &type) {
+    std::string buf;
+    buf.resize(sizeof(uint16_t));
+    uint16_t uint_type = type;
+    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+    *data = uint_type;
+    return buf;
 }

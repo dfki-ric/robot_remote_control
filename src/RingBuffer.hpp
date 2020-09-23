@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <memory>
-
+#include <string>
 
 namespace robot_remote_control {
 
@@ -120,6 +120,8 @@ class RingBufferAccess{
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             if (dataclass.get()) {
                 return dataclass->popData(data);
+            } else {
+                printf("buffer type mismatch\n");
             }
             return false;
         }

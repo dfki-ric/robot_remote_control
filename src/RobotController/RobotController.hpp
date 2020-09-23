@@ -295,21 +295,24 @@ class RobotController: public UpdateThread {
          * @tparam DATATYPE 
          * @param type 
          * @param data 
-         * @return unsigned int 
+         * @return uint64_t
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
+        template< class DATATYPE > uint64_t getTelemetry(const uint16_t &type, DATATYPE *data ) {
             buffers->lock();
             bool result = RingBufferAccess::popData(buffers->get_ref()[type], data);
             buffers->unlock();
             return result;
         }
 
-        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+        std::string requestTelemetry(const uint16_t &type, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string replybuf;
             requestBinary(type, &replybuf, requestType);
-            result->ParseFromString(replybuf);
+            return replybuf;
+        }
 
+        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+            result->ParseFromString(requestTelemetry(type, requestType));
         }
 
         void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
@@ -329,9 +332,8 @@ class RobotController: public UpdateThread {
 
 
     protected:
-
         virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
-
+        static std::string initStringWithType(const uint16_t &type);
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
         TransportSharedPtr commandTransport;
@@ -353,11 +355,7 @@ class RobotController: public UpdateThread {
         std::function<void(const float&)> lostConnectionCallback;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
-            std::string buf;
-            buf.resize(sizeof(uint16_t));
-            uint16_t uint_type = type;
-            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
-            *data = uint_type;
+            std::string buf = initStringWithType(type);
             protodata.AppendToString(&buf);
             return sendRequest(buf, flags);
         }
@@ -376,10 +374,13 @@ class RobotController: public UpdateThread {
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
                 CLASS data;
-                data.ParseFromString(serializedMessage);
-                buffers->lock();
-                RingBufferAccess::pushData(buffers->get_ref()[type], data);
-                buffers->unlock();
+                if (data.ParseFromString(serializedMessage)) {
+                    buffers->lock();
+                    RingBufferAccess::pushData(buffers->get_ref()[type], data);
+                    buffers->unlock();
+                } else {
+                    printf("could not parse protobuf %s:%i\n", __FILE__, __LINE__);
+                }
             }
         };
 

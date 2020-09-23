@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     // (due to differences in latency between heartbetn commands)
     // the elapsed time may be used to have different stages of escalation
     robot.setupHeartbeatCallback(0.1, [](const float &elapsed){
-        printf("no heartbeat since %.2f seconds\n", elapsed);
+        //printf("no heartbeat since %.2f seconds\n", elapsed);
     });
 
     robot_remote_control::RobotName name;
