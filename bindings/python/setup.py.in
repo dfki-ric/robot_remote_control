@@ -16,7 +16,6 @@ build_dir = "${CMAKE_BINARY_DIR}"
 ext_files = ["_robot_remote_control.pxd",
         "robot_remote_control.pyx",
         "setup.py",
-        "RobotRemoteControl_pb2.py"
         ]
 
 def strict_prototypes_workaround():
@@ -41,5 +40,9 @@ if __name__ == '__main__':
                     )
 
     setup(name="robot_remote_control",
-          version="0.1",
-          ext_modules=cythonize(extensions))
+        version="0.1",
+        ext_modules=cythonize(extensions)
+        )
+    setup(name='RobotRemoteControl_pb2',
+        py_modules=['RobotRemoteControl_pb2'],
+      )

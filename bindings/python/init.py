@@ -19,4 +19,4 @@ print("pose")
 print(controller.getCurrentPose())
 print("pose_end")
 
-telemetry.receive()
+
