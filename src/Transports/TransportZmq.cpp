@@ -65,6 +65,6 @@ int TransportZmq::receive(std::string* buf,Flags flags){
     }
     int result = socket->recv(&requestmsg,zmqflag);
     *buf = std::string((char*)requestmsg.data(),requestmsg.size());
-    return result;
+    return requestmsg.size();
 }
 
