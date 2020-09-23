@@ -32,7 +32,7 @@ if __name__ == '__main__':
     extensions = Extension(
                     'robot_remote_control',
                     [ 'robot_remote_control.pyx' ],
-                    include_dirs=[include_dir],
+                    include_dirs=[include_dir, "${CMAKE_CURRENT_SOURCE_DIR}"],
                     libraries=["robot_remote_control-robot_controller", "robot_remote_control-transport_zmq"],
                     library_dirs=[os.path.join(build_dir,"src/RobotController"), os.path.join(build_dir,"src/Transports")],
                     extra_compile_args=compile_args,

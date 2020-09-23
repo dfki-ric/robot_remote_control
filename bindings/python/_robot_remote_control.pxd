@@ -30,7 +30,7 @@ cdef extern from "Transports/TransportZmq.hpp" namespace "robot_remote_control":
         void printConnections()
 
 
-cdef extern from "RobotController/RobotControllerWrapper.hpp" namespace "robot_remote_control":
+cdef extern from "RobotControllerWrapper.hpp" namespace "robot_remote_control":
     cdef cppclass RobotControllerWrapper:
         RobotControllerWrapper (RobotController *controller)
         bool getCurrentPose(string *buf)

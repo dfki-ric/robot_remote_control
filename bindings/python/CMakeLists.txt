@@ -61,8 +61,7 @@ if(CYTHON)
     if (PYTHON_SUPPORT)
         set(SETUP_PY "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
         message(STATUS "Building python extension with setup.py: ${SETUP_PY}")
-
-        add_custom_target(robot_remote_control_py ALL DEPENDS robot_remote_control-transport_zmq robot_remote_control_py-prepare RobotRemoteControl_pb2.py
+        add_custom_target(robot_remote_control_py ALL DEPENDS robot_remote_control-transport_zmq robot_remote_control-robot_controller robot_remote_control_py-prepare RobotRemoteControl_pb2.py
             COMMAND echo "Building extensions"
             COMMAND ${Python_EXECUTABLE} ${SETUP_PY} build
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
