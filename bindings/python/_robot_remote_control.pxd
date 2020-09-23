@@ -38,7 +38,7 @@ cdef extern from "RobotController/RobotControllerWrapper.hpp" namespace "robot_r
 
 cdef extern from "RobotController/RobotController.hpp" namespace "robot_remote_control":
     cdef cppclass RobotController:
-        RobotController (TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize = 10, const float &maxLatency = 1)
+        RobotController (TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize, const float &maxLatency)
 
         void update()
         void startUpdateThread(const unsigned int &milliseconds)

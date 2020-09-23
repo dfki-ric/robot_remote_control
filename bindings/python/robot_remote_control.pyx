@@ -69,7 +69,7 @@ cdef class PyRobotController:
 
     def __cinit__(self, PyTransportZmq commands, PyTransportZmq telemetry):
         print("PyRobotController init")
-        self.thisptr = new RobotController(commands.shared, telemetry.shared)    
+        self.thisptr = new RobotController(commands.shared, telemetry.shared, 10, 1)    
         self.wrapper = new RobotControllerWrapper(self.thisptr)
 
     def __dealloc__(self):
