@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <unistd.h>
+#include <stdexcept>
 
 using namespace robot_remote_control;
 
@@ -29,6 +30,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
     // registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
     registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
+    registerTelemetryType<Poses>(POSES, buffersize);
     registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
 
 
@@ -155,7 +157,11 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         {
             return msgtype;
         }
-        default: return msgtype;
+        default:
+        {
+            throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
+            return msgtype;
+        }
     }
 
     // should never reach this

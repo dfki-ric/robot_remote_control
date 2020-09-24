@@ -34,6 +34,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<WrenchState>(WRENCH_STATE);
     registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
     registerTelemetryType<Map>(MAP); // TODO: needed? ()
+    registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
 }
 
