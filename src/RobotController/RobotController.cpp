@@ -14,10 +14,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()) {
 
-    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
-    commandTransport->printConnections();
-    telemetryTransport->printConnections();
-
     simplesensorbuffer = std::make_shared< SimpleBuffer<SimpleSensor> >();
 
     registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
