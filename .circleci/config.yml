@@ -16,7 +16,7 @@ jobs:
       - checkout
       - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON
       - run: make -j -C build/
-      - run: . env.sh && ./build/test/test_suite
+      - run: ./build/test/test_suite
 
 workflows:
    version: 2

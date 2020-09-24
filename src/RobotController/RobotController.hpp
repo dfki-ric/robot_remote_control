@@ -120,6 +120,16 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Get an array of Poses
+         * 
+         * @param repeated field of poses to write the data to
+         * @return bool true if new data was read
+         */
+        bool getPoses(Poses *poses) {
+            return getTelemetry(POSES, poses);
+        }
+
+        /**
          * @brief Get the last sent joint state of the robot
          * 
          * @param jointState the JointState to write the data to
@@ -186,6 +196,16 @@ class RobotController: public UpdateThread {
 
         bool getRobotState(RobotState *state) {
             return getTelemetry(ROBOT_STATE, state);
+        }
+
+        /**
+         * @brief Get the current transforms
+         *
+         * @param Transforms object to write the transforms to
+         * @return bool true if new data was read
+         */
+        bool getCurrentTransforms(Transforms *transforms) {
+            return getTelemetry(TRANSFORMS, transforms);
         }
 
         /**

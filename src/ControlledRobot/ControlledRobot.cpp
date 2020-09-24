@@ -34,6 +34,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<WrenchState>(WRENCH_STATE);
     registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
     registerTelemetryType<Map>(MAP); // TODO: needed? ()
+    registerTelemetryType<Poses>(POSES);
+    registerTelemetryType<Transforms>(TRANSFORMS);
 }
 
 void ControlledRobot::update() {
@@ -136,6 +138,15 @@ int ControlledRobot::setLogMessage(const LogMessage& log_message) {
         return sendTelemetry(log_message, LOG_MESSAGE);
     }
     return -1;
+}
+
+robot_remote_control::TimeStamp ControlledRobot::getTime() {
+    struct timespec rawtime;
+    clock_gettime(CLOCK_REALTIME, &rawtime);
+    robot_remote_control::TimeStamp timestamp;
+    timestamp.set_secs(rawtime.tv_sec);
+    timestamp.set_nsecs(rawtime.tv_nsec);
+    return timestamp;
 }
 
 void ControlledRobot::addTelemetryMessageType(std::string *buf, const TelemetryMessageType& type) {

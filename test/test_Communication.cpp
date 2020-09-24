@@ -419,6 +419,14 @@ BOOST_AUTO_TEST_CASE(check_telemetry_pose) {
   COMPARE_PROTOBUF(send, recv);
 }
 
+BOOST_AUTO_TEST_CASE(check_telemetry_poses) {
+  // not using the set/get functions
+  Poses send, recv;
+  send = TypeGenerator::genPoses();
+  recv = testTelemetry(send, POSES);
+  COMPARE_PROTOBUF(send, recv);
+}
+
 BOOST_AUTO_TEST_CASE(check_telemetry_jointstate) {
   // not using the set/get functions
   JointState send, recv;
