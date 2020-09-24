@@ -25,73 +25,49 @@ This library defines an interface to those robots and supports externally progra
 
 ## Installation
 
-The easiest way to build and install this package is to use Rock's build system.
-See [this page](http://rock-robotics.org/documentation/installation.html)
-on how to install Rock.
-
-You can also build the Library without rock, by using the rock CMake marcos.
-
-As a reference you can also have a look into the gitlab-ci.yml file.
-
 ### Dependencies
 
-Additionally you need to manually install the following OS dependencies: protobuf and zeromq
+The library is using the high-level networking library ZeroMQ (ZMQ) and Google's language- and platform-neutral proto3 for de-/serialization. Therefor you need to manually install the following OS dependencies: protobuf and zeromq
 
     sudo apt install libprotobuf-dev protobuf-compiler libzmqpp-dev
 
 ### Building
 
-The ./install_source_dependencies.sh script will install the rock cmake macros, if you provide a path to that script, the macros will be installed there.
-In this case an env.sh script is generated, which sets up the environment to find the macros, please source it before using cmake to compile this library.
+The library is compiled using cmake. To compile it manually execute the following lines from the repositories root directory:
 
-To compile it manually:
-
-    ./install_source_dependencies.sh ./install
-    source env.sh
     mkdir build
     cd build
     cmake .. -DCMAKE_CXX_STANDARD=11
     make
 
-If you have chosen a local install of the dependencies, add `-DCMAKE_INSTALL_PREFIX=$(pwd)/../install` to the cmake command
+Optionally you can add the flags -DBUILD_EXAMPLES=ON and -DBUILD_TESTS=ON to build the examples and test directory respectively.
 
-Documentations on the rock cmake macros is available on [this page](http://rock-robotics.org/documentation/packages/cmake_macros.html).
+#### Building on systems without protobuf3
 
-#### Builddin on systems without protobuf3
-
-You need to install protobuf3 from source you need additional dependencies:
+In order to install protobuf3 from source you need additional dependencies:
 
     apt-get install autoconf automake libtool curl make g++ unzip lsb-release
 
-The script will automatically detect ubuntu 16.04, if you have anoter OS, edit the install_source_dependencies.sh script accortingly so
+You can use the compile_protobuf_from_source.bash script to build protobuf from source. Optionally you can path the install destination as follows:
 
-    build_protobuf "$ABS_PREFIX"
+    build_protobuf "$INSTALL_PATH"
 
-is exected
-
-This will install protobuf 3 in the selected install folder (parameter of the install_source_dependencies.sh script)
+This will install protobuf 3 in the specified INSTALL_PATH (default is /usr/local)
 
 
-
-
-
-
-
-### Rock Standard Layout
+### Directory Structure
 
 This directory structure follows some simple rules, to allow for generic build
-processes and simplify reuse of this project. Following these rules ensures that
-the Rock CMake macros automatically handle the project's build process and
-install setup properly.
+processes and simplify reuse of this project.
 
 ### Folder Structure
 
-| directory         |       purpose                                                        |
-| ----------------- | ------------------------------------------------------               |
-| src/              | Contains all header (*.hpp) and source (*.cpp) files                 |
-| examples/         | Contains Example Implenetation                                       |
-| build/ *          | The target directory for the build process, temporary content        |
-| test/             | contains the boost_test based unit tests                             |
+| directory         |       purpose                                                  |
+| ----------------- | ------------------------------------------------------         |
+| src/              | Contains all header (*.hpp) and source (*.cpp) files           |
+| build/ *          | The target directory for the build process, temporary content  |
+| test/             | contains the boost_test based unit tests                       |
+| examples/         | contains demo classes to showcase usage                        |
 
 
 ## Gettings started
@@ -102,7 +78,6 @@ Please have a look into the provided Main examples
 * examples/RobotControllerMain.cpp (controller that sets the desired robot position)
 
 You can build the Doxygen documentation using `$> doxygen Doxyfile`, it will be written to the build/doc folder.
-
 
 There are two main libraries generated when compiling this repository:
 

@@ -92,6 +92,13 @@ class ControlledRobot: public UpdateThread{
             return complexActionCommandBuffer.read(command);
         }
 
+        /**
+         * @brief Helper function to get TimeStamp object
+         *
+         * @return TimeStamp object with current time
+         */
+        robot_remote_control::TimeStamp getTime();
+
         // Telemetry setters
 
     protected:
@@ -236,6 +243,16 @@ class ControlledRobot: public UpdateThread{
         }
 
         /**
+         * @brief Set repeated field of poses
+         * 
+         * @param telemetry several pose
+         * @return int number of bytes sent
+         */
+        int setPoses(const Poses& telemetry) {
+            return sendTelemetry(telemetry, POSES);
+        }
+
+        /**
          * @brief Set the current JointState of the robot
          * 
          * @param telemetry current JointState
@@ -286,6 +303,16 @@ class ControlledRobot: public UpdateThread{
             //return sendTelemetry(map, MAP, true);
             return true;
 
+        }
+
+        /**
+         * @brief Set current transforms
+         *
+         * @param telemetry a repeated field of transforms
+         * @return int number of bytes sent
+         */
+        int setCurrentTransforms(const Transforms &telemetry ) {
+            return sendTelemetry(telemetry, TRANSFORMS);
         }
 
     protected:

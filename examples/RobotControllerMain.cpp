@@ -12,10 +12,11 @@ int main(int argc, char** argv) {
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
     robot_remote_control::RobotController controller(commands, telemetry);
 
-    // consruct type
+    // construct types
     robot_remote_control::Position position;
     robot_remote_control::Orientation orientation;
     robot_remote_control::Pose pose;
+    robot_remote_control::Transforms transforms;
 
     // fill
     position.set_x(0);
@@ -77,6 +78,10 @@ int main(int argc, char** argv) {
 
         if (controller.getCurrentWrenchState(&wstate)) {
             wstate.PrintDebugString();
+        }
+
+        if (controller.getCurrentTransforms(&transforms)) {
+            transforms.PrintDebugString();
         }
 
         printf("latency %f seconds\n", controller.getHeartBreatRoundTripTime()/2.0);
