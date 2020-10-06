@@ -76,6 +76,11 @@ message GoTo {
     double waypoint_max_forward_speed = 3;
 }
 
+message NamedValue {
+    string name = 1;
+    float value = 2;
+}
+
 enum SimpleActionType {
     VALUE_INT = 0;
     VALUE_FLOAT = 1;
@@ -83,8 +88,9 @@ enum SimpleActionType {
 }
 message SimpleActionDef{
     SimpleActionType type = 1;
-    uint64 min_state = 2;
-    uint64 max_state = 3;
+    float min_state = 2;
+    float max_state = 3;
+    repeated NamedValue valueNames = 4;
 }
 
 message SimpleAction {
