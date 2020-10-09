@@ -59,9 +59,7 @@ void RobotController::setJointCommand(const JointState &jointsCommand) {
 }
 
 void RobotController::setSimpleActionCommand(const SimpleAction &simpleActionCommand) {
-    SimpleActions action;
-    (*action.add_actions()) = simpleActionCommand;
-    sendProtobufData(action, SIMPLE_ACTIONS_COMMAND);
+    sendProtobufData(simpleActionCommand, SIMPLE_ACTIONS_COMMAND);
 }
 
 void RobotController::setComplexActionCommand(const ComplexAction &complexActionCommand) {

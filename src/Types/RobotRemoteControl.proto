@@ -82,15 +82,17 @@ message NamedValue {
 }
 
 enum SimpleActionType {
-    VALUE_INT = 0;
-    VALUE_FLOAT = 1;
-    TRIGGER = 2;
+    UNDEFINED = 0;
+    VALUE_INT = 1;
+    VALUE_FLOAT = 2;
+    TRIGGER = 3;
 }
 message SimpleActionDef{
     SimpleActionType type = 1;
     float min_state = 2;
     float max_state = 3;
-    repeated NamedValue value_names = 4;
+    float step_size = 4;
+    repeated NamedValue value_names = 5;
 }
 
 message SimpleAction {
