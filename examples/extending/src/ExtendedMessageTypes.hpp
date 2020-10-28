@@ -6,9 +6,9 @@
 
 namespace robot_remote_control {
 
-    enum class ExtendedControlMessageType   : uint16_t { NEW_CONTROL_MESSAGE = CONTROL_MESSAGE_TYPE_NUMBER, EXTENDED_CONTROL_MESSAGE_TYPE_NUMBER };
+    enum ExtendedControlMessageType   : uint16_t { NEW_CONTROL_MESSAGE = CONTROL_MESSAGE_TYPE_NUMBER, EXTENDED_CONTROL_MESSAGE_TYPE_NUMBER };
 
-    enum class ExtendedTelemetryMessageType : uint16_t { NEW_TELEMETRY_MESSAGE = TELEMETRY_MESSAGE_TYPES_NUMBER, EXTENDED_TELEMETRY_MESSAGE_TYPES_NUMBER };
+    enum ExtendedTelemetryMessageType : uint16_t { NEW_TELEMETRY_MESSAGE = TELEMETRY_MESSAGE_TYPES_NUMBER, EXTENDED_TELEMETRY_MESSAGE_TYPES_NUMBER };
 
 
 }  // end namespace robot_remote_control
