@@ -10,12 +10,11 @@
 #include <string>
 #include <memory>
 
-
 namespace robot_remote_control {
 
 class ControlledRobot: public UpdateThread{
     public:
-        ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
+        explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
         virtual ~ControlledRobot() {}
 
         /**
@@ -24,8 +23,8 @@ class ControlledRobot: public UpdateThread{
         virtual void update();
 
 
-        void setupHeartbeatCallback(const float &alllowedLatency, const std::function<void(const float&)> &callback) {
-            heartbeatAllowedLatency = alllowedLatency;
+        void setupHeartbeatCallback(const float &allowedLatency, const std::function<void(const float&)> &callback) {
+            heartbeatAllowedLatency = allowedLatency;
             heartbeatExpiredCallback = callback;
         }
 
@@ -114,9 +113,8 @@ class ControlledRobot: public UpdateThread{
             if (telemetryTransport.get()) {
                 std::string buf;
                 buf.resize(sizeof(uint16_t));
-                uint16_t uint_type = type;
                 uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
-                *data = uint_type;
+                *data = type;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
                 buffers->lock();

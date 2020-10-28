@@ -66,13 +66,13 @@ void RobotController::setComplexActionCommand(const ComplexAction &complexAction
     sendProtobufData(complexActionCommand, COMPLEX_ACTION_COMMAND);
 }
 
-void RobotController::setLogLevel(const uint32_t &level) {
+void RobotController::setLogLevel(const uint16_t &level) {
     std::string buf;
-    buf.resize(sizeof(uint16_t) + sizeof(uint32_t));
+    buf.resize(sizeof(uint16_t) + sizeof(uint16_t));
     uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
     *data = LOG_LEVEL_SELECT;
 
-    uint32_t *levelptr = reinterpret_cast<uint32_t*>(const_cast<char*>(buf.data()+sizeof(uint16_t)));
+    uint16_t *levelptr = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()+sizeof(uint16_t)));
     *levelptr = level;
     sendRequest(buf);
 }

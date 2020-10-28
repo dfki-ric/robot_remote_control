@@ -61,8 +61,8 @@ ControlMessageType ControlledRobot::receiveRequest() {
     // }
     int result = commandTransport->receive(&msg, flags);
     if (result) {
-        ControlMessageType reqestType = evaluateRequest(msg);
-        return reqestType;
+        ControlMessageType requestType = evaluateRequest(msg);
+        return requestType;
     }
     return NO_CONTROL_DATA;
 }
@@ -93,7 +93,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             return MAP_REQUEST;
         }
         case LOG_LEVEL_SELECT: {
-            logLevel = *reinterpret_cast<uint32_t*>(const_cast<char*>(serializedMessage.data()));
+            logLevel = *reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
             return LOG_LEVEL_SELECT;
         }
@@ -152,17 +152,15 @@ robot_remote_control::TimeStamp ControlledRobot::getTime() {
 void ControlledRobot::addTelemetryMessageType(std::string *buf, const TelemetryMessageType& type) {
     int currsize = buf->size();
     buf->resize(currsize + sizeof(uint16_t));
-    uint16_t typeint = type;
     uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf->data()+currsize));
-    *data = typeint;
+    *data = type;
 }
 
 void ControlledRobot::addControlMessageType(std::string *buf, const ControlMessageType& type) {
     int currsize = buf->size();
     buf->resize(currsize + sizeof(uint16_t));
-    uint16_t typeint = type;
     uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf->data()+currsize));
-    *data = typeint;
+    *data = type;
 }
 
 std::string ControlledRobot::serializeControlMessageType(const ControlMessageType& type) {

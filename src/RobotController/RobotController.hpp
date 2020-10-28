@@ -107,7 +107,7 @@ class RobotController: public UpdateThread {
          * 
          * @param level the desired log level
          */
-        void setLogLevel(const uint32_t &level);
+        void setLogLevel(const uint16_t &level);
 
         /**
          * @brief Get the last sent Pose of the robot
@@ -278,20 +278,20 @@ class RobotController: public UpdateThread {
         }
 
         /**
-         * @brief Request the curretn pose of the robot.
+         * @brief Request the current pose of the robot.
          *
-         * @param robotName where to write the data to
+         * @param Pose where to write the data to
          * @return void
          */
         void requestCurrentPose(Pose *pose) {
             requestTelemetry(CURRENT_POSE, pose);
         }
 
-        void requestMap(Map *map, const uint32_t &mapId){
+        void requestMap(Map *map, const uint16_t &mapId){
             requestTelemetry(mapId, map, MAP_REQUEST);
         }
 
-        void requestMap(std::string *map, const uint32_t &mapId){
+        void requestMap(std::string *map, const uint16_t &mapId){
             requestBinary(mapId, map, MAP_REQUEST);
         }
 
@@ -340,9 +340,8 @@ class RobotController: public UpdateThread {
             *data = requestType;
             data++;
 
-            // add the requested type int
-            uint16_t uint_type = type;
-            *data = uint_type;
+            // add the requested type
+            *data = type;
 
             *result = sendRequest(buf);
         }
@@ -375,9 +374,8 @@ class RobotController: public UpdateThread {
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
             buf.resize(sizeof(uint16_t));
-            uint16_t uint_type = type;
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
-            *data = uint_type;
+            *data = type;
             protodata.AppendToString(&buf);
             return sendRequest(buf, flags);
         }
