@@ -145,6 +145,7 @@ int main(int argc, char** argv)
             printf("\ngot target pose command:\n%s\n", targetpose.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "warping fake robot to target position\n");
             currentpose = targetpose;
+            *(currentpose.mutable_timestamp()) = robot.getTime();
         }
 
         if (robot.getTwistCommand(&twistcommand)) {
