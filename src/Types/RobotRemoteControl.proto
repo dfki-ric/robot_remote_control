@@ -40,6 +40,7 @@ message Orientation {
 message Pose {
     Position position = 1;
     Orientation orientation = 2;
+    TimeStamp timestamp = 3;
 }
 
 message Poses {

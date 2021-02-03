@@ -64,7 +64,8 @@ int main(int argc, char** argv) {
         x += 0.01;
 
 
-        printf("%.2f %.2f %.2f\n", currentpose.position().x(), currentpose.position().y(), currentpose.position().z());
+        //printf("%.2f %.2f %.2f\n", currentpose.position().x(), currentpose.position().y(), currentpose.position().z());
+        printf("Current Pose: %s\n", currentpose.ShortDebugString().c_str());
 
         printf("got %i joints\n", jointstate.name_size());
         google::protobuf::RepeatedPtrField<std::string> names = jointstate.name();
