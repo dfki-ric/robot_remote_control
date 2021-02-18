@@ -107,12 +107,13 @@ message SimpleActions {
 }
 
 enum ComplexActionType {
-    POSE = 0;
-    POSE_LIST = 1;
-    TWIST = 2;
-    TWIST_LIST = 3;
-    AREA = 4;
-    VOLUME = 5;
+    UNDEFINED_COMPLEX_ACTION = 0;
+    POSE = 1;
+    POSE_LIST = 2;
+    TWIST = 3;
+    TWIST_LIST = 4;
+    AREA = 5;
+    VOLUME = 6;
 }
 
 message ComplexAction {
