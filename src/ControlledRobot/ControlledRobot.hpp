@@ -287,7 +287,7 @@ class ControlledRobot: public UpdateThread{
 
         /**
          * @brief Set the Binary Map object
-         * This one is not limeted to protobuf types
+         * This one is not limited to protobuf types
          * 
          * @param map 
          * @param mapId 

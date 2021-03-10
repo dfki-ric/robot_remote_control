@@ -5,6 +5,9 @@
 #include <memory>
 #include <mutex>
 
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
@@ -287,8 +290,12 @@ class RobotController: public UpdateThread {
             requestTelemetry(CURRENT_POSE, pose);
         }
 
-        void requestMap(Map *map, const uint16_t &mapId){
-            requestTelemetry(mapId, map, MAP_REQUEST);
+        void requestMap(Map *map, const uint16_t &mapId, const int &size_limit_mb=512){
+            std::string replybuf;
+            requestBinary(mapId, &replybuf, MAP_REQUEST);
+            google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
+            cistream.SetTotalBytesLimit(size_limit_mb*1024, size_limit_mb*1024);
+            map->ParseFromCodedStream(&cistream);
         }
 
         void requestMap(std::string *map, const uint16_t &mapId){
