@@ -22,20 +22,18 @@ SimpleSensorBuffer::SimpleSensorBuffer() {}
 // }
 
 void SimpleSensorBuffer::initBufferID(const uint16_t &id) {
-        lock();
+        auto lockObject = get_ref();
 
-        if (get_ref().size() <= id) {
+        if (lockObject->size() <= id) {
             // resize(id+1); //if id == 1, indeyx should be one, so we need size two
-            get_ref().resize(id + 1);  // if id == 1, index should be one, so we need size two
+            lockObject->resize(id + 1);  // if id == 1, index should be one, so we need size two
         }
 
-        if (get_ref()[id].get() == nullptr) {
+        if (lockObject->[id].get() == nullptr) {
                 std::shared_ptr<RingBufferBase> newbuf;
                 newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<SimpleSensor>(1));
-                get_ref()[id] = newbuf;
+                lockObject->[id] = newbuf;
         }
-
-        unlock();
 }
 
 }  // namespace robot_remote_control

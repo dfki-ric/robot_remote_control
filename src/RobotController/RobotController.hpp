@@ -157,17 +157,14 @@ class RobotController: public UpdateThread {
          * @return false 
          */
         bool getSimpleSensor(const uint16_t &id, SimpleSensor *simplesensor) {
-            simplesensorbuffer->lock();
+            auto lockObject = simplesensorbuffer->get_ref();
             bool result = false;
-            if (simplesensorbuffer->get_ref().size() > id) {
-                std::shared_ptr<RingBufferBase> bufferptr = simplesensorbuffer->get_ref()[id];
+            if (lockObject->size() > id) {
+                std::shared_ptr<RingBufferBase> bufferptr = (*lockObject)[id];
                 if (bufferptr.get()) {
                     result = RingBufferAccess::popData(bufferptr, simplesensor);
                 }
             }
-
-            simplesensorbuffer->unlock();
-
             return result;
         }
 
@@ -300,9 +297,7 @@ class RobotController: public UpdateThread {
          * @return unsigned int number of messages in the buffer
          */
         unsigned int getBufferSize(const TelemetryMessageType &type) {
-            buffers->lock();
-            int size = buffers->get_ref()[type]->size();
-            buffers->unlock();
+            int size = (*buffers->get_ref())[type]->size();
             return size;
         }
 
@@ -317,9 +312,7 @@ class RobotController: public UpdateThread {
          */
 
         template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
-            buffers->lock();
-            bool result = RingBufferAccess::popData(buffers->get_ref()[type], data);
-            buffers->unlock();
+            bool result = RingBufferAccess::popData((*buffers->get_ref())[type], data);
             return result;
         }
 
@@ -393,9 +386,7 @@ class RobotController: public UpdateThread {
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
-                buffers->lock();
-                RingBufferAccess::pushData(buffers->get_ref()[type], data);
-                buffers->unlock();
+                RingBufferAccess::pushData((*buffers->get_ref())[type], data);
             }
         };
 

@@ -33,6 +33,7 @@ if( BUILD_EXAMPLES )
     add_subdirectory(examples)
 endif( BUILD_EXAMPLES )
 
+set (BUILD_TESTS ON)
 if( BUILD_TESTS )
     message("Adding test directory") 
     add_subdirectory(test)

@@ -84,11 +84,12 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             std::string map;
             //get map
-            mapBuffer.lock();
-            if (*requestedMap < mapBuffer.get_ref().size()){
-                RingBufferAccess::peekData(mapBuffer.get_ref()[*requestedMap],&map);
+            {
+                auto lockObject = mapBuffer.get_ref();
+                if (*requestedMap < lockObject->size()){
+                    RingBufferAccess::peekData((*lockObject)[*requestedMap],&map);
+                }
             }
-            mapBuffer.unlock();
             commandTransport->send(map);
             return MAP_REQUEST;
         }

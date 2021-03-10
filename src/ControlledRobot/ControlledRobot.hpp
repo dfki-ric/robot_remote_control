@@ -117,9 +117,9 @@ class ControlledRobot: public UpdateThread{
                 *data = type;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                buffers->lock();
-                RingBufferAccess::pushData(buffers->get_ref()[type], protodata, true);
-                buffers->unlock();
+                // buffers->lock();
+                RingBufferAccess::pushData((*buffers->get_ref())[type], protodata, true);
+                // buffers->unlock();
                 if (!requestOnly) {
                     return telemetryTransport->send(buf) - sizeof(uint16_t);
                 }
@@ -295,9 +295,7 @@ class ControlledRobot: public UpdateThread{
          */
         int setMap(const std::string & map, const uint32_t &mapId) {
             mapBuffer.initBufferID(mapId);
-            mapBuffer.lock();
-            RingBufferAccess::pushData(mapBuffer.get_ref()[mapId], map, true);
-            mapBuffer.unlock();
+            RingBufferAccess::pushData((*mapBuffer.get_ref())[mapId], map, true);
             //return sendTelemetry(map, MAP, true);
             return true;
 
@@ -344,22 +342,19 @@ class ControlledRobot: public UpdateThread{
                 }
 
                 virtual bool write(const std::string &serializedMessage) {
-                    command.lock();
-                    if (!command.get_ref().ParseFromString(serializedMessage)) {
-                        command.unlock();
+                    auto lockObject = command.get_ref();
+                    // command.lock();
+                    if (!lockObject->ParseFromString(serializedMessage)) {
                         isnew.set(false);
                         return false;
                     }
-                    command.unlock();
                     isnew.set(true);
                     return true;
                 }
 
                 virtual bool read(std::string *receivedMessage) {
                     bool oldval = isnew.get();
-                    command.lock();
-                    command.get_ref().SerializeToString(receivedMessage);
-                    command.unlock();
+                    command.get_ref()->SerializeToString(receivedMessage);
                     isnew.set(false);
                     return oldval;
                 }
