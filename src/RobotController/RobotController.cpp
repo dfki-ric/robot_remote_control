@@ -3,6 +3,7 @@
 #include <memory>
 #include <unistd.h>
 #include <stdexcept>
+#include <google/protobuf/io/coded_stream.h>
 
 using namespace robot_remote_control;
 
@@ -105,6 +106,13 @@ void RobotController::update() {
     }
 }
 
+void RobotController::requestMap(Map *map, const uint16_t &mapId){
+    std::string replybuf;
+    requestBinary(mapId, &replybuf, MAP_REQUEST);
+    google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
+    cistream.SetTotalBytesLimit(replybuf.size(), replybuf.size());
+    map->ParseFromCodedStream(&cistream);
+}
 
 std::string RobotController::sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags) {
     std::lock_guard<std::mutex> lock(commandTransportMutex);
