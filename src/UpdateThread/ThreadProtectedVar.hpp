@@ -6,9 +6,9 @@
 namespace robot_remote_control {
 
 /**
- * @brief Template class to make variables thread save
+ * @brief Template class to make variables thread safe
  * 
- * @tparam C The class type to have thread save
+ * @tparam C The class type to have thread safe
  */
 template <class C> class ThreadProtectedVar{
     public:
