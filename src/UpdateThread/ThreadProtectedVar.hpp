@@ -25,9 +25,6 @@ template <class C> class ThreadProtectedVar{
             REF* operator->() {
                 return reference;
             }
-            REF& operator*() {
-                return *reference;
-            }
             REF& get() {
                 return *reference;
             }

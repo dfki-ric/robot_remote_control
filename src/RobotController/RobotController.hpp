@@ -160,7 +160,7 @@ class RobotController: public UpdateThread {
             auto lockedAccess = simplesensorbuffer->getLockedAccess();
             bool result = false;
             if (lockedAccess.get().size() > id) {
-                std::shared_ptr<RingBufferBase> bufferptr = (*lockedAccess)[id];
+                std::shared_ptr<RingBufferBase> bufferptr = lockedAccess.get()[id];
                 if (bufferptr.get()) {
                     result = RingBufferAccess::popData(bufferptr, simplesensor);
                 }
