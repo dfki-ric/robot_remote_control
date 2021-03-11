@@ -85,9 +85,9 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             std::string map;
             //get map
             {
-                auto lockObject = mapBuffer.get_ref();
-                if (*requestedMap < lockObject->size()){
-                    RingBufferAccess::peekData((*lockObject)[*requestedMap],&map);
+                auto lockedAccess = mapBuffer.getLockedAccess();
+                if (*requestedMap < lockedAccess.get().size()){
+                    RingBufferAccess::peekData(lockedAccess.get()[*requestedMap],&map);
                 }
             }
             commandTransport->send(map);

@@ -20,7 +20,7 @@ void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::futur
     running = true;
     while (runningFuture.wait_for(std::chrono::milliseconds(milliseconds)) == std::future_status::timeout) {
         update();
-        timer->get_ref()->start();
+        timer->getLockedAccess()->start();
     }
     running = false;
 }
@@ -44,6 +44,6 @@ void UpdateThread::stopUpdateThread() {
 }
 
 float UpdateThread::getElapsedTimeInS() {
-    float time = threadTimer->get_ref()->getElapsedTime();
+    float time = threadTimer->getLockedAccess()->getElapsedTime();
     return time;
 }

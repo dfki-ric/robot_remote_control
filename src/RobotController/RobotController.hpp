@@ -157,10 +157,10 @@ class RobotController: public UpdateThread {
          * @return false 
          */
         bool getSimpleSensor(const uint16_t &id, SimpleSensor *simplesensor) {
-            auto lockObject = simplesensorbuffer->get_ref();
+            auto lockedAccess = simplesensorbuffer->getLockedAccess();
             bool result = false;
-            if (lockObject->size() > id) {
-                std::shared_ptr<RingBufferBase> bufferptr = (*lockObject)[id];
+            if (lockedAccess.get().size() > id) {
+                std::shared_ptr<RingBufferBase> bufferptr = (*lockedAccess)[id];
                 if (bufferptr.get()) {
                     result = RingBufferAccess::popData(bufferptr, simplesensor);
                 }
@@ -297,7 +297,7 @@ class RobotController: public UpdateThread {
          * @return unsigned int number of messages in the buffer
          */
         unsigned int getBufferSize(const TelemetryMessageType &type) {
-            int size = (*buffers->get_ref())[type]->size();
+            int size = buffers->getLockedAccess().get()[type]->size();
             return size;
         }
 
@@ -312,7 +312,8 @@ class RobotController: public UpdateThread {
          */
 
         template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
-            bool result = RingBufferAccess::popData((*buffers->get_ref())[type], data);
+            auto lockedAccess = buffers->getLockedAccess();
+            bool result = RingBufferAccess::popData(lockedAccess.get()[type], data);
             return result;
         }
 
@@ -386,7 +387,8 @@ class RobotController: public UpdateThread {
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
-                RingBufferAccess::pushData((*buffers->get_ref())[type], data);
+                auto lockedAccess = buffers->getLockedAccess();
+                RingBufferAccess::pushData(lockedAccess.get()[type], data);
             }
         };
 

@@ -3,8 +3,7 @@
 #include <mutex>
 #include <memory>
 
-namespace robot_remote_control
-{
+namespace robot_remote_control {
 
 /**
  * @brief Template class to make variables thread save
@@ -12,58 +11,52 @@ namespace robot_remote_control
  * @tparam C The class type to have thread save
  */
 template <class C> class ThreadProtectedVar{
-
     public:
-
         template <class REF> class LockedAccess {
-         public:
-            LockedAccess(ThreadProtectedVar<C> *parent, REF &reference): parent(parent), reference(reference) {
+         private:
+            friend class ThreadProtectedVar;
+            LockedAccess(ThreadProtectedVar<C> *parent, REF *reference): parent(parent), reference(reference) {
                 parent->lock();
             }
+         public:
             ~LockedAccess() {
                 parent->unlock();
             }
             REF* operator->() {
-                return &reference;
+                return reference;
             }
             REF& operator*() {
-                return reference;
+                return *reference;
             }
             REF& get() {
-                return reference;
+                return *reference;
             }
          private:
             ThreadProtectedVar<C> *parent;
-            REF &reference;
+            REF *reference;
         };
 
-        ThreadProtectedVar():
-            islocked(false)
-        {};
+        ThreadProtectedVar() {}
+        explicit ThreadProtectedVar(const C &init):var(init) {}
 
-        ThreadProtectedVar(const C &init):
-            var(init),
-            islocked(false)
-        {};
+        virtual ~ThreadProtectedVar() {}
 
         // no copy constructors
         ThreadProtectedVar(const ThreadProtectedVar&) = delete;
         ThreadProtectedVar& operator=(const ThreadProtectedVar&) = delete;
-
-        virtual ~ThreadProtectedVar(){};
 
         /**
          * @brief get a copy of the contained variable
          * 
          * @return const C a copy of the protected variable
          */
-        const C get(){
+        const C get() {
             std::lock_guard<std::mutex> lock(mutex);
             C returnvar = var;
             return returnvar;
         }
 
-        const C operator()(){
+        const C operator()() {
             return get();
         }
 
@@ -72,7 +65,7 @@ template <class C> class ThreadProtectedVar{
          * 
          * @param val the new value
          */
-        void set(const C &val){
+        void set(const C &val) {
             std::lock_guard<std::mutex> lock(mutex);
             var = val;
         }
@@ -82,8 +75,8 @@ template <class C> class ThreadProtectedVar{
          * 
          * @return C& reference to the protected variable
          */
-        LockedAccess<C> get_ref() {
-            return LockedAccess<C>(this, var);
+        LockedAccess<C> getLockedAccess() {
+            return LockedAccess<C>(this, &var);
         }
 
         C& operator=(const C& other) {
@@ -92,24 +85,22 @@ template <class C> class ThreadProtectedVar{
             return *this;
         }
     private:
-
         /**
          * @brief lock the protected variable manually to allow a reference access
          */
-        void lock(){
+        void lock() {
             mutex.lock();
         }
 
         /**
          * @brief unlock the protected variable after it was manually locked
          */
-        void unlock(){
+        void unlock() {
             mutex.unlock();
         }
 
         C var;
-        bool islocked;
         std::mutex mutex;
 };
 
-}
+}  // namespace robot_remote_control

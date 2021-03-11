@@ -184,5 +184,5 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     //     simplesensorbuffer->resize(data.id());
     // }
 
-    RingBufferAccess::pushData((*simplesensorbuffer->get_ref())[data.id()], data, true);
+    RingBufferAccess::pushData(simplesensorbuffer->getLockedAccess().get()[data.id()], data, true);
 }
