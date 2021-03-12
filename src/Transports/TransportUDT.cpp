@@ -74,30 +74,28 @@ TransportUDT::~TransportUDT(){
 
 
 void TransportUDT::accept(){
-
-    socket.lock();
+    auto lockedSocket = socket.getLockedAccess();
 //      if (!socket.get_ref()){
         cout << __PRETTY_FUNCTION__ << port << endl;
 
         int namelen;
         sockaddr_in their_addr;
 
-        socket.get_ref() = UDT::accept(serv, (sockaddr*)&their_addr, &namelen);
+        lockedSocket.get() = UDT::accept(serv, (sockaddr*)&their_addr, &namelen);
 
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_RCVSYN,&blockingRecv,sizeof(bool));
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_RCVSYN,&blockingRecv,sizeof(bool));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
 
         int recvtimeout = 500; //ms
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDTIMEO,&recvtimeout, sizeof(int));
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_RCVTIMEO,&recvtimeout, sizeof(int));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_SNDTIMEO,&recvtimeout, sizeof(int));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_RCVTIMEO,&recvtimeout, sizeof(int));
 
         cout << "new connection: " << inet_ntoa(their_addr.sin_addr) << ":" << ntohs(their_addr.sin_port) << endl;
 //    }
-    socket.unlock();
 }
 
 void TransportUDT::connect(){
-    socket.lock();
+    auto lockedSocket = socket.getLockedAccess();
     sockaddr_in serv_addr;
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
@@ -106,61 +104,55 @@ void TransportUDT::connect(){
 
     cout << __PRETTY_FUNCTION__ << port << endl;
     // connect to the server, implict bind
-    if (UDT::ERROR == UDT::connect(socket.get_ref(), (sockaddr*)&serv_addr, sizeof(serv_addr)))
+    if (UDT::ERROR == UDT::connect(lockedSocket.get(), (sockaddr*)&serv_addr, sizeof(serv_addr)))
     {
         cout << "connect: " << UDT::getlasterror().getErrorMessage();
     }
 //    int recvtimeout = 500; //ms
 //    UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_RCVTIMEO,&recvtimeout, sizeof(int));
 //    UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDTIMEO,&recvtimeout, sizeof(int));
-    UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_RCVSYN,&blockingRecv,sizeof(bool));
-    UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
-
-    socket.unlock();
+    UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_RCVSYN,&blockingRecv,sizeof(bool));
+    UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
 } 
 
 
 int TransportUDT::send(const std::string& buf, Flags flags){
-
-    socket.lock();
+    auto lockedSocket = socket.getLockedAccess();
 
     if ((flags & NOBLOCK) && blockingSend ){
         //if should not block but enabled:
         blockingSend = false;
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
     }else if ((!(flags & NOBLOCK)) && !blockingSend ){
         //if should block but disabled:
         blockingSend = true;
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_SNDSYN,&blockingSend,sizeof(bool));
     }
 
-    int sent = UDT::sendmsg(socket.get_ref(), buf.data(), buf.size() , -1, true); //ttl -1, inorder true
+    int sent = UDT::sendmsg(lockedSocket.get(), buf.data(), buf.size() , -1, true); //ttl -1, inorder true
     if (UDT::ERROR == sent)
     {
-        socket.unlock();
         cout << "send error: " << UDT::getlasterror().getErrorMessage();
         return 0;
     }
-    socket.unlock();
     //cout << "send done " << addr << ":" << port << " bytes:" << sent << " " << connectiontype << std::endl;
     return sent;
 }
 
 int TransportUDT::receive(std::string* buf, Flags flags){
-
-    socket.lock();
-
+    auto lockedSocket = socket.getLockedAccess();
+    
     if ((flags & NOBLOCK) && blockingRecv ){
         //if should not block but enabled:
         blockingRecv = false;
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDSYN,&blockingRecv,sizeof(bool));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_SNDSYN,&blockingRecv,sizeof(bool));
     }else if ((!(flags & NOBLOCK)) && !blockingRecv ){
         //if should block but disabled:
         blockingRecv = true;
-        UDT::setsockopt(socket.get_ref(), 0 /*ignored*/, UDT_SNDSYN,&blockingRecv,sizeof(bool));
+        UDT::setsockopt(lockedSocket.get(), 0 /*ignored*/, UDT_SNDSYN,&blockingRecv,sizeof(bool));
     }
 
-    int received = UDT::recvmsg(socket.get_ref(), (char*)recvBuffer.data(), recvBuffer.size());
+    int received = UDT::recvmsg(lockedSocket.get(), (char*)recvBuffer.data(), recvBuffer.size());
     if (UDT::ERROR == received)
     {
 
@@ -178,18 +170,13 @@ int TransportUDT::receive(std::string* buf, Flags flags){
                 //throw std::runtime_error("TransportUDT receive: " + std::string(UDT::getlasterror().getErrorMessage()));        
                 cout << UDT::getlasterror().getErrorMessage() << " code :" << UDT::getlasterror().getErrorCode() << endl;
         }
-            socket.unlock();
             return 0;
     }
-    socket.unlock();
     //cout << "receive done: "  << port << " bytes:" << received << " " << connectiontype  << std::endl;
 
     //don't use string assign here, no need to inti the whole buffer size on target string
     buf->resize(received);//should already be the case
     memcpy((void*)buf->data(),recvBuffer.data(),received);
-    
-    
-
     
     return received;
 }
