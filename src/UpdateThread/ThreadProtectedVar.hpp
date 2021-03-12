@@ -12,25 +12,25 @@ namespace robot_remote_control {
  */
 template <class C> class ThreadProtectedVar{
     public:
-        template <class REF> class LockedAccess {
+        class LockedAccess {
          private:
             friend class ThreadProtectedVar;
-            LockedAccess(ThreadProtectedVar<C> *parent, REF *reference): parent(parent), reference(reference) {
+            LockedAccess(ThreadProtectedVar<C> *parent, C *reference): parent(parent), reference(reference) {
                 parent->lock();
             }
          public:
             ~LockedAccess() {
                 parent->unlock();
             }
-            REF* operator->() {
+            C* operator->() {
                 return reference;
             }
-            REF& get() {
+            C& get() {
                 return *reference;
             }
          private:
             ThreadProtectedVar<C> *parent;
-            REF *reference;
+            C *reference;
         };
 
         ThreadProtectedVar() {}
@@ -72,8 +72,8 @@ template <class C> class ThreadProtectedVar{
          * 
          * @return C& reference to the protected variable
          */
-        LockedAccess<C> getLockedAccess() {
-            return LockedAccess<C>(this, &var);
+        LockedAccess getLockedAccess() {
+            return LockedAccess(this, &var);
         }
 
         C& operator=(const C& other) {
