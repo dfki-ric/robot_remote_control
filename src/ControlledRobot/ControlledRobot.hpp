@@ -117,11 +117,7 @@ class ControlledRobot: public UpdateThread{
                 *data = type;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                {
-                    // needs to be locked during whole call of pushData
-                    auto lockedAccess = buffers->getLockedAccess();
-                    RingBufferAccess::pushData(lockedAccess.get()[type], protodata, true);
-                }
+                RingBufferAccess::pushData(buffers->getLockedAccess().get()[type], protodata, true);
                 if (!requestOnly) {
                     return telemetryTransport->send(buf) - sizeof(uint16_t);
                 }
@@ -297,9 +293,7 @@ class ControlledRobot: public UpdateThread{
          */
         int setMap(const std::string & map, const uint32_t &mapId) {
             mapBuffer.initBufferID(mapId);
-            // type needs to be lockled while passed to pushData
-            auto lockedAccess = mapBuffer.getLockedAccess();
-            RingBufferAccess::pushData(lockedAccess.get()[mapId], map, true);
+            RingBufferAccess::pushData(mapBuffer.getLockedAccess().get()[mapId], map, true);
             // maps are not sent automatically
             // return sendTelemetry(map, MAP, true);
             return true;
@@ -346,9 +340,8 @@ class ControlledRobot: public UpdateThread{
                 }
 
                 virtual bool write(const std::string &serializedMessage) {
-                    auto lockedAccess = command.getLockedAccess();
                     // command.lock();
-                    if (!lockedAccess->ParseFromString(serializedMessage)) {
+                    if (!command.getLockedAccess()->ParseFromString(serializedMessage)) {
                         isnew.set(false);
                         return false;
                     }

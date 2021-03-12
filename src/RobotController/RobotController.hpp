@@ -312,8 +312,7 @@ class RobotController: public UpdateThread {
          */
 
         template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
-            auto lockedAccess = buffers->getLockedAccess();
-            bool result = RingBufferAccess::popData(lockedAccess.get()[type], data);
+            bool result = RingBufferAccess::popData(buffers->getLockedAccess().get()[type], data);
             return result;
         }
 
@@ -387,8 +386,7 @@ class RobotController: public UpdateThread {
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
-                auto lockedAccess = buffers->getLockedAccess();
-                RingBufferAccess::pushData(lockedAccess.get()[type], data);
+                RingBufferAccess::pushData(buffers->getLockedAccess().get()[type], data);
             }
         };
 
