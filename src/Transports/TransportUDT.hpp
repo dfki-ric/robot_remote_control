@@ -2,8 +2,8 @@
 
 #include <thread>
 
-#include "robot_remote_control/Transports/Transport.hpp"
-#include "robot_remote_control/UpdateThread/ThreadProtectedVar.hpp"
+#include "Transport.hpp"
+#include "../UpdateThread/ThreadProtectedVar.hpp"
 
 #include <arpa/inet.h>
 #include "udt/udt.h"
