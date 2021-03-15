@@ -10,6 +10,7 @@
   <logo>http://</logo>
 
   <depend package="protobuf" />
+  <depend package="protobuf-compiler" />
   <depend package="zmq" />
   <keywords>
     <keyword>communication</keyword>
