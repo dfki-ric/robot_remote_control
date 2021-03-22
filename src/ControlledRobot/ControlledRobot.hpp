@@ -299,6 +299,12 @@ class ControlledRobot: public UpdateThread{
             return true;
         }
 
+        int setPointCloud(const robot_remote_control::PointCloud pointcloud) {
+            robot_remote_control::Map map;
+            map.mutable_map()->PackFrom(pointcloud);
+            setMap(map, robot_remote_control::POINTCLOUD_MAP);
+        }
+
         /**
          * @brief Set current transforms
          *

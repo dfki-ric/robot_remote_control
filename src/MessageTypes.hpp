@@ -42,12 +42,12 @@ namespace robot_remote_control {
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 
-    enum MapMessageType : uint16_t {  
-        NO_MAP_DATA = 0,
-        POINTCLOUD_MAP,
-        MAP_MESSAGE_TYPES_NUMBER  // LAST element
+    // enum MapMessageType : uint16_t {  
+    //     NO_MAP_DATA = 0,
+    //     POINTCLOUD_MAP,
+    //     MAP_MESSAGE_TYPES_NUMBER  // LAST element
 
-    };
+    // };
 
 
     /**
