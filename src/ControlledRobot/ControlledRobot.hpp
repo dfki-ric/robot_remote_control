@@ -117,7 +117,7 @@ class ControlledRobot: public UpdateThread{
                 *data = type;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                RingBufferAccess::pushData(buffers->getLockedAccess().get()[type], protodata, true);
+                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], protodata, true);
                 if (!requestOnly) {
                     return telemetryTransport->send(buf) - sizeof(uint16_t);
                 }
@@ -293,7 +293,7 @@ class ControlledRobot: public UpdateThread{
          */
         int setMap(const std::string & map, const uint32_t &mapId) {
             mapBuffer.initBufferID(mapId);
-            RingBufferAccess::pushData(mapBuffer.getLockedAccess().get()[mapId], map, true);
+            RingBufferAccess::pushData(mapBuffer.lockedAccess().get()[mapId], map, true);
             // maps are not sent automatically
             // return sendTelemetry(map, MAP, true);
             return true;
@@ -334,31 +334,31 @@ class ControlledRobot: public UpdateThread{
                 virtual ~CommandBuffer() {}
 
                 bool read(COMMAND *target) {
-                    bool oldval = isnew.get();
-                    *target = command.get();
-                    isnew.set(false);
+                    bool oldval = isnew.lockedAccess().get();
+                    *target = command.lockedAccess().get();
+                    isnew.lockedAccess().set(false);
                     return oldval;
                 }
 
                 void write(const COMMAND &src) {
-                    command.set(src);
-                    isnew.set(true);
+                    command.lockedAccess().set(src);
+                    isnew.lockedAccess().set(true);
                 }
 
                 virtual bool write(const std::string &serializedMessage) {
                     // command.lock();
-                    if (!command.getLockedAccess()->ParseFromString(serializedMessage)) {
-                        isnew.set(false);
+                    if (!command.lockedAccess()->ParseFromString(serializedMessage)) {
+                        isnew.lockedAccess().set(false);
                         return false;
                     }
-                    isnew.set(true);
+                    isnew.lockedAccess().set(true);
                     return true;
                 }
 
                 virtual bool read(std::string *receivedMessage) {
-                    bool oldval = isnew.get();
-                    command.getLockedAccess()->SerializeToString(receivedMessage);
-                    isnew.set(false);
+                    bool oldval = isnew.lockedAccess().get();
+                    command.lockedAccess()->SerializeToString(receivedMessage);
+                    isnew.lockedAccess().set(false);
                     return oldval;
                 }
 

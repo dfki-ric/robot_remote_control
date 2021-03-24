@@ -12,25 +12,22 @@ namespace robot_remote_control {
  */
 template <class C> class ThreadProtectedVar{
     public:
-        class LockedAccess {
-         private:
-            friend class ThreadProtectedVar;
-            LockedAccess(std::mutex *mutex, C *reference): parent(parent), reference(reference) {
-                lock = std::make_shared< std::lock_guard<std::mutex> >(*mutex);
-            }
+        class LockedAccess {            
          public:
-            ~LockedAccess() {}
+            LockedAccess(std::mutex *mutex, C *object): accesslock(*mutex), object(object) { }
 
             C* operator->() {
-                return reference;
+                return object;
             }
             C& get() {
-                return *reference;
+                return *object;
+            }
+            void set(const C& value) {
+                *object = value;
             }
          private:
-            std::shared_ptr< std::lock_guard<std::mutex> >lock;
-            ThreadProtectedVar<C> *parent;
-            C *reference;
+            std::unique_lock<std::mutex> accesslock;
+            C *object;
         };
 
         ThreadProtectedVar() {}
@@ -38,49 +35,19 @@ template <class C> class ThreadProtectedVar{
 
         virtual ~ThreadProtectedVar() {}
 
+        /**
+         * @brief Get the protected variable as access object allowing direct, locked access
+         * 
+         * @return LockedAccess object that locked the mutex as log it is in scope
+         */
+        LockedAccess lockedAccess() {
+            return {&mutex, &var};
+        }
+
         // no copy constructors
         ThreadProtectedVar(const ThreadProtectedVar&) = delete;
         ThreadProtectedVar& operator=(const ThreadProtectedVar&) = delete;
 
-        /**
-         * @brief get a copy of the contained variable
-         * 
-         * @return const C a copy of the protected variable
-         */
-        const C get() {
-            std::lock_guard<std::mutex> lock(mutex);
-            C returnvar = var;
-            return returnvar;
-        }
-
-        const C operator()() {
-            return get();
-        }
-
-        /**
-         * @brief set the protected variable
-         * 
-         * @param val the new value
-         */
-        void set(const C &val) {
-            std::lock_guard<std::mutex> lock(mutex);
-            var = val;
-        }
-
-        /**
-         * @brief Get the protected variable as reference allowing direct access
-         * 
-         * @return C& reference to the protected variable
-         */
-        LockedAccess getLockedAccess() {
-            return LockedAccess(&mutex, &var);
-        }
-
-        C& operator=(const C& other) {
-            std::lock_guard<std::mutex> lock(mutex);
-            var = other;
-            return *this;
-        }
     private:
         C var;
         std::mutex mutex;

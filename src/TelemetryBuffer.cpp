@@ -7,7 +7,7 @@ namespace robot_remote_control {
     TelemetryBuffer::TelemetryBuffer() {
         // create vector of shared ptr
         // just pre-set sizes to minimize resize calls in registerType
-        getLockedAccess()->resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
+        lockedAccess()->resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
 
         converters.resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
     }

@@ -100,7 +100,7 @@ void RobotController::update() {
             latencyTimer.start();
             std::string rep = sendProtobufData(hb, HEARTBEAT);
             float time = latencyTimer.getElapsedTime();
-            heartBreatRoundTripTime.set(time);
+            heartBreatRoundTripTime.lockedAccess().set(time);
         }
         heartBeatTimer.start(heartBeatDuration);
     }
@@ -184,5 +184,5 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     //     simplesensorbuffer->resize(data.id());
     // }
 
-    RingBufferAccess::pushData(simplesensorbuffer->getLockedAccess().get()[data.id()], data, true);
+    RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
 }
