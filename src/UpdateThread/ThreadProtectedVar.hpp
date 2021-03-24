@@ -9,6 +9,21 @@ namespace robot_remote_control {
  * @brief Template class to make variables thread safe
  * 
  * @tparam C The class type to have thread safe
+ * 
+ * Examples:
+ *  ThreadProtectedVar< std::vector<int> > thread_int;
+ *  thread_int->lockedAccess()->push_back(5);
+ *  //for long-term locks
+ *  { // extra scope to release the lock
+ *      auto lockedAccessObject = thread_int.lockedAccess();
+ *      for (int i = 0; i<5; ++i) {
+ *          lockedAccessObject->push_back(i);
+ *      }
+ *      int myint = lockedAccessObject.get()[3];
+ *  }
+ *
+ *  int myint2 = thread_int->lockedAccess().get()[5];
+ *  int size = thread_int->lockedAccess()->size();
  */
 template <class C> class ThreadProtectedVar{
     public:
