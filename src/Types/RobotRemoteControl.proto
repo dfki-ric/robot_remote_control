@@ -171,6 +171,12 @@ message Map {
     google.protobuf.Any map = 3;
 }
 
+enum MapMessageType {  
+    NO_MAP_DATA = 0;
+    POINTCLOUD_MAP = 1;
+    MAP_MESSAGE_TYPES_NUMBER = 2; // LAST element
+}
+
 message MapsDefinition {
     repeated string name = 1;
     repeated uint32 id = 2;
