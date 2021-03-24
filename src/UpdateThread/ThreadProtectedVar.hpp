@@ -15,13 +15,12 @@ template <class C> class ThreadProtectedVar{
         class LockedAccess {
          private:
             friend class ThreadProtectedVar;
-            LockedAccess(ThreadProtectedVar<C> *parent, C *reference): parent(parent), reference(reference) {
-                parent->lock();
+            LockedAccess(std::mutex *mutex, C *reference): parent(parent), reference(reference) {
+                lock = std::make_shared< std::lock_guard<std::mutex> >(*mutex);
             }
          public:
-            ~LockedAccess() {
-                parent->unlock();
-            }
+            ~LockedAccess() {}
+
             C* operator->() {
                 return reference;
             }
@@ -29,6 +28,7 @@ template <class C> class ThreadProtectedVar{
                 return *reference;
             }
          private:
+            std::shared_ptr< std::lock_guard<std::mutex> >lock;
             ThreadProtectedVar<C> *parent;
             C *reference;
         };
@@ -73,7 +73,7 @@ template <class C> class ThreadProtectedVar{
          * @return C& reference to the protected variable
          */
         LockedAccess getLockedAccess() {
-            return LockedAccess(this, &var);
+            return LockedAccess(&mutex, &var);
         }
 
         C& operator=(const C& other) {
@@ -82,20 +82,6 @@ template <class C> class ThreadProtectedVar{
             return *this;
         }
     private:
-        /**
-         * @brief lock the protected variable manually to allow a reference access
-         */
-        void lock() {
-            mutex.lock();
-        }
-
-        /**
-         * @brief unlock the protected variable after it was manually locked
-         */
-        void unlock() {
-            mutex.unlock();
-        }
-
         C var;
         std::mutex mutex;
 };
