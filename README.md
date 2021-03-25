@@ -69,13 +69,12 @@ processes and simplify reuse of this project.
 | test/             | contains the boost_test based unit tests                       |
 | examples/         | contains demo classes to showcase usage and extensibility      |
 
-
 ## Gettings started
 
 Please have a look into the provided Main examples
 
 * examples/ControlledRobotMain.cpp (Robot that takes the position command and sets its position to it)
-* examples/RobotControllerMain.cpp (Controller that sets the desired robot position)
+* examples/RobotControllerMain.cpp (controller that sets the desired robot position)
 
 You can build the Doxygen documentation using `$> doxygen Doxyfile`, it will be written to the build/doc folder.
 

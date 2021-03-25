@@ -43,7 +43,8 @@ class TelemetryBuffer: public ThreadProtectedVar< std::vector < std::shared_ptr 
             std::string buf("");
             PBTYPE data;
             // expects the buffer to be locked!
-            if (RingBufferAccess::peekData(telemetrybuffer->get_ref()[type], &data)) {
+            auto lockObj = telemetrybuffer->lockedAccess();
+            if (RingBufferAccess::peekData(lockObj.get()[type], &data)) {
                 data.SerializeToString(&buf);
             }
             return buf;
@@ -55,15 +56,15 @@ class TelemetryBuffer: public ThreadProtectedVar< std::vector < std::shared_ptr 
     };
 
     template<class PBTYPE> void registerType(const uint16_t &type, const size_t &buffersize) {
-        lock();
+        auto lockedAccessObject = lockedAccess();
 
         // add buffer type
-        if (get_ref().size() <= type ) { // if size == type, index of type is not available
-            get_ref().resize(type + 1);  // size != index
+        if (lockedAccessObject.get().size() <= type) {  // if size == type, index of type is not available
+            lockedAccessObject.get().resize(type + 1);  // size != index
         }
 
         std::shared_ptr<RingBufferBase> newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<PBTYPE>(buffersize));
-        get_ref()[type] = newbuf;
+        lockedAccessObject.get()[type] = newbuf;
 
         // add to string converter
         if (converters.size() <= type) {
@@ -73,7 +74,6 @@ class TelemetryBuffer: public ThreadProtectedVar< std::vector < std::shared_ptr 
 
         converters[type] = conf;
 
-        unlock();
     }
 
 

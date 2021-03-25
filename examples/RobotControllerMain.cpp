@@ -12,10 +12,11 @@ int main(int argc, char** argv) {
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
     robot_remote_control::RobotController controller(commands, telemetry);
 
-    // consruct type
+    // construct types
     robot_remote_control::Position position;
     robot_remote_control::Orientation orientation;
     robot_remote_control::Pose pose;
+    robot_remote_control::Transforms transforms;
 
     // fill
     position.set_x(0);
@@ -44,6 +45,9 @@ int main(int argc, char** argv) {
 
     robot_remote_control::WrenchState wstate;
 
+    //set Heartbeat to one second
+    controller.setHeartBeatDuration(1);
+
     while (true) {
         controller.setTargetPose(pose);
         // controller.setTwistCommand(twistcommand);
@@ -60,7 +64,8 @@ int main(int argc, char** argv) {
         x += 0.01;
 
 
-        printf("%.2f %.2f %.2f\n", currentpose.position().x(), currentpose.position().y(), currentpose.position().z());
+        //printf("%.2f %.2f %.2f\n", currentpose.position().x(), currentpose.position().y(), currentpose.position().z());
+        printf("Current Pose: %s\n", currentpose.ShortDebugString().c_str());
 
         printf("got %i joints\n", jointstate.name_size());
         google::protobuf::RepeatedPtrField<std::string> names = jointstate.name();
@@ -71,10 +76,15 @@ int main(int argc, char** argv) {
         robot_remote_control::SimpleSensor sens;
         controller.getSimpleSensor(1, &sens);
 
-
-        if (controller.getCurrentWrenchState(&wstate)){
+        if (controller.getCurrentWrenchState(&wstate)) {
             wstate.PrintDebugString();
         }
+
+        if (controller.getCurrentTransforms(&transforms)) {
+            transforms.PrintDebugString();
+        }
+
+        printf("latency %f seconds\n", controller.getHeartBreatRoundTripTime()/2.0);
 
 
         usleep(10000);

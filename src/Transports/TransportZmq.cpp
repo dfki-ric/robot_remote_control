@@ -19,6 +19,8 @@ TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type){
     switch(type){
         case REQ:{
             socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REQ));
+            socket->setsockopt(ZMQ_REQ_CORRELATE, 1);
+            socket->setsockopt(ZMQ_REQ_RELAXED, 1);
             socket->connect(addr);
             break;
         }
@@ -63,6 +65,6 @@ int TransportZmq::receive(std::string* buf,Flags flags){
     }
     int result = socket->recv(&requestmsg,zmqflag);
     *buf = std::string((char*)requestmsg.data(),requestmsg.size());
-    return result;
+    return requestmsg.size();
 }
 

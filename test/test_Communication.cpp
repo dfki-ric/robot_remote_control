@@ -34,6 +34,11 @@ void initComms() {
 
   if (!command.get()) {command = TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP));}
   if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB));}
+  // if (!command.get()) {command = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REP));}
+  // if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::PUB));}
+  // if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REQ));}
+  // if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::SUB));}
+
 }
 
 template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, const ControlMessageType &type) {
@@ -416,6 +421,14 @@ BOOST_AUTO_TEST_CASE(check_telemetry_pose) {
   Pose send, recv;
   send = TypeGenerator::genPose();
   recv = testTelemetry(send, CURRENT_POSE);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_poses) {
+  // not using the set/get functions
+  Poses send, recv;
+  send = TypeGenerator::genPoses();
+  recv = testTelemetry(send, POSES);
   COMPARE_PROTOBUF(send, recv);
 }
 

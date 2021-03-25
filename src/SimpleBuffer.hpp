@@ -17,23 +17,18 @@ template <class BUFFERTYPE> class SimpleBuffer : public ThreadProtectedVar< std:
         virtual ~SimpleBuffer() {}
 
         void initBufferID (const uint16_t &id) {
-            lock();
-
-            if (get_ref().size() <= id) {
+            auto lockedAccessObject = lockedAccess();
+            if (lockedAccessObject.get().size() <= id) {
                 // resize(id+1); //if id == 1, indeyx should be one, so we need size two
-                get_ref().resize(id + 1);  // if id == 1, index should be one, so we need size two
+                lockedAccessObject.get().resize(id + 1);  // if id == 1, index should be one, so we need size two
             }
 
-            if (get_ref()[id].get() == nullptr) {
+            if (lockedAccessObject.get()[id].get() == nullptr) {
                     std::shared_ptr<RingBufferBase> newbuf;
                     newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<BUFFERTYPE>(1));
-                    get_ref()[id] = newbuf;
+                    lockedAccessObject.get()[id] = newbuf;
             }
-
-            unlock();
         }
-
-
 };
 
 }  // namespace robot_remote_control

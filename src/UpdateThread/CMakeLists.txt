@@ -3,6 +3,7 @@ find_package (Threads)
 
 add_library(robot_remote_control-update_thread
             UpdateThread.cpp
+            Timer.cpp
             )
 
 target_include_directories(robot_remote_control-update_thread

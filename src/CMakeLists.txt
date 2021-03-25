@@ -3,9 +3,6 @@
 
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 add_subdirectory(Types)

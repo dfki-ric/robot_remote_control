@@ -4,6 +4,10 @@ import "google/protobuf/any.proto";
 
 package robot_remote_control;
 
+message HeartBeat {
+    float heartBeatDuration = 1;
+}
+
 message TimeStamp {
     int32 secs = 1;
     int32 nsecs = 2;
@@ -36,6 +40,7 @@ message Orientation {
 message Pose {
     Position position = 1;
     Orientation orientation = 2;
+    TimeStamp timestamp = 3;
 }
 
 message Poses {
@@ -46,6 +51,11 @@ message Transform {
     Pose transform = 1;
     string from = 2;
     string to = 3;
+    TimeStamp timestamp= 4;
+}
+
+message Transforms {
+    repeated Transform transform = 1;
 }
 
 message Twist {
@@ -67,15 +77,23 @@ message GoTo {
     double waypoint_max_forward_speed = 3;
 }
 
+message NamedValue {
+    string name = 1;
+    float value = 2;
+}
+
 enum SimpleActionType {
-    VALUE_INT = 0;
-    VALUE_FLOAT = 1;
-    TRIGGER = 2;
+    UNDEFINED = 0;
+    VALUE_INT = 1;
+    VALUE_FLOAT = 2;
+    TRIGGER = 3;
 }
 message SimpleActionDef{
     SimpleActionType type = 1;
-    uint64 min_state = 2;
-    uint64 max_state = 3;
+    float min_state = 2;
+    float max_state = 3;
+    float step_size = 4;
+    repeated NamedValue value_names = 5;
 }
 
 message SimpleAction {
@@ -89,12 +107,13 @@ message SimpleActions {
 }
 
 enum ComplexActionType {
-    POSE = 0;
-    POSE_LIST = 1;
-    TWIST = 2;
-    TWIST_LIST = 3;
-    AREA = 4;
-    VOLUME = 5;
+    UNDEFINED_COMPLEX_ACTION = 0;
+    POSE = 1;
+    POSE_LIST = 2;
+    TWIST = 3;
+    TWIST_LIST = 4;
+    AREA = 5;
+    VOLUME = 6;
 }
 
 message ComplexAction {
@@ -134,9 +153,14 @@ message VideoStreams{
 message SimpleSensor{
     string name = 1;
     uint32 id = 2;
-    Vector2 size = 3;
+    //size in x and y in order to send e.g. gridmaps, indexing: val = value[x+y*sizex]
+    //if this is a single value, you omit this completely
+    Vector2 size = 3; 
     repeated float value = 4;
     TimeStamp timestamp = 5;
+    //scale for discretized arrays of values of each data point in x and y in SI units (meters, seconds etc.)
+    //omit if no scale is needed
+    Vector2 scale = 6;
 }
 
 message SimpleSensors{
@@ -145,6 +169,12 @@ message SimpleSensors{
 
 message Map {
     google.protobuf.Any map = 3;
+}
+
+enum MapMessageType {  
+    NO_MAP_DATA = 0;
+    POINTCLOUD_MAP = 1;
+    MAP_MESSAGE_TYPES_NUMBER = 2; // LAST element
 }
 
 message MapsDefinition {

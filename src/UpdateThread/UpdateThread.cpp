@@ -7,7 +7,7 @@
 using namespace robot_remote_control;
 
 
-UpdateThread::UpdateThread():running(false) {
+UpdateThread::UpdateThread():running(false), threadTimer(std::make_shared<ThreadProtectedVar<Timer>>()) {
 }
 
 UpdateThread::~UpdateThread() {
@@ -16,10 +16,11 @@ UpdateThread::~UpdateThread() {
     }
 }
 
-void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture) {
+void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture, std::shared_ptr< ThreadProtectedVar<Timer> > timer) {
     running = true;
     while (runningFuture.wait_for(std::chrono::milliseconds(milliseconds)) == std::future_status::timeout) {
         update();
+        timer->lockedAccess()->start();
     }
     running = false;
 }
@@ -27,7 +28,7 @@ void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::futur
 void UpdateThread::startUpdateThread(const unsigned int &milliseconds) {
     if (!running) {
         stopFuture = stopPromise.get_future();
-        updateThread = std::thread(&UpdateThread::updateThreadMain, this, std::move(milliseconds), std::move(stopFuture));
+        updateThread = std::thread(&UpdateThread::updateThreadMain, this, std::move(milliseconds), std::move(stopFuture), threadTimer);
         running = true;
     }
 }
@@ -40,4 +41,9 @@ void UpdateThread::stopUpdateThread() {
         }
         running = false;
     }
+}
+
+float UpdateThread::getElapsedTimeInS() {
+    float time = threadTimer->lockedAccess()->getElapsedTime();
+    return time;
 }

@@ -16,7 +16,14 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
-    robot.startUpdateThread(100);
+    robot.startUpdateThread(10);
+
+    // set a callback for connection losses, allow 100ms of later arrival
+    // (due to differences in latency between heartbeat commands)
+    // the elapsed time may be used to have different stages of escalation
+    robot.setupHeartbeatCallback(0.1, [](const float &elapsed){
+        printf("no heartbeat since %.2f seconds\n", elapsed);
+    });
 
     robot_remote_control::RobotName name;
     name.set_value("TestRobot");
@@ -65,7 +72,17 @@ int main(int argc, char** argv)
     action->mutable_type()->set_max_state(100);  // values from 0-100
     action->set_state(100);  // current state
 
-
+    // Transform
+    robot_remote_control::Transforms transforms;
+    robot_remote_control::Transform transform;
+    robot_remote_control::Pose tf_pose;
+    tf_pose.mutable_position()->set_x(7);
+    tf_pose.mutable_position()->set_y(3);
+    *transform.mutable_transform() = tf_pose;
+    transform.set_from("Source");
+    transform.set_to("Target");
+    *transform.mutable_timestamp() = robot.getTime();
+    *transforms.add_transform() = transform;
 
     robot.initSimpleActions(simpleActions);
 
@@ -128,6 +145,7 @@ int main(int argc, char** argv)
             printf("\ngot target pose command:\n%s\n", targetpose.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "warping fake robot to target position\n");
             currentpose = targetpose;
+            *(currentpose.mutable_timestamp()) = robot.getTime();
         }
 
         if (robot.getTwistCommand(&twistcommand)) {
@@ -169,6 +187,8 @@ int main(int argc, char** argv)
 
         temperature.set_value(0, 42);
         robot.setSimpleSensor(temperature);
+
+        robot.setCurrentTransforms(transforms);
 
         velocity.set_value(0, 0.1);
         velocity.set_value(1, 0.1);
