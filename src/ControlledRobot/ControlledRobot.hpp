@@ -380,11 +380,6 @@ class ControlledRobot: public UpdateThread{
         float heartbeatAllowedLatency;
         std::function<void(const float&)> heartbeatExpiredCallback;
 
-
-
-        SimpleBuffer<std::string> mapBuffer;
-
-
         SimpleBuffer<std::string> mapBuffer;
 
         std::map<uint32_t, CommandBufferBase*> commandbuffers;
