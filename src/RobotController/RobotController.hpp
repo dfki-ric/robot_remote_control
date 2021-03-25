@@ -333,7 +333,6 @@ class RobotController: public UpdateThread {
 
             // add the requested type
             *data = type;
-
             *result = sendRequest(buf);
         }
 

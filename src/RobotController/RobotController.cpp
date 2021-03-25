@@ -15,7 +15,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     heartBreatRoundTripTime(0),
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()) {
-
     simplesensorbuffer = std::make_shared< SimpleBuffer<SimpleSensor> >();
 
     registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
