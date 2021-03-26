@@ -279,6 +279,15 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE);
         }
 
+        /**
+         * @brief Set the Map object, maps are not sent via telemetry, they have to be requsted 
+         *  to be sent via the command channel
+         * 
+         * @param map 
+         * @param mapId defined the map type defiend in MapMessageType
+         * @return int 
+         */
+
         int setMap(const Map & map, const uint32_t &mapId) {
             return setMap(map.SerializeAsString(), mapId);
         }
@@ -299,10 +308,26 @@ class ControlledRobot: public UpdateThread{
             return true;
         }
 
+        /**
+         * @brief Set the Point Cloud object to be requestes as a map
+         * 
+         * @param pointcloud 
+         * @return int 
+         */
         int setPointCloud(const robot_remote_control::PointCloud pointcloud) {
             robot_remote_control::Map map;
             map.mutable_map()->PackFrom(pointcloud);
             setMap(map, robot_remote_control::POINTCLOUD_MAP);
+        }
+
+        /**
+         * @brief Grid map transferredas simplesensor Maps are sent on request, 
+         * 
+         */
+        int setGridMap(const GridMap &gridmap) {
+            robot_remote_control::Map map;
+            map.mutable_map()->PackFrom(gridmap);
+            setMap(map, robot_remote_control::GRID_MAP);
         }
 
         /**

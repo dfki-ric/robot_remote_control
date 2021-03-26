@@ -173,8 +173,9 @@ message Map {
 
 enum MapMessageType {  
     NO_MAP_DATA = 0;
-    POINTCLOUD_MAP = 1;
-    MAP_MESSAGE_TYPES_NUMBER = 2; // LAST element
+    POINTCLOUD_MAP = 1; // the pointcloud proto type
+    GRID_MAP = 2;  // transmitted as SimpleSensor
+    MAP_MESSAGE_TYPES_NUMBER = 3; // LAST element
 }
 
 message MapsDefinition {
@@ -196,10 +197,12 @@ message PointCloud {
     repeated ChannelFloat channels = 5;
 }
 
-message PointCloud2 {
-
+message GridMap {
+    TimeStamp timestamp = 1;
+    string frame = 2;
+    Position origin  = 3;
+    repeated SimpleSensor layers = 4;
 }
-
 
 message Wrench {
     Vector3 force = 1;
