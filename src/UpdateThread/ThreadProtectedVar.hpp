@@ -9,28 +9,40 @@ namespace robot_remote_control {
  * @brief Template class to make variables thread safe
  * 
  * @tparam C The class type to have thread safe
+ * 
+ * Examples:
+ *  ThreadProtectedVar< std::vector<int> > thread_int;
+ *  thread_int->lockedAccess()->push_back(5);
+ *  //for long-term locks
+ *  { // extra scope to release the lock
+ *      auto lockedAccessObject = thread_int.lockedAccess();
+ *      for (int i = 0; i<5; ++i) {
+ *          lockedAccessObject->push_back(i);
+ *      }
+ *      int myint = lockedAccessObject.get()[3];
+ *  }
+ *
+ *  int myint2 = thread_int->lockedAccess().get()[5];
+ *  int size = thread_int->lockedAccess()->size();
  */
 template <class C> class ThreadProtectedVar{
     public:
-        class LockedAccess {
-         private:
-            friend class ThreadProtectedVar;
-            LockedAccess(ThreadProtectedVar<C> *parent, C *reference): parent(parent), reference(reference) {
-                parent->lock();
-            }
+        class LockedAccess {            
          public:
-            ~LockedAccess() {
-                parent->unlock();
-            }
+            LockedAccess(std::mutex *mutex, C *object): accesslock(*mutex), object(object) { }
+
             C* operator->() {
-                return reference;
+                return object;
             }
             C& get() {
-                return *reference;
+                return *object;
+            }
+            void set(const C& value) {
+                *object = value;
             }
          private:
-            ThreadProtectedVar<C> *parent;
-            C *reference;
+            std::unique_lock<std::mutex> accesslock;
+            C *object;
         };
 
         ThreadProtectedVar() {}
@@ -38,64 +50,20 @@ template <class C> class ThreadProtectedVar{
 
         virtual ~ThreadProtectedVar() {}
 
+        /**
+         * @brief Get the protected variable as access object allowing direct, locked access
+         * 
+         * @return LockedAccess object that locked the mutex as log it is in scope
+         */
+        LockedAccess lockedAccess() {
+            return {&mutex, &var};
+        }
+
         // no copy constructors
         ThreadProtectedVar(const ThreadProtectedVar&) = delete;
         ThreadProtectedVar& operator=(const ThreadProtectedVar&) = delete;
 
-        /**
-         * @brief get a copy of the contained variable
-         * 
-         * @return const C a copy of the protected variable
-         */
-        const C get() {
-            std::lock_guard<std::mutex> lock(mutex);
-            C returnvar = var;
-            return returnvar;
-        }
-
-        const C operator()() {
-            return get();
-        }
-
-        /**
-         * @brief set the protected variable
-         * 
-         * @param val the new value
-         */
-        void set(const C &val) {
-            std::lock_guard<std::mutex> lock(mutex);
-            var = val;
-        }
-
-        /**
-         * @brief Get the protected variable as reference allowing direct access
-         * 
-         * @return C& reference to the protected variable
-         */
-        LockedAccess getLockedAccess() {
-            return LockedAccess(this, &var);
-        }
-
-        C& operator=(const C& other) {
-            std::lock_guard<std::mutex> lock(mutex);
-            var = other;
-            return *this;
-        }
     private:
-        /**
-         * @brief lock the protected variable manually to allow a reference access
-         */
-        void lock() {
-            mutex.lock();
-        }
-
-        /**
-         * @brief unlock the protected variable after it was manually locked
-         */
-        void unlock() {
-            mutex.unlock();
-        }
-
         C var;
         std::mutex mutex;
 };

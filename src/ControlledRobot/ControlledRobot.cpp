@@ -85,7 +85,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             std::string map;
             //get map
             {
-                auto lockedAccess = mapBuffer.getLockedAccess();
+                auto lockedAccess = mapBuffer.lockedAccess();
                 if (*requestedMap < lockedAccess.get().size()){
                     RingBufferAccess::peekData(lockedAccess.get()[*requestedMap],&map);
                 }

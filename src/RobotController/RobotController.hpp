@@ -57,7 +57,7 @@ class RobotController: public UpdateThread {
          * @return float time in seconds needed to send/receive the last heartbeat (if used)
          */
         float getHeartBreatRoundTripTime() {
-            return heartBreatRoundTripTime.get();
+            return heartBreatRoundTripTime.lockedAccess().get();
         }
 
         /**
@@ -157,7 +157,7 @@ class RobotController: public UpdateThread {
          * @return false 
          */
         bool getSimpleSensor(const uint16_t &id, SimpleSensor *simplesensor) {
-            auto lockedAccess = simplesensorbuffer->getLockedAccess();
+            auto lockedAccess = simplesensorbuffer->lockedAccess();
             bool result = false;
             if (lockedAccess.get().size() > id) {
                 std::shared_ptr<RingBufferBase> bufferptr = lockedAccess.get()[id];
@@ -297,7 +297,7 @@ class RobotController: public UpdateThread {
          * @return unsigned int number of messages in the buffer
          */
         unsigned int getBufferSize(const TelemetryMessageType &type) {
-            int size = buffers->getLockedAccess().get()[type]->size();
+            int size = buffers->lockedAccess().get()[type]->size();
             return size;
         }
 
@@ -312,7 +312,7 @@ class RobotController: public UpdateThread {
          */
 
         template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
-            bool result = RingBufferAccess::popData(buffers->getLockedAccess().get()[type], data);
+            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data);
             return result;
         }
 
@@ -333,7 +333,6 @@ class RobotController: public UpdateThread {
 
             // add the requested type
             *data = type;
-
             *result = sendRequest(buf);
         }
 
@@ -386,7 +385,7 @@ class RobotController: public UpdateThread {
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
-                RingBufferAccess::pushData(buffers->getLockedAccess().get()[type], data);
+                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], data);
             }
         };
 

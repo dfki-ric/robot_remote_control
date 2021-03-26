@@ -39,7 +39,7 @@ TransportUDT::TransportUDT(const ConnectionType &type, const int &port, const st
 
         UDT::listen(serv, 10);
 
-        socket.set(0);
+        socket.lockedAccess().set(0);
 
         //start connect thread (locks socket)
         acceptthread = std::thread(&TransportUDT::accept,this);
@@ -47,7 +47,7 @@ TransportUDT::TransportUDT(const ConnectionType &type, const int &port, const st
         //sleep(1);
 
     }else{
-        socket.set(UDT::socket(AF_INET, SOCK_DGRAM, 0));
+        socket.lockedAccess().set(UDT::socket(AF_INET, SOCK_DGRAM, 0));
 
         // bool block = true;
         // socket.lock();
@@ -64,8 +64,8 @@ TransportUDT::~TransportUDT(){
 
     acceptthread.join();
 
-    if (socket.get()){
-        UDT::close(socket.get());
+    if (socket.lockedAccess().get()){
+        UDT::close(socket.lockedAccess().get());
     }
     if (serv){
         UDT::close(serv);
@@ -74,7 +74,7 @@ TransportUDT::~TransportUDT(){
 
 
 void TransportUDT::accept(){
-    auto lockedSocket = socket.getLockedAccess();
+    auto lockedSocket = socket.lockedAccess();
 //      if (!socket.get_ref()){
         cout << __PRETTY_FUNCTION__ << port << endl;
 
@@ -95,7 +95,7 @@ void TransportUDT::accept(){
 }
 
 void TransportUDT::connect(){
-    auto lockedSocket = socket.getLockedAccess();
+    auto lockedSocket = socket.lockedAccess();
     sockaddr_in serv_addr;
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
@@ -117,7 +117,7 @@ void TransportUDT::connect(){
 
 
 int TransportUDT::send(const std::string& buf, Flags flags){
-    auto lockedSocket = socket.getLockedAccess();
+    auto lockedSocket = socket.lockedAccess();
 
     if ((flags & NOBLOCK) && blockingSend ){
         //if should not block but enabled:
@@ -140,7 +140,7 @@ int TransportUDT::send(const std::string& buf, Flags flags){
 }
 
 int TransportUDT::receive(std::string* buf, Flags flags){
-    auto lockedSocket = socket.getLockedAccess();
+    auto lockedSocket = socket.lockedAccess();
     
     if ((flags & NOBLOCK) && blockingRecv ){
         //if should not block but enabled:

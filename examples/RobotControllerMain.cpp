@@ -76,7 +76,6 @@ int main(int argc, char** argv) {
         robot_remote_control::SimpleSensor sens;
         controller.getSimpleSensor(1, &sens);
 
-
         if (controller.getCurrentWrenchState(&wstate)) {
             wstate.PrintDebugString();
         }

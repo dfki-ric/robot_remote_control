@@ -67,8 +67,7 @@ processes and simplify reuse of this project.
 | src/              | Contains all header (*.hpp) and source (*.cpp) files           |
 | build/ *          | The target directory for the build process, temporary content  |
 | test/             | contains the boost_test based unit tests                       |
-| examples/         | contains demo classes to showcase usage                        |
-
+| examples/         | contains demo classes to showcase usage and extensibility      |
 
 ## Gettings started
 
@@ -106,13 +105,12 @@ The repository includes a test directory with several boost test cases. You can 
 
     mkdir build
     cd build
-    cmake -D ROCK_TEST_ENABLED=ON ..
+    cmake -D -DBUILD_TESTS=ON ..
     make
 
-If you always want to build the test directory as well add the following lines to your CMakeLists.txt
+If you always want to build the test directory as well add the following line to your CMakeLists.txt
 
-    ENABLE_TESTING()
-    ADD_SUBDIRECTORY(test)
+    set(BUILD_TESTS ON)
 
 In order to run the tests you can either run all by executing (in /build/test) ```./test_suite``` or choose a specific test with the -t flag ```./test_suite -t checking_current_pose```
 
