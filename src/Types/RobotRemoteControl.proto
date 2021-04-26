@@ -192,7 +192,7 @@ message ChannelFloat {
 message PointCloud {
     TimeStamp timestamp = 1;
     string frame = 2;
-    Position origin  = 3;
+    Pose origin  = 3;
     repeated Position points = 4;
     repeated ChannelFloat channels = 5;
 }
@@ -200,7 +200,7 @@ message PointCloud {
 message GridMap {
     TimeStamp timestamp = 1;
     string frame = 2;
-    Position origin  = 3;
+    Pose origin  = 3;
     repeated SimpleSensor layers = 4;
 }
 
