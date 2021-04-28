@@ -18,6 +18,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
     registerCommandType(JOINTS_COMMAND, &jointsCommand);
     registerCommandType(HEARTBEAT, &heartbeatCommand);
+    registerCommandType(PERMISSION, &permissionCommand);
+    
 
     registerTelemetryType<Pose>(CURRENT_POSE);
     registerTelemetryType<JointState>(JOINT_STATE);
@@ -36,6 +38,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<Map>(MAP); // TODO: needed? ()
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
+    //registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
 }
 
 void ControlledRobot::update() {
@@ -97,6 +100,13 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             logLevel = *reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
             return LOG_LEVEL_SELECT;
+        }
+        case PERMISSION: {
+            printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+            Permission perm;
+            perm.ParseFromString(serializedMessage);
+            std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
+            promise.set_value(perm.granted());
         }
         default: {
             CommandBufferBase * cmdbuffer = commandbuffers[msgtype];

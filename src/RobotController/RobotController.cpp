@@ -32,6 +32,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
     registerTelemetryType<Poses>(POSES, buffersize);
     registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
+    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
 
 
     lostConnectionCallback = [&](const float& time){
@@ -75,6 +76,10 @@ void RobotController::setLogLevel(const uint16_t &level) {
     uint16_t *levelptr = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()+sizeof(uint16_t)));
     *levelptr = level;
     sendRequest(buf);
+}
+
+bool RobotController::setPermission(const Permission& permission) {
+    sendProtobufData(permission, PERMISSION);
 }
 
 void RobotController::update() {

@@ -110,6 +110,16 @@ class RobotController: public UpdateThread {
         void setLogLevel(const uint16_t &level);
 
         /**
+         * @brief Set the Permission object
+         * 
+         * @param permission 
+         * @return true 
+         * @return false 
+         */
+        bool setPermission(const Permission& permission);
+
+
+        /**
          * @brief Get the last sent Pose of the robot
          * 
          * @param pose the pose to write the data to
@@ -166,6 +176,10 @@ class RobotController: public UpdateThread {
                 }
             }
             return result;
+        }
+
+        bool getPermissionRequest(PermissionRequest* request) {
+            return getTelemetry(PERMISSION_REQUEST, request);
         }
 
         /**

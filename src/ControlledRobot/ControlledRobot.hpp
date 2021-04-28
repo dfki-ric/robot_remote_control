@@ -201,6 +201,14 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(telemetry, VIDEO_STREAMS);
         }
 
+
+        std::future<bool> requestPersmission(const PermissionRequest &permissionrequest) {
+            // get and init promise in map
+            std::promise<bool> &promise = pendingPermissionRequests[permissionrequest.requestuid()];
+            sendTelemetry(permissionrequest, PERMISSION_REQUEST);
+            return promise.get_future();
+        }
+
         /**
          * @brief Send a log message, is only send, if the log level set by the controller is higher
          * or equal to the lvl or higher than CUSTOM in these parameters. CUSTOM Messages can be 20 or higher
@@ -400,6 +408,7 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<ComplexAction> complexActionCommandBuffer;
         CommandBuffer<JointState> jointsCommand;
         CommandBuffer<HeartBeat> heartbeatCommand;
+        CommandBuffer<Permission> permissionCommand;
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;
@@ -428,6 +437,8 @@ class ControlledRobot: public UpdateThread{
         std::shared_ptr<TelemetryBuffer> buffers;
 
         uint32_t logLevel;
+
+        std::map<std::string, std::promise<bool> > pendingPermissionRequests;
 };
 
 }  // namespace robot_remote_control

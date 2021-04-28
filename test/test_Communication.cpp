@@ -542,3 +542,12 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
 
 }
 
+// BOOST_AUTO_TEST_CASE(check_permissions) {
+//   // not using the set/get functions
+
+
+//   WrenchState send, recv;
+//   send = TypeGenerator::genWrenchState();
+//   recv = testTelemetry(send, WRENCH_STATE);
+//   COMPARE_PROTOBUF(send, recv);
+// }

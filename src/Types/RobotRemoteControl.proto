@@ -135,6 +135,16 @@ message ComplexActions {
     repeated ComplexAction actions = 1;
 }
 
+message PermissionRequest {
+    string description = 1;
+    string requestuid = 2; // you can use a simple string (number, description again) or a UUID here
+}
+
+message Permission {
+    string requestuid = 1;
+    bool granted = 2;
+}
+
 message RobotName {
     string value = 1;
 }

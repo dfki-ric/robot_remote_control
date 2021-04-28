@@ -19,6 +19,7 @@ namespace robot_remote_control {
                             LOG_LEVEL_SELECT,
                             MAP_REQUEST,
                             HEARTBEAT,
+                            PERMISSION,
                             CONTROL_MESSAGE_TYPE_NUMBER  // LAST element
                             };
 
@@ -39,6 +40,7 @@ namespace robot_remote_control {
                                 MAP,
                         				POSES,                      // number of poses
                                 TRANSFORMS,                 // number of transforms
+                                PERMISSION_REQUEST,
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 
