@@ -88,12 +88,20 @@ enum SimpleActionType {
     VALUE_FLOAT = 2;
     TRIGGER = 3;
 }
-message SimpleActionDef{
-    SimpleActionType type = 1;
+
+message ActionDependency {
+    // defined if this acrion can only be usedif another acrion has anoter 
+    string depends_on_action = 1; // "task"
+    float depends_on_action_in_state = 2; //1    
+}
+
+message SimpleActionDef {
+    SimpleActionType type = 1; // VALUE_INT
     float min_state = 2;
     float max_state = 3;
     float step_size = 4;
-    repeated NamedValue value_names = 5;
+    repeated NamedValue value_names = 5; // {name: barrel_found, value=0}, {name: barrel_close, value=1}
+    ActionDependency action_dependency = 6;
 }
 
 message SimpleAction {
