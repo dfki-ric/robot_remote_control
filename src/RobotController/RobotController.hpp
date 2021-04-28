@@ -51,6 +51,10 @@ class RobotController: public UpdateThread {
             lostConnectionCallback = callback;
         }
 
+        bool isConnected() {
+            return connected.lockedAccess().get();
+        }
+
         /**
          * @brief Get the Heart Breat Round Trip Time
          * 
@@ -374,6 +378,7 @@ class RobotController: public UpdateThread {
         // void initBuffers(const unsigned int &defaultSize);
 
         std::function<void(const float&)> lostConnectionCallback;
+        ThreadProtectedVar<bool> connected;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;

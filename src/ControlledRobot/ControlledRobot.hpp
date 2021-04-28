@@ -28,6 +28,10 @@ class ControlledRobot: public UpdateThread{
             heartbeatExpiredCallback = callback;
         }
 
+        bool isConnected() {
+            return connected.lockedAccess().get();
+        }
+
         // Command getters
 
         /**
@@ -413,6 +417,7 @@ class ControlledRobot: public UpdateThread{
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;
         std::function<void(const float&)> heartbeatExpiredCallback;
+        ThreadProtectedVar<bool> connected;
 
         SimpleBuffer<std::string> mapBuffer;
 
