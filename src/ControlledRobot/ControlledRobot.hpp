@@ -206,7 +206,7 @@ class ControlledRobot: public UpdateThread{
         }
 
 
-        std::future<bool> requestPersmission(const PermissionRequest &permissionrequest) {
+        std::future<bool> requestPermission(const PermissionRequest &permissionrequest) {
             // get and init promise in map
             std::promise<bool> &promise = pendingPermissionRequests[permissionrequest.requestuid()];
             sendTelemetry(permissionrequest, PERMISSION_REQUEST);

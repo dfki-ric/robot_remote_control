@@ -139,7 +139,29 @@ int main(int argc, char** argv)
     robot.setCurrentPose(currentpose);
 
 
+
+    // for requests to work, you need a valid connection:
+    while (!robot.isConnected()) {
+        usleep(100000);
+    }
+
+    robot_remote_control::PermissionRequest permreq;
+    permreq.set_description("test");
+    permreq.set_requestuid("testuid");
+    std::future<bool> perm1 = robot.requestPermission(permreq);
+
+    permreq.set_description("test2");
+    permreq.set_requestuid("testuid2");
+    std::future<bool> perm2 = robot.requestPermission(permreq);
+
+    perm1.wait();
+    printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
+
     while (true) {
+        if (perm2.valid()) {
+            printf("result of permission request 2: %s\n", perm2.get() ? "true" : "false");
+        }
+
         // get and print commands
         if (robot.getTargetPoseCommand(&targetpose)) {
             printf("\ngot target pose command:\n%s\n", targetpose.ShortDebugString().c_str());

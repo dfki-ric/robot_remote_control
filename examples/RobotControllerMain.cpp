@@ -49,6 +49,7 @@ int main(int argc, char** argv) {
     controller.setHeartBeatDuration(1);
 
     while (true) {
+
         controller.setTargetPose(pose);
         // controller.setTwistCommand(twistcommand);
 
@@ -83,6 +84,20 @@ int main(int argc, char** argv) {
         if (controller.getCurrentTransforms(&transforms)) {
             transforms.PrintDebugString();
         }
+
+        robot_remote_control::PermissionRequest permreq;
+        if (controller.getPermissionRequest(&permreq)) {
+            permreq.PrintDebugString();
+            robot_remote_control::Permission permission;
+            permission.set_requestuid(permreq.requestuid());
+            if (permreq.description() == "test2") {
+                permission.set_granted(false);
+            } else {
+                permission.set_granted(true);
+            }
+            controller.setPermission(permission);
+        }
+
 
         printf("latency %f seconds\n", controller.getHeartBreatRoundTripTime()/2.0);
 
