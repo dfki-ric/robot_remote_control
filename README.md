@@ -18,6 +18,21 @@ While these are often well suited for in-system communication, they often cause 
 Those connections may also have additional requirements, like low bandwidth, high latency, etc., or custom communication hardware, which does not have an ethernet stack.
 This library defines an interface to those robots and supports externally programmed Transports that can handle the requirements above.
 
+## Citing
+
+An evaluation of library has beed published at the i-SAIRAS conference in 2020, you can find the Paper [here](https://www.dfki.de/web/forschung/publikationen/renameFileForDownload?filename=I-SAIRAS_2020-RRC_library-DFKI.pdf&file_id=uploads_4831).
+
+If you want to cite this library you can use this bibtex entry:
+
+```bibtex
+@inproceedings{danter2020rrc,
+    title = {Lightweight and Framework-Independent Communication Library to Support Cross-Plattform Robotic Applications and High-Latency Connections},
+    booktitle = {International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference},
+    author = {Leon Cedric Danter and Steffen Planthaber and Alexander Dettmann and Wiebke Brinkmann and Frank Kirchner},
+    year = {2020},
+    url = {https://www.dfki.de/web/forschung/publikationen/renameFileForDownload?filename=I-SAIRAS_2020-RRC_library-DFKI.pdf&file_id=uploads_4831}
+}
+```
 
 ## License
 
