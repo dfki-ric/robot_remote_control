@@ -107,7 +107,11 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             Permission perm;
             perm.ParseFromString(serializedMessage);
             std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
-            promise.set_value(perm.granted());
+            try {
+                promise.set_value(perm.granted());
+            } catch (const std::future_error &e) {
+                printf("%s\n", e.what());
+            }
         }
         default: {
             CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
