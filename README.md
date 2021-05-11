@@ -20,7 +20,7 @@ This library defines an interface to those robots and supports externally progra
 
 ## Citing
 
-An evaluation of library has beed published at the i-SAIRAS conference in 2020, you can find the Paper [here](https://www.dfki.de/web/forschung/publikationen/renameFileForDownload?filename=I-SAIRAS_2020-RRC_library-DFKI.pdf&file_id=uploads_4831).
+An evaluation of the library has beed published at the i-SAIRAS conference in 2020, you can find the Paper [here](https://www.hou.usra.edu/meetings/isairas2020fullpapers/pdf/5063.pdf).
 
 If you want to cite this library you can use this bibtex entry:
 
@@ -30,7 +30,7 @@ If you want to cite this library you can use this bibtex entry:
     booktitle = {International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference},
     author = {Leon Cedric Danter and Steffen Planthaber and Alexander Dettmann and Wiebke Brinkmann and Frank Kirchner},
     year = {2020},
-    url = {https://www.dfki.de/web/forschung/publikationen/renameFileForDownload?filename=I-SAIRAS_2020-RRC_library-DFKI.pdf&file_id=uploads_4831}
+    url = {https://www.hou.usra.edu/meetings/isairas2020fullpapers/pdf/5063.pdf}
 }
 ```
 
