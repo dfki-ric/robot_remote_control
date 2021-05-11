@@ -138,6 +138,7 @@ message ComplexActions {
 message PermissionRequest {
     string description = 1;
     string requestuid = 2; // you can use a simple string (number, description again) or a UUID here
+    bool granted = 3;
 }
 
 message Permission {
