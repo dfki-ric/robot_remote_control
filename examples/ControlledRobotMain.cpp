@@ -148,17 +148,17 @@ int main(int argc, char** argv)
     robot_remote_control::PermissionRequest permreq;
     permreq.set_description("test");
     permreq.set_requestuid("testuid");
-    std::shared_ptr< std::future<bool> > perm1 = robot.requestPermission(permreq);
+    std::shared_future<bool> perm1 = robot.requestPermission(permreq);
 
     permreq.set_description("test2");
     permreq.set_requestuid("testuid2");
-    std::shared_ptr< std::future<bool> > perm2 = robot.requestPermission(permreq);
+    std::shared_future<bool> perm2 = robot.requestPermission(permreq);
 
-    perm1->wait();
+    perm1.wait();
     printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
 
     while (true) {
-        if (perm2->valid()) {
+        if (perm2.valid()) {
             printf("result of permission request 2: %s\n", perm2.get() ? "true" : "false");
         }
 
