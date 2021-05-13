@@ -206,12 +206,12 @@ class ControlledRobot: public UpdateThread{
         }
 
 
-        std::shared_ptr< std::future<bool> > requestPermission(const PermissionRequest &permissionrequest) {
+        std::shared_future<bool> requestPermission(const PermissionRequest &permissionrequest) {
             // get and init promise in map
-            std::promise<bool> &promise = pendingPermissionRequests[permissionrequest.requestuid()];
+            std::promise<bool> &promise = pendingPermissionRequests[permissionrequest.description()];
             sendTelemetry(permissionrequest, PERMISSION_REQUEST);
             try {
-                return std::make_shared< std::future<bool> >(promise.get_future());
+                return promise.get_future().share();
             }
             catch (const std::future_error& e) {
                 // printf("%s\n", e.what());
