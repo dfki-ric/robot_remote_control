@@ -302,7 +302,7 @@ class ControlledRobot: public UpdateThread{
         int setPointCloud(const robot_remote_control::PointCloud pointcloud) {
             robot_remote_control::Map map;
             map.mutable_map()->PackFrom(pointcloud);
-            setMap(map, robot_remote_control::POINTCLOUD_MAP);
+            return setMap(map, robot_remote_control::POINTCLOUD_MAP);
         }
 
         /**
