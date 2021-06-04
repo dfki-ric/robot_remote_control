@@ -45,11 +45,20 @@ int main(int argc, char** argv) {
 
     robot_remote_control::WrenchState wstate;
 
-    //set Heartbeat to one second
+    // set Heartbeat to one second
     controller.setHeartBeatDuration(1);
+
+    controller.addTememetryReceivedCallback<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE, [](const size_t buffersize, const robot_remote_control::Pose &pose) {
+        // WARNING: this callback rund in the reveive thread, you cannot use this to access data, only to notify other threads
+        printf("Current Pose callback: %s\n", pose.ShortDebugString().c_str());
+    });
+
 
     while (true) {
         controller.setTargetPose(pose);
+        pose.mutable_position()->set_x(x);
+        x += 0.01;
+        
         // controller.setTwistCommand(twistcommand);
 
         // receive pending telemetry
@@ -57,11 +66,11 @@ int main(int argc, char** argv) {
 
         // in production, the get function should use a while loop
         // while (controller.getCurrentPose(currentpose)){do stuff}
-        int buffersize_pose = controller.getCurrentPose(&currentpose);
-        int buffersize_joint = controller.getCurrentJointState(&jointstate);
+        while (controller.getCurrentPose(&currentpose)) {
+            //read all poses from the buffer
+        }
+        bool new_joint = controller.getCurrentJointState(&jointstate);
 
-        pose.mutable_position()->set_x(x);
-        x += 0.01;
 
 
         //printf("%.2f %.2f %.2f\n", currentpose.position().x(), currentpose.position().y(), currentpose.position().z());
@@ -71,18 +80,21 @@ int main(int argc, char** argv) {
         google::protobuf::RepeatedPtrField<std::string> names = jointstate.name();
 
 
-        printf("buffer sizes %i, %i\n", buffersize_pose, buffersize_joint);
-
         robot_remote_control::SimpleSensor sens;
         controller.getSimpleSensor(1, &sens);
 
-        if (controller.getCurrentWrenchState(&wstate)) {
-            wstate.PrintDebugString();
-        }
-
+        // read only one element (no matter how much available)
         if (controller.getCurrentTransforms(&transforms)) {
             transforms.PrintDebugString();
         }
+
+        // read all remaining and only print if new
+        bool hasnewWrenchState = false;
+        while (controller.getCurrentWrenchState(&wstate)) { hasnewWrenchState=true; }
+        if (hasnewWrenchState) {
+            wstate.PrintDebugString();
+        }
+
 
         printf("latency %f seconds\n", controller.getHeartBreatRoundTripTime()/2.0);
 
