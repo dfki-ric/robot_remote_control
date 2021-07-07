@@ -102,7 +102,7 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             return false;
         }
 
-        bool addDataReceivedCallback(const std::function<void(const size_t& buffersize, const TYPE & data)> &cb) {
+        void addDataReceivedCallback(const std::function<void(const size_t& buffersize, const TYPE & data)> &cb) {
             callbacks.push_back(cb);
         }
 
@@ -148,7 +148,8 @@ class RingBufferAccess{
         template<class DATATYPE> static bool addDataReceivedCallback(const std::shared_ptr<RingBufferBase> &buffer, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &cb) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             if (dataclass.get()) {
-                return dataclass->addDataReceivedCallback(cb);
+                dataclass->addDataReceivedCallback(cb);
+                return true;
             }
             return false;
         }
