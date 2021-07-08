@@ -41,6 +41,7 @@ namespace robot_remote_control {
                         				POSES,                      // number of poses
                                 TRANSFORMS,                 // number of transforms
                                 PERMISSION_REQUEST,
+                                POINTCLOUD,                 // Pointcloud as telemetry
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

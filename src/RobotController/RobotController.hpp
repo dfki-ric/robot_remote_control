@@ -224,6 +224,18 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Get the Point Cloud object
+         * 
+         * @param pointcloud 
+         * @return true 
+         * @return false 
+         */
+        bool getPointCloud(PointCloud *pointcloud) {
+            return getTelemetry(POINTCLOUD, pointcloud);
+        }
+
+
+        /**
          * @brief request the curretn state instead of waiting for the first telemetry message
          * 
          * @param state the string to write the state to

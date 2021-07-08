@@ -33,6 +33,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     registerTelemetryType<Poses>(POSES, buffersize);
     registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
     registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
+    registerTelemetryType<PointCloud>(POINTCLOUD,buffersize);
 
 
     lostConnectionCallback = [&](const float& time){
