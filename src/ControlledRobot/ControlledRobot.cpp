@@ -36,6 +36,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<Map>(MAP); // TODO: needed? ()
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
+    registerTelemetryType<PointCloud>(POINTCLOUD);
 }
 
 void ControlledRobot::update() {

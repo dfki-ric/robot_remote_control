@@ -39,6 +39,7 @@ namespace robot_remote_control {
                                 MAP,
                         				POSES,                      // number of poses
                                 TRANSFORMS,                 // number of transforms
+                                POINTCLOUD,                 // Pointcloud as telemetry
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 
