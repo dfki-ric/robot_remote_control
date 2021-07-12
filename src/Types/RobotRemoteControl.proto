@@ -73,6 +73,7 @@ message JointState {
     repeated double position = 2;
     repeated double velocity = 3;
     repeated double effort = 4;
+    repeated double acceleration = 6;
     TimeStamp timestamp = 5;
 }
 
