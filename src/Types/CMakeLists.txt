@@ -2,13 +2,15 @@
 
 find_package(Protobuf REQUIRED)
 
-message("pb ${CMAKE_CURRENT_SOURCE_DIR}")
-message("pb ${PROTOBUF_INCLUDE_DIRS}")
-message("pb ${PROTOBUF_PROTOC_EXECUTABLE}")
+if (DEFINED ${PROTOBUF_IMPORT_DIRS})
+        set (RRC_PROTO_INCLUDES -I ${CMAKE_CURRENT_SOURCE_DIR} -I ${PROTOBUF_IMPORT_DIRS})
+endif()
+
+message("${PROTOBUF_PROTOC_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR} -I ${PROTOBUF_IMPORT_DIRS} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} RobotRemoteControl.proto")
 
 add_custom_command( OUTPUT RobotRemoteControl.pb.cc RobotRemoteControl.pb.h
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} -I ${CMAKE_CURRENT_SOURCE_DIR} -I ${PROTOBUF_IMPORT_DIRS} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} RobotRemoteControl.proto
+                    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ${RRC_PROTO_INCLUDES} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} RobotRemoteControl.proto
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/RobotRemoteControl.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/RobotRemoteControl.pb.cc 
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/RobotRemoteControl.pb.h ${CMAKE_CURRENT_BINARY_DIR}/RobotRemoteControl.pb.h
                     MAIN_DEPENDENCY RobotRemoteControl.proto
