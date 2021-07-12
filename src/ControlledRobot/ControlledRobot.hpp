@@ -255,6 +255,10 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(telemetry, CURRENT_POSE);
         }
 
+        int setCurrentIMUValues(const IMU &imu) {
+            return sendTelemetry(imu, IMU_VALUES);
+        }
+
         /**
          * @brief Set repeated field of poses
          * 
