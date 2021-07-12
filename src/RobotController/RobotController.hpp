@@ -350,7 +350,10 @@ class RobotController: public UpdateThread {
             std::string replybuf;
             requestBinary(type, &replybuf, requestType);
             result->ParseFromString(replybuf);
+        }
 
+        template< class DATATYPE > void addTememetryReceivedCallback(const uint16_t &type, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &function) {
+            RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
         }
 
         void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
