@@ -215,16 +215,21 @@ class RobotController: public UpdateThread {
          * @param state the string to write the state to
          * @return bool true if new data was read
          */
-        bool getRobotState(std::string *state) {
+        bool getRobotState(std::vector<std::string> *state) {
             RobotState protostate;
             int statesleft = getTelemetry(ROBOT_STATE, &protostate);
-            *state = protostate.state();
+            state->clear();
+            for (const std::string &line : protostate.state()) {
+                state->push_back(line);
+            }
             return statesleft;
         }
 
         bool getRobotState(RobotState *state) {
             return getTelemetry(ROBOT_STATE, state);
         }
+
+
 
         /**
          * @brief Get the current transforms
@@ -253,10 +258,13 @@ class RobotController: public UpdateThread {
          * 
          * @param state the string to write the state to
          */
-        void requestRobotState(std::string *state) {
+        void requestRobotState(std::vector<std::string> *state) {
             RobotState protostate;
             requestTelemetry(ROBOT_STATE, &protostate);
-            *state = protostate.state();
+            state->clear();
+            for (const std::string &line : protostate.state()) {
+                state->push_back(line);
+            }
         }
 
         /**

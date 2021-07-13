@@ -39,9 +39,9 @@ namespace robot_remote_control {
                                 WRENCH_STATE,               // current Wrench values
                                 MAPS_DEFINITION,
                                 MAP,
-                        				POSES,                      // number of poses
+                                POSES,                      // number of poses
                                 TRANSFORMS,                 // number of transforms
-                                PERMISSION_REQUEST,
+                                PERMISSION_REQUEST,         // a request for a permission
                                 POINTCLOUD,                 // Pointcloud as telemetry
                                 IMU_VALUES,                 // raw IMU
                                 CONTACT_POINTS,             // contact points

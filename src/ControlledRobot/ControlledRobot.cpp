@@ -139,7 +139,15 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
 
 int ControlledRobot::setRobotState(const std::string& state) {
     RobotState protostate;
-    protostate.set_state(state);
+    *protostate.add_state() = state;
+    return sendTelemetry(protostate, ROBOT_STATE);
+}
+
+int ControlledRobot::setRobotState(const std::vector<std::string> state) {
+    RobotState protostate;
+    for (const std::string &line : state) {
+        *protostate.add_state() = line;
+    }
     return sendTelemetry(protostate, ROBOT_STATE);
 }
 

@@ -169,7 +169,7 @@ message RobotName {
 }
 
 message RobotState {
-    string state = 1;
+    repeated string state = 1;
 }
 
 message LogMessage {

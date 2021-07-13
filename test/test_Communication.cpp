@@ -326,9 +326,9 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
-  std::string requested_robot_state;
-  std::string gotten_robot_state;
-  std::string second_requested_robot_state;
+  std::vector<std::string> requested_robot_state;
+  std::vector<std::string> gotten_robot_state;
+  std::vector<std::string> second_requested_robot_state;
 
 
 
@@ -340,14 +340,14 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   }
   controller.requestRobotState(&requested_robot_state);
 
-  BOOST_TEST(requested_robot_state == gotten_robot_state);
+  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
 
 
   bool result = controller.getRobotState(&gotten_robot_state);
 
   // should be empty because state was already recieved
   BOOST_CHECK_EQUAL(result, false);
-  BOOST_TEST(gotten_robot_state == "");
+  BOOST_TEST(gotten_robot_state.front() == "");
 
 
 
@@ -361,9 +361,9 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   controller.requestRobotState(&requested_robot_state);
   controller.requestRobotState(&second_requested_robot_state);
 
-  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_FINISHED");
-  BOOST_TEST(requested_robot_state == gotten_robot_state);
-  BOOST_TEST(requested_robot_state == second_requested_robot_state);
+  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_FINISHED");
+  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
+  BOOST_TEST(requested_robot_state.front() == second_requested_robot_state.front());
 
 
 
@@ -379,15 +379,15 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
     usleep(10000);
   }
   // request should return most recent state, get should return the oldest not retrieved one
-  BOOST_TEST(requested_robot_state == "ROBOT_DEMO_STOPPED");
-  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_RUNNING_AGAIN");
+  BOOST_TEST(requested_robot_state.front() == "ROBOT_DEMO_STOPPED");
+  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_RUNNING_AGAIN");
 
 
   while (!controller.getRobotState(&gotten_robot_state)) {
     usleep(10000);
   }
   // now they should be equal
-  BOOST_TEST(gotten_robot_state == requested_robot_state);
+  BOOST_TEST(gotten_robot_state.front() == requested_robot_state.front());
 
 
   robot.stopUpdateThread();
