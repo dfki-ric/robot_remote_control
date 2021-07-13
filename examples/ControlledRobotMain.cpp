@@ -125,7 +125,7 @@ int main(int argc, char** argv)
     // commands
     robot_remote_control::Twist twistcommand;
     robot_remote_control::GoTo gotocommand;
-    robot_remote_control::JointState jointscommand;
+    robot_remote_control::JointCommand jointscommand;
     robot_remote_control::SimpleAction simpleactionscommand;
     robot_remote_control::ComplexAction complexactionscommand;
 
@@ -183,7 +183,22 @@ int main(int argc, char** argv)
         if (robot.getJointsCommand(&jointscommand)) {
             printf("\ngot joints command:\n%s\n", jointscommand.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "setting fake robot joints to target position\n");
-            jointsstate = jointscommand;
+            jointsstate.Clear();
+            for (int i = 0; i < jointscommand.name().size(); ++i) {
+                jointsstate.add_name(jointscommand.name(i));
+                if (jointscommand.position().size()) {
+                    jointsstate.add_position(jointscommand.position(i));
+                }
+                if (jointscommand.position().size()) {
+                    jointsstate.add_velocity(jointscommand.velocity(i));
+                }
+                if (jointscommand.position().size()) {
+                    jointsstate.add_effort(jointscommand.effort(i));
+                }
+                if (jointscommand.position().size()) {
+                    jointsstate.add_acceleration(jointscommand.acceleration(i));
+                }
+            }
         }
 
         if (robot.getSimpleActionCommand(&simpleactionscommand)) {

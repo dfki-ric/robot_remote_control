@@ -70,7 +70,8 @@ class ControlledRobot: public UpdateThread{
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getJointsCommand(JointState *command) {
+
+        bool getJointsCommand(JointCommand *command) {
             return jointsCommand.read(command);
         }
 
@@ -432,7 +433,7 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<GoTo> goToCommand;
         CommandBuffer<SimpleAction> simpleActionsCommand;
         CommandBuffer<ComplexAction> complexActionCommandBuffer;
-        CommandBuffer<JointState> jointsCommand;
+        CommandBuffer<JointCommand> jointsCommand;
         CommandBuffer<HeartBeat> heartbeatCommand;
         CommandBuffer<Permission> permissionCommand;
         CommandBuffer<Poses> robotTrajectoryCommand;

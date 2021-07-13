@@ -79,6 +79,16 @@ message JointState {
     TimeStamp timestamp = 5;
 }
 
+message JointCommand {
+    repeated string name = 1;
+    repeated double position = 2;
+    repeated double velocity = 3;
+    repeated double effort = 4;
+    repeated double acceleration = 6;
+    repeated double kp_gain = 7;
+    repeated double kd_gain = 8;
+}
+
 message GoTo {
     double max_forward_speed = 1;
     Pose waypoint_pose = 2; 
@@ -254,3 +264,11 @@ message ContactPoints {
     repeated ContactPoint contacts= 1;
 }
 
+message Vector3Array {
+    repeated Vector3 elements = 1;
+}
+
+// message DepthMap {
+//  // TBD
+
+// }

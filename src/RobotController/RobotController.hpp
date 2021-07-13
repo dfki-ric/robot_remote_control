@@ -90,7 +90,7 @@ class RobotController: public UpdateThread {
          * 
          * @param jointsCommand 
          */
-        void setJointCommand(const JointState &jointsCommand);
+        void setJointCommand(const JointCommand &jointsCommand);
 
         /**
          * @brief Set the SimpleActions command that the controlled robot should execute

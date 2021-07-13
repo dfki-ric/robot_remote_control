@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
 
     robot_remote_control::JointState jointstate;
     robot_remote_control::JointState contollablejoints;
+    robot_remote_control::JointCommand jointcommand;
 
 
     controller.startUpdateThread(100);
@@ -54,9 +55,10 @@ int main(int argc, char** argv) {
     // set Heartbeat to one second
     controller.setHeartBeatDuration(1);
 
-    sleep(2); // give zmq time to connect
+    sleep(2);  // give zmq time to connect
     controller.requestControllableJoints(&contollablejoints);
     contollablejoints.PrintDebugString();
+
 
     int joint_index = 0;
 
@@ -67,7 +69,23 @@ int main(int argc, char** argv) {
     while (true) {
         int buffersize_joint = controller.getCurrentJointState(&jointstate);
 
-        // jointstate.PrintDebugString();
+        // copy available to controllable joints
+        for (int i = 0; i < jointstate.name().size(); ++i) {
+            jointcommand.add_name(jointstate.name(i));
+            if (jointstate.position().size()) {
+                jointcommand.add_position(jointstate.position(i));
+            }
+            if (jointstate.position().size()) {
+                jointcommand.add_velocity(jointstate.velocity(i));
+            }
+            if (jointstate.position().size()) {
+                jointcommand.add_effort(jointstate.effort(i));
+            }
+            if (jointstate.position().size()) {
+                jointcommand.add_acceleration(jointstate.acceleration(i));
+            }
+        }
+
 
         value = jointstate.position(joint_index);
 
@@ -132,10 +150,10 @@ int main(int argc, char** argv) {
             // jointcommand.add_name(jointstate.name(joint_index).c_str());
             // jointcommand.add_position(value);
 
-            jointstate.set_position(joint_index, value);
-            jointstate.clear_effort();
-            jointstate.clear_velocity();
-            controller.setJointCommand(jointstate);
+            jointcommand.set_position(joint_index, value);
+            jointcommand.clear_effort();
+            jointcommand.clear_velocity();
+            controller.setJointCommand(jointcommand);
 
         } else {
             usleep(20000);
