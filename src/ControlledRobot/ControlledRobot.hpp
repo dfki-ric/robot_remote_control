@@ -95,6 +95,10 @@ class ControlledRobot: public UpdateThread{
             return complexActionCommandBuffer.read(command);
         }
 
+        bool getRobotTrajectoryCommand(Poses *command) {
+            return robotTrajectoryCommand.read(command);
+        }
+
         /**
          * @brief Helper function to get TimeStamp object
          *
@@ -427,6 +431,7 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<JointState> jointsCommand;
         CommandBuffer<HeartBeat> heartbeatCommand;
         CommandBuffer<Permission> permissionCommand;
+        CommandBuffer<Poses> robotTrajectoryCommand;
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;

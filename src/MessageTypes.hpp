@@ -20,6 +20,7 @@ namespace robot_remote_control {
                             MAP_REQUEST,
                             HEARTBEAT,
                             PERMISSION,
+                            ROBOT_TRAJECTORY_COMMAND,
                             CONTROL_MESSAGE_TYPE_NUMBER  // LAST element
                             };
 

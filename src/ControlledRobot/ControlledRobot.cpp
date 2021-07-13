@@ -19,7 +19,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerCommandType(JOINTS_COMMAND, &jointsCommand);
     registerCommandType(HEARTBEAT, &heartbeatCommand);
     registerCommandType(PERMISSION, &permissionCommand);
-    
+    registerCommandType(ROBOT_TRAJECTORY_COMMAND, &robotTrajectoryCommand);
+
 
     registerTelemetryType<Pose>(CURRENT_POSE);
     registerTelemetryType<JointState>(JOINT_STATE);

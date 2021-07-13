@@ -68,6 +68,10 @@ void RobotController::setComplexActionCommand(const ComplexAction &complexAction
     sendProtobufData(complexActionCommand, COMPLEX_ACTION_COMMAND);
 }
 
+void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryCommand) {
+    sendProtobufData(robotTrajectoryCommand, ROBOT_TRAJECTORY_COMMAND);
+}
+
 void RobotController::setLogLevel(const uint16_t &level) {
     std::string buf;
     buf.resize(sizeof(uint16_t) + sizeof(uint16_t));

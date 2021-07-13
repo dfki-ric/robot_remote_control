@@ -106,6 +106,10 @@ class RobotController: public UpdateThread {
          */
         void setComplexActionCommand(const ComplexAction &complexActionCommand);
 
+
+        void setRobotTrajectoryCommand(const Poses &robotTrajectoryCommand);
+
+
         /**
          * @brief Set the LogLevel of the controlled robot
          * 
