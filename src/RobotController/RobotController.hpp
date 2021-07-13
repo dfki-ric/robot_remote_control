@@ -171,6 +171,11 @@ class RobotController: public UpdateThread {
             return getTelemetry(IMU_VALUES, imu);
         }
 
+        int getCurrentContactPoints(ContactPoints* points) {
+            return getTelemetry(CONTACT_POINTS, points);
+        }
+
+
         /**
          * @brief Get a Simple Sensor object
          * 

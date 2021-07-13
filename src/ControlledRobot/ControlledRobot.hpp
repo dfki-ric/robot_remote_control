@@ -263,6 +263,10 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(imu, IMU_VALUES);
         }
 
+        int setCurrentContactPoints(const ContactPoints &points) {
+            return sendTelemetry(points, CONTACT_POINTS);
+        }
+
         /**
          * @brief Set repeated field of poses
          * 

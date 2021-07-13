@@ -44,6 +44,7 @@ namespace robot_remote_control {
                                 PERMISSION_REQUEST,
                                 POINTCLOUD,                 // Pointcloud as telemetry
                                 IMU_VALUES,                 // raw IMU
+                                CONTACT_POINTS,             // contact points
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

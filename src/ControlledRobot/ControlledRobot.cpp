@@ -42,6 +42,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     //registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
     registerTelemetryType<PointCloud>(POINTCLOUD);
     registerTelemetryType<IMU>(IMU_VALUES);
+    registerTelemetryType<ContactPoints>(CONTACT_POINTS);
 }
 
 void ControlledRobot::update() {
