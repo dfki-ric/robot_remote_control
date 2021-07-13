@@ -25,8 +25,9 @@ message Vector3 {
 }
 
 message IMU {
-    Vector3 angular = 1;
-    Vector3 force = 2;
+    Vector3 acceleration = 1;
+    Vector3 gyro = 2;
+    Vector3 mag = 3;
 }
 
 message Position {
