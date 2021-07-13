@@ -46,6 +46,7 @@ message Orientation {
 message Pose {
     Position position = 1;
     Orientation orientation = 2;
+    float orientation2d = 4;  // only to be used in case position only consists of x and y
     TimeStamp timestamp = 3;
 }
 
