@@ -163,6 +163,10 @@ class RobotController: public UpdateThread {
             return getTelemetry(WRENCH_STATE, wrenchState);
         }
 
+        int getCurrentIMUState(IMU* imu) {
+            return getTelemetry(IMU_VALUES, imu);
+        }
+
         /**
          * @brief Get a Simple Sensor object
          * 
