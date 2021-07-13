@@ -47,3 +47,8 @@ install (TARGETS robot_remote_control-types
 
 
 
+
+# install uncompiled conversion headers
+install(DIRECTORY Conversions/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control/Types/Conversions
+)
