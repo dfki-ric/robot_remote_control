@@ -18,5 +18,13 @@ namespace RockConversion {
         rrc_type->set_orientation2d(rock_type.orientation);
     }
 
+    inline static void convert(const base::Orientation &rock_type, Orientation *rrc_type) {
+        rrc_type->set_x(rock_type.x());
+        rrc_type->set_y(rock_type.y());
+        rrc_type->set_z(rock_type.z());
+        rrc_type->set_w(rock_type.w());
+    }
+    
+
 }  // namespace RockConversion
 }  // namespace robot_remote_control
