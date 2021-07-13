@@ -24,12 +24,6 @@ message Vector3 {
     float z = 3;
 }
 
-message IMU {
-    Vector3 acceleration = 1;
-    Vector3 gyro = 2;
-    Vector3 mag = 3;
-}
-
 message Position {
     double x = 1;
     double y = 2;
@@ -41,6 +35,13 @@ message Orientation {
     double y = 2;
     double z = 3;
     double w = 4;
+}
+
+message IMU {
+    Vector3 acceleration = 1;
+    Vector3 gyro = 2;
+    Vector3 mag = 3;
+    Orientation orientation = 4;
 }
 
 message Pose {
