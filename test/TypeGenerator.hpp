@@ -136,11 +136,11 @@ class TypeGenerator{
         return data;
     }
 
-    static RobotState genRobotState() {
-        RobotState data;
-        data.set_state(std::to_string(std::rand()));
-        return data;
-    }
+    // static RobotState genRobotState() {
+    //     RobotState data;
+    //     data.set_state(std::to_string(std::rand()));
+    //     return data;
+    // }
 
     static VideoStream genVideoStream() {
         VideoStream data;

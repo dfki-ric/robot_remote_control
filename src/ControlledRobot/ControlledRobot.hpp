@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace robot_remote_control {
 
@@ -237,12 +238,20 @@ class ControlledRobot: public UpdateThread{
         int setLogMessage(const LogMessage& log_message);
 
         /**
-         * @brief Set the Robot State string
+         * @brief Set the Robot State as a single string
          * 
          * @param state the state description
          * @return int number of bytes sent
          */
         int setRobotState(const std::string& state);
+
+        /**
+         * @brief Set the Robot State as string vector
+         * 
+         * @param state 
+         * @return int 
+         */
+        int setRobotState(const std::vector<std::string> state);
 
 
         /**
