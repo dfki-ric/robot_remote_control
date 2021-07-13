@@ -24,6 +24,12 @@ message Vector3 {
     float z = 3;
 }
 
+message IMU {
+    Vector3 acceleration = 1;
+    Vector3 gyro = 2;
+    Vector3 mag = 3;
+}
+
 message Position {
     double x = 1;
     double y = 2;
@@ -40,6 +46,7 @@ message Orientation {
 message Pose {
     Position position = 1;
     Orientation orientation = 2;
+    float orientation2d = 4;  // only to be used in case position only consists of x and y
     TimeStamp timestamp = 3;
 }
 
@@ -68,6 +75,7 @@ message JointState {
     repeated double position = 2;
     repeated double velocity = 3;
     repeated double effort = 4;
+    repeated double acceleration = 6;
     TimeStamp timestamp = 5;
 }
 
@@ -233,3 +241,16 @@ message WrenchState {
     repeated string frame = 2;
     repeated Wrench wrenches = 3;
 }
+
+message ContactPoint {
+    Vector3 position = 1;  // position in body frame
+    float contact = 2;  // contact probability in the interval between 0 and 1.0, or NaN if unknown
+    float slip = 3;  //  slip distance of contact point in a single control loop
+    float friction_coefficient = 4; // friction_coefficient of the current
+    int32 groupId = 5;  //set a group for points that should have contact simultaneously
+}
+
+message ContactPoints {
+    repeated ContactPoint contacts= 1;
+}
+

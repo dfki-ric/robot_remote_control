@@ -18,6 +18,21 @@ While these are often well suited for in-system communication, they often cause 
 Those connections may also have additional requirements, like low bandwidth, high latency, etc., or custom communication hardware, which does not have an ethernet stack.
 This library defines an interface to those robots and supports externally programmed Transports that can handle the requirements above.
 
+## Citing
+
+An evaluation of the library has beed published at the i-SAIRAS conference in 2020, you can find the Paper [here](https://www.hou.usra.edu/meetings/isairas2020fullpapers/pdf/5063.pdf).
+
+If you want to cite this library you can use this bibtex entry:
+
+```bibtex
+@inproceedings{danter2020rrc,
+    title = {Lightweight and Framework-Independent Communication Library to Support Cross-Plattform Robotic Applications and High-Latency Connections},
+    booktitle = {International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference},
+    author = {Leon Cedric Danter and Steffen Planthaber and Alexander Dettmann and Wiebke Brinkmann and Frank Kirchner},
+    year = {2020},
+    url = {https://www.hou.usra.edu/meetings/isairas2020fullpapers/pdf/5063.pdf}
+}
+```
 
 ## License
 
@@ -53,6 +68,10 @@ You can use the compile_protobuf_from_source.bash script to build protobuf from 
     build_protobuf "$INSTALL_PATH"
 
 This will install protobuf 3 in the specified INSTALL_PATH (default is /usr/local)
+
+In case you have a system protobuf installed, defien the protobuf locations by yourself:
+
+    cmake .. -DCMAKE_CXX_STANDARD=11 -DBUILD_EXAMPLES=true -DPROTOBUF_PROTOC_EXECUTABLE=/bin/protoc -DPROTOBUF_IMPORT_DIRS=/include -DPROTOBUF_INCLUDE_DIR=/include -DPROTOBUF_LIBRARY=/lib/libprotobuf.so.28
 
 
 ### Directory Structure

@@ -33,7 +33,9 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
     registerTelemetryType<Poses>(POSES, buffersize);
     registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
     registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
-
+    registerTelemetryType<PointCloud>(POINTCLOUD, buffersize);
+    registerTelemetryType<IMU>(IMU_VALUES, buffersize);
+    registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
 
     lostConnectionCallback = [&](const float& time){
         printf("lost connection to robot, no reply for %f seconds\n", time);
@@ -65,6 +67,10 @@ void RobotController::setSimpleActionCommand(const SimpleAction &simpleActionCom
 
 void RobotController::setComplexActionCommand(const ComplexAction &complexActionCommand) {
     sendProtobufData(complexActionCommand, COMPLEX_ACTION_COMMAND);
+}
+
+void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryCommand) {
+    sendProtobufData(robotTrajectoryCommand, ROBOT_TRAJECTORY_COMMAND);
 }
 
 void RobotController::setLogLevel(const uint16_t &level) {

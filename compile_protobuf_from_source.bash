@@ -9,9 +9,9 @@ set -e # abort with error if any command returns with something other than zero
 ############
 
 function build_protobuf {
-  wget https://github.com/protocolbuffers/protobuf/archive/v3.1.0.tar.gz
-  tar xzf v3.1.0.tar.gz
-  cd protobuf-3.1.0
+  wget https://github.com/protocolbuffers/protobuf/archive/v3.17.3.tar.gz
+  tar xzf v3.17.3.tar.gz
+  cd protobuf-3.17.3
   ./autogen.sh
   ./configure --prefix=$1
   make

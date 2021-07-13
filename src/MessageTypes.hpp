@@ -20,6 +20,7 @@ namespace robot_remote_control {
                             MAP_REQUEST,
                             HEARTBEAT,
                             PERMISSION,
+                            ROBOT_TRAJECTORY_COMMAND,
                             CONTROL_MESSAGE_TYPE_NUMBER  // LAST element
                             };
 
@@ -41,6 +42,9 @@ namespace robot_remote_control {
                                 POSES,                      // number of poses
                                 TRANSFORMS,                 // number of transforms
                                 PERMISSION_REQUEST,         // a request for a permission
+                                POINTCLOUD,                 // Pointcloud as telemetry
+                                IMU_VALUES,                 // raw IMU
+                                CONTACT_POINTS,             // contact points
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

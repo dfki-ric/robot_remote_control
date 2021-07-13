@@ -106,6 +106,10 @@ class RobotController: public UpdateThread {
          */
         void setComplexActionCommand(const ComplexAction &complexActionCommand);
 
+
+        void setRobotTrajectoryCommand(const Poses &robotTrajectoryCommand);
+
+
         /**
          * @brief Set the LogLevel of the controlled robot
          * 
@@ -162,6 +166,15 @@ class RobotController: public UpdateThread {
         bool getCurrentWrenchState(WrenchState* wrenchState) {
             return getTelemetry(WRENCH_STATE, wrenchState);
         }
+
+        int getCurrentIMUState(IMU* imu) {
+            return getTelemetry(IMU_VALUES, imu);
+        }
+
+        int getCurrentContactPoints(ContactPoints* points) {
+            return getTelemetry(CONTACT_POINTS, points);
+        }
+
 
         /**
          * @brief Get a Simple Sensor object
@@ -227,6 +240,18 @@ class RobotController: public UpdateThread {
         bool getCurrentTransforms(Transforms *transforms) {
             return getTelemetry(TRANSFORMS, transforms);
         }
+
+        /**
+         * @brief Get the Point Cloud object
+         * 
+         * @param pointcloud 
+         * @return true 
+         * @return false 
+         */
+        bool getPointCloud(PointCloud *pointcloud) {
+            return getTelemetry(POINTCLOUD, pointcloud);
+        }
+
 
         /**
          * @brief request the curretn state instead of waiting for the first telemetry message
@@ -346,7 +371,10 @@ class RobotController: public UpdateThread {
             std::string replybuf;
             requestBinary(type, &replybuf, requestType);
             result->ParseFromString(replybuf);
+        }
 
+        template< class DATATYPE > void addTememetryReceivedCallback(const uint16_t &type, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &function) {
+            RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
         }
 
         void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {

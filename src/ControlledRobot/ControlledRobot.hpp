@@ -96,6 +96,10 @@ class ControlledRobot: public UpdateThread{
             return complexActionCommandBuffer.read(command);
         }
 
+        bool getRobotTrajectoryCommand(Poses *command) {
+            return robotTrajectoryCommand.read(command);
+        }
+
         /**
          * @brief Helper function to get TimeStamp object
          *
@@ -264,6 +268,14 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(telemetry, CURRENT_POSE);
         }
 
+        int setCurrentIMUValues(const IMU &imu) {
+            return sendTelemetry(imu, IMU_VALUES);
+        }
+
+        int setCurrentContactPoints(const ContactPoints &points) {
+            return sendTelemetry(points, CONTACT_POINTS);
+        }
+
         /**
          * @brief Set repeated field of poses
          * 
@@ -340,7 +352,12 @@ class ControlledRobot: public UpdateThread{
          * @param pointcloud 
          * @return int 
          */
-        int setPointCloud(const robot_remote_control::PointCloud pointcloud) {
+        int setPointCloud(const robot_remote_control::PointCloud &pointcloud) {
+            return sendTelemetry(pointcloud, POINTCLOUD);
+        }
+
+
+        int setPointCloudMap(const robot_remote_control::PointCloud &pointcloud) {
             robot_remote_control::Map map;
             map.mutable_map()->PackFrom(pointcloud);
             return setMap(map, robot_remote_control::POINTCLOUD_MAP);
@@ -427,6 +444,7 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<JointState> jointsCommand;
         CommandBuffer<HeartBeat> heartbeatCommand;
         CommandBuffer<Permission> permissionCommand;
+        CommandBuffer<Poses> robotTrajectoryCommand;
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;

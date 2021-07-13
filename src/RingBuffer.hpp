@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 
 
 namespace robot_remote_control {
@@ -67,6 +68,7 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
                 contentsize++;
                 in++;
                 in %= buffersize;
+                notify(data);
                 return true;
             } else if (overwriteIfFull) {
                 // buffer full, force-push (overwrite latest)
@@ -75,6 +77,7 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
                 out %= buffersize;
                 in++;
                 in %= buffersize;
+                notify(data);
                 return true;
             }
             return false;
@@ -99,10 +102,20 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             return false;
         }
 
+        void addDataReceivedCallback(const std::function<void(const size_t& buffersize, const TYPE & data)> &cb) {
+            callbacks.push_back(cb);
+        }
+
     private:
+        void notify(const TYPE & data) {
+            for (auto& cb : callbacks) {
+                cb(size(), data);
+            }
+        }
         size_t buffersize, contentsize, in, out;
         std::vector<TYPE> buffer;
 
+        std::vector< std::function<void (const size_t& buffersize, const TYPE & data)> > callbacks;
 };
 
 
@@ -124,10 +137,19 @@ class RingBufferAccess{
             return false;
         }
 
-        template<class DATATYPE> static bool peekData(const std::shared_ptr<RingBufferBase> &buffer, DATATYPE *data){
+        template<class DATATYPE> static bool peekData(const std::shared_ptr<RingBufferBase> &buffer, DATATYPE *data) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             if (dataclass.get()) {
                 return dataclass->peekData(data);
+            }
+            return false;
+        }
+
+        template<class DATATYPE> static bool addDataReceivedCallback(const std::shared_ptr<RingBufferBase> &buffer, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &cb) {
+            std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
+            if (dataclass.get()) {
+                dataclass->addDataReceivedCallback(cb);
+                return true;
             }
             return false;
         }

@@ -19,7 +19,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerCommandType(JOINTS_COMMAND, &jointsCommand);
     registerCommandType(HEARTBEAT, &heartbeatCommand);
     registerCommandType(PERMISSION, &permissionCommand);
-    
+    registerCommandType(ROBOT_TRAJECTORY_COMMAND, &robotTrajectoryCommand);
+
 
     registerTelemetryType<Pose>(CURRENT_POSE);
     registerTelemetryType<JointState>(JOINT_STATE);
@@ -39,6 +40,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
     //registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
+    registerTelemetryType<PointCloud>(POINTCLOUD);
+    registerTelemetryType<IMU>(IMU_VALUES);
+    registerTelemetryType<ContactPoints>(CONTACT_POINTS);
 }
 
 void ControlledRobot::update() {

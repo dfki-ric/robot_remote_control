@@ -27,6 +27,17 @@ target_include_directories(robot_remote_control-robot_controller_bin
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+add_executable(robot_remote_control-joint_controller_bin JointControllerMain.cpp)
+target_link_libraries(robot_remote_control-joint_controller_bin
+    robot_remote_control-robot_controller
+    robot_remote_control-transport_zmq
+)
+target_include_directories(robot_remote_control-joint_controller_bin
+	PUBLIC
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/RobotController>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 # install (TARGETS
 #         robot_remote_control-controlled_robot_bin
