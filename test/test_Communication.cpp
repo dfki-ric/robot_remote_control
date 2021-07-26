@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
 
   // should be empty because state was already recieved
   BOOST_CHECK_EQUAL(result, false);
-  BOOST_TEST(gotten_robot_state.front() == "");
+  BOOST_TEST(gotten_robot_state.size() == 0);
 
 
 
