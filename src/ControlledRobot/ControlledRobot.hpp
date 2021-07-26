@@ -35,6 +35,10 @@ class ControlledRobot: public UpdateThread{
 
         // Command getters
 
+        template< class DATATYPE > void addCommandReceivedCallback(const uint16_t &type, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &function) {
+            RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
+        }
+
         /**
          * @brief Get the Target Pose the robot should move to
          * 

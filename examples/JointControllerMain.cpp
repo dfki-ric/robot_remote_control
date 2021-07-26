@@ -67,27 +67,31 @@ int main(int argc, char** argv) {
     char input = 0;
 
     while (true) {
-        int buffersize_joint = controller.getCurrentJointState(&jointstate);
+        int newstate = controller.getCurrentJointState(&jointstate);
 
-        // copy available to controllable joints
-        for (int i = 0; i < jointstate.name().size(); ++i) {
-            jointcommand.add_name(jointstate.name(i));
-            if (jointstate.position().size()) {
-                jointcommand.add_position(jointstate.position(i));
+        if (newstate) {
+            // copy available to controllable joints
+            jointcommand.Clear();
+            for (int i = 0; i < jointstate.name().size(); ++i) {
+                jointcommand.add_name(jointstate.name(i));
+                if (jointstate.position().size()) {
+                    jointcommand.add_position(jointstate.position(i));
+                }
+                if (jointstate.velocity().size()) {
+                    jointcommand.add_velocity(jointstate.velocity(i));
+                }
+                if (jointstate.effort().size()) {
+                    jointcommand.add_effort(jointstate.effort(i));
+                }
+                if (jointstate.acceleration().size()) {
+                    jointcommand.add_acceleration(jointstate.acceleration(i));
+                }
             }
-            if (jointstate.position().size()) {
-                jointcommand.add_velocity(jointstate.velocity(i));
-            }
-            if (jointstate.position().size()) {
-                jointcommand.add_effort(jointstate.effort(i));
-            }
-            if (jointstate.position().size()) {
-                jointcommand.add_acceleration(jointstate.acceleration(i));
-            }
+            jointcommand.PrintDebugString();
+
+            value = jointcommand.position(joint_index);
         }
-
-
-        value = jointstate.position(joint_index);
+            jointcommand.PrintDebugString();
 
         if (kbhit()) {
             printf("\r");  // carriage retun (overwrite input from key press)
