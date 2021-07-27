@@ -33,11 +33,28 @@ class ControlledRobot: public UpdateThread{
             return connected.lockedAccess().get();
         }
 
-        // Command getters
+        // Command Callbacks
 
-        template< class DATATYPE > void addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
+        /**
+         * @brief add a callback for any command type received
+         * 
+         * @param function that takes const uint16_t &type (the tpye id from the message receive) as argument (may also be a lamda)
+         */
+        void addCommandReceivedCallback(const std::function<void(const uint16_t &type)> &function) {
+            commandCallbacks.push_back(function);
+        }
+
+        /**
+         * @brief add a callback triggered when a specific command type is received
+         * 
+         * @param type the Command type id from the MessageTypes header
+         * @param function 
+         */
+        void addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
             commandbuffers[type]->addCommandReceivedCallback(function);
         }
+
+        // Command getters
 
         /**
          * @brief Get the Target Pose the robot should move to
@@ -393,6 +410,8 @@ class ControlledRobot: public UpdateThread{
 
         virtual ControlMessageType evaluateRequest(const std::string& request);
 
+        void notifyCommandCallbacks(const uint16_t &type);
+
         struct CommandBufferBase{
             CommandBufferBase() {}
             virtual ~CommandBufferBase() {}
@@ -462,6 +481,9 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<HeartBeat> heartbeatCommand;
         CommandBuffer<Permission> permissionCommand;
         CommandBuffer<Poses> robotTrajectoryCommand;
+
+        std::vector< std::function<void(const uint16_t &type)> > commandCallbacks;
+
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;

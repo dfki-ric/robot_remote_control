@@ -554,8 +554,14 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
+  // add generic callback
+  robot.addCommandReceivedCallback([](const uint16_t &type){
+      // not getting the pose here, isnew will fail for other callback
+      BOOST_TEST(type == TARGET_POSE_COMMAND); //we are sending a pose below
+  });
+
   // add command callback
-  robot.addCommandReceivedCallback<Pose>(TARGET_POSE_COMMAND, [controlpose, &robot](){
+  robot.addCommandReceivedCallback(TARGET_POSE_COMMAND, [controlpose, &robot](){
       Pose pose;
       bool isnew = robot.getTargetPoseCommand(&pose);
       COMPARE_PROTOBUF(controlpose, pose);

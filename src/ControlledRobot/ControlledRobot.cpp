@@ -126,13 +126,19 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
                     return NO_CONTROL_DATA;
                 }
                 commandTransport->send(serializeControlMessageType(msgtype));
+                notifyCommandCallbacks(*type);
                 return msgtype;
-
             } else {
                 commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
                 return msgtype;
             }
         }
+    }
+}
+
+void ControlledRobot::notifyCommandCallbacks(const uint16_t &type) {
+    for (auto& cb : commandCallbacks) {
+        cb(type);
     }
 }
 
