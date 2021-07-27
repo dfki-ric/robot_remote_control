@@ -35,8 +35,8 @@ class ControlledRobot: public UpdateThread{
 
         // Command getters
 
-        template< class DATATYPE > void addCommandReceivedCallback(const uint16_t &type, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &function) {
-            RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
+        template< class DATATYPE > void addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
+            commandbuffers[type]->addCommandReceivedCallback(function);
         }
 
         /**
@@ -398,6 +398,15 @@ class ControlledRobot: public UpdateThread{
             virtual ~CommandBufferBase() {}
             virtual bool write(const std::string &serializedMessage) = 0;
             virtual bool read(std::string *receivedMessage) = 0;
+            void notify() {
+                for (auto& cb : callbacks) {
+                    cb();
+                }
+            }
+            std::vector< std::function<void()> > callbacks;
+            void addCommandReceivedCallback(const std::function<void()> &cb) {
+                callbacks.push_back(cb);
+            }
         };
 
         template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
@@ -416,6 +425,7 @@ class ControlledRobot: public UpdateThread{
                 void write(const COMMAND &src) {
                     command.lockedAccess().set(src);
                     isnew.lockedAccess().set(true);
+                    notify();
                 }
 
                 virtual bool write(const std::string &serializedMessage) {
@@ -425,6 +435,7 @@ class ControlledRobot: public UpdateThread{
                         return false;
                     }
                     isnew.lockedAccess().set(true);
+                    notify();
                     return true;
                 }
 
@@ -438,6 +449,7 @@ class ControlledRobot: public UpdateThread{
             private:
                 ThreadProtectedVar<COMMAND> command;
                 ThreadProtectedVar<bool> isnew;
+                
         };
 
         // command buffers

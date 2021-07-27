@@ -542,6 +542,43 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
 
 }
 
+BOOST_AUTO_TEST_CASE(check_callbacks) {
+  Pose robotpose, controlpose;
+  robotpose = TypeGenerator::genPose();
+  controlpose = TypeGenerator::genPose();
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+
+  // add command callback
+  robot.addCommandReceivedCallback<Pose>(TARGET_POSE_COMMAND, [controlpose, &robot](){
+      Pose pose;
+      bool isnew = robot.getTargetPoseCommand(&pose);
+      COMPARE_PROTOBUF(controlpose, pose);
+      BOOST_TEST(isnew == true);
+  });
+  // send the pose
+  controller.setTargetPose(controlpose);
+
+  controller.addTelemetryReceivedCallback<Pose>(CURRENT_POSE, [robotpose, &controller](const size_t& buffersize, const Pose & data){
+      COMPARE_PROTOBUF(robotpose, data);
+      Pose pose;
+      bool isnew = controller.getCurrentPose(&pose);
+      COMPARE_PROTOBUF(robotpose, pose);
+      BOOST_TEST(isnew == true);
+  });
+  robot.setCurrentPose(robotpose);
+
+
+
+
+  //COMPARE_PROTOBUF(robotpose, controlpose);
+}
+
 // BOOST_AUTO_TEST_CASE(check_permissions) {
 //   // not using the set/get functions
 

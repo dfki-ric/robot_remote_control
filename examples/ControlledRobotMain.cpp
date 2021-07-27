@@ -146,9 +146,9 @@ int main(int argc, char** argv)
         usleep(100000);
     }
 
-    robot.addCommandReceivedCallback<robot_remote_control::Pose>(robot_remote_control::TARGET_POSE_COMMAND, [](const size_t buffersize, const robot_remote_control::Pose &cmd) {
+    robot.addCommandReceivedCallback<robot_remote_control::Pose>(robot_remote_control::TARGET_POSE_COMMAND, []() {
         // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads
-        printf("Callback Pose Command: %s\n", cmd.ShortDebugString().c_str());
+        printf("Pose Command Callback\n");
     });
 
 
