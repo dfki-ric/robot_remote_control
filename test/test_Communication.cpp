@@ -497,13 +497,19 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
+  SimpleSensor temp_recv;
+
+  // getting an unavaile sensor should return false
+  bool result = controller.getSimpleSensor(1, &temp_recv);
+  BOOST_TEST(result == false);
+
+
   // send unregistered sensor
   SimpleSensor temp;
   temp.set_id(1);
   robot.setSimpleSensor(temp);
 
 
-  SimpleSensor temp_recv;
   while (!controller.getSimpleSensor(1, &temp_recv)) {
     // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
     usleep(10000);
