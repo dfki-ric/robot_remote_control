@@ -10,6 +10,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 namespace robot_remote_control {
 
@@ -418,9 +419,8 @@ class ControlledRobot: public UpdateThread{
             virtual bool write(const std::string &serializedMessage) = 0;
             virtual bool read(std::string *receivedMessage) = 0;
             void notify() {
-                for (auto& cb : callbacks) {
-                    cb();
-                }
+                auto callCb = [](const std::function<void()> &cb){cb();};
+                std::for_each(callbacks.begin(), callbacks.end(), callCb);
             }
             std::vector< std::function<void()> > callbacks;
             void addCommandReceivedCallback(const std::function<void()> &cb) {

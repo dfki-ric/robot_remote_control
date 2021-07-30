@@ -137,9 +137,8 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
 }
 
 void ControlledRobot::notifyCommandCallbacks(const uint16_t &type) {
-    for (auto& cb : commandCallbacks) {
-        cb(type);
-    }
+    auto callCb = [&](const std::function<void(const uint16_t &type)> &cb){cb(type);};
+    std::for_each(commandCallbacks.begin(), commandCallbacks.end(), callCb);
 }
 
 

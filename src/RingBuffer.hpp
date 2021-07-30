@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <algorithm>
 
 
 namespace robot_remote_control {
@@ -108,9 +109,8 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
 
     private:
         void notify(const TYPE & data) {
-            for (auto& cb : callbacks) {
-                cb(size(), data);
-            }
+            auto callCb = [&](const std::function<void (const size_t& buffersize, const TYPE & data)> &cb){cb(size(), data);};
+            std::for_each(callbacks.begin(), callbacks.end(), callCb);
         }
         size_t buffersize, contentsize, in, out;
         std::vector<TYPE> buffer;
