@@ -5,14 +5,14 @@
 #include <vector>
 #include <string>
 
-#include "UpdateThread/ThreadProtectedVar.hpp"
+#include "UpdateThread/AtomicClass.hpp"
 #include "RingBuffer.hpp"
 #include "MessageTypes.hpp"
 
 
 namespace robot_remote_control {
 
-class TelemetryBuffer: public ThreadProtectedVar< std::vector < std::shared_ptr <RingBufferBase> > > {
+class TelemetryBuffer: public AtomicClass< std::vector < std::shared_ptr <RingBufferBase> > > {
  public:
     explicit TelemetryBuffer();
 

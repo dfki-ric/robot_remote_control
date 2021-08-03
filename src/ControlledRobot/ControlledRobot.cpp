@@ -49,12 +49,12 @@ void ControlledRobot::update() {
     while (receiveRequest() != NO_CONTROL_DATA) {}
 
     if (heartbeatCommand.read(&heartbeatValues)) {
-        connected.lockedAccess().set(true);
+        connected.store(true);
         // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
         heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);
     }
     if (heartbeatTimer.isExpired()) {
-        connected.lockedAccess().set(false);
+        connected.store(false);
         float elapsedTime = heartbeatTimer.getElapsedTime();
         if (heartbeatExpiredCallback != nullptr) {
             heartbeatExpiredCallback(elapsedTime);

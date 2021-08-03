@@ -10,6 +10,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <atomic>
 
 namespace robot_remote_control {
 
@@ -30,7 +31,7 @@ class ControlledRobot: public UpdateThread{
         }
 
         bool isConnected() {
-            return connected.lockedAccess().get();
+            return connected.load();
         }
 
         // Command getters
@@ -403,37 +404,37 @@ class ControlledRobot: public UpdateThread{
                 virtual ~CommandBuffer() {}
 
                 bool read(COMMAND *target) {
-                    bool oldval = isnew.lockedAccess().get();
+                    bool oldval = isnew.load();
                     *target = command.lockedAccess().get();
-                    isnew.lockedAccess().set(false);
+                    isnew.store(false);
                     return oldval;
                 }
 
                 void write(const COMMAND &src) {
                     command.lockedAccess().set(src);
-                    isnew.lockedAccess().set(true);
+                    isnew.store(true);
                 }
 
                 virtual bool write(const std::string &serializedMessage) {
                     // command.lock();
                     if (!command.lockedAccess()->ParseFromString(serializedMessage)) {
-                        isnew.lockedAccess().set(false);
+                        isnew.store(false);
                         return false;
                     }
-                    isnew.lockedAccess().set(true);
+                    isnew.store(true);
                     return true;
                 }
 
                 virtual bool read(std::string *receivedMessage) {
-                    bool oldval = isnew.lockedAccess().get();
+                    bool oldval = isnew.load();
                     command.lockedAccess()->SerializeToString(receivedMessage);
-                    isnew.lockedAccess().set(false);
+                    isnew.store(false);
                     return oldval;
                 }
 
             private:
-                ThreadProtectedVar<COMMAND> command;
-                ThreadProtectedVar<bool> isnew;
+                AtomicClass<COMMAND> command;
+                std::atomic<bool> isnew;
         };
 
         // command buffers
@@ -450,7 +451,7 @@ class ControlledRobot: public UpdateThread{
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;
         std::function<void(const float&)> heartbeatExpiredCallback;
-        ThreadProtectedVar<bool> connected;
+        std::atomic<bool> connected;
 
         SimpleBuffer<std::string> mapBuffer;
 

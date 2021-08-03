@@ -7,7 +7,7 @@
 using namespace robot_remote_control;
 
 
-UpdateThread::UpdateThread():running(false), threadTimer(std::make_shared<ThreadProtectedVar<Timer>>()) {
+UpdateThread::UpdateThread():running(false), threadTimer(std::make_shared<AtomicClass<Timer>>()) {
 }
 
 UpdateThread::~UpdateThread() {
@@ -16,7 +16,7 @@ UpdateThread::~UpdateThread() {
     }
 }
 
-void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture, std::shared_ptr< ThreadProtectedVar<Timer> > timer) {
+void UpdateThread::updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture, std::shared_ptr< AtomicClass<Timer> > timer) {
     running = true;
     while (runningFuture.wait_for(std::chrono::milliseconds(milliseconds)) == std::future_status::timeout) {
         update();

@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <atomic>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -11,6 +12,7 @@
 #include "SimpleBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
+
 
 
 namespace robot_remote_control {
@@ -52,7 +54,7 @@ class RobotController: public UpdateThread {
         }
 
         bool isConnected() {
-            return connected.lockedAccess().get();
+            return connected.load();
         }
 
         /**
@@ -61,7 +63,7 @@ class RobotController: public UpdateThread {
          * @return float time in seconds needed to send/receive the last heartbeat (if used)
          */
         float getHeartBreatRoundTripTime() {
-            return heartBreatRoundTripTime.lockedAccess().get();
+            return heartBreatRoundTripTime.load();
         }
 
         /**
@@ -402,7 +404,7 @@ class RobotController: public UpdateThread {
 
         float heartBeatDuration;
         Timer heartBeatTimer;
-        ThreadProtectedVar<float> heartBreatRoundTripTime;
+        std::atomic<float> heartBreatRoundTripTime;
         Timer latencyTimer;
         Timer requestTimer;
         Timer lastConnectedTimer;
@@ -414,7 +416,7 @@ class RobotController: public UpdateThread {
         // void initBuffers(const unsigned int &defaultSize);
 
         std::function<void(const float&)> lostConnectionCallback;
-        ThreadProtectedVar<bool> connected;
+        std::atomic<bool> connected;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;

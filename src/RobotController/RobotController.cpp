@@ -110,7 +110,7 @@ void RobotController::update() {
             latencyTimer.start();
             std::string rep = sendProtobufData(hb, HEARTBEAT);
             float time = latencyTimer.getElapsedTime();
-            heartBreatRoundTripTime.lockedAccess().set(time);
+            heartBreatRoundTripTime.store(time);
         }
         heartBeatTimer.start(heartBeatDuration);
     }
@@ -129,7 +129,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     try {
         commandTransport->send(serializedMessage, flags);
     }catch (const std::exception &error) {
-        connected.lockedAccess().set(false);
+        connected.store(false);
         lostConnectionCallback(maxLatency);
         return "";
     }
@@ -141,12 +141,12 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         usleep(1000);
     }
     if (requestTimer.isExpired()) {
-        connected.lockedAccess().set(false);
+        connected.store(false);
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
         return "";
     }
     lastConnectedTimer.start();
-    connected.lockedAccess().set(true);
+    connected.store(true);
     return replystr;
 }
 
