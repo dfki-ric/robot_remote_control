@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
 
   // should be empty because state was already recieved
   BOOST_CHECK_EQUAL(result, false);
-  BOOST_TEST(gotten_robot_state.front() == "");
+  BOOST_TEST(gotten_robot_state.size() == 0);
 
 
 
@@ -497,13 +497,19 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
+  SimpleSensor temp_recv;
+
+  // getting an unavaile sensor should return false
+  bool result = controller.getSimpleSensor(1, &temp_recv);
+  BOOST_TEST(result == false);
+
+
   // send unregistered sensor
   SimpleSensor temp;
   temp.set_id(1);
   robot.setSimpleSensor(temp);
 
 
-  SimpleSensor temp_recv;
   while (!controller.getSimpleSensor(1, &temp_recv)) {
     // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
     usleep(10000);
@@ -540,6 +546,49 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   controller.stopUpdateThread();
 
 
+}
+
+BOOST_AUTO_TEST_CASE(check_callbacks) {
+  Pose robotpose, controlpose;
+  robotpose = TypeGenerator::genPose();
+  controlpose = TypeGenerator::genPose();
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+
+  // add generic callback
+  robot.addCommandReceivedCallback([](const uint16_t &type){
+      // not getting the pose here, isnew will fail for other callback
+      BOOST_TEST(type == TARGET_POSE_COMMAND); //we are sending a pose below
+  });
+
+  // add command callback
+  robot.addCommandReceivedCallback(TARGET_POSE_COMMAND, [controlpose, &robot](){
+      Pose pose;
+      bool isnew = robot.getTargetPoseCommand(&pose);
+      COMPARE_PROTOBUF(controlpose, pose);
+      BOOST_TEST(isnew == true);
+  });
+  // send the pose
+  controller.setTargetPose(controlpose);
+
+  controller.addTelemetryReceivedCallback<Pose>(CURRENT_POSE, [robotpose, &controller](const size_t& buffersize, const Pose & data){
+      COMPARE_PROTOBUF(robotpose, data);
+      Pose pose;
+      bool isnew = controller.getCurrentPose(&pose);
+      COMPARE_PROTOBUF(robotpose, pose);
+      BOOST_TEST(isnew == true);
+  });
+  robot.setCurrentPose(robotpose);
+
+
+
+
+  //COMPARE_PROTOBUF(robotpose, controlpose);
 }
 
 // BOOST_AUTO_TEST_CASE(check_permissions) {

@@ -5,8 +5,8 @@
 
 class Timer {
  public:
-    explicit Timer();
-    virtual ~Timer();
+    Timer();
+    virtual ~Timer() = default;
 
     void start(const float &interval_seconds = 0);
 
@@ -17,5 +17,6 @@ class Timer {
 
  private:
     float interval_s;
+    bool running;
     timeval startTime;
 };

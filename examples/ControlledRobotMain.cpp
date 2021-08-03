@@ -141,9 +141,16 @@ int main(int argc, char** argv)
 
 
     // for requests to work, you need a valid connection:
+    // only works when heartbeats are set up
     while (!robot.isConnected()) {
         usleep(100000);
     }
+
+    robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
+        // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads
+        printf("Pose Command Callback\n");
+    });
+
 
     robot_remote_control::PermissionRequest permreq;
     permreq.set_description("test");
@@ -189,13 +196,13 @@ int main(int argc, char** argv)
                 if (jointscommand.position().size()) {
                     jointsstate.add_position(jointscommand.position(i));
                 }
-                if (jointscommand.position().size()) {
+                if (jointscommand.velocity().size()) {
                     jointsstate.add_velocity(jointscommand.velocity(i));
                 }
-                if (jointscommand.position().size()) {
+                if (jointscommand.effort().size()) {
                     jointsstate.add_effort(jointscommand.effort(i));
                 }
-                if (jointscommand.position().size()) {
+                if (jointscommand.acceleration().size()) {
                     jointsstate.add_acceleration(jointscommand.acceleration(i));
                 }
             }

@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 #include <atomic>
+#include <algorithm>
 
 namespace robot_remote_control {
 
@@ -32,6 +33,27 @@ class ControlledRobot: public UpdateThread{
 
         bool isConnected() {
             return connected.load();
+        }
+
+        // Command Callbacks
+
+        /**
+         * @brief add a callback for any command type received
+         * 
+         * @param function that takes const uint16_t &type (the tpye id from the message receive) as argument (may also be a lamda)
+         */
+        void addCommandReceivedCallback(const std::function<void(const uint16_t &type)> &function) {
+            commandCallbacks.push_back(function);
+        }
+
+        /**
+         * @brief add a callback triggered when a specific command type is received
+         * 
+         * @param type the Command type id from the MessageTypes header
+         * @param function 
+         */
+        void addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
+            commandbuffers[type]->addCommandReceivedCallback(function);
         }
 
         // Command getters
@@ -390,11 +412,21 @@ class ControlledRobot: public UpdateThread{
 
         virtual ControlMessageType evaluateRequest(const std::string& request);
 
+        void notifyCommandCallbacks(const uint16_t &type);
+
         struct CommandBufferBase{
             CommandBufferBase() {}
             virtual ~CommandBufferBase() {}
             virtual bool write(const std::string &serializedMessage) = 0;
             virtual bool read(std::string *receivedMessage) = 0;
+            void notify() {
+                auto callCb = [](const std::function<void()> &cb){cb();};
+                std::for_each(callbacks.begin(), callbacks.end(), callCb);
+            }
+            std::vector< std::function<void()> > callbacks;
+            void addCommandReceivedCallback(const std::function<void()> &cb) {
+                callbacks.push_back(cb);
+            }
         };
 
         template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
@@ -413,6 +445,7 @@ class ControlledRobot: public UpdateThread{
                 void write(const COMMAND &src) {
                     command.lockedAccess().set(src);
                     isnew.store(true);
+                    notify();
                 }
 
                 virtual bool write(const std::string &serializedMessage) {
@@ -422,6 +455,7 @@ class ControlledRobot: public UpdateThread{
                         return false;
                     }
                     isnew.store(true);
+                    notify();
                     return true;
                 }
 
@@ -447,6 +481,9 @@ class ControlledRobot: public UpdateThread{
         CommandBuffer<HeartBeat> heartbeatCommand;
         CommandBuffer<Permission> permissionCommand;
         CommandBuffer<Poses> robotTrajectoryCommand;
+
+        std::vector< std::function<void(const uint16_t &type)> > commandCallbacks;
+
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;
