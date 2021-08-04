@@ -13,7 +13,7 @@ namespace robot_remote_control {
  * @tparam C The class type to have thread safe
  * 
  * Examples:
- *  AtomicClass< std::vector<int> > thread_int;
+ *  LockableClass< std::vector<int> > thread_int;
  *  thread_int->lockedAccess()->push_back(5);
  *  //for long-term locks
  *  { // extra scope to release the lock
@@ -27,7 +27,7 @@ namespace robot_remote_control {
  *  int myint2 = thread_int->lockedAccess().get()[5];
  *  int size = thread_int->lockedAccess()->size();
  */
-template <class C> class AtomicClass{
+template <class C> class LockableClass{
     public:
         class LockedAccess {            
          public:
@@ -47,10 +47,10 @@ template <class C> class AtomicClass{
             C *object;
         };
 
-        AtomicClass() {}
-        explicit AtomicClass(const C &init):var(init) {}
+        LockableClass() {}
+        explicit LockableClass(const C &init):var(init) {}
 
-        virtual ~AtomicClass() {}
+        virtual ~LockableClass() {}
 
         /**
          * @brief Get the protected variable as access object allowing direct, locked access
@@ -62,8 +62,8 @@ template <class C> class AtomicClass{
         }
 
         // no copy constructors
-        AtomicClass(const AtomicClass&) = delete;
-        AtomicClass& operator=(const AtomicClass&) = delete;
+        LockableClass(const LockableClass&) = delete;
+        LockableClass& operator=(const LockableClass&) = delete;
 
     private:
         C var;
@@ -73,6 +73,6 @@ template <class C> class AtomicClass{
 /**
  * @brief alias for backward compatibility
  */
-//template <class C> using ThreadProtectedVar = AtomicClass<C>;
+//template <class C> using ThreadProtectedVar = LockableClass<C>;
 
 }  // namespace robot_remote_control

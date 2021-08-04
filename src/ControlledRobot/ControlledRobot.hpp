@@ -467,7 +467,7 @@ class ControlledRobot: public UpdateThread{
                 }
 
             private:
-                AtomicClass<COMMAND> command;
+                LockableClass<COMMAND> command;
                 std::atomic<bool> isnew;
         };
 

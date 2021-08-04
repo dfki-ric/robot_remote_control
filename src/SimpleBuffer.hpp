@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UpdateThread/AtomicClass.hpp"
+#include "UpdateThread/LockableClass.hpp"
 #include "RingBuffer.hpp"
 #include "MessageTypes.hpp"
 
@@ -10,7 +10,7 @@
 namespace robot_remote_control {
 
 
-template <class BUFFERTYPE> class SimpleBuffer : public AtomicClass< std::vector< std::shared_ptr<RingBufferBase> > >{
+template <class BUFFERTYPE> class SimpleBuffer : public LockableClass< std::vector< std::shared_ptr<RingBufferBase> > >{
     public:
         SimpleBuffer() {};
 

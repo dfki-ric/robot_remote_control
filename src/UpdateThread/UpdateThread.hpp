@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "Timer.hpp"
-#include "AtomicClass.hpp"
+#include "LockableClass.hpp"
 
 namespace robot_remote_control
 {
@@ -57,8 +57,8 @@ class UpdateThread{
     std::thread updateThread;
     std::promise<void> stopPromise;
     std::future<void> stopFuture;
-    std::shared_ptr< AtomicClass<Timer> > threadTimer;
-    void updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture, std::shared_ptr< AtomicClass<Timer> > timer);
+    std::shared_ptr< LockableClass<Timer> > threadTimer;
+    void updateThreadMain(const unsigned int &milliseconds, std::future<void> runningFuture, std::shared_ptr< LockableClass<Timer> > timer);
     bool running;
 
 };
