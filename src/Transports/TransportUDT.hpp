@@ -46,7 +46,7 @@ namespace robot_remote_control
 
                 UDTSOCKET serv;
 
-                AtomicClass<UDTSOCKET> socket;
+                LockableClass<UDTSOCKET> socket;
 
                 ConnectionType connectiontype;
                 std::string addr;
