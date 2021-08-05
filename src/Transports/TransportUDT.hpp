@@ -3,7 +3,7 @@
 #include <thread>
 
 #include "Transport.hpp"
-#include "../UpdateThread/AtomicClass.hpp"
+#include "../UpdateThread/LockableClass.hpp"
 
 #include <arpa/inet.h>
 #include "udt/udt.h"
