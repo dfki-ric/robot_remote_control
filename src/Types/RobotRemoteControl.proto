@@ -199,6 +199,7 @@ message SimpleSensor{
     //scale for discretized arrays of values of each data point in x and y in SI units (meters, seconds etc.)
     //omit if no scale is needed
     Vector2 scale = 6;
+    repeated string value_names = 7;
 }
 
 message SimpleSensors{
