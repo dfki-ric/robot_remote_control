@@ -140,6 +140,17 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Get the Current Twist object
+         * 
+         * @param telemetry the Twist object to write to
+         * @return true if new data was read
+         * @return false otherwise
+         */
+        bool getCurrentTwist(Twist *telemetry) {
+            return getTelemetry(CURRENT_TWIST, telemetry);
+        }
+
+        /**
          * @brief Get an array of Poses
          * 
          * @param repeated field of poses to write the data to

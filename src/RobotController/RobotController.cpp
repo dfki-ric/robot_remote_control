@@ -35,6 +35,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport,TransportSh
         registerTelemetryType<PointCloud>(POINTCLOUD, buffersize);
         registerTelemetryType<IMU>(IMU_VALUES, buffersize);
         registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
+        registerTelemetryType<Twist>(CURRENT_TWIST, buffersize);
 
         lostConnectionCallback = [&](const float& time){
             printf("lost connection to robot, no reply for %f seconds\n", time);

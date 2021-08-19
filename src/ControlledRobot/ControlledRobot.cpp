@@ -43,6 +43,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<PointCloud>(POINTCLOUD);
     registerTelemetryType<IMU>(IMU_VALUES);
     registerTelemetryType<ContactPoints>(CONTACT_POINTS);
+    registerTelemetryType<Twist>(CURRENT_TWIST);
 }
 
 void ControlledRobot::update() {
