@@ -46,6 +46,7 @@ namespace robot_remote_control {
                                 IMU_VALUES,                 // raw IMU
                                 CONTACT_POINTS,             // contact points
                                 CURRENT_TWIST,              // the current movement speeds of the robot
+                                CURRENT_ACCELERATION,       // the current movement accelerations of the robot
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

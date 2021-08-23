@@ -44,6 +44,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<IMU>(IMU_VALUES);
     registerTelemetryType<ContactPoints>(CONTACT_POINTS);
     registerTelemetryType<Twist>(CURRENT_TWIST);
+    registerTelemetryType<Acceleration>(CURRENT_ACCELERATION);
 }
 
 void ControlledRobot::update() {
