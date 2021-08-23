@@ -151,6 +151,17 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Get the Current Acceleration object
+         *
+         * @param telemetry the Acceleration object to write to
+         * @return true if new data was read
+         * @return false otherwise
+         */
+        bool getCurrentAcceleration(Acceleration *telemetry) {
+            return getTelemetry(CURRENT_ACCELERATION, telemetry);
+        }
+
+        /**
          * @brief Get an array of Poses
          * 
          * @param repeated field of poses to write the data to
