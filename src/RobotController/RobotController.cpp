@@ -8,7 +8,7 @@
 using namespace robot_remote_control;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, const size_t &buffersize, const float &maxLatency):UpdateThread(),
+RobotController::RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize, const float &maxLatency):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     heartBeatDuration(0),
