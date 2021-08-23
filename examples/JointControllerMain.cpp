@@ -87,11 +87,11 @@ int main(int argc, char** argv) {
                     jointcommand.add_acceleration(jointstate.acceleration(i));
                 }
             }
-            jointcommand.PrintDebugString();
+            std::cout << jointcommand.ShortDebugString() << std::endl;
 
             value = jointcommand.position(joint_index);
         }
-            jointcommand.PrintDebugString();
+            std::cout << jointcommand.ShortDebugString() << std::endl;
 
         if (kbhit()) {
             printf("\r");  // carriage retun (overwrite input from key press)
@@ -162,8 +162,6 @@ int main(int argc, char** argv) {
         } else {
             usleep(20000);
         }
-
-        
 
         usleep(10000);
     }

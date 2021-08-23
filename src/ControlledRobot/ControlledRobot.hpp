@@ -292,6 +292,14 @@ class ControlledRobot: public UpdateThread{
             return sendTelemetry(telemetry, CURRENT_POSE);
         }
 
+        int setCurrentTwist(const Twist& telemetry) {
+            return sendTelemetry(telemetry, CURRENT_TWIST);
+        }
+
+        int setCurrentAcceleration(const Acceleration& telemetry) {
+            return sendTelemetry(telemetry, CURRENT_ACCELERATION);
+        }
+
         int setCurrentIMUValues(const IMU &imu) {
             return sendTelemetry(imu, IMU_VALUES);
         }

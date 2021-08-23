@@ -54,6 +54,13 @@ class TypeGenerator{
         return data;
     }
 
+    static Acceleration genAcceleration() {
+        Acceleration data;
+        *data.mutable_angular() = genVector3();
+        *data.mutable_linear() = genVector3();
+        return data;
+    }
+
     static GoTo genGoTo() {
         GoTo data;
         data.set_max_forward_speed(std::rand());

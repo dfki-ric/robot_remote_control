@@ -194,6 +194,73 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   COMPARE_PROTOBUF(pose, currentpose);
 }
 
+BOOST_AUTO_TEST_CASE(checking_current_twist) {
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.update();
+  usleep(100 * 1000);
+
+  Twist telemetry = TypeGenerator::genTwist();
+  Twist currenttelemetry;
+
+  // buffer for size comparsion
+  std::string buf;
+  telemetry.SerializeToString(&buf);
+
+  // send telemetry data
+  int sent = robot.setCurrentTwist(telemetry);
+
+  // wait a little for data transfer
+  // the Telemetry send is non-blocking in opposite to commands
+  usleep(100 * 1000);
+  // receive pending data
+  controller.update();
+
+  while (!controller.getCurrentTwist(&currenttelemetry)) {
+    usleep(10000);
+  }
+
+
+  // data was sent completely
+  BOOST_CHECK((unsigned int)sent == buf.size());
+  // and is the same
+  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+}
+
+BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.update();
+  usleep(100 * 1000);
+
+  Acceleration telemetry = TypeGenerator::genAcceleration();
+  Acceleration currenttelemetry;
+
+  // buffer for size comparsion
+  std::string buf;
+  telemetry.SerializeToString(&buf);
+
+  // send telemetry data
+  int sent = robot.setCurrentAcceleration(telemetry);
+
+  // wait a little for data transfer
+  // the Telemetry send is non-blocking in opposite to commands
+  usleep(100 * 1000);
+  // receive pending data
+  controller.update();
+
+  while (!controller.getCurrentAcceleration(&currenttelemetry)) {
+    usleep(10000);
+  }
+
+
+  // data was sent completely
+  BOOST_CHECK((unsigned int)sent == buf.size());
+  // and is the same
+  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+}
 
 BOOST_AUTO_TEST_CASE(generic_request_telemetry_data) {
   initComms();

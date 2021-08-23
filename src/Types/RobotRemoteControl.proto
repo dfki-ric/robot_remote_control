@@ -71,6 +71,11 @@ message Twist {
     Vector3 angular = 2;
 }
 
+message Acceleration {
+    Vector3 linear = 1;
+    Vector3 angular = 2;
+}
+
 message JointState {
     repeated string name = 1;
     repeated double position = 2;
