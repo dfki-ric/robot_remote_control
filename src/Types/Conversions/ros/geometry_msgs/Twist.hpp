@@ -1,13 +1,15 @@
 #pragma once
 
+#include <string>
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <geometry_msgs/TwistStamped.h>
 
 namespace robot_remote_control {
 namespace RosConversion {
 
-   inline static void convert(const robot_remote_control::Twist &from, geometry_msgs::TwistStamped *to ) {
-        to->header.stamp = ros::Time::now();
+    inline static void convert(const robot_remote_control::Twist &from, geometry_msgs::TwistStamped *to, const std::string &frame_id="base_link", const ros::Time &time = ros::Time::now() ) {
+        to->header.stamp = time;
+        to->header.frame_id = frame_id;
         to->twist.angular.x = from.angular().x();
         to->twist.angular.y = from.angular().y();
         to->twist.angular.z = from.angular().z();
@@ -26,8 +28,6 @@ namespace RosConversion {
         to->linear.y = from.linear().y();
         to->linear.z = from.linear().z();
     }
-
-
 
 }  // namespace RockConversion
 }  // namespace robot_remote_control
