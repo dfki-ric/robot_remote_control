@@ -40,8 +40,18 @@ int main(int argc, char** argv) {
     printf("space: set position to 0\n");
     printf("+/-: select increment for position\n");
 
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
+    std::string ip;
+    if (argc > 1) {
+        ip = argv[1];
+    } else {
+        ip = "127.0.0.1";
+    }
+
+    printf("connecting to %s\n",ip.c_str());
+
+    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://"+ip+":7001", TransportZmq::REQ));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":7002", TransportZmq::SUB));
+
     robot_remote_control::RobotController controller(commands, telemetry);
 
 
