@@ -3,6 +3,7 @@
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <base/samples/IMUSensors.hpp>
 #include "Eigen.hpp"
+#include "Pose.hpp"
 
 namespace robot_remote_control {
 namespace RockConversion {

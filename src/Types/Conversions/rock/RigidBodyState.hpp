@@ -4,6 +4,7 @@
 #include <base/samples/RigidBodyState.hpp>
 #include "Eigen.hpp"
 #include "Pose.hpp"
+#include "Time.hpp"
 
 namespace robot_remote_control {
 namespace RockConversion {
@@ -12,8 +13,11 @@ namespace RockConversion {
         convert(rrc_type.orientation(), &(rock_type->orientation));
     }
 
-    // inline static void convert(const base::samples::RigidBodyState &rock_type, IMU *rrc_type) {
-    // }
+    inline static void convert(base::samples::RigidBodyState rock_type, Pose *rrc_type) {
+        convert(rock_type.time, rrc_type->mutable_timestamp());
+        convert(rock_type.position, rrc_type->mutable_position());
+        convert(rock_type.orientation, rrc_type->mutable_orientation());
+    }
 
 }  // namespace RockConversion
 }  // namespace robot_remote_control
