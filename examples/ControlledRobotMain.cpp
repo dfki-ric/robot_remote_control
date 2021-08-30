@@ -143,12 +143,13 @@ int main(int argc, char** argv)
     // for requests to work, you need a valid connection:
     // only works when heartbeats are set up
     while (!robot.isConnected()) {
+        printf("waiting for connection\n");
         usleep(100000);
     }
 
     robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
         // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads
-        printf("Pose Command Callback\n");
+        //printf("Pose Command Callback\n");
     });
 
 
@@ -161,13 +162,14 @@ int main(int argc, char** argv)
     permreq.set_requestuid("testuid2");
     std::shared_future<bool> perm2 = robot.requestPermission(permreq);
 
-    perm1.wait();
-    printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
+    //perm1.wait();
+    //printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
 
     while (true) {
-        if (perm2.valid()) {
-            printf("result of permission request 2: %s\n", perm2.get() ? "true" : "false");
-        }
+
+        // if (perm2.valid()) {
+        //     printf("result of permission request 2: %s\n", perm2.get() ? "true" : "false");
+        // }
 
         // get and print commands
         if (robot.getTargetPoseCommand(&targetpose)) {
@@ -238,6 +240,11 @@ int main(int argc, char** argv)
         velocity.set_value(1, 0.1);
         velocity.set_value(2, 0.1);
         robot.setSimpleSensor(velocity);
+
+        // when the define RRC_STATISTICS was active during compilation you can calculate/print/use stats
+        // if not, the sats stay empty
+        robot.getStatistics().calculate();
+        robot.getStatistics().print(true);
 
         usleep(100000);
     }

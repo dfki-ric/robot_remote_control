@@ -25,6 +25,8 @@ else()
     endif()
 endif()
 
+
+set (RRC_STATISTICS ON)
 if( RRC_STATISTICS )
     add_definitions(-DRRC_STATISTICS)
 endif( RRC_STATISTICS )
@@ -33,12 +35,13 @@ endif( RRC_STATISTICS )
 ################################################### ADD SUBDIRECTORIES
 add_subdirectory(src)
 
+#set (BUILD_EXAMPLES ON)
 if( BUILD_EXAMPLES )
     message("Adding example directory") 
     add_subdirectory(examples)
 endif( BUILD_EXAMPLES )
 
-#set (BUILD_TESTS ON)
+set (BUILD_TESTS ON)
 if( BUILD_TESTS )
     message("Adding test directory") 
     add_subdirectory(test)

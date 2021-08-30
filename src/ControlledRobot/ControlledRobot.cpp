@@ -36,10 +36,10 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE);
     registerTelemetryType<WrenchState>(WRENCH_STATE);
     registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
-    registerTelemetryType<Map>(MAP); // TODO: needed? ()
+    registerTelemetryType<Map>(MAP);
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
-    //registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
+    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
     registerTelemetryType<PointCloud>(POINTCLOUD);
     registerTelemetryType<IMU>(IMU_VALUES);
     registerTelemetryType<ContactPoints>(CONTACT_POINTS);

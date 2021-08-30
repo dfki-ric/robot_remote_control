@@ -6,6 +6,7 @@
 #include "UpdateThread/Timer.hpp"
 #include "TelemetryBuffer.hpp"
 #include "SimpleBuffer.hpp"
+#include "Statistics.hpp"
 #include <map>
 #include <string>
 #include <memory>
@@ -15,7 +16,7 @@
 
 namespace robot_remote_control {
 
-class ControlledRobot: public UpdateThread{
+class ControlledRobot: public UpdateThread {
     public:
         explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
         virtual ~ControlledRobot() {}
@@ -54,6 +55,15 @@ class ControlledRobot: public UpdateThread{
          */
         void addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
             commandbuffers[type]->addCommandReceivedCallback(function);
+        }
+
+        /**
+         * @brief Get the Statistics object, it is only updated with data if this library is compiled with RRC_STATISTICS
+         * 
+         * @return Statistics& 
+         */
+        Statistics& getStatistics() {
+            return statistics;
         }
 
         // Command getters
@@ -152,7 +162,12 @@ class ControlledRobot: public UpdateThread{
                 // store latest data for future requests
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type], protodata, true);
                 if (!requestOnly) {
-                    return telemetryTransport->send(buf) - sizeof(uint16_t);
+                    int bytes = telemetryTransport->send(buf);
+                    #ifdef RRC_STATISTICS
+                        statistics.global.addBytesSent(bytes);
+                        statistics.stat_per_type[type].addBytesSent(bytes);
+                    #endif
+                    return bytes - sizeof(uint16_t);
                 }
                 return buf.size();
             }
@@ -516,6 +531,10 @@ class ControlledRobot: public UpdateThread{
 
         template <class PROTO> void registerTelemetryType(const uint16_t &type) {
             buffers->registerType<PROTO>(type, 1);
+            #ifdef RRC_STATISTICS
+                PROTO telemetry_type;
+                statistics.names[type] = telemetry_type.GetTypeName();
+            #endif
         }
         // buffer of sent telemetry (used for telemetry requests)
         std::shared_ptr<TelemetryBuffer> buffers;
@@ -523,6 +542,9 @@ class ControlledRobot: public UpdateThread{
         uint32_t logLevel;
 
         std::map<std::string, std::promise<bool> > pendingPermissionRequests;
+
+        Statistics statistics;
+
 };
 
 }  // namespace robot_remote_control

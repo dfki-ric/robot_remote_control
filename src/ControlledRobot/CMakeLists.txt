@@ -1,5 +1,7 @@
 add_library(robot_remote_control-controlled_robot
-            ControlledRobot.cpp ../TelemetryBuffer.cpp
+            ControlledRobot.cpp
+            ../TelemetryBuffer.cpp
+            ../Statistics.cpp
 )
 target_link_libraries (robot_remote_control-controlled_robot robot_remote_control-types robot_remote_control-update_thread)
 target_include_directories(robot_remote_control-controlled_robot
