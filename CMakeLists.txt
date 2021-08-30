@@ -25,6 +25,11 @@ else()
     endif()
 endif()
 
+if( RRC_STATISTICS )
+    add_definitions(-DRRC_STATISTICS)
+endif( RRC_STATISTICS )
+
+
 ################################################### ADD SUBDIRECTORIES
 add_subdirectory(src)
 
