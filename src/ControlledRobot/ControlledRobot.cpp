@@ -64,6 +64,13 @@ void ControlledRobot::update() {
     }
 }
 
+void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const uint16_t &type) {
+    #ifdef RRC_STATISTICS
+        statistics.global.addBytesSent(bytesSent);
+        statistics.stat_per_type[type].addBytesSent(bytesSent);
+    #endif
+}
+
 ControlMessageType ControlledRobot::receiveRequest() {
     std::string msg;
     Transport::Flags flags = Transport::NONE;

@@ -12,10 +12,12 @@ class Statistics {
         timeval lastCalc;
         timeval initTime;
         double bytesSinceLast;
-        double bytesSize;
+        double lastBytesSize;
         double bytesTotal;
         double bpsLast;
         double bpsAvg;
+        double frequency;
+        double frequencyAvg;
         double runningAvgSamples;
     };
 

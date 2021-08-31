@@ -162,11 +162,8 @@ class ControlledRobot: public UpdateThread {
                 // store latest data for future requests
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type], protodata, true);
                 if (!requestOnly) {
-                    int bytes = telemetryTransport->send(buf);
-                    #ifdef RRC_STATISTICS
-                        statistics.global.addBytesSent(bytes);
-                        statistics.stat_per_type[type].addBytesSent(bytes);
-                    #endif
+                    uint32_t bytes = telemetryTransport->send(buf);
+                    updateStatistics(bytes, type);
                     return bytes - sizeof(uint16_t);
                 }
                 return buf.size();
@@ -174,6 +171,8 @@ class ControlledRobot: public UpdateThread {
             printf("ERROR Transport invalid\n");
             return 0;
         }
+
+        void updateStatistics(const uint32_t &bytesSent, const uint16_t &type);
 
     public:
         /**
