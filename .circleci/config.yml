@@ -1,35 +1,20 @@
-version: 2.1
-
-executors:
-  ubuntu_latest:
-    docker:
-      - image: ubuntu:latest
+version: 2
 
 jobs:
-  build:
-    executor: ubuntu_latest
+  build_and_test:
+    docker:
+      - image: ubuntu:latest
     steps:
       - checkout
       - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON
       - run: make -j -C build/
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
-
-  test:
-    executor: ubuntu_latest
-    steps:
-      - attach_workspace:
-          at: .
       - run: ./build/test/test_suite
       - run: ./build/test/test_suite_ipc
       - run: ./build/test/test_suite_udt
       - run: ./build/test/test_suite_gzip
 
 workflows:
-   version: 2.1
+   version: 2
    build_and_test:
      jobs:
-       - build
-       - test
+       - build_and_test
