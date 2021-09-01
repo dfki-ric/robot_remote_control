@@ -48,3 +48,30 @@ if(UDT_FOUND)
              RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif()
+
+################################################################# Gzip wrapper
+find_package(ZLIB)
+if(ZLIB_FOUND)
+    add_library(robot_remote_control-transport_wrapper_gzip
+                TransportWrapperGzip.cpp
+    )
+    target_include_directories(robot_remote_control-transport_wrapper_gzip
+    	PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Wrappers>
+    		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+    target_link_libraries (robot_remote_control-transport_wrapper_gzip
+                            ZLIB::ZLIB
+    )
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Wrappers
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
+            FILES_MATCHING PATTERN "*.hpp"
+    )
+    install (TARGETS robot_remote_control-transport_wrapper_gzip
+             EXPORT robot_remote_control-targets
+             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+endif()
+
