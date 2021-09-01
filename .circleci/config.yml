@@ -17,6 +17,9 @@ jobs:
       - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON
       - run: make -j -C build/
       - run: ./build/test/test_suite
+      - run: ./build/test/test_suite_ipc
+      - run: ./build/test/test_suite_udt
+      - run: ./build/test/test_suite_gzip
 
 workflows:
    version: 2
