@@ -1,9 +1,13 @@
-version: 2
+version: 2.1
+
+executors:
+  ubuntu_latest:
+    docker:
+      - image: ubuntu:latest
 
 jobs:
   build:
-    docker:
-      - image: ubuntu:latest
+    executor: ubuntu_latest
     steps:
       - checkout
       - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON
@@ -14,6 +18,7 @@ jobs:
             - .
 
   test:
+    executor: ubuntu_latest
     steps:
       - attach_workspace:
           at: .
@@ -23,7 +28,7 @@ jobs:
       - run: ./build/test/test_suite_gzip
 
 workflows:
-   version: 2
+   version: 2.1
    build_and_test:
      jobs:
        - build
