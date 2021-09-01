@@ -14,8 +14,6 @@ jobs:
             - .
 
   test:
-    docker:
-      - image: ubuntu:latest
     steps:
       - attach_workspace:
           at: .
