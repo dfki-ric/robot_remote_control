@@ -6,13 +6,24 @@
 
 namespace robot_remote_control {
 
+/**
+ * @brief wrapper to compress data before sending, might be useful in low bandwidth scenarios
+ * @warning it adds an extra 4 bytes to each measage as size field, so the effect may be negative
+ */
+
 class TransportWrapperGzip : public Transport {
  public:
-    explicit TransportWrapperGzip(std::shared_ptr<Transport> transport, const int &compressionlevel);
+    /**
+     * @brief Construct a new Transport Wrapper Gzip object
+     * 
+     * @param transport 
+     * @param compressionlevel 0-9 (-1 use default), 0 == no compression, 9 == best compression
+     */
+    explicit TransportWrapperGzip(std::shared_ptr<Transport> transport, const int &compressionlevel = -1);
     virtual ~TransportWrapperGzip() {}
 
     /**
-     * @brief send date
+     * @brief send data
      * 
      * @param buf the buffer to send
      * @param Flags flags the flags
@@ -35,5 +46,4 @@ class TransportWrapperGzip : public Transport {
     int compressionlevel;
 };
 
-} // end namespace robot_remote_control-transport_udt
-
+} // end namespace robot_remote_control

@@ -50,7 +50,6 @@ if(UDT_FOUND)
 endif()
 
 ################################################################# Gzip wrapper
-find_package(ZLIB)
 if(ZLIB_FOUND)
     add_library(robot_remote_control-transport_wrapper_gzip
                 TransportWrapperGzip.cpp

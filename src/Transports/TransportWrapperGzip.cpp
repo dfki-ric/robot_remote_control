@@ -3,9 +3,6 @@
 #include <netinet/in.h>
 #include <zlib.h>
 
-// TODO use protobuf size
-
-
 namespace robot_remote_control {
 
 TransportWrapperGzip::TransportWrapperGzip(std::shared_ptr<Transport> transport, const int &compressionlevel):transport(transport), compressionlevel(compressionlevel) {}
@@ -30,12 +27,15 @@ int TransportWrapperGzip::send(const std::string& uncompressed, Flags flags) {
     uint32_t* uncompressedSize = const_cast<uint32_t*>(reinterpret_cast<const uint32_t*>(compressed.data()));
     *uncompressedSize = htonl(uncompressed.size());
 
-    return transport->send(compressed, flags);
+    if (transport->send(compressed, flags)) {
+        return srcLen;
+    }
+    return 0;
 }
 
 int TransportWrapperGzip::receive(std::string* uncompressed, Flags flags) {
     std::string compressed;
-    transport->receive(&compressed);
+    transport->receive(&compressed, flags);
 
     const uint32_t* uncompressedSizePtr = reinterpret_cast<const uint32_t*>(compressed.data());
     uLong uncompressedSize = ntohl(*uncompressedSizePtr);
@@ -46,7 +46,8 @@ int TransportWrapperGzip::receive(std::string* uncompressed, Flags flags) {
     Byte* data = const_cast<Byte*>(reinterpret_cast<const Byte*>(uncompressed->data()));
     const Byte* sourcePtr = reinterpret_cast<const Byte*>(compressed.data()) + sizeof(uint32_t);
     int res = uncompress(data, &uncompressedSize, sourcePtr, srcLen);
-    return res;
+    uncompressed->resize(uncompressedSize);
+    return uncompressedSize;
 }
 
 

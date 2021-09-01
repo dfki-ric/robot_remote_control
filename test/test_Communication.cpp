@@ -2,6 +2,13 @@
 
 #include "../src/Transports/TransportZmq.hpp"
 
+#ifdef TRANSPORT_DEFAULT_GZIP
+  #include "../src/Transports/TransportWrapperGzip.hpp"
+#endif
+#ifdef TRANSPORT_UDT
+  #include "../src/Transports/TransportUDT.hpp"
+#endif
+
 #include "TypeGenerator.hpp"
 
 #include <iostream>
@@ -29,16 +36,46 @@ TransportSharedPtr telemetri;
  * 
  */
 void initComms() {
-  if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ));}
-  if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB));}
+  #ifdef TRANSPORT_DEFAULT
+    if (!commands.get()) {
+        printf("using zmq tcp\n");
+        commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ));
+    }
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB));}
 
-  if (!command.get()) {command = TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP));}
-  if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB));}
-  // if (!command.get()) {command = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REP));}
-  // if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::PUB));}
-  // if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REQ));}
-  // if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::SUB));}
+    if (!command.get()) {command = TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP));}
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB));}
+  #endif
+  #ifdef TRANSPORT_DEFAULT_GZIP
+    if (!commands.get()) {
+        printf("using zmq tcp with gzip wrapper\n");
+        commands = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ))));
+    }
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB))));}
 
+    if (!command.get()) {command = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP))));}
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB))));}
+  #endif
+  #ifdef TRANSPORT_IPC
+    if (!command.get()) {
+        printf("using zmq IPC\n");
+        command = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REP));
+    }
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::PUB));}
+    if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REQ));}
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::SUB));}
+  #endif
+  #ifdef TRANSPORT_UDT
+    if (!command.get()) {
+        printf("using UDT\n");
+        command = TransportSharedPtr(new TransportUDT(TransportUDT::SERVER, 7001));
+    }
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportUDT(TransportUDT::SERVER, 7002));}
+    if (!commands.get()) {commands = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7001, "127.0.0.1"));}
+    if (!telemetry.get()) {
+        telemetry = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7002, "127.0.0.1"));
+    }
+  #endif
 }
 
 template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, const ControlMessageType &type) {
@@ -180,10 +217,9 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
   usleep(100 * 1000);
-  // receive pending data
-  controller.update();
-
   while (!controller.getCurrentPose(&currentpose)) {
+    // receive pending data
+    controller.update();
     usleep(10000);
   }
 

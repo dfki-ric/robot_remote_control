@@ -25,7 +25,10 @@ else()
     endif()
 endif()
 
+######################################################## CHECK FOR ZLIB
+find_package(ZLIB)
 
+#################################################### COLLECT SATISTICS?
 set (RRC_STATISTICS ON)
 if( RRC_STATISTICS )
     add_definitions(-DRRC_STATISTICS)
