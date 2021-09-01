@@ -6,16 +6,19 @@ jobs:
       - image: ubuntu:latest
     steps:
       - checkout
-      - run: ./.circleci/prepare_build.sh
+      - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON
       - run: make -j -C build/
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
 
   test:
     docker:
       - image: ubuntu:latest
     steps:
-      - checkout
-      - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON
-      - run: make -j -C build/
+      - attach_workspace:
+          at: .
       - run: ./build/test/test_suite
       - run: ./build/test/test_suite_ipc
       - run: ./build/test/test_suite_udt
