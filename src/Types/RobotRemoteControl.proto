@@ -93,6 +93,7 @@ message JointCommand {
     repeated double acceleration = 6;
     repeated double kp_gain = 7;
     repeated double kd_gain = 8;
+    TimeStamp timestamp = 9;
 }
 
 message GoTo {
