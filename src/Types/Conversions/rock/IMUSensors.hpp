@@ -16,8 +16,8 @@ namespace RockConversion {
 
     inline static void convert(const base::samples::IMUSensors &rock_type, IMU *rrc_type) {
         convert(rock_type.acc, rrc_type->mutable_acceleration());
-        convert(rock_type.acc, rrc_type->mutable_gyro());
-        convert(rock_type.acc, rrc_type->mutable_mag());
+        convert(rock_type.gyro, rrc_type->mutable_gyro());
+        convert(rock_type.mag, rrc_type->mutable_mag());
     }
 
 }  // namespace RockConversion
