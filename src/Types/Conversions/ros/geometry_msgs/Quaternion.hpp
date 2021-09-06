@@ -20,5 +20,5 @@ namespace RosConversion {
         to->set_w(from.w);
     }
 
-}  // namespace RockConversion
+}  // namespace RosConversion
 }  // namespace robot_remote_control

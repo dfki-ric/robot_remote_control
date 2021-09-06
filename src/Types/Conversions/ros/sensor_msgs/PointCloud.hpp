@@ -15,5 +15,5 @@ namespace RosConversion {
         }
     }
 
-}  // namespace RockConversion
+}  // namespace RosConversion
 }  // namespace robot_remote_control

@@ -2,11 +2,14 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <sensor_msgs/JointState.h>
+#include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
 
     static void convert(const sensor_msgs::JointState &from, robot_remote_control::JointState* to) {
+        convert(from.header, to->mutable_timestamp());
+
         for (int i = 0; i < from.name.size(); ++i) {
             to->add_name(from.name[i]);
             if (from.position.size()) {
@@ -21,5 +24,5 @@ namespace RosConversion {
         }
     }
 
-}  // namespace RockConversion
+}  // namespace RosConversion
 }  // namespace robot_remote_control

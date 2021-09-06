@@ -21,5 +21,5 @@ namespace RosConversion {
         convert(from.linear_acceleration, to->mutable_acceleration());
     }
 
-}  // namespace RockConversion
+}  // namespace RosConversion
 }  // namespace robot_remote_control

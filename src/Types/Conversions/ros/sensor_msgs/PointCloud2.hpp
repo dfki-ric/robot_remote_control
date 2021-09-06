@@ -13,5 +13,5 @@ namespace RosConversion {
         convert(pcloud, to);
     }
 
-}  // namespace RockConversion
+}  // namespace RosConversion
 }  // namespace robot_remote_control

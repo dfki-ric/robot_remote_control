@@ -30,5 +30,15 @@ namespace RockConversion {
         (*rock_type)[2] = rrc_type.z();
     }
 
+    inline static void convert(const Vector2 &rrc_type, base::Vector2d* rock_type) {
+        (*rock_type)[0] = rrc_type.x();
+        (*rock_type)[1] = rrc_type.y();
+    }
+
+    inline static void convert(const base::Vector2d &rock_type, Vector2 *rrc_type) {
+        rrc_type->set_x(rock_type[0]);
+        rrc_type->set_y(rock_type[1]);
+    }
+
 }  // namespace RockConversion
 }  // namespace robot_remote_control

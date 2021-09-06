@@ -22,5 +22,5 @@ namespace RosConversion {
         convert(from, &to->pose);
     }
 
-}  // namespace RockConversion
+}  // namespace RosConversion
 }  // namespace robot_remote_control

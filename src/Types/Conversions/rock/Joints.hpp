@@ -2,12 +2,15 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <base/samples/Joints.hpp>
+#include "Time.hpp"
+
 
 namespace robot_remote_control {
 namespace RockConversion {
 
     inline static void convert(const JointState &rrc_type, base::samples::Joints* rock_type) {
         rock_type->clear();
+        convert(rrc_type.timestamp(), &(rock_type->time));
         // init all states
         for (int i = 0; i < rrc_type.name().size(); i++) {
             try {
@@ -35,6 +38,7 @@ namespace RockConversion {
 
     inline static void convert(const JointCommand &rrc_type, base::samples::Joints* rock_type) {
         rock_type->clear();
+        convert(rrc_type.timestamp(), &(rock_type->time));
         // init all states
         for (int i = 0; i < rrc_type.name().size(); i++) {
             try {
@@ -61,6 +65,7 @@ namespace RockConversion {
     }
 
     inline static void convert(const base::samples::Joints &rock_type, JointState *rrc_type) {
+        convert(rock_type.time, rrc_type->mutable_timestamp());
         // Clear last state
         rrc_type->clear_name();
         rrc_type->clear_position();

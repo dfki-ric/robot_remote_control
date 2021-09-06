@@ -25,5 +25,5 @@ namespace RosConversion {
              to->linear.y = from.linear().y();
              to->linear.z = from.linear().z();
         }
-    }  // namespace RockConversion
+    }  // namespace RosConversion
 }  // namespace robot_remote_control

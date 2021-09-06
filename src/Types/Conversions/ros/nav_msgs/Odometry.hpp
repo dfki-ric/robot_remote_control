@@ -17,5 +17,5 @@ namespace RosConversion {
         to->mutable_orientation()->set_w(from.pose.pose.orientation.w);
     }
 
-}  // namespace RockConversion
+}  // namespace RosConversion
 }  // namespace robot_remote_control
