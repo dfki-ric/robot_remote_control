@@ -13,7 +13,7 @@ namespace RockConversion {
     }
 
     inline static void convert(const TimeStamp &rrc_type, base::Time *rock_type) {
-        rock_type->fromSeconds(rrc_type.secs(), rrc_type.nsecs() / 1000);
+        *rock_type = base::Time::fromSeconds(rrc_type.secs(), rrc_type.nsecs() / 1000);
     }
 
 
