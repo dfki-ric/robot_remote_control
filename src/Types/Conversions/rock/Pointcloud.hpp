@@ -41,14 +41,15 @@ namespace RockConversion {
         }
 
         if (rrc_type.channels_size()) {
-            for (auto &channel : rrc_type.channels) {
+            for (auto &channel : rrc_type.channels()) {
                 if (channel.name() == "color_rgba") {
                     int index = 0;
-                    base::Vector4d color;
+                    base::Vector4d rock_color;
                     for (auto &color : channel.values()) {
-                        color[index % 4] = color;
-                        if (index % 4 == 3) {
-                            rock_type->colors.push_back(color);
+                        int colorindex = index % 4;
+                        rock_color[colorindex] = color;
+                        if (colorindex == 3) {
+                            rock_type->colors.push_back(rock_color);
                         }
                     }
                 }
