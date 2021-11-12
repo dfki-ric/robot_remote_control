@@ -177,6 +177,9 @@ message RobotName {
 
 message RobotState {
     repeated string state = 1;
+    // the name may be uses in case you nees a description od the state array
+    // e.g. "Current Task", it must match the index of the state
+    repeated string state_name = 2;
 }
 
 message LogMessage {

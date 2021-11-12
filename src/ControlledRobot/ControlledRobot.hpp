@@ -295,6 +295,13 @@ class ControlledRobot: public UpdateThread {
          */
         int setRobotState(const std::vector<std::string> state);
 
+        /**
+         * @brief Set the Robot State as object
+         * 
+         * @param state 
+         * @return int 
+         */
+        int setRobotState(const RobotState& state);
 
         /**
          * @brief Set the current Pose of the robot

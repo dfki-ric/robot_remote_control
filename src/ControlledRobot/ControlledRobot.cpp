@@ -165,6 +165,10 @@ int ControlledRobot::setRobotState(const std::vector<std::string> state) {
     return sendTelemetry(protostate, ROBOT_STATE);
 }
 
+int ControlledRobot::setRobotState(const RobotState& state) {
+    return sendTelemetry(state, ROBOT_STATE);
+}
+
 int ControlledRobot::setLogMessage(enum LogLevel lvl, const std::string& message) {
     if (lvl <= logLevel || lvl >= CUSTOM) {
         LogMessage msg;
