@@ -22,5 +22,13 @@ namespace RosConversion {
         convert(from, &to->pose);
     }
 
+    inline static void convert(const geometry_msgs::Pose &from, robot_remote_control::Pose *to ) {
+        convert(from.position, to->mutable_position());
+        convert(from.orientation, to->mutable_orientation());
+    }
+    
+    inline static void convert(const geometry_msgs::PoseStamped &from, robot_remote_control::Pose *to ) {
+        convert(from.pose, to);
+    }
 }  // namespace RosConversion
 }  // namespace robot_remote_control
