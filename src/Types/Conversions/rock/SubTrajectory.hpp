@@ -14,7 +14,7 @@ namespace RockConversion {
 
     inline static void convert(const std::vector<trajectory_follower::SubTrajectory> &rock_type, Poses *rrc_type) {
         for (auto &sub : rock_type) {
-            convert(sub.goalPose, rrc_type->add_pose());
+            convert(sub.goalPose, rrc_type->add_poses());
         }
     }
 

@@ -30,8 +30,12 @@ namespace RockConversion {
     }
 
     inline static void convert(const PointCloud& rrc_type, base::samples::Pointcloud *rock_type) {
+        rock_type->points.clear();
+        rock_type->colors.clear();
+
         convert(rrc_type.timestamp(), &(rock_type->time));
 
+        rock_type->points.reserve(rrc_type.points().size());
         for (auto &point : rrc_type.points()) {
             base::Point rock_point;
             rock_point[0] = point.x();
@@ -43,6 +47,7 @@ namespace RockConversion {
         if (rrc_type.channels_size()) {
             for (auto &channel : rrc_type.channels()) {
                 if (channel.name() == "color_rgba") {
+                    rock_type->colors.reserve(channel.values().size()/4);
                     int index = 0;
                     base::Vector4d rock_color;
                     for (auto &color : channel.values()) {
