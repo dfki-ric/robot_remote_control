@@ -397,7 +397,7 @@ class RobotController: public UpdateThread {
             result->ParseFromString(replybuf);
         }
 
-        template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &function) {
+        template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const DATATYPE & data)> &function) {
             RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
         }
 

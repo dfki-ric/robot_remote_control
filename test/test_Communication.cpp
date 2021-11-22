@@ -679,7 +679,7 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
   // send the pose
   controller.setTargetPose(controlpose);
 
-  controller.addTelemetryReceivedCallback<Pose>(CURRENT_POSE, [robotpose, &controller](const size_t& buffersize, const Pose & data){
+  controller.addTelemetryReceivedCallback<Pose>(CURRENT_POSE, [robotpose, &controller](const Pose & data){
       COMPARE_PROTOBUF(robotpose, data);
       Pose pose;
       bool isnew = controller.getCurrentPose(&pose);

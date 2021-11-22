@@ -103,19 +103,19 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             return false;
         }
 
-        void addDataReceivedCallback(const std::function<void(const size_t& buffersize, const TYPE & data)> &cb) {
+        void addDataReceivedCallback(const std::function<void(const TYPE & data)> &cb) {
             callbacks.push_back(cb);
         }
 
     private:
         void notify(const TYPE & data) {
-            auto callCb = [&](const std::function<void (const size_t& buffersize, const TYPE & data)> &cb){cb(size(), data);};
+            auto callCb = [&](const std::function<void (const TYPE & data)> &cb){cb(data);};
             std::for_each(callbacks.begin(), callbacks.end(), callCb);
         }
         size_t buffersize, contentsize, in, out;
         std::vector<TYPE> buffer;
 
-        std::vector< std::function<void (const size_t& buffersize, const TYPE & data)> > callbacks;
+        std::vector< std::function<void (const TYPE & data)> > callbacks;
 };
 
 
@@ -145,7 +145,7 @@ class RingBufferAccess{
             return false;
         }
 
-        template<class DATATYPE> static bool addDataReceivedCallback(const std::shared_ptr<RingBufferBase> &buffer, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &cb) {
+        template<class DATATYPE> static bool addDataReceivedCallback(const std::shared_ptr<RingBufferBase> &buffer, const std::function<void(const DATATYPE & data)> &cb) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             if (dataclass.get()) {
                 dataclass->addDataReceivedCallback(cb);
