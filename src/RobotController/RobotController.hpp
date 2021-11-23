@@ -39,7 +39,10 @@ class RobotController: public UpdateThread {
             heartBeatDuration = duration_seconds;
             heartBeatTimer.start(heartBeatDuration);
         }
-
+        /**
+         * @brief Set the allowed maximum latency for receiving heartbeat reply messages after sending a heartbeat
+         * the default is set in the constructor
+         */
         void setMaxLatency(const float &value) {
             maxLatency = value;
         }
@@ -53,6 +56,11 @@ class RobotController: public UpdateThread {
             lostConnectionCallback = callback;
         }
 
+        /**
+         * @brief return then current state of the connection using the heartbeat.
+         * @return the current status of the connection, if a hearbeat duration iss set using setHeartBeatDuration()
+         * 
+         */
         bool isConnected() {
             return connected.load();
         }
