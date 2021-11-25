@@ -3,7 +3,7 @@
 #include <thread>
 
 #include "Transport.hpp"
-#include "../UpdateThread/ThreadProtectedVar.hpp"
+#include "../UpdateThread/LockableClass.hpp"
 
 #include <arpa/inet.h>
 #include "udt/udt.h"
@@ -46,7 +46,7 @@ namespace robot_remote_control
 
                 UDTSOCKET serv;
 
-                ThreadProtectedVar<UDTSOCKET> socket;
+                LockableClass<UDTSOCKET> socket;
 
                 ConnectionType connectiontype;
                 std::string addr;

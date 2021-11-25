@@ -125,7 +125,7 @@ int main(int argc, char** argv)
     // commands
     robot_remote_control::Twist twistcommand;
     robot_remote_control::GoTo gotocommand;
-    robot_remote_control::JointState jointscommand;
+    robot_remote_control::JointCommand jointscommand;
     robot_remote_control::SimpleAction simpleactionscommand;
     robot_remote_control::ComplexAction complexactionscommand;
 
@@ -139,7 +139,38 @@ int main(int argc, char** argv)
     robot.setCurrentPose(currentpose);
 
 
+
+    // for requests to work, you need a valid connection:
+    // only works when heartbeats are set up
+    while (!robot.isConnected()) {
+        printf("waiting for connection\n");
+        usleep(100000);
+    }
+
+    robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
+        // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads
+        //printf("Pose Command Callback\n");
+    });
+
+
+    robot_remote_control::PermissionRequest permreq;
+    permreq.set_description("test");
+    permreq.set_requestuid("testuid");
+    std::shared_future<bool> perm1 = robot.requestPermission(permreq);
+
+    permreq.set_description("test2");
+    permreq.set_requestuid("testuid2");
+    std::shared_future<bool> perm2 = robot.requestPermission(permreq);
+
+    //perm1.wait();
+    //printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
+
     while (true) {
+
+        // if (perm2.valid()) {
+        //     printf("result of permission request 2: %s\n", perm2.get() ? "true" : "false");
+        // }
+
         // get and print commands
         if (robot.getTargetPoseCommand(&targetpose)) {
             printf("\ngot target pose command:\n%s\n", targetpose.ShortDebugString().c_str());
@@ -161,7 +192,22 @@ int main(int argc, char** argv)
         if (robot.getJointsCommand(&jointscommand)) {
             printf("\ngot joints command:\n%s\n", jointscommand.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "setting fake robot joints to target position\n");
-            jointsstate = jointscommand;
+            jointsstate.Clear();
+            for (int i = 0; i < jointscommand.name().size(); ++i) {
+                jointsstate.add_name(jointscommand.name(i));
+                if (jointscommand.position().size()) {
+                    jointsstate.add_position(jointscommand.position(i));
+                }
+                if (jointscommand.velocity().size()) {
+                    jointsstate.add_velocity(jointscommand.velocity(i));
+                }
+                if (jointscommand.effort().size()) {
+                    jointsstate.add_effort(jointscommand.effort(i));
+                }
+                if (jointscommand.acceleration().size()) {
+                    jointsstate.add_acceleration(jointscommand.acceleration(i));
+                }
+            }
         }
 
         if (robot.getSimpleActionCommand(&simpleactionscommand)) {
@@ -194,6 +240,11 @@ int main(int argc, char** argv)
         velocity.set_value(1, 0.1);
         velocity.set_value(2, 0.1);
         robot.setSimpleSensor(velocity);
+
+        // when the define RRC_STATISTICS was active during compilation you can calculate/print/use stats
+        // if not, the sats stay empty
+        robot.getStatistics().calculate();
+        robot.getStatistics().print(true);
 
         usleep(100000);
     }

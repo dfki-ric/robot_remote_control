@@ -2,6 +2,13 @@
 
 #include "../src/Transports/TransportZmq.hpp"
 
+#ifdef TRANSPORT_DEFAULT_GZIP
+  #include "../src/Transports/TransportWrapperGzip.hpp"
+#endif
+#ifdef TRANSPORT_UDT
+  #include "../src/Transports/TransportUDT.hpp"
+#endif
+
 #include "TypeGenerator.hpp"
 
 #include <iostream>
@@ -29,16 +36,46 @@ TransportSharedPtr telemetri;
  * 
  */
 void initComms() {
-  if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ));}
-  if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB));}
+  #ifdef TRANSPORT_DEFAULT
+    if (!commands.get()) {
+        printf("using zmq tcp\n");
+        commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ));
+    }
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB));}
 
-  if (!command.get()) {command = TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP));}
-  if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB));}
-  // if (!command.get()) {command = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REP));}
-  // if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::PUB));}
-  // if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REQ));}
-  // if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::SUB));}
+    if (!command.get()) {command = TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP));}
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB));}
+  #endif
+  #ifdef TRANSPORT_DEFAULT_GZIP
+    if (!commands.get()) {
+        printf("using zmq tcp with gzip wrapper\n");
+        commands = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ))));
+    }
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB))));}
 
+    if (!command.get()) {command = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP))));}
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB))));}
+  #endif
+  #ifdef TRANSPORT_IPC
+    if (!command.get()) {
+        printf("using zmq IPC\n");
+        command = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REP));
+    }
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::PUB));}
+    if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REQ));}
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::SUB));}
+  #endif
+  #ifdef TRANSPORT_UDT
+    if (!command.get()) {
+        printf("using UDT\n");
+        command = TransportSharedPtr(new TransportUDT(TransportUDT::SERVER, 7001));
+    }
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportUDT(TransportUDT::SERVER, 7002));}
+    if (!commands.get()) {commands = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7001, "127.0.0.1"));}
+    if (!telemetry.get()) {
+        telemetry = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7002, "127.0.0.1"));
+    }
+  #endif
 }
 
 template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, const ControlMessageType &type) {
@@ -180,10 +217,9 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
   usleep(100 * 1000);
-  // receive pending data
-  controller.update();
-
   while (!controller.getCurrentPose(&currentpose)) {
+    // receive pending data
+    controller.update();
     usleep(10000);
   }
 
@@ -194,6 +230,73 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   COMPARE_PROTOBUF(pose, currentpose);
 }
 
+BOOST_AUTO_TEST_CASE(checking_current_twist) {
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.update();
+  usleep(100 * 1000);
+
+  Twist telemetry = TypeGenerator::genTwist();
+  Twist currenttelemetry;
+
+  // buffer for size comparsion
+  std::string buf;
+  telemetry.SerializeToString(&buf);
+
+  // send telemetry data
+  int sent = robot.setCurrentTwist(telemetry);
+
+  // wait a little for data transfer
+  // the Telemetry send is non-blocking in opposite to commands
+  usleep(100 * 1000);
+  // receive pending data
+  controller.update();
+
+  while (!controller.getCurrentTwist(&currenttelemetry)) {
+    usleep(10000);
+  }
+
+
+  // data was sent completely
+  BOOST_CHECK((unsigned int)sent == buf.size());
+  // and is the same
+  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+}
+
+BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.update();
+  usleep(100 * 1000);
+
+  Acceleration telemetry = TypeGenerator::genAcceleration();
+  Acceleration currenttelemetry;
+
+  // buffer for size comparsion
+  std::string buf;
+  telemetry.SerializeToString(&buf);
+
+  // send telemetry data
+  int sent = robot.setCurrentAcceleration(telemetry);
+
+  // wait a little for data transfer
+  // the Telemetry send is non-blocking in opposite to commands
+  usleep(100 * 1000);
+  // receive pending data
+  controller.update();
+
+  while (!controller.getCurrentAcceleration(&currenttelemetry)) {
+    usleep(10000);
+  }
+
+
+  // data was sent completely
+  BOOST_CHECK((unsigned int)sent == buf.size());
+  // and is the same
+  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+}
 
 BOOST_AUTO_TEST_CASE(generic_request_telemetry_data) {
   initComms();
@@ -326,9 +429,9 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
-  std::string requested_robot_state;
-  std::string gotten_robot_state;
-  std::string second_requested_robot_state;
+  std::vector<std::string> requested_robot_state;
+  std::vector<std::string> gotten_robot_state;
+  std::vector<std::string> second_requested_robot_state;
 
 
 
@@ -340,14 +443,14 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   }
   controller.requestRobotState(&requested_robot_state);
 
-  BOOST_TEST(requested_robot_state == gotten_robot_state);
+  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
 
 
   bool result = controller.getRobotState(&gotten_robot_state);
 
   // should be empty because state was already recieved
   BOOST_CHECK_EQUAL(result, false);
-  BOOST_TEST(gotten_robot_state == "");
+  BOOST_TEST(gotten_robot_state.size() == 0);
 
 
 
@@ -361,9 +464,9 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   controller.requestRobotState(&requested_robot_state);
   controller.requestRobotState(&second_requested_robot_state);
 
-  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_FINISHED");
-  BOOST_TEST(requested_robot_state == gotten_robot_state);
-  BOOST_TEST(requested_robot_state == second_requested_robot_state);
+  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_FINISHED");
+  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
+  BOOST_TEST(requested_robot_state.front() == second_requested_robot_state.front());
 
 
 
@@ -379,15 +482,15 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
     usleep(10000);
   }
   // request should return most recent state, get should return the oldest not retrieved one
-  BOOST_TEST(requested_robot_state == "ROBOT_DEMO_STOPPED");
-  BOOST_TEST(gotten_robot_state == "ROBOT_DEMO_RUNNING_AGAIN");
+  BOOST_TEST(requested_robot_state.front() == "ROBOT_DEMO_STOPPED");
+  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_RUNNING_AGAIN");
 
 
   while (!controller.getRobotState(&gotten_robot_state)) {
     usleep(10000);
   }
   // now they should be equal
-  BOOST_TEST(gotten_robot_state == requested_robot_state);
+  BOOST_TEST(gotten_robot_state.front() == requested_robot_state.front());
 
 
   robot.stopUpdateThread();
@@ -497,13 +600,19 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
+  SimpleSensor temp_recv;
+
+  // getting an unavaile sensor should return false
+  bool result = controller.getSimpleSensor(1, &temp_recv);
+  BOOST_TEST(result == false);
+
+
   // send unregistered sensor
   SimpleSensor temp;
   temp.set_id(1);
   robot.setSimpleSensor(temp);
 
 
-  SimpleSensor temp_recv;
   while (!controller.getSimpleSensor(1, &temp_recv)) {
     // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
     usleep(10000);
@@ -542,3 +651,55 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
 
 }
 
+BOOST_AUTO_TEST_CASE(check_callbacks) {
+  Pose robotpose, controlpose;
+  robotpose = TypeGenerator::genPose();
+  controlpose = TypeGenerator::genPose();
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
+
+  // add generic callback
+  robot.addCommandReceivedCallback([](const uint16_t &type){
+      // not getting the pose here, isnew will fail for other callback
+      BOOST_TEST(type == TARGET_POSE_COMMAND); //we are sending a pose below
+  });
+
+  // add command callback
+  robot.addCommandReceivedCallback(TARGET_POSE_COMMAND, [controlpose, &robot](){
+      Pose pose;
+      bool isnew = robot.getTargetPoseCommand(&pose);
+      COMPARE_PROTOBUF(controlpose, pose);
+      BOOST_TEST(isnew == true);
+  });
+  // send the pose
+  controller.setTargetPose(controlpose);
+
+  controller.addTelemetryReceivedCallback<Pose>(CURRENT_POSE, [robotpose, &controller](const Pose & data){
+      COMPARE_PROTOBUF(robotpose, data);
+      Pose pose;
+      bool isnew = controller.getCurrentPose(&pose);
+      COMPARE_PROTOBUF(robotpose, pose);
+      BOOST_TEST(isnew == true);
+  });
+  robot.setCurrentPose(robotpose);
+
+
+
+
+  //COMPARE_PROTOBUF(robotpose, controlpose);
+}
+
+// BOOST_AUTO_TEST_CASE(check_permissions) {
+//   // not using the set/get functions
+
+
+//   WrenchState send, recv;
+//   send = TypeGenerator::genWrenchState();
+//   recv = testTelemetry(send, WRENCH_STATE);
+//   COMPARE_PROTOBUF(send, recv);
+// }

@@ -2,10 +2,10 @@
 
 #include <stdio.h>
 
-Timer::Timer() {}
-Timer::~Timer() {}
+Timer::Timer() : running(false) {}
 
 void Timer::start(const float &interval_seconds) {
+    running = true;
     interval_s = interval_seconds;
     gettimeofday(&startTime, 0);
 }
@@ -13,7 +13,7 @@ void Timer::start(const float &interval_seconds) {
 
 
 bool Timer::isExpired() {
-    if (getElapsedTime() >= interval_s) {
+    if (running && getElapsedTime() >= interval_s) {
         return true;
     }
     return false;

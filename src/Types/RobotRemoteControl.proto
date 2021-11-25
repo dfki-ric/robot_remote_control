@@ -4,30 +4,124 @@ import "google/protobuf/any.proto";
 
 package robot_remote_control;
 
+message Acceleration {
+    Vector3 linear = 1;
+    Vector3 angular = 2;
+}
+
+message ActionDependency {
+    // defined if this action can only be used, if another action has a specific state
+    string depends_on_action = 1; // "task"
+    float depends_on_action_in_state = 2; //1    
+}
+
+message ChannelFloat {
+    string name = 1;
+    repeated float values = 2;
+}
+
+message ComplexAction {
+    string name = 1;
+    ComplexActionType type = 2;
+    repeated Pose poses = 3;
+    repeated Twist twists = 4;
+}
+
+enum ComplexActionType {
+    UNDEFINED_COMPLEX_ACTION = 0;
+    POSE = 1;
+    POSE_LIST = 2;
+    TWIST = 3;
+    TWIST_LIST = 4;
+    AREA = 5;
+    VOLUME = 6;
+}
+
+message ComplexActions {
+    repeated ComplexAction actions = 1;
+}
+
+message ContactPoint {
+    Vector3 position = 1;  // position in body frame
+    float contact = 2;  // contact probability in the interval between 0 and 1.0, or NaN if unknown
+    float slip = 3;  //  slip distance of contact point in a single control loop
+    float friction_coefficient = 4; // friction_coefficient of the current
+    int32 groupId = 5;  //set a group for points that should have contact simultaneously
+}
+
+message ContactPoints {
+    repeated ContactPoint contacts= 1;
+}
+
+message GridMap {
+    TimeStamp timestamp = 1;
+    string frame = 2;
+    Pose origin  = 3;
+    repeated SimpleSensor layers = 4;
+}
+
+message GoTo {
+    double max_forward_speed = 1;
+    Pose waypoint_pose = 2; 
+    double waypoint_max_forward_speed = 3;
+}
+
 message HeartBeat {
     float heartBeatDuration = 1;
 }
 
-message TimeStamp {
-    int32 secs = 1;
-    int32 nsecs = 2;
+message IMU {
+    Vector3 acceleration = 1;
+    Vector3 gyro = 2;
+    Vector3 mag = 3;
+    Orientation orientation = 4;
 }
 
-message Vector2{
-    float x = 1;
-    float y = 2;
+message JointCommand {
+    repeated string name = 1;
+    repeated double position = 2;
+    repeated double velocity = 3;
+    repeated double effort = 4;
+    repeated double acceleration = 6;
+    repeated double kp_gain = 7;
+    repeated double kd_gain = 8;
+    TimeStamp timestamp = 9;
 }
 
-message Vector3 {
-    float x = 1;
-    float y = 2;
-    float z = 3;
+message JointState {
+    repeated string name = 1;
+    repeated double position = 2;
+    repeated double velocity = 3;
+    repeated double effort = 4;
+    repeated double acceleration = 6;
+    TimeStamp timestamp = 5;
 }
 
-message Position {
-    double x = 1;
-    double y = 2;
-    double z = 3;
+message LogMessage {
+    uint32 level = 1;
+    string message = 2;
+    TimeStamp timestamp = 3;
+}
+
+message Map {
+    google.protobuf.Any map = 3;
+}
+
+enum MapMessageType {  
+    NO_MAP_DATA = 0;
+    POINTCLOUD_MAP = 1; // the pointcloud proto type
+    GRID_MAP = 2;  // transmitted as SimpleSensor
+    MAP_MESSAGE_TYPES_NUMBER = 3; // LAST element
+}
+
+message MapsDefinition {
+    repeated string name = 1;
+    repeated uint32 id = 2;
+}
+
+message NamedValue {
+    string name = 1;
+    float value = 2;
 }
 
 message Orientation {
@@ -37,14 +131,103 @@ message Orientation {
     double w = 4;
 }
 
+message Permission {
+    string requestuid = 1;
+    bool granted = 2;
+}
+
+message PermissionRequest {
+    string description = 1;
+    string requestuid = 2; // you can use a simple string (number, description again) or a UUID here
+    bool granted = 3;
+}
+
+message PointCloud {
+    TimeStamp timestamp = 1;
+    string frame = 2;
+    Pose origin  = 3;
+    repeated Position points = 4;
+    repeated ChannelFloat channels = 5;
+}
+
 message Pose {
     Position position = 1;
     Orientation orientation = 2;
+    float orientation2d = 4;  // only to be used in case position only consists of x and y
     TimeStamp timestamp = 3;
 }
 
 message Poses {
-    repeated Pose pose = 1;
+    TimeStamp timestamp = 1;
+    string frame = 2;         // defaults to world
+    Pose origin  = 3;         // TODO: in converter, set transform from world if no frame is given
+    repeated Pose poses = 4;
+}
+
+message Position {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}
+
+message RobotName {
+    string value = 1;
+}
+
+message RobotState {
+    repeated string state = 1;
+    // the name may be uses in case you nees a description od the state array
+    // e.g. "Current Task", it must match the index of the state
+    repeated string state_name = 2;
+}
+
+message SimpleAction {
+    string name = 1;
+    SimpleActionDef type = 2;
+    float state = 3;
+}
+
+message SimpleActionDef {
+    SimpleActionType type = 1; // VALUE_INT
+    float min_state = 2;
+    float max_state = 3;
+    float step_size = 4;
+    repeated NamedValue value_names = 5; // {name: barrel_found, value=0}, {name: barrel_close, value=1}
+    ActionDependency action_dependency = 6;
+}
+
+message SimpleActions {
+     repeated SimpleAction actions = 1;
+}
+
+enum SimpleActionType {
+    UNDEFINED = 0;
+    VALUE_INT = 1;
+    VALUE_FLOAT = 2;
+    TRIGGER = 3;
+}
+
+message SimpleSensor{
+    string name = 1;
+    uint32 id = 2;
+    //size in x and y in order to send e.g. gridmaps, indexing: val = value[x+y*sizex]
+    //if this is a single value, you omit this completely
+    Vector2 size = 3; 
+    repeated float value = 4;
+    TimeStamp timestamp = 5;
+    //scale for discretized arrays of values of each data point in x and y in SI units (meters, seconds etc.)
+    //omit if no scale is needed
+    Vector2 scale = 6;
+    repeated string value_names = 7;
+}
+
+message SimpleSensors{
+    repeated SimpleSensor sensors = 1;
+}
+
+message TimeStamp {
+    int32 secs = 1;
+    int32 nsecs = 2;
 }
 
 message Transform {
@@ -63,82 +246,19 @@ message Twist {
     Vector3 angular = 2;
 }
 
-message JointState {
-    repeated string name = 1;
-    repeated double position = 2;
-    repeated double velocity = 3;
-    repeated double effort = 4;
-    TimeStamp timestamp = 5;
+message Vector2{
+    float x = 1;
+    float y = 2;
 }
 
-message GoTo {
-    double max_forward_speed = 1;
-    Pose waypoint_pose = 2; 
-    double waypoint_max_forward_speed = 3;
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
 }
 
-message NamedValue {
-    string name = 1;
-    float value = 2;
-}
-
-enum SimpleActionType {
-    UNDEFINED = 0;
-    VALUE_INT = 1;
-    VALUE_FLOAT = 2;
-    TRIGGER = 3;
-}
-message SimpleActionDef{
-    SimpleActionType type = 1;
-    float min_state = 2;
-    float max_state = 3;
-    float step_size = 4;
-    repeated NamedValue value_names = 5;
-}
-
-message SimpleAction {
-    string name = 1;
-    SimpleActionDef type = 2;
-    float state = 3;
-}
-
-message SimpleActions {
-     repeated SimpleAction actions = 1;
-}
-
-enum ComplexActionType {
-    UNDEFINED_COMPLEX_ACTION = 0;
-    POSE = 1;
-    POSE_LIST = 2;
-    TWIST = 3;
-    TWIST_LIST = 4;
-    AREA = 5;
-    VOLUME = 6;
-}
-
-message ComplexAction {
-    string name = 1;
-    ComplexActionType type = 2;
-    repeated Pose poses = 3;
-    repeated Twist twists = 4;
-}
-
-message ComplexActions {
-    repeated ComplexAction actions = 1;
-}
-
-message RobotName {
-    string value = 1;
-}
-
-message RobotState {
-    string state = 1;
-}
-
-message LogMessage {
-    uint32 level = 1;
-    string message = 2;
-    TimeStamp timestamp = 3;
+message Vector3Array {
+    repeated Vector3 elements = 1;
 }
 
 message VideoStream{
@@ -150,57 +270,6 @@ message VideoStreams{
     repeated VideoStream stream = 1;
 }
 
-message SimpleSensor{
-    string name = 1;
-    uint32 id = 2;
-    //size in x and y in order to send e.g. gridmaps, indexing: val = value[x+y*sizex]
-    //if this is a single value, you omit this completely
-    Vector2 size = 3; 
-    repeated float value = 4;
-    TimeStamp timestamp = 5;
-    //scale for discretized arrays of values of each data point in x and y in SI units (meters, seconds etc.)
-    //omit if no scale is needed
-    Vector2 scale = 6;
-}
-
-message SimpleSensors{
-    repeated SimpleSensor sensors = 1;
-}
-
-message Map {
-    google.protobuf.Any map = 3;
-}
-
-enum MapMessageType {  
-    NO_MAP_DATA = 0;
-    POINTCLOUD_MAP = 1;
-    MAP_MESSAGE_TYPES_NUMBER = 2; // LAST element
-}
-
-message MapsDefinition {
-    repeated string name = 1;
-    repeated uint32 id = 2;
-}
-
-
-message ChannelFloat {
-    string name = 1;
-    repeated float values = 2;
-}
-
-message PointCloud {
-    TimeStamp timestamp = 1;
-    string frame = 2;
-    Position origin  = 3;
-    repeated Position points = 4;
-    repeated ChannelFloat channels = 5;
-}
-
-message PointCloud2 {
-
-}
-
-
 message Wrench {
     Vector3 force = 1;
     Vector3 torque = 2;
@@ -211,3 +280,7 @@ message WrenchState {
     repeated string frame = 2;
     repeated Wrench wrenches = 3;
 }
+
+// message DepthMap {
+//  // TBD
+// }

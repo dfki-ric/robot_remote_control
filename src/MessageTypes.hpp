@@ -19,6 +19,8 @@ namespace robot_remote_control {
                             LOG_LEVEL_SELECT,
                             MAP_REQUEST,
                             HEARTBEAT,
+                            PERMISSION,
+                            ROBOT_TRAJECTORY_COMMAND,
                             CONTROL_MESSAGE_TYPE_NUMBER  // LAST element
                             };
 
@@ -37,8 +39,14 @@ namespace robot_remote_control {
                                 WRENCH_STATE,               // current Wrench values
                                 MAPS_DEFINITION,
                                 MAP,
-                        				POSES,                      // number of poses
+                                POSES,                      // number of poses
                                 TRANSFORMS,                 // number of transforms
+                                PERMISSION_REQUEST,         // a request for a permission
+                                POINTCLOUD,                 // Pointcloud as telemetry
+                                IMU_VALUES,                 // raw IMU
+                                CONTACT_POINTS,             // contact points
+                                CURRENT_TWIST,              // the current movement speeds of the robot
+                                CURRENT_ACCELERATION,       // the current movement accelerations of the robot
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

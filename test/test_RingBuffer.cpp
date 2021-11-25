@@ -31,7 +31,7 @@ void fillBuffer(unsigned int size, RingBuffer<int> *buffer, bool overwrite = fal
     }
 
 
-BOOST_AUTO_TEST_CASE(retrun_correctly_on_pop) {
+BOOST_AUTO_TEST_CASE(return_correctly_on_pop) {
     RingBuffer<int> buffer(10);
     int data;
 
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(retrun_correctly_on_pop) {
     BOOST_CHECK_EQUAL(buffer.popData(&data), false);
 }
 
-BOOST_AUTO_TEST_CASE(retrun_correctly_on_push) {
+BOOST_AUTO_TEST_CASE(return_correctly_on_push) {
     RingBuffer<int> buffer(1);
 
     int i = 0;

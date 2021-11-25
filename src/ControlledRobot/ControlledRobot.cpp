@@ -18,6 +18,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
     registerCommandType(JOINTS_COMMAND, &jointsCommand);
     registerCommandType(HEARTBEAT, &heartbeatCommand);
+    registerCommandType(PERMISSION, &permissionCommand);
+    registerCommandType(ROBOT_TRAJECTORY_COMMAND, &robotTrajectoryCommand);
+
 
     registerTelemetryType<Pose>(CURRENT_POSE);
     registerTelemetryType<JointState>(JOINT_STATE);
@@ -33,24 +36,39 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE);
     registerTelemetryType<WrenchState>(WRENCH_STATE);
     registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
-    registerTelemetryType<Map>(MAP); // TODO: needed? ()
+    registerTelemetryType<Map>(MAP);
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
+    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
+    registerTelemetryType<PointCloud>(POINTCLOUD);
+    registerTelemetryType<IMU>(IMU_VALUES);
+    registerTelemetryType<ContactPoints>(CONTACT_POINTS);
+    registerTelemetryType<Twist>(CURRENT_TWIST);
+    registerTelemetryType<Acceleration>(CURRENT_ACCELERATION);
 }
 
 void ControlledRobot::update() {
     while (receiveRequest() != NO_CONTROL_DATA) {}
 
     if (heartbeatCommand.read(&heartbeatValues)) {
+        connected.store(true);
         // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
         heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);
     }
     if (heartbeatTimer.isExpired()) {
+        connected.store(false);
         float elapsedTime = heartbeatTimer.getElapsedTime();
         if (heartbeatExpiredCallback != nullptr) {
             heartbeatExpiredCallback(elapsedTime);
         }
     }
+}
+
+void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const uint16_t &type) {
+    #ifdef RRC_STATISTICS
+        statistics.global.addBytesSent(bytesSent);
+        statistics.stat_per_type[type].addBytesSent(bytesSent);
+    #endif
 }
 
 ControlMessageType ControlledRobot::receiveRequest() {
@@ -98,6 +116,16 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
             return LOG_LEVEL_SELECT;
         }
+        case PERMISSION: {
+            Permission perm;
+            perm.ParseFromString(serializedMessage);
+            std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
+            try {
+                promise.set_value(perm.granted());
+            } catch (const std::future_error &e) {
+                printf("%s\n", e.what());
+            }
+        }
         default: {
             CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
             if (cmdbuffer) {
@@ -107,8 +135,8 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
                     return NO_CONTROL_DATA;
                 }
                 commandTransport->send(serializeControlMessageType(msgtype));
+                notifyCommandCallbacks(*type);
                 return msgtype;
-
             } else {
                 commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
                 return msgtype;
@@ -117,11 +145,28 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
     }
 }
 
+void ControlledRobot::notifyCommandCallbacks(const uint16_t &type) {
+    auto callCb = [&](const std::function<void(const uint16_t &type)> &cb){cb(type);};
+    std::for_each(commandCallbacks.begin(), commandCallbacks.end(), callCb);
+}
+
 
 int ControlledRobot::setRobotState(const std::string& state) {
     RobotState protostate;
-    protostate.set_state(state);
+    *protostate.add_state() = state;
     return sendTelemetry(protostate, ROBOT_STATE);
+}
+
+int ControlledRobot::setRobotState(const std::vector<std::string> state) {
+    RobotState protostate;
+    for (const std::string &line : state) {
+        *protostate.add_state() = line;
+    }
+    return sendTelemetry(protostate, ROBOT_STATE);
+}
+
+int ControlledRobot::setRobotState(const RobotState& state) {
+    return sendTelemetry(state, ROBOT_STATE);
 }
 
 int ControlledRobot::setLogMessage(enum LogLevel lvl, const std::string& message) {

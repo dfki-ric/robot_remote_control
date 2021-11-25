@@ -69,6 +69,10 @@ You can use the compile_protobuf_from_source.bash script to build protobuf from 
 
 This will install protobuf 3 in the specified INSTALL_PATH (default is /usr/local)
 
+In case you have a system protobuf installed, defien the protobuf locations by yourself:
+
+    cmake .. -DCMAKE_CXX_STANDARD=11 -DBUILD_EXAMPLES=true -DPROTOBUF_PROTOC_EXECUTABLE=/bin/protoc -DPROTOBUF_IMPORT_DIRS=/include -DPROTOBUF_INCLUDE_DIR=/include -DPROTOBUF_LIBRARY=/lib/libprotobuf.so.28
+
 
 ### Directory Structure
 

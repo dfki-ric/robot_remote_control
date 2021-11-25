@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <atomic>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -11,6 +12,7 @@
 #include "SimpleBuffer.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
+
 
 
 namespace robot_remote_control {
@@ -37,7 +39,10 @@ class RobotController: public UpdateThread {
             heartBeatDuration = duration_seconds;
             heartBeatTimer.start(heartBeatDuration);
         }
-
+        /**
+         * @brief Set the allowed maximum latency for receiving heartbeat reply messages after sending a heartbeat
+         * the default is set in the constructor
+         */
         void setMaxLatency(const float &value) {
             maxLatency = value;
         }
@@ -52,12 +57,21 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief return then current state of the connection using the heartbeat.
+         * @return the current status of the connection, if a hearbeat duration iss set using setHeartBeatDuration()
+         * 
+         */
+        bool isConnected() {
+            return connected.load();
+        }
+
+        /**
          * @brief Get the Heart Breat Round Trip Time
          * 
          * @return float time in seconds needed to send/receive the last heartbeat (if used)
          */
         float getHeartBreatRoundTripTime() {
-            return heartBreatRoundTripTime.lockedAccess().get();
+            return heartBreatRoundTripTime.load();
         }
 
         /**
@@ -86,7 +100,7 @@ class RobotController: public UpdateThread {
          * 
          * @param jointsCommand 
          */
-        void setJointCommand(const JointState &jointsCommand);
+        void setJointCommand(const JointCommand &jointsCommand);
 
         /**
          * @brief Set the SimpleActions command that the controlled robot should execute
@@ -102,12 +116,26 @@ class RobotController: public UpdateThread {
          */
         void setComplexActionCommand(const ComplexAction &complexActionCommand);
 
+
+        void setRobotTrajectoryCommand(const Poses &robotTrajectoryCommand);
+
+
         /**
          * @brief Set the LogLevel of the controlled robot
          * 
          * @param level the desired log level
          */
         void setLogLevel(const uint16_t &level);
+
+        /**
+         * @brief Set the Permission object
+         * 
+         * @param permission 
+         * @return true 
+         * @return false 
+         */
+        bool setPermission(const Permission& permission);
+
 
         /**
          * @brief Get the last sent Pose of the robot
@@ -117,6 +145,28 @@ class RobotController: public UpdateThread {
          */
         bool getCurrentPose(Pose *pose) {
             return getTelemetry(CURRENT_POSE, pose);
+        }
+
+        /**
+         * @brief Get the Current Twist object
+         * 
+         * @param telemetry the Twist object to write to
+         * @return true if new data was read
+         * @return false otherwise
+         */
+        bool getCurrentTwist(Twist *telemetry) {
+            return getTelemetry(CURRENT_TWIST, telemetry);
+        }
+
+        /**
+         * @brief Get the Current Acceleration object
+         *
+         * @param telemetry the Acceleration object to write to
+         * @return true if new data was read
+         * @return false otherwise
+         */
+        bool getCurrentAcceleration(Acceleration *telemetry) {
+            return getTelemetry(CURRENT_ACCELERATION, telemetry);
         }
 
         /**
@@ -149,6 +199,15 @@ class RobotController: public UpdateThread {
             return getTelemetry(WRENCH_STATE, wrenchState);
         }
 
+        int getCurrentIMUState(IMU* imu) {
+            return getTelemetry(IMU_VALUES, imu);
+        }
+
+        int getCurrentContactPoints(ContactPoints* points) {
+            return getTelemetry(CONTACT_POINTS, points);
+        }
+
+
         /**
          * @brief Get a Simple Sensor object
          * 
@@ -168,6 +227,10 @@ class RobotController: public UpdateThread {
             return result;
         }
 
+        bool getPermissionRequest(PermissionRequest* request) {
+            return getTelemetry(PERMISSION_REQUEST, request);
+        }
+
         /**
          * @brief Get the Log Message object
          * 
@@ -184,16 +247,21 @@ class RobotController: public UpdateThread {
          * @param state the string to write the state to
          * @return bool true if new data was read
          */
-        bool getRobotState(std::string *state) {
+        bool getRobotState(std::vector<std::string> *state) {
             RobotState protostate;
             int statesleft = getTelemetry(ROBOT_STATE, &protostate);
-            *state = protostate.state();
+            state->clear();
+            for (const std::string &line : protostate.state()) {
+                state->push_back(line);
+            }
             return statesleft;
         }
 
         bool getRobotState(RobotState *state) {
             return getTelemetry(ROBOT_STATE, state);
         }
+
+
 
         /**
          * @brief Get the current transforms
@@ -206,14 +274,29 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Get the Point Cloud object
+         * 
+         * @param pointcloud 
+         * @return true 
+         * @return false 
+         */
+        bool getPointCloud(PointCloud *pointcloud) {
+            return getTelemetry(POINTCLOUD, pointcloud);
+        }
+
+
+        /**
          * @brief request the curretn state instead of waiting for the first telemetry message
          * 
          * @param state the string to write the state to
          */
-        void requestRobotState(std::string *state) {
+        void requestRobotState(std::vector<std::string> *state) {
             RobotState protostate;
             requestTelemetry(ROBOT_STATE, &protostate);
-            *state = protostate.state();
+            state->clear();
+            for (const std::string &line : protostate.state()) {
+                state->push_back(line);
+            }
         }
 
         /**
@@ -322,7 +405,7 @@ class RobotController: public UpdateThread {
             result->ParseFromString(replybuf);
         }
 
-        template< class DATATYPE > void addTememetryReceivedCallback(const uint16_t &type, const std::function<void(const size_t& buffersize, const DATATYPE & data)> &function) {
+        template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const DATATYPE & data)> &function) {
             RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
         }
 
@@ -351,7 +434,7 @@ class RobotController: public UpdateThread {
 
         float heartBeatDuration;
         Timer heartBeatTimer;
-        ThreadProtectedVar<float> heartBreatRoundTripTime;
+        std::atomic<float> heartBreatRoundTripTime;
         Timer latencyTimer;
         Timer requestTimer;
         Timer lastConnectedTimer;
@@ -363,6 +446,7 @@ class RobotController: public UpdateThread {
         // void initBuffers(const unsigned int &defaultSize);
 
         std::function<void(const float&)> lostConnectionCallback;
+        std::atomic<bool> connected;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;

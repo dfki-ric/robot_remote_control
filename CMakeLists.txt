@@ -25,9 +25,20 @@ else()
     endif()
 endif()
 
+######################################################## CHECK FOR ZLIB
+find_package(ZLIB)
+
+#################################################### COLLECT SATISTICS?
+set (RRC_STATISTICS ON)
+if( RRC_STATISTICS )
+    add_definitions(-DRRC_STATISTICS)
+endif( RRC_STATISTICS )
+
+
 ################################################### ADD SUBDIRECTORIES
 add_subdirectory(src)
 
+#set (BUILD_EXAMPLES ON)
 if( BUILD_EXAMPLES )
     message("Adding example directory") 
     add_subdirectory(examples)

@@ -40,13 +40,24 @@ int main(int argc, char** argv) {
     printf("space: set position to 0\n");
     printf("+/-: select increment for position\n");
 
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
+    std::string ip;
+    if (argc > 1) {
+        ip = argv[1];
+    } else {
+        ip = "127.0.0.1";
+    }
+
+    printf("connecting to %s\n",ip.c_str());
+
+    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://"+ip+":7001", TransportZmq::REQ));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":7002", TransportZmq::SUB));
+
     robot_remote_control::RobotController controller(commands, telemetry);
 
 
     robot_remote_control::JointState jointstate;
     robot_remote_control::JointState contollablejoints;
+    robot_remote_control::JointCommand jointcommand;
 
 
     controller.startUpdateThread(100);
@@ -54,9 +65,10 @@ int main(int argc, char** argv) {
     // set Heartbeat to one second
     controller.setHeartBeatDuration(1);
 
-    sleep(2); // give zmq time to connect
+    sleep(2);  // give zmq time to connect
     controller.requestControllableJoints(&contollablejoints);
     contollablejoints.PrintDebugString();
+
 
     int joint_index = 0;
 
@@ -65,11 +77,31 @@ int main(int argc, char** argv) {
     char input = 0;
 
     while (true) {
-        int buffersize_joint = controller.getCurrentJointState(&jointstate);
+        int newstate = controller.getCurrentJointState(&jointstate);
 
-        // jointstate.PrintDebugString();
+        if (newstate) {
+            // copy available to controllable joints
+            jointcommand.Clear();
+            for (int i = 0; i < jointstate.name().size(); ++i) {
+                jointcommand.add_name(jointstate.name(i));
+                if (jointstate.position().size()) {
+                    jointcommand.add_position(jointstate.position(i));
+                }
+                if (jointstate.velocity().size()) {
+                    jointcommand.add_velocity(jointstate.velocity(i));
+                }
+                if (jointstate.effort().size()) {
+                    jointcommand.add_effort(jointstate.effort(i));
+                }
+                if (jointstate.acceleration().size()) {
+                    jointcommand.add_acceleration(jointstate.acceleration(i));
+                }
+            }
+            std::cout << jointcommand.ShortDebugString() << std::endl;
 
-        value = jointstate.position(joint_index);
+            value = jointcommand.position(joint_index);
+        }
+            std::cout << jointcommand.ShortDebugString() << std::endl;
 
         if (kbhit()) {
             printf("\r");  // carriage retun (overwrite input from key press)
@@ -132,16 +164,14 @@ int main(int argc, char** argv) {
             // jointcommand.add_name(jointstate.name(joint_index).c_str());
             // jointcommand.add_position(value);
 
-            jointstate.set_position(joint_index, value);
-            jointstate.clear_effort();
-            jointstate.clear_velocity();
-            controller.setJointCommand(jointstate);
+            jointcommand.set_position(joint_index, value);
+            jointcommand.clear_effort();
+            jointcommand.clear_velocity();
+            controller.setJointCommand(jointcommand);
 
         } else {
             usleep(20000);
         }
-
-        
 
         usleep(10000);
     }

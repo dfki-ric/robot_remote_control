@@ -13,11 +13,12 @@ add_subdirectory(ControlledRobot)
 add_subdirectory(RobotController)
 
 #install src folder headers
-install(FILES 
+install(FILES
 	MessageTypes.hpp
 	RingBuffer.hpp
 	TelemetryBuffer.hpp
 	SimpleBuffer.hpp
+	Statistics.hpp
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 )
 

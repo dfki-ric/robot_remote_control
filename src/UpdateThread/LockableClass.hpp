@@ -6,12 +6,14 @@
 namespace robot_remote_control {
 
 /**
- * @brief Template class to make variables thread safe
+ * @brief Template class to make classes thread safe.
+ * In comparsion to std::atomic it allows calling functions and
+ * to obtain a lock to call a sequence of functions
  * 
  * @tparam C The class type to have thread safe
  * 
  * Examples:
- *  ThreadProtectedVar< std::vector<int> > thread_int;
+ *  LockableClass< std::vector<int> > thread_int;
  *  thread_int->lockedAccess()->push_back(5);
  *  //for long-term locks
  *  { // extra scope to release the lock
@@ -25,7 +27,7 @@ namespace robot_remote_control {
  *  int myint2 = thread_int->lockedAccess().get()[5];
  *  int size = thread_int->lockedAccess()->size();
  */
-template <class C> class ThreadProtectedVar{
+template <class C> class LockableClass{
     public:
         class LockedAccess {            
          public:
@@ -45,10 +47,10 @@ template <class C> class ThreadProtectedVar{
             C *object;
         };
 
-        ThreadProtectedVar() {}
-        explicit ThreadProtectedVar(const C &init):var(init) {}
+        LockableClass() {}
+        explicit LockableClass(const C &init):var(init) {}
 
-        virtual ~ThreadProtectedVar() {}
+        virtual ~LockableClass() {}
 
         /**
          * @brief Get the protected variable as access object allowing direct, locked access
@@ -60,12 +62,17 @@ template <class C> class ThreadProtectedVar{
         }
 
         // no copy constructors
-        ThreadProtectedVar(const ThreadProtectedVar&) = delete;
-        ThreadProtectedVar& operator=(const ThreadProtectedVar&) = delete;
+        LockableClass(const LockableClass&) = delete;
+        LockableClass& operator=(const LockableClass&) = delete;
 
     private:
         C var;
         std::mutex mutex;
 };
+
+/**
+ * @brief alias for backward compatibility
+ */
+//template <class C> using ThreadProtectedVar = LockableClass<C>;
 
 }  // namespace robot_remote_control

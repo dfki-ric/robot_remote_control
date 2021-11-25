@@ -8,35 +8,39 @@
 using namespace robot_remote_control;
 
 
-RobotController::RobotController(TransportSharedPtr commandTransport,TransportSharedPtr telemetryTransport, const size_t &buffersize, const float &maxLatency):UpdateThread(),
+RobotController::RobotController(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize, const float &maxLatency):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     heartBeatDuration(0),
     heartBreatRoundTripTime(0),
     maxLatency(maxLatency),
-    buffers(std::make_shared<TelemetryBuffer>()) {
-    simplesensorbuffer = std::make_shared< SimpleBuffer<SimpleSensor> >();
+    buffers(std::make_shared<TelemetryBuffer>()),
+    simplesensorbuffer(std::make_shared< SimpleBuffer<SimpleSensor> >()) {
+        registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
+        registerTelemetryType<JointState>(JOINT_STATE, buffersize);
+        registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
+        registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, buffersize);
+        registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, buffersize);
+        registerTelemetryType<RobotName>(ROBOT_NAME, buffersize);
+        registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
+        registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
+        registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
+        registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
+        // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
+        // registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
+        registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
+        registerTelemetryType<Poses>(POSES, buffersize);
+        registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
+        registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
+        registerTelemetryType<PointCloud>(POINTCLOUD, buffersize);
+        registerTelemetryType<IMU>(IMU_VALUES, buffersize);
+        registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
+        registerTelemetryType<Twist>(CURRENT_TWIST, buffersize);
+        registerTelemetryType<Acceleration>(CURRENT_ACCELERATION, buffersize);
 
-    registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
-    registerTelemetryType<JointState>(JOINT_STATE, buffersize);
-    registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
-    registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, buffersize);
-    registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, buffersize);
-    registerTelemetryType<RobotName>(ROBOT_NAME, buffersize);
-    registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
-    registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
-    registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
-    registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
-    // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-    // registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
-    registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
-    registerTelemetryType<Poses>(POSES, buffersize);
-    registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
-
-
-    lostConnectionCallback = [&](const float& time){
-        printf("lost connection to robot, no reply for %f seconds\n", time);
-    };
+        lostConnectionCallback = [&](const float& time){
+            printf("lost connection to robot, no reply for %f seconds\n", time);
+        };
 }
 
 RobotController::~RobotController() {
@@ -54,7 +58,7 @@ void RobotController::setGoToCommand(const GoTo &goToCommand) {
     sendProtobufData(goToCommand, GOTO_COMMAND);
 }
 
-void RobotController::setJointCommand(const JointState &jointsCommand) {
+void RobotController::setJointCommand(const JointCommand &jointsCommand) {
     sendProtobufData(jointsCommand, JOINTS_COMMAND);
 }
 
@@ -66,6 +70,10 @@ void RobotController::setComplexActionCommand(const ComplexAction &complexAction
     sendProtobufData(complexActionCommand, COMPLEX_ACTION_COMMAND);
 }
 
+void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryCommand) {
+    sendProtobufData(robotTrajectoryCommand, ROBOT_TRAJECTORY_COMMAND);
+}
+
 void RobotController::setLogLevel(const uint16_t &level) {
     std::string buf;
     buf.resize(sizeof(uint16_t) + sizeof(uint16_t));
@@ -75,6 +83,10 @@ void RobotController::setLogLevel(const uint16_t &level) {
     uint16_t *levelptr = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()+sizeof(uint16_t)));
     *levelptr = level;
     sendRequest(buf);
+}
+
+bool RobotController::setPermission(const Permission& permission) {
+    sendProtobufData(permission, PERMISSION);
 }
 
 void RobotController::update() {
@@ -99,7 +111,7 @@ void RobotController::update() {
             latencyTimer.start();
             std::string rep = sendProtobufData(hb, HEARTBEAT);
             float time = latencyTimer.getElapsedTime();
-            heartBreatRoundTripTime.lockedAccess().set(time);
+            heartBreatRoundTripTime.store(time);
         }
         heartBeatTimer.start(heartBeatDuration);
     }
@@ -118,6 +130,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     try {
         commandTransport->send(serializedMessage, flags);
     }catch (const std::exception &error) {
+        connected.store(false);
         lostConnectionCallback(maxLatency);
         return "";
     }
@@ -129,10 +142,12 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         usleep(1000);
     }
     if (requestTimer.isExpired()) {
+        connected.store(false);
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
         return "";
     }
     lastConnectedTimer.start();
+    connected.store(true);
     return replystr;
 }
 
