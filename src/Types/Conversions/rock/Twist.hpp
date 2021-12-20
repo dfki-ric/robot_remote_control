@@ -11,14 +11,14 @@ namespace RockConversion {
     inline static void convert(const Twist &rrc_type, base::samples::Twist* rock_type) {
         convert(rrc_type.linear(), &(rock_type->linear));
         convert(rrc_type.angular(), &(rock_type->angular));
-        convert(rrc_type.frame(), &(rock_type->frame_id));
+        rock_type->frame_id = rrc_type.frame();
         convert(rrc_type.timestamp(), &(rock_type->time));
     }
 
     inline static void convert(const base::samples::Twist &rock_type, Twist* rrc_type) {
         convert(rock_type.linear, &(rrc_type->linear()));
         convert(rock_type.angular, &(rrc_type->angular()));
-        convert(rock_type.frame_id, &(rrc_type->frame()));
+        rrc_type->set_frame(rock_type.frame_id);
         convert(rock_type.time, &(rrc_type->timestamp()));
     }
 
