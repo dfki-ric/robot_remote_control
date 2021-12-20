@@ -241,6 +241,14 @@ int main(int argc, char** argv)
         velocity.set_value(2, 0.1);
         robot.setSimpleSensor(velocity);
 
+        
+        robot_remote_control::Twist twistState;
+        twistState.mutable_linear()->set_x(1);
+        twistState.mutable_linear()->set_y(2);
+        twistState.mutable_linear()->set_z(3);
+        twistState.set_frame("Test for a framename");
+        robot.setCurrentTwist(twistState);
+
         // when the define RRC_STATISTICS was active during compilation you can calculate/print/use stats
         // if not, the sats stay empty
         robot.getStatistics().calculate();
