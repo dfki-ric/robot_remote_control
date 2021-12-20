@@ -16,10 +16,10 @@ namespace RockConversion {
     }
 
     inline static void convert(const base::samples::Twist &rock_type, Twist* rrc_type) {
-        convert(rock_type.linear, &(rrc_type->linear()));
-        convert(rock_type.angular, &(rrc_type->angular()));
+        convert(rock_type.linear, rrc_type->mutable_linear());
+        convert(rock_type.angular, rrc_type->mutable_angular());
         rrc_type->set_frame(rock_type.frame_id);
-        convert(rock_type.time, &(rrc_type->timestamp()));
+        convert(rock_type.time, rrc_type->mutable_timestamp());
     }
 
 }  // namespace RockConversion
