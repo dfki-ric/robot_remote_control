@@ -245,6 +245,8 @@ message Transforms {
 message Twist {
     Vector3 linear = 1;
     Vector3 angular = 2;
+    TimeStamp timestamp= 3;
+    string frame = 4;
 }
 
 message Vector2{
