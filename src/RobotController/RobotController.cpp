@@ -44,6 +44,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
 }
 
 RobotController::~RobotController() {
+    stopUpdateThread();
 }
 
 void RobotController::setTargetPose(const Pose & pose) {

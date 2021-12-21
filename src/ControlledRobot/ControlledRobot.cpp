@@ -47,6 +47,10 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<Acceleration>(CURRENT_ACCELERATION);
 }
 
+ControlledRobot::~ControlledRobot() {
+    stopUpdateThread();
+}
+
 void ControlledRobot::update() {
     while (receiveRequest() != NO_CONTROL_DATA) {}
 

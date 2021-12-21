@@ -19,7 +19,7 @@ namespace robot_remote_control {
 class ControlledRobot: public UpdateThread {
     public:
         explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
-        virtual ~ControlledRobot() {}
+        virtual ~ControlledRobot();
 
         /**
          * @brief threaded update function called by UpdateThread that receives commands
