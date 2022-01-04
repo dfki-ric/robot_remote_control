@@ -128,7 +128,7 @@ int main(int argc, char** argv)
     robot_remote_control::JointCommand jointscommand;
     robot_remote_control::SimpleAction simpleactionscommand;
     robot_remote_control::ComplexAction complexactionscommand;
-
+    robot_remote_control::Poses posescommand;
 
 
 
@@ -222,6 +222,10 @@ int main(int argc, char** argv)
             // do it
         }
 
+        if (robot.getRobotTrajectoryCommand(&posescommand)) {
+            printf("\ngot trajectory command:\n%s\n", posescommand.ShortDebugString().c_str());
+        }
+
         // set state
         robot.setRobotState("RUNNING");
 
@@ -251,8 +255,8 @@ int main(int argc, char** argv)
 
         // when the define RRC_STATISTICS was active during compilation you can calculate/print/use stats
         // if not, the sats stay empty
-        robot.getStatistics().calculate();
-        robot.getStatistics().print(true);
+        // robot.getStatistics().calculate();
+        // robot.getStatistics().print(true);
 
         usleep(100000);
     }
