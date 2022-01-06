@@ -12,7 +12,11 @@ namespace RockConversion {
         convert(rrc_type.linear(), &(rock_type->linear));
         convert(rrc_type.angular(), &(rock_type->angular));
         rock_type->frame_id = rrc_type.frame();
-        convert(rrc_type.timestamp(), &(rock_type->time));
+        if (rrc_type.timestamp().secs() == 0 && rrc_type.timestamp().nsecs() == 0) {
+            rock_type->time = base::Time::now();
+        } else {
+            convert(rrc_type.timestamp(), &(rock_type->time));
+        }
     }
 
     inline static void convert(const base::samples::Twist &rock_type, Twist* rrc_type) {
