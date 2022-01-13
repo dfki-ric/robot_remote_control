@@ -284,6 +284,13 @@ class RobotController: public UpdateThread {
             return getTelemetry(POINTCLOUD, pointcloud);
         }
 
+        bool getImage(Image *image) {
+            return getTelemetry(IMAGE, image);
+        }
+
+        bool getImageLayers(ImageLayers *imagelayers) {
+            return getTelemetry(IMAGE_LAYERS, imagelayers);
+        }
 
         /**
          * @brief request the curretn state instead of waiting for the first telemetry message
