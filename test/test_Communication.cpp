@@ -91,9 +91,14 @@ template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, c
 
   // wait for command
   std::string recv;
+  int count = 0;
   while (!robot.commandbuffers[type]->read(&recv)) {
     usleep(10000);
+    if (count++ > 100) {
+      BOOST_FAIL( "did not receive data in time" );
+    }
   }
+
 
   robot.stopUpdateThread();
   received.ParseFromString(recv);

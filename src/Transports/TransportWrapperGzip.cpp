@@ -35,19 +35,20 @@ int TransportWrapperGzip::send(const std::string& uncompressed, Flags flags) {
 
 int TransportWrapperGzip::receive(std::string* uncompressed, Flags flags) {
     std::string compressed;
-    transport->receive(&compressed, flags);
-
-    const uint32_t* uncompressedSizePtr = reinterpret_cast<const uint32_t*>(compressed.data());
-    uLong uncompressedSize = ntohl(*uncompressedSizePtr);
-    uLong srcLen = compressed.size()-sizeof(uint32_t);
-    if (uncompressed->size() < uncompressedSize) {
+    if (transport->receive(&compressed, flags)) {
+        const uint32_t* uncompressedSizePtr = reinterpret_cast<const uint32_t*>(compressed.data());
+        uLong uncompressedSize = ntohl(*uncompressedSizePtr);
+        uLong srcLen = compressed.size()-sizeof(uint32_t);
+        if (uncompressed->size() < uncompressedSize) {
+            uncompressed->resize(uncompressedSize);
+        }
+        Byte* data = const_cast<Byte*>(reinterpret_cast<const Byte*>(uncompressed->data()));
+        const Byte* sourcePtr = reinterpret_cast<const Byte*>(compressed.data()) + sizeof(uint32_t);
+        int res = uncompress(data, &uncompressedSize, sourcePtr, srcLen);
         uncompressed->resize(uncompressedSize);
+        return uncompressedSize;
     }
-    Byte* data = const_cast<Byte*>(reinterpret_cast<const Byte*>(uncompressed->data()));
-    const Byte* sourcePtr = reinterpret_cast<const Byte*>(compressed.data()) + sizeof(uint32_t);
-    int res = uncompress(data, &uncompressedSize, sourcePtr, srcLen);
-    uncompressed->resize(uncompressedSize);
-    return uncompressedSize;
+    return 0;
 }
 
 
