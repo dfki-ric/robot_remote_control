@@ -591,6 +591,30 @@ BOOST_AUTO_TEST_CASE(check_telemetry_wrechstate) {
   COMPARE_PROTOBUF(send, recv);
 }
 
+BOOST_AUTO_TEST_CASE(check_telemetry_image) {
+  // not using the set/get functions
+  Image send, recv;
+  send = TypeGenerator::genImage();
+  recv = testTelemetry(send, IMAGE);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_imagelayers) {
+  // not using the set/get functions
+  ImageLayers send, recv;
+  send = TypeGenerator::genImageLayers();
+  recv = testTelemetry(send, IMAGE_LAYERS);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_telemetry_camerainformation) {
+  // not using the set/get functions
+  CameraInformation send, recv;
+  send = TypeGenerator::genCameraInformation();
+  recv = testTelemetry(send, CAMERA_INFORMATION);
+  COMPARE_PROTOBUF(send, recv);
+}
+
 BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   initComms();
 

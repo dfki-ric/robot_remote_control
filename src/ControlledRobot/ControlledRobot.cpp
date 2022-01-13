@@ -45,6 +45,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<ContactPoints>(CONTACT_POINTS);
     registerTelemetryType<Twist>(CURRENT_TWIST);
     registerTelemetryType<Acceleration>(CURRENT_ACCELERATION);
+    registerTelemetryType<CameraInformation>(CAMERA_INFORMATION);
+    registerTelemetryType<Image>(IMAGE);
+    registerTelemetryType<ImageLayers>(IMAGE_LAYERS); 
 }
 
 ControlledRobot::~ControlledRobot() {

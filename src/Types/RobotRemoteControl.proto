@@ -15,6 +15,24 @@ message ActionDependency {
     float depends_on_action_in_state = 2; //1    
 }
 
+message CameraInfo {
+    Header header = 1;
+    uint32 width = 2;
+    uint32 height = 3;
+    string distortion_model = 4;
+    repeated float D = 5;
+    repeated float K = 6;
+    repeated float R = 7;
+    repeated float P = 8;
+    uint32 binning_x  = 9;
+    uint32 binning_y = 10;
+    RegionOfInterest roi = 11;
+}
+
+message CameraInformation {
+    repeated CameraInfo camerainfo = 1;
+}
+
 message ChannelFloat {
     string name = 1;
     repeated float values = 2;
@@ -66,8 +84,29 @@ message GoTo {
     double waypoint_max_forward_speed = 3;
 }
 
+message Header {
+    TimeStamp timestamp = 1;
+    string frame = 2;
+    uint32 seq = 3;
+}
+
 message HeartBeat {
     float heartBeatDuration = 1;
+}
+
+message Image {
+    Header header = 1;
+    uint32 height = 2;
+    uint32 width = 3;
+    string encoding = 4;
+    uint32 is_bigendian = 5;
+    uint32 step = 6;
+    bytes data = 7;
+}
+
+message ImageLayers {
+    Header header = 1;
+    repeated Image layers = 2;
 }
 
 message IMU {
@@ -75,6 +114,7 @@ message IMU {
     Vector3 gyro = 2;
     Vector3 mag = 3;
     Orientation orientation = 4;
+    Header header = 5;
 }
 
 message JointCommand {
@@ -170,6 +210,14 @@ message Position {
     double z = 3;
 }
 
+message RegionOfInterest {
+    uint32 x_offset = 1;
+    uint32 y_offset = 2;
+    uint32 height = 3;
+    uint32 width = 4;
+    bool do_rectify = 5;
+}
+
 message RobotName {
     string value = 1;
 }
@@ -235,7 +283,7 @@ message Transform {
     Pose transform = 1;
     string from = 2;
     string to = 3;
-    TimeStamp timestamp= 4;
+    TimeStamp timestamp = 4;
 }
 
 message Transforms {
@@ -245,7 +293,7 @@ message Transforms {
 message Twist {
     Vector3 linear = 1;
     Vector3 angular = 2;
-    TimeStamp timestamp= 3;
+    TimeStamp timestamp = 3;
     string frame = 4;
 }
 

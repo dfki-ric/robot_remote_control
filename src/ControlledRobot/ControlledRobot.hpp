@@ -248,6 +248,16 @@ class ControlledRobot: public UpdateThread {
             return sendTelemetry(telemetry, VIDEO_STREAMS);
         }
 
+        /**
+         * @brief provide cmaera information
+         * 
+         * @param telemetry 
+         * @return int 
+         */
+        int initCameraInformation(const CameraInformation& telemetry) {
+            return sendTelemetry(telemetry, CAMERA_INFORMATION);
+        }
+
 
         std::shared_future<bool> requestPermission(const PermissionRequest &permissionrequest) {
             // get and init promise in map
@@ -435,6 +445,27 @@ class ControlledRobot: public UpdateThread {
         int setCurrentTransforms(const Transforms &telemetry ) {
             return sendTelemetry(telemetry, TRANSFORMS);
         }
+
+        /**
+         * @brief Set a Image identifiable by the frame in the header
+         * 
+         * @param telemetry 
+         * @return int 
+         */
+        int setImage(const Image &telemetry) {
+            return sendTelemetry(telemetry, IMAGE);
+        }
+
+        /**
+         * @brief Set a Image with multiple Layers
+         * 
+         * @param telemetry 
+         * @return int 
+         */
+        int setImageLayers(const ImageLayers &telemetry ) {
+            return sendTelemetry(telemetry, IMAGE_LAYERS);
+        }
+
 
     protected:
         virtual ControlMessageType receiveRequest();

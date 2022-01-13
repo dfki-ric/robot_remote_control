@@ -47,6 +47,9 @@ namespace robot_remote_control {
                                 CONTACT_POINTS,             // contact points
                                 CURRENT_TWIST,              // the current movement speeds of the robot
                                 CURRENT_ACCELERATION,       // the current movement accelerations of the robot
+                                CAMERA_INFORMATION,         // information on cameras (identified by frame in header)
+                                IMAGE,                      // raw images, in case video streasm are not an option (identified by frame in header)
+                                IMAGE_LAYERS,               // Collection of images with a single timestamp (e.g. stereo pairs)
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

@@ -358,6 +358,15 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Request information about the cameras of the robot.
+         * 
+         * @param camerainformation 
+         */
+        void requestCameraInformation(CameraInformation *camerainformation) {
+            requestTelemetry(CAMERA_INFORMATION, camerainformation);
+        }
+
+        /**
          * @brief Request the current pose of the robot.
          *
          * @param Pose where to write the data to

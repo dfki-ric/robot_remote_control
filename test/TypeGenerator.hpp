@@ -1,11 +1,26 @@
 #include "../src/MessageTypes.hpp"
 
 #include <cstdlib>
+#include <string>
 
 namespace robot_remote_control {
 
 class TypeGenerator{
  public:
+
+    static std::string genString() {
+        const int len = (std::rand() / static_cast<double>(RAND_MAX)) * 30;
+        static const char *chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        std::string gen;
+        gen.reserve(len);
+        char* cur = const_cast<char*>(gen.data());
+        char* end = cur+len;
+        while (cur != end) {
+            *cur = chars[std::rand() % (sizeof(chars) - 1)];
+            ++cur;
+        }
+        return gen;
+    }
 
     static Acceleration genAcceleration() {
         Acceleration data;
@@ -16,7 +31,7 @@ class TypeGenerator{
 
     static ComplexAction genComplexAction() {
         ComplexAction data;
-        data.set_name(std::to_string(std::rand()));
+        data.set_name(genString());
         data.set_type(POSE_LIST);
         for (int i = 0; i < 10; ++i) {
             *data.add_poses() = genPose();
@@ -43,7 +58,7 @@ class TypeGenerator{
     static JointState genJointState() {
         JointState data;
         for (int values = 0; values < 10; ++values) {
-            *data.add_name() = std::to_string(values);
+            *data.add_name() = genString();
             data.add_effort(std::rand());
             data.add_position(std::rand());
             data.add_velocity(std::rand());
@@ -85,7 +100,7 @@ class TypeGenerator{
 
     static RobotName genRobotName() {
         RobotName data;
-        data.set_value(std::to_string(std::rand()));
+        data.set_value(genString());
         return data;
     }
 
@@ -104,7 +119,7 @@ class TypeGenerator{
 
     static SimpleAction genSimpleAction() {
         SimpleAction data;
-        data.set_name(std::to_string(std::rand()));
+        data.set_name(genString());
         data.set_state(std::rand());
         *data.mutable_type() = genSimpleActionDef();
         return data;
@@ -121,8 +136,8 @@ class TypeGenerator{
     static Transform genTransform() {
         Transform data;
         *data.mutable_transform() = genPose();
-        data.set_from(std::to_string(std::rand()));
-        data.set_to(std::to_string(std::rand()));
+        data.set_from(genString());
+        data.set_to(genString());
         return data;
     }
 
@@ -144,7 +159,7 @@ class TypeGenerator{
     static VideoStream genVideoStream() {
         VideoStream data;
         *data.mutable_camerapose() = genPose();
-        data.set_url(std::to_string(std::rand()));
+        data.set_url(genString());
         return data;
     }
 
@@ -166,8 +181,81 @@ class TypeGenerator{
     static WrenchState genWrenchState() {
         WrenchState data;
         for (int values = 0; values < 10; ++values) {
-            *data.add_frame() = std::to_string(values);
+            *data.add_frame() = genString();
             *data.add_wrenches() = genWrench();
+        }
+        return data;
+    }
+
+    static TimeStamp genTimeStamp() {
+        TimeStamp data;
+        data.set_secs(std::rand());
+        data.set_nsecs(std::rand());
+        return data;
+    }
+
+    static Header genHeader() {
+        Header data;
+        *data.mutable_timestamp() = genTimeStamp();
+        data.set_frame(genString());
+        data.set_seq(std::rand());
+        return data;
+    }
+
+    static RegionOfInterest genRegionOfInterest() {
+        RegionOfInterest data;
+        data.set_x_offset(std::rand());
+        data.set_y_offset(std::rand());
+        data.set_width(std::rand());
+        data.set_height(std::rand());
+        data.set_do_rectify(std::rand() > (RAND_MAX / 2));
+        return data;
+    }
+
+    static Image genImage() {
+        Image data;
+        *data.mutable_header() = genHeader();
+        data.set_height(std::rand());
+        data.set_width(std::rand());
+        data.set_encoding(genString());
+        data.set_is_bigendian(std::rand());
+        data.set_step(std::rand());
+        data.set_data(genString());
+        return data;
+    }
+
+    static ImageLayers genImageLayers() {
+        ImageLayers data;
+        *data.mutable_header() = genHeader();
+        for (int values = 0; values < 10; ++values) {
+            *data.add_layers() = genImage();
+        }
+        return data;
+    }
+
+    static CameraInfo genCameraInfo() {
+        CameraInfo data;
+        *data.mutable_header() = genHeader();
+        data.set_width(std::rand());
+        data.set_height(std::rand());
+        data.set_distortion_model(genString());
+        for (int values = 0; values < 10; ++values) {
+            data.add_d(std::rand());
+            data.add_k(std::rand());
+            data.add_r(std::rand());
+            data.add_p(std::rand());
+        }
+        data.set_binning_x(std::rand());
+        data.set_binning_y(std::rand());
+        *data.mutable_roi() = genRegionOfInterest();
+        return data;
+    }
+
+    static CameraInformation genCameraInformation() {
+        CameraInformation data;
+        CameraInfo* cam;
+        for (int values = 0; values < 10; ++values) {
+            *data.add_camerainfo() = genCameraInfo();
         }
         return data;
     }
