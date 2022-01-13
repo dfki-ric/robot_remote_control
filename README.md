@@ -52,7 +52,7 @@ The library is compiled using cmake. To compile it manually execute the followin
 
     mkdir build
     cd build
-    cmake .. -DCMAKE_CXX_STANDARD=11
+    cmake ..
     make
 
 Optionally you can add the flags -DBUILD_EXAMPLES=ON and -DBUILD_TESTS=ON to build the examples and test directory respectively.
@@ -71,7 +71,7 @@ This will install protobuf 3 in the specified INSTALL_PATH (default is /usr/loca
 
 In case you have a system protobuf installed, defien the protobuf locations by yourself:
 
-    cmake .. -DCMAKE_CXX_STANDARD=11 -DBUILD_EXAMPLES=true -DPROTOBUF_PROTOC_EXECUTABLE=/bin/protoc -DPROTOBUF_IMPORT_DIRS=/include -DPROTOBUF_INCLUDE_DIR=/include -DPROTOBUF_LIBRARY=/lib/libprotobuf.so.28
+    cmake .. -DBUILD_EXAMPLES=true -DPROTOBUF_PROTOC_EXECUTABLE=/bin/protoc -DPROTOBUF_IMPORT_DIRS=/include -DPROTOBUF_INCLUDE_DIR=/include -DPROTOBUF_LIBRARY=/lib/libprotobuf.so.28
 
 
 ### Directory Structure
