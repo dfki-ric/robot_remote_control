@@ -6,6 +6,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include "Point.hpp"
+#include "Header.hpp"
 #include "Quaternion.hpp"
 
 namespace robot_remote_control {
@@ -16,9 +17,8 @@ namespace RosConversion {
         convert(from.orientation(), &to->orientation);
     }
     
-    inline static void convert(const robot_remote_control::Pose &from, geometry_msgs::PoseStamped *to, const ros::Time &stamp = ros::Time::now(), const std::string &frame_id = "") {
-        to->header.stamp = stamp;
-        to->header.frame_id = frame_id;
+    inline static void convert(const robot_remote_control::Pose &from, geometry_msgs::PoseStamped *to) {
+        convert(from.header(), &to->header);
         convert(from, &to->pose);
     }
 
@@ -28,6 +28,7 @@ namespace RosConversion {
     }
     
     inline static void convert(const geometry_msgs::PoseStamped &from, robot_remote_control::Pose *to ) {
+        convert(from.header, to->mutable_header());
         convert(from.pose, to);
     }
 }  // namespace RosConversion

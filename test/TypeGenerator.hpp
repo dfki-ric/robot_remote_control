@@ -173,6 +173,7 @@ class TypeGenerator{
 
     static Wrench genWrench() {
         Wrench data;
+        *data.mutable_header() = genHeader();
         *data.mutable_force() = genVector3();
         *data.mutable_torque() = genVector3();
         return data;
@@ -181,7 +182,6 @@ class TypeGenerator{
     static WrenchState genWrenchState() {
         WrenchState data;
         for (int values = 0; values < 10; ++values) {
-            *data.add_frame() = genString();
             *data.add_wrenches() = genWrench();
         }
         return data;

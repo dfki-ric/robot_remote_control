@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     *transform.mutable_transform() = tf_pose;
     transform.set_from("Source");
     transform.set_to("Target");
-    *transform.mutable_timestamp() = robot.getTime();
+    *transform.mutable_header()->mutable_timestamp() = robot.getTime();
     *transforms.add_transform() = transform;
 
     robot.initSimpleActions(simpleActions);
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
             printf("\ngot target pose command:\n%s\n", targetpose.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "warping fake robot to target position\n");
             currentpose = targetpose;
-            *(currentpose.mutable_timestamp()) = robot.getTime();
+            *(currentpose.mutable_header()->mutable_timestamp()) = robot.getTime();
         }
 
         if (robot.getTwistCommand(&twistcommand)) {
@@ -250,7 +250,7 @@ int main(int argc, char** argv)
         twistState.mutable_linear()->set_x(1);
         twistState.mutable_linear()->set_y(2);
         twistState.mutable_linear()->set_z(3);
-        twistState.set_frame("Test for a framename");
+        twistState.mutable_header()->set_frame("Test for a framename");
         robot.setCurrentTwist(twistState);
 
         // when the define RRC_STATISTICS was active during compilation you can calculate/print/use stats
