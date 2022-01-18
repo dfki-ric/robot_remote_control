@@ -22,10 +22,10 @@ namespace RosConversion {
     }
 
     static void convert(const robot_remote_control::Header &from, std_msgs::Header *to) {
-        to.seq = from->seq();
-        to.frame_id = from->frame();
-        to->stamp.secs(from.stamp.sec);
-        to->stamp.set_nsecs(from.stamp.nsec);
+        to->seq = from.seq();
+        to->frame_id = from.frame();
+        to->stamp.sec = from.timestamp().secs();
+        to->stamp.nsec = from.timestamp().nsecs();
     }
 
 }  // namespace RosConversion

@@ -5,8 +5,8 @@
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <geometry_msgs/PoseStamped.h>
 
+#include "../Header.hpp"
 #include "Point.hpp"
-#include "Header.hpp"
 #include "Quaternion.hpp"
 
 namespace robot_remote_control {
