@@ -5,7 +5,7 @@
 namespace robot_remote_control {
 
 
-ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport):UpdateThread(),
+ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     heartbeatAllowedLatency(0.1),
@@ -14,8 +14,10 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
     registerCommandType(TWIST_COMMAND, &twistCommand);
     registerCommandType(GOTO_COMMAND, &goToCommand);
-    registerCommandType(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
-    registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
+    simpleActionsCommand = std::make_unique<CommandRingBuffer<SimpleAction>>(buffersize);
+    registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
+    complexActionCommandBuffer = std::make_unique<CommandRingBuffer<ComplexAction>>(buffersize);
+    registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
     registerCommandType(JOINTS_COMMAND, &jointsCommand);
     registerCommandType(HEARTBEAT, &heartbeatCommand);
     registerCommandType(PERMISSION, &permissionCommand);

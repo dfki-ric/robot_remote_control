@@ -18,7 +18,7 @@ namespace robot_remote_control {
 
 class ControlledRobot: public UpdateThread {
     public:
-        explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
+        explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize = 10);
         virtual ~ControlledRobot();
 
         /**
@@ -35,6 +35,9 @@ class ControlledRobot: public UpdateThread {
         bool isConnected() {
             return connected.load();
         }
+
+
+        
 
         // Command Callbacks
 
@@ -117,7 +120,7 @@ class ControlledRobot: public UpdateThread {
          * @param command the last received command
          */
         bool getSimpleActionCommand(SimpleAction *command) {
-            return simpleActionsCommand.read(command);
+            return simpleActionsCommand->read(command);
         }
 
         /**
@@ -127,7 +130,7 @@ class ControlledRobot: public UpdateThread {
          * @param command the last received command
          */
         bool getComplexActionCommand(ComplexAction *command) {
-            return complexActionCommandBuffer.read(command);
+            return complexActionCommandBuffer->read(command);
         }
 
         bool getRobotTrajectoryCommand(Poses *command) {
@@ -531,12 +534,64 @@ class ControlledRobot: public UpdateThread {
                 std::atomic<bool> isnew;
         };
 
+        template<class COMMAND> struct CommandRingBuffer: public CommandBufferBase{
+            public:
+                CommandRingBuffer(const size_t & buffersize):isnew(false),buffer(RingBuffer<COMMAND>(buffersize)){}
+
+                virtual ~CommandRingBuffer() {}
+
+                bool read(COMMAND *target) {
+                    bool oldval = isnew.load();
+                    auto lockable = buffer.lockedAccess();
+                    if (!lockable->popData(target)) {
+                        auto protocommand = lastcommand.lockedAccess();
+                        target->CopyFrom(protocommand.get());
+                    }
+                    isnew.store(lockable->size());
+                    return oldval;
+                }
+
+                void write(const COMMAND &src) {
+                    auto lockable = buffer.lockedAccess();
+                    lockable->pushData(src, true);
+                    isnew.store(lockable->size());
+                    notify();
+                }
+
+                virtual bool write(const std::string &serializedMessage) {
+                    COMMAND protocommand;
+                    if (!protocommand.ParseFromString(serializedMessage)) {
+                        return false;
+                    }
+                    auto lockable = buffer.lockedAccess();
+                    lockable->pushData(protocommand, true);
+                    isnew.store(lockable->size());
+                    notify();
+                    return true;
+                }
+
+                virtual bool read(std::string *receivedMessage) {
+                    bool oldval = isnew.load();
+                    auto protocommand = lastcommand.lockedAccess();
+                    auto lockable = buffer.lockedAccess();
+                    lockable->popData(&(protocommand.get()));
+                    protocommand->SerializeToString(receivedMessage);
+                    isnew.store(lockable->size());
+                    return oldval;
+                }
+
+            private:
+                LockableClass<RingBuffer<COMMAND>> buffer;
+                LockableClass<COMMAND> lastcommand;
+                std::atomic<bool> isnew;
+        };
+
         // command buffers
         CommandBuffer<Pose> poseCommand;
         CommandBuffer<Twist> twistCommand;
         CommandBuffer<GoTo> goToCommand;
-        CommandBuffer<SimpleAction> simpleActionsCommand;
-        CommandBuffer<ComplexAction> complexActionCommandBuffer;
+        std::unique_ptr<CommandRingBuffer<SimpleAction>> simpleActionsCommand;
+        std::unique_ptr<CommandRingBuffer<ComplexAction>> complexActionCommandBuffer;
         CommandBuffer<JointCommand> jointsCommand;
         CommandBuffer<HeartBeat> heartbeatCommand;
         CommandBuffer<Permission> permissionCommand;

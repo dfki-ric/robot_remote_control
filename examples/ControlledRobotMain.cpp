@@ -210,13 +210,13 @@ int main(int argc, char** argv)
             }
         }
 
-        if (robot.getSimpleActionCommand(&simpleactionscommand)) {
+        while (robot.getSimpleActionCommand(&simpleactionscommand)) {
             printf("\ngot simple actions command:\n%s\n", simpleactionscommand.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "setting simple action state\n");
             // do it
         }
 
-        if (robot.getComplexActionCommand(&complexactionscommand)) {
+        while (robot.getComplexActionCommand(&complexactionscommand)) {
             printf("\ngot complex actions command:\n%s\n", complexactionscommand.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "setting complex action state\n");
             // do it
