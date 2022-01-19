@@ -8,7 +8,7 @@ namespace robot_remote_control {
 namespace RosConversion {
 
     static void convert(const sensor_msgs::JointState &from, robot_remote_control::JointState* to) {
-        convert(from.header, to->mutable_timestamp());
+        convert(from.header, to->mutable_header());
 
         for (int i = 0; i < from.name.size(); ++i) {
             to->add_name(from.name[i]);

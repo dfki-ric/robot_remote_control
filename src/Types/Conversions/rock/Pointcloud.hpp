@@ -26,14 +26,15 @@ namespace RockConversion {
                 channel->add_values(color[3]);
             }
         }
-        rrc_type->set_frame(frame);
+        rrc_type->mutable_header()->set_frame(frame);
+        convert(rock_type.time, rrc_type->mutable_header()->mutable_timestamp());
     }
 
     inline static void convert(const PointCloud& rrc_type, base::samples::Pointcloud *rock_type) {
         rock_type->points.clear();
         rock_type->colors.clear();
 
-        convert(rrc_type.timestamp(), &(rock_type->time));
+        convert(rrc_type.header().timestamp(), &(rock_type->time));
 
         rock_type->points.reserve(rrc_type.points().size());
         for (auto &point : rrc_type.points()) {
