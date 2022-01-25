@@ -260,6 +260,35 @@ class TypeGenerator{
         return data;
     }
 
+    static PoseWithCovariance genPoseWithCovariance() {
+        PoseWithCovariance data;
+        *data.mutable_pose() = genPose();
+        for (int values = 0; values < 36; ++values) {
+            data.add_covariance(std::rand());
+        }
+        return data;
+    }
+
+    static TwistWithCovariance genTwistWithCovariance() {
+        TwistWithCovariance data;
+        *data.mutable_twist() = genTwist();
+        for (int values = 0; values < 36; ++values) {
+            data.add_covariance(std::rand());
+        }
+        return data;
+    }
+
+    static Odometry genOdometry() {
+        Odometry data;
+        *data.mutable_header() = genHeader();
+        data.set_child_frame_id(genString());
+        *data.mutable_pose() = genPoseWithCovariance();
+        *data.mutable_twist() = genTwistWithCovariance();
+        return data;
+    }
+
+
+
 };
 
 }  // namespace robot_remote_control

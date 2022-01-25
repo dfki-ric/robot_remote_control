@@ -50,6 +50,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<CameraInformation>(CAMERA_INFORMATION);
     registerTelemetryType<Image>(IMAGE);
     registerTelemetryType<ImageLayers>(IMAGE_LAYERS); 
+    registerTelemetryType<Odometry>(ODOMETRY); 
 }
 
 ControlledRobot::~ControlledRobot() {

@@ -469,6 +469,16 @@ class ControlledRobot: public UpdateThread {
             return sendTelemetry(telemetry, IMAGE_LAYERS);
         }
 
+        /**
+         * @brief Set the Odometry object
+         * 
+         * @param telemetry 
+         * @return int 
+         */
+        int setOdometry(const Odometry &telemetry) {
+            return sendTelemetry(telemetry, ODOMETRY);
+        }
+
 
     protected:
         virtual ControlMessageType receiveRequest();

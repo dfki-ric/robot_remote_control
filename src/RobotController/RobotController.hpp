@@ -292,6 +292,10 @@ class RobotController: public UpdateThread {
             return getTelemetry(IMAGE_LAYERS, imagelayers);
         }
 
+        bool getOdometry(Odometry* telemetry) {
+            return getTelemetry(ODOMETRY, telemetry);
+        }
+
         /**
          * @brief request the curretn state instead of waiting for the first telemetry message
          * 

@@ -620,6 +620,14 @@ BOOST_AUTO_TEST_CASE(check_telemetry_camerainformation) {
   COMPARE_PROTOBUF(send, recv);
 }
 
+BOOST_AUTO_TEST_CASE(check_telemetry_odometry) {
+  // not using the set/get functions
+  Odometry send, recv;
+  send = TypeGenerator::genOdometry();
+  recv = testTelemetry(send, ODOMETRY);
+  COMPARE_PROTOBUF(send, recv);
+}
+
 BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   initComms();
 

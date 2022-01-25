@@ -50,6 +50,7 @@ namespace robot_remote_control {
                                 CAMERA_INFORMATION,         // information on cameras (identified by frame in header)
                                 IMAGE,                      // raw images, in case video streasm are not an option (identified by frame in header)
                                 IMAGE_LAYERS,               // Collection of images with a single timestamp (e.g. stereo pairs)
+                                ODOMETRY,                   // Odometry message (similar to ROS nav_msgs/Odometry)
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

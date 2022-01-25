@@ -166,6 +166,13 @@ message NamedValue {
     float value = 2;
 }
 
+message Odometry {
+    Header header = 1;
+    string child_frame_id = 2;
+    PoseWithCovariance pose = 3;
+    TwistWithCovariance twist = 4;
+}
+
 message Orientation {
     double x = 1;
     double y = 2;
@@ -198,6 +205,11 @@ message Pose {
     Position position = 2;
     Orientation orientation = 3;
     float orientation2d = 4;  // only to be used in case position only consists of x and y
+}
+
+message PoseWithCovariance {
+    Pose pose = 1;
+    repeated float covariance = 2;
 }
 
 message Poses {
@@ -298,6 +310,11 @@ message Twist {
     Header header = 1;
     Vector3 linear = 2;
     Vector3 angular = 3;
+}
+
+message TwistWithCovariance {
+    Twist twist = 1;
+    repeated float covariance = 2;
 }
 
 message Vector2{

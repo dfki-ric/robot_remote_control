@@ -40,6 +40,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<CameraInformation>(CAMERA_INFORMATION, buffersize);
         registerTelemetryType<Image>(IMAGE, buffersize);
         registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
+        registerTelemetryType<Odometry>(ODOMETRY, buffersize); 
 
         lostConnectionCallback = [&](const float& time){
             printf("lost connection to robot, no reply for %f seconds\n", time);
