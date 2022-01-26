@@ -141,12 +141,20 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     }
     std::string replystr;
 
-    requestTimer.start(maxLatency);
-    while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
+    requestTimer.start(maxLatency*5.0);
+    bool receivedData = false;
+    //wait for reply
+    while (!receivedData && !requestTimer.isExpired()) {
+        size_t recv = commandTransport->receive(&replystr, flags);
+        if (recv > 0 ){
+            printf("%s:%i\n",__PRETTY_FUNCTION__,__LINE__);
+            receivedData = true;
+        }
         // wait time depends on how long the transports recv blocks
         usleep(1000);
     }
-    if (requestTimer.isExpired()) {
+    if (!receivedData && requestTimer.isExpired()) {
+        printf("%s:%i\n",__PRETTY_FUNCTION__,__LINE__);
         connected.store(false);
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
         return "";
