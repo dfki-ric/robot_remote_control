@@ -419,6 +419,12 @@ class RobotController: public UpdateThread {
             return result;
         }
 
+        template< class DATATYPE > unsigned int getTelemetryRaw(const uint16_t &type, DATATYPE *data, std::string *dataSerialized) {
+            *dataSerialized = buffers->peekSerialized(type);
+            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data);
+            return result;
+        }
+
         template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string replybuf;
             requestBinary(type, &replybuf, requestType);
