@@ -146,10 +146,10 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         // wait time depends on how long the transports recv blocks
         usleep(1000);
     }
-    if (requestTimer.isExpired()) {
+    if (replystr.size() == 0 && requestTimer.isExpired()) {
         connected.store(false);
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
-        return "";
+        return replystr;
     }
     lastConnectedTimer.start();
     connected.store(true);
