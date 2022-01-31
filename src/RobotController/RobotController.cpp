@@ -102,7 +102,11 @@ void RobotController::update() {
             flags = Transport::NOBLOCK;
         // }
         while (telemetryTransport->receive(&buf, flags)) {
-            evaluateTelemetry(buf);
+            uint16_t type = evaluateTelemetry(buf);
+            if (type != NO_TELEMETRY_DATA) {
+                auto callCb = [&](const std::function<void(const uint16_t & type)> &cb){cb(type);};
+                std::for_each(telemetryReceivedCallbacks.begin(), telemetryReceivedCallbacks.end(), callCb);
+            }
         }
     } else {
         printf("ERROR no telemetry Transport set\n");

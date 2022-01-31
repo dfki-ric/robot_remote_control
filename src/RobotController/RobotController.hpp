@@ -435,6 +435,10 @@ class RobotController: public UpdateThread {
             RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
         }
 
+        void addTelemetryReceivedCallback(const std::function<void(const uint16_t &type)> &function) {
+            telemetryReceivedCallbacks.push_back(function);
+        }
+
         void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string buf;
             buf.resize(sizeof(uint16_t)*2);
@@ -472,6 +476,7 @@ class RobotController: public UpdateThread {
         // void initBuffers(const unsigned int &defaultSize);
 
         std::function<void(const float&)> lostConnectionCallback;
+        std::vector< std::function<void(const uint16_t &type)> > telemetryReceivedCallbacks;
         std::atomic<bool> connected;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
