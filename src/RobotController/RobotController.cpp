@@ -106,7 +106,11 @@ void RobotController::update() {
             flags = Transport::NOBLOCK;
         // }
         while (telemetryTransport->receive(&buf, flags)) {
-            evaluateTelemetry(buf);
+            uint16_t type = evaluateTelemetry(buf);
+            if (type != NO_TELEMETRY_DATA) {
+                auto callCb = [&](const std::function<void(const uint16_t & type)> &cb){cb(type);};
+                std::for_each(telemetryReceivedCallbacks.begin(), telemetryReceivedCallbacks.end(), callCb);
+            }
         }
     } else {
         printf("ERROR no telemetry Transport set\n");
@@ -157,10 +161,10 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         // wait time depends on how long the transports recv blocks
         usleep(1000);
     }
-    if (requestTimer.isExpired()) {
+    if (replystr.size() == 0 && requestTimer.isExpired()) {
         connected.store(false);
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
-        return "";
+        return replystr;
     }
     lastConnectedTimer.start();
     connected.store(true);

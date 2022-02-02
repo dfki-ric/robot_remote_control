@@ -198,6 +198,7 @@ message PointCloud {
     Pose origin  = 2;
     repeated Position points = 3;
     repeated ChannelFloat channels = 4;
+
 }
 
 message Pose {
@@ -205,6 +206,7 @@ message Pose {
     Position position = 2;
     Orientation orientation = 3;
     float orientation2d = 4;  // only to be used in case position only consists of x and y
+    repeated float covariance = 5;
 }
 
 message PoseWithCovariance {
@@ -300,6 +302,7 @@ message Transform {
     Pose transform = 2;
     string from = 3;
     string to = 4;
+    repeated float covariance = 5;
 }
 
 message Transforms {
