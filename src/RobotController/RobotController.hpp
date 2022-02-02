@@ -10,6 +10,7 @@
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
 #include "SimpleBuffer.hpp"
+#include "Statistics.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
 
@@ -448,12 +449,24 @@ class RobotController: public UpdateThread {
             *result = sendRequest(buf);
         }
 
+       /**
+         * @brief Get the Statistics object, it is only updated with data if this library is compiled with RRC_STATISTICS
+         * 
+         * @return Statistics& 
+         */
+        Statistics& getStatistics() {
+            return statistics;
+        }
+
+
 
     protected:
 
         virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
+
+        void updateStatistics(const uint32_t &bytesSent, const uint16_t &type);
 
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
@@ -473,6 +486,8 @@ class RobotController: public UpdateThread {
 
         std::function<void(const float&)> lostConnectionCallback;
         std::atomic<bool> connected;
+
+        Statistics statistics;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
@@ -512,6 +527,10 @@ class RobotController: public UpdateThread {
                 telemetryAdders.resize(type+1);
             }
             telemetryAdders[type] = std::shared_ptr<TelemetryAdderBase>(new TelemetryAdder<PROTO>(buffers));
+            #ifdef RRC_STATISTICS
+                PROTO telemetry_type;
+                statistics.names[type] = telemetry_type.GetTypeName();
+            #endif
         }
 
 };

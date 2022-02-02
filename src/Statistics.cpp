@@ -8,6 +8,8 @@ Statistics::Stats::Stats(const double &runningAvgSamples) {
     statdata.bytesSinceLast = 0;
     statdata.bpsLast = 0;
     statdata.bpsAvg = 0;
+    statdata.frequencyAvg = 0;
+    statdata.messagesSinceLast = 0;
     gettimeofday(&statdata.lastCalc, 0);
     statdata.runningAvgSamples = runningAvgSamples;
     runningAvgFactor = ((runningAvgSamples-1)/runningAvgSamples);
@@ -17,6 +19,7 @@ Statistics::Stats::Stats(const double &runningAvgSamples) {
 void Statistics::Stats::addBytesSent(const double& bytes) {
     statdata.bytesTotal += bytes;
     statdata.bytesSinceLast += bytes;
+    ++statdata.messagesSinceLast;
 }
 
 void Statistics::Stats::calculate(timeval* currenttime) {
@@ -24,24 +27,31 @@ void Statistics::Stats::calculate(timeval* currenttime) {
     double seconds = (diff.tv_sec * 1000000 + static_cast<double>(diff.tv_usec))/1000000.0;
 
     statdata.bpsLast = (statdata.bytesSinceLast/seconds);
+    if (statdata.bpsAvg == 0) {
+        statdata.bpsAvg = statdata.bpsLast;
+    }
     statdata.bpsAvg = (statdata.bpsAvg * runningAvgFactor) + (statdata.bpsLast/statdata.runningAvgSamples);
     statdata.lastCalc = *currenttime;
 
     if (statdata.bytesSinceLast > 0) {
-        statdata.frequency = 1/seconds;
+        statdata.frequency = (1/seconds)*statdata.messagesSinceLast;
         statdata.lastBytesSize = statdata.bytesSinceLast;
     } else {
         statdata.frequency = 0;
     }
 
+    if (statdata.frequencyAvg == 0) {
+        statdata.frequencyAvg = statdata.frequency;
+    }
     statdata.frequencyAvg = (statdata.frequencyAvg * runningAvgFactor) + (statdata.frequency/statdata.runningAvgSamples);
 
     statdata.bytesSinceLast = 0;
+    statdata.messagesSinceLast = 0;
 }
 
 void Statistics::Stats::print(const std::string& name) {
     #ifdef RRC_STATISTICS
-        printf("%.2f kBytes/s avg: %s (size kB: %.2f)\n", statdata.bpsAvg/1000.0, name.c_str(), statdata.lastBytesSize/1000.0);
+        printf("%.2f kBytes/s (size kB: %.2f, freq: %06.2f): %s\n", statdata.bpsAvg/1000.0, statdata.lastBytesSize/1000.0, statdata.frequencyAvg, name.c_str());
     #endif
 }
 

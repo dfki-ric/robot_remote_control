@@ -11,6 +11,7 @@
 
   <depend package="protobuf" />
   <depend package="protobuf-compiler" />
+  <depend package="libreadline" />
   <depend package="zmq" />
   <keywords>
     <keyword>communication</keyword>

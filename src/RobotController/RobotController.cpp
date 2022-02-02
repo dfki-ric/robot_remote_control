@@ -26,9 +26,13 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
         registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
-        // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-        // registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);
+        // buffersize=1, received by request
+        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, 1);
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
+        // buffersize=1, received by request
+        registerTelemetryType<MapsDefinition>(MAPS_DEFINITION,1);
+        // buffersize=1, received by request
+        registerTelemetryType<Map>(MAP,1);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
         registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
@@ -130,6 +134,13 @@ void RobotController::requestMap(Map *map, const uint16_t &mapId){
     map->ParseFromCodedStream(&cistream);
 }
 
+void RobotController::updateStatistics(const uint32_t &bytesSent, const uint16_t &type) {
+    #ifdef RRC_STATISTICS
+        statistics.global.addBytesSent(bytesSent);
+        statistics.stat_per_type[type].addBytesSent(bytesSent);
+    #endif
+}
+
 std::string RobotController::sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags) {
     std::lock_guard<std::mutex> lock(commandTransportMutex);
     try {
@@ -162,6 +173,8 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     std::string serializedMessage(reply.data()+sizeof(uint16_t), reply.size()-sizeof(uint16_t));
 
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
+
+    updateStatistics(serializedMessage.size(), *type);
 
     // try to resolve through registered types
     std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];

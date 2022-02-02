@@ -49,3 +49,5 @@ target_include_directories(robot_remote_control-joint_controller_bin
 if(UDT_FOUND)
     add_subdirectory(udt_transport)
 endif()
+
+add_subdirectory(CLI)

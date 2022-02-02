@@ -61,7 +61,7 @@ Optionally you can add the flags -DBUILD_EXAMPLES=ON and -DBUILD_TESTS=ON to bui
 
 In order to install protobuf3 from source you need additional dependencies:
 
-    apt-get install autoconf automake libtool curl make g++ unzip lsb-release
+    apt-get install autoconf automake libtool curl make g++ unzip lsb-release libreadline-dev
 
 You can use the compile_protobuf_from_source.bash script to build protobuf from source. Optionally you can path the install destination as follows:
 
