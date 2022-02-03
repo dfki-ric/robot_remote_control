@@ -53,12 +53,6 @@ int main(int argc, char** argv) {
         printf("Current Pose callback: %s\n", pose.ShortDebugString().c_str());
     });
 
-    /**
-     * @brief if the optional initSimpleactions is called on the controlledRobot, the available actions can be requested.
-     */
-    robot_remote_control::SimpleActions simpleactions;
-    controller.requestSimpleActions(&simpleactions);
-    simpleactions.PrintDebugString();
 
     while (true) {
 
@@ -114,15 +108,7 @@ int main(int argc, char** argv) {
         if (hasnewWrenchState) {
             wstate.PrintDebugString();
         }
-        
-        //invoke simple actions
-        robot_remote_control::SimpleAction action;
-        action.set_name("Light Dimmer");
-        action.set_state(150);
-        controller.setSimpleActionCommand(action);
-        action.set_name("Light");
-        action.set_state(1);
-        controller.setSimpleActionCommand(action);
+
 
         printf("latency %f seconds\n", controller.getHeartBreatRoundTripTime()/2.0);
 
