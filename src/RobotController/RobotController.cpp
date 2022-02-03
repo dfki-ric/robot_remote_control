@@ -26,13 +26,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
         registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
-        // buffersize=1, received by request
-        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, 1);
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
-        // buffersize=1, received by request
-        registerTelemetryType<MapsDefinition>(MAPS_DEFINITION,1);
-        // buffersize=1, received by request
-        registerTelemetryType<Map>(MAP,1);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
         registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
@@ -45,6 +39,16 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<Image>(IMAGE, buffersize);
         registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
         registerTelemetryType<Odometry>(ODOMETRY, buffersize); 
+
+        #ifdef RRC_STATISTICS
+            // add names to buffer, this types have aspecial treatment, the should not be registered
+            SimpleSensor simpleSensor;
+            statistics.names[SIMPLE_SENSOR_VALUE] = simpleSensor.GetTypeName();
+            MapsDefinition mapsDefinition;
+            statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
+            Map map;
+            statistics.names[MAP] = map.GetTypeName();
+        #endif
 
         lostConnectionCallback = [&](const float& time){
             printf("lost connection to robot, no reply for %f seconds\n", time);
