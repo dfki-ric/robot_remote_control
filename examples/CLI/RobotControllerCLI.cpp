@@ -40,10 +40,6 @@ int main(int argc, char** argv) {
 
     bool run = true;
 
-    console.registerCommand("test", [&](){
-        printf("test done\n");
-    });
-
     console.registerCommand("stats", [&](){
         controller.getStatistics().calculate();
         controller.getStatistics().print(true);
