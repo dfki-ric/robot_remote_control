@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "RobotController.hpp"
 #include "Transports/TransportZmq.hpp"
@@ -8,8 +9,21 @@
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
 
+#define STRING(A) #A
 
 // rrc_type defined outside of lamda to print latest values if no new ones are received
+#define DEFINE_WATCH_COMMAND(TYPE, FUNCTION) \
+    robot_remote_control::TYPE rrc_type_watch_##FUNCTION; \
+    console.registerCommand("watch_"STRING(FUNCTION), [&](const std::vector<std::string> &params){ \
+        while (true) { \
+            if (controller.FUNCTION(&rrc_type_watch_##FUNCTION)) { \
+                rrc_type_watch_##FUNCTION.PrintDebugString(); \
+            } else { \
+                usleep(10000); \
+            } \
+        } \
+    });
+
 #define DEFINE_PRINT_COMMAND(TYPE, FUNCTION) \
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
     console.registerCommand(#FUNCTION, [&](const std::vector<std::string> &params){ \
@@ -19,8 +33,8 @@ using robot_remote_control::TransportZmq;
         if (!received) { \
             printf("no new data received \n"); \
         } \
-    });
-
+    }); \
+    DEFINE_WATCH_COMMAND(TYPE, FUNCTION)
 
 int main(int argc, char** argv) {
     printf("\nThis is work in progress, not a functional CLI\n\n");
@@ -91,9 +105,9 @@ int main(int argc, char** argv) {
         actions.PrintDebugString();
     });
 
-    DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints);
     DEFINE_PRINT_COMMAND(Pose, getCurrentPose);
-
+    DEFINE_PRINT_COMMAND(JointState, getCurrentJointState);
+    DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints);
 
     while (run) {
         console.readline("rrc@" + ip +" $ ");
