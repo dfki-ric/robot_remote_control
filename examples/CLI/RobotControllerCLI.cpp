@@ -11,11 +11,11 @@ using robot_remote_control::TransportZmq;
 
 // rrc_type defined outside of lamda to print latest values if no new ones are received
 #define DEFINE_PRINT_COMMAND(TYPE, FUNCTION) \
-    robot_remote_control::TYPE rrc_type; \
+    robot_remote_control::TYPE rrc_type_##FUNCTION; \
     console.registerCommand(#FUNCTION, [&](const std::vector<std::string> &params){ \
         bool received = false; \
-        while(controller.FUNCTION(&rrc_type)){received = true;} \
-        rrc_type.PrintDebugString(); \
+        while(controller.FUNCTION(&rrc_type_##FUNCTION)){received = true;} \
+        rrc_type_##FUNCTION.PrintDebugString(); \
         if (!received) { \
             printf("no new data received \n"); \
         } \
@@ -92,17 +92,7 @@ int main(int argc, char** argv) {
     });
 
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints);
-
-    //define outside to keep current
-    // robot_remote_control::ContactPoints points;
-    // console.registerCommand("printContactPoints", [&](const std::vector<std::string> &params){
-    //     bool received = false;
-    //     while(controller.getCurrentContactPoints(&points)){received = true;}
-    //     points.PrintDebugString();
-    //     if (!received) {
-    //         printf("no new data received \n");
-    //     }
-    // });
+    DEFINE_PRINT_COMMAND(Pose, getCurrentPose);
 
 
     while (run) {
