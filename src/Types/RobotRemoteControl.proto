@@ -60,16 +60,16 @@ message ComplexActions {
 }
 
 message ContactPoint {
-    Header header = 6;
+    string name = 6;
     Vector3 position = 1;  // position in body frame
     float contact = 2;  // contact probability in the interval between 0 and 1.0, or NaN if unknown
     float slip = 3;  //  slip distance of contact point in a single control loop
     float friction_coefficient = 4; // friction_coefficient of the current
     int32 groupId = 5;  //set a group for points that should have contact simultaneously
-    string name = 7;
 }
 
 message ContactPoints {
+    Header header = 2;
     repeated ContactPoint contacts = 1;
 }
 
