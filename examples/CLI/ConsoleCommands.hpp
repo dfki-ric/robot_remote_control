@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include <map>
+#include <vector>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -13,18 +14,18 @@ class ConsoleCommands {
 
     void readline(const std::string& prompt);
 
-    static void registerCommand(const std::string &name, std::function<void()> func) {
+    static void registerCommand(const std::string &name, std::function<void(const std::vector<std::string> &params)> func) {
         commands[name] = func;
     }
 
-    void runCommand(const std::string &name) {
+    void runCommand(const std::string &name, const std::vector<std::string> &params) {
         std::string cmd = name;
         if (name[name.size()-1] == ' ') {
             cmd.erase(name.size()-1, 1);
         }
         auto iter = commands.find(cmd);
         if (iter != commands.end()) {
-            iter->second();
+            iter->second(params);
         }
     }
 
@@ -34,6 +35,6 @@ class ConsoleCommands {
 
 
  private:
-    static std::map< std::string, std::function<void()> > commands;
+    static std::map< std::string, std::function<void(const std::vector<std::string> &params)> > commands;
 
 };

@@ -1,8 +1,9 @@
 #include "ConsoleCommands.hpp"
 #include <algorithm>
 #include <utility>
+#include <sstream>
 
-std::map< std::string, std::function<void()> > ConsoleCommands::commands;
+std::map< std::string, std::function<void(const std::vector<std::string> &params)> > ConsoleCommands::commands;
 
 ConsoleCommands::ConsoleCommands() {
     // Configure readline to auto-complete paths when the tab key is hit.
@@ -16,13 +17,22 @@ void ConsoleCommands::readline(const std::string& prompt) {
     char* input = ::readline(prompt.c_str());
     if (!input) return;
     add_history(input);
-    std::string command(input);
-    runCommand(command);
+    std::istringstream commandstream;
+    commandstream.str(std::string(input));
+    std::string command;
+    std::getline(commandstream, command, ' ');
+    std::string param;
+    std::vector<std::string> params;
+
+    while (std::getline(commandstream, param, ' ')) {
+        params.push_back(param);
+    }
+    runCommand(command, params);
     free(input);
 }
 
 char* ConsoleCommands::match_finder(const char *text, int state) {
-    static std::map< std::string, std::function<void()> >::iterator it;
+    static std::map< std::string, std::function<void(const std::vector<std::string> &params)> >::iterator it;
     if ( state == 0 ) it = begin(commands);
 
     while ( it != end(commands) ) {
