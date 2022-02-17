@@ -3,7 +3,7 @@
 #include <utility>
 #include <sstream>
 
-std::map< std::string, std::function<void(const std::vector<std::string> &params)> > ConsoleCommands::commands;
+std::map< std::string, ConsoleCommands::CommandDef > ConsoleCommands::commands;
 
 ConsoleCommands::ConsoleCommands() {
     // Configure readline to auto-complete paths when the tab key is hit.
@@ -13,9 +13,9 @@ ConsoleCommands::ConsoleCommands() {
 
 ConsoleCommands::~ConsoleCommands() {}
 
-void ConsoleCommands::readline(const std::string& prompt) {
+bool ConsoleCommands::readline(const std::string& prompt) {
     char* input = ::readline(prompt.c_str());
-    if (!input) return;
+    if (!input) return false;
     add_history(input);
     std::istringstream commandstream;
     commandstream.str(std::string(input));
@@ -29,15 +29,19 @@ void ConsoleCommands::readline(const std::string& prompt) {
     }
     runCommand(command, params);
     free(input);
+    return true;
 }
 
 char* ConsoleCommands::match_finder(const char *text, int state) {
-    static std::map< std::string, std::function<void(const std::vector<std::string> &params)> >::iterator it;
+    static std::map< std::string, CommandDef >::iterator it;
+    // state is 0 when a "word" is finished
     if ( state == 0 ) it = begin(commands);
 
+    // check for "incomplete commands"
     while ( it != end(commands) ) {
         auto & command = it->first;
         ++it;
+
         if ( command.rfind(text, 0) == 0 ) {
             return strdup(command.c_str());
         }
