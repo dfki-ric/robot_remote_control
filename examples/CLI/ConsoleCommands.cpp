@@ -4,8 +4,10 @@
 #include <sstream>
 
 std::map< std::string, ConsoleCommands::CommandDef > ConsoleCommands::commands;
+int ConsoleCommands::command_word_counter;
 
 ConsoleCommands::ConsoleCommands() {
+    command_word_counter = 0;
     // Configure readline to auto-complete paths when the tab key is hit.
     rl_bind_key('\t', rl_complete);
     rl_attempted_completion_function = &ConsoleCommands::attempted_completion_function;
@@ -28,6 +30,7 @@ bool ConsoleCommands::readline(const std::string& prompt) {
         params.push_back(param);
     }
     runCommand(command, params);
+    command_word_counter = 0;
     free(input);
     return true;
 }
@@ -35,17 +38,29 @@ bool ConsoleCommands::readline(const std::string& prompt) {
 char* ConsoleCommands::match_finder(const char *text, int state) {
     static std::map< std::string, CommandDef >::iterator it;
     // state is 0 when a "word" is finished
-    if ( state == 0 ) it = begin(commands);
+    if ( state == 0 ){
+        it = begin(commands);
+        command_word_counter++;
+    }
 
     // check for "incomplete commands"
-    while ( it != end(commands) ) {
-        auto & command = it->first;
-        ++it;
+    if (command_word_counter == 1) {
+        while ( it != end(commands) ) {
+            auto & command = it->first;
+            ++it;
 
-        if ( command.rfind(text, 0) == 0 ) {
-            return strdup(command.c_str());
+            if ( command.rfind(text, 0) == 0 ) {
+                return strdup(command.c_str());
+            }
         }
+    } else if (command_word_counter == 2) {
+        std::string command = text;
+        if (command[command.size()-1] == ' ') {
+            command.erase(command.size()-1, 1);
+        }
+        printf("command: %s\n",command.c_str());
     }
+
     return NULL;
 }
 

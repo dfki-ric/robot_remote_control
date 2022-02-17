@@ -43,6 +43,8 @@ class ConsoleCommands {
 
  private:
     static std::map< std::string, CommandDef > commands;
+    static int command_word_counter;
     std::thread cmdthread;
     std::atomic<bool> thread_running;
+    
 };
