@@ -29,9 +29,11 @@ class ConsoleCommands {
 
     bool readline(const std::string& prompt);
 
-    static char *match_finder(const char *text, int state);
+    static char *command_finder(const char *text, int state);
 
-    static char** attempted_completion_function(const char * text, int start, int);
+    static char *param_finder(const char *text, int state);
+
+    static char** attempted_completion_function(const char * text, int start, int end);
 
 
     static void registerCommand(const std::string &name, std::function<void(const std::vector<std::string> &params)> func, bool use_thread = false);
@@ -43,8 +45,7 @@ class ConsoleCommands {
 
  private:
     static std::map< std::string, CommandDef > commands;
-    static int command_word_counter;
+    static std::vector<std::string> completions;
     std::thread cmdthread;
     std::atomic<bool> thread_running;
-    
 };

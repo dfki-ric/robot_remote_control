@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
         controller.setSimpleActionCommand(action);
     });
     std::vector<ConsoleCommands::ParamDef> params;
-    params.push_back(ConsoleCommands::ParamDef("simpleaction name (string)", ""));
+    params.push_back(ConsoleCommands::ParamDef("name (string)", "name"));
     params.push_back(ConsoleCommands::ParamDef("value (float)", "0"));
     console.registerParamsForCommand("simpleaction", params);
     params.clear();
@@ -113,7 +113,11 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints);
 
 
-    while (console.readline("rrc@" + ip +" $ ")) {}
+    while (run) {
+        if (!console.readline("rrc@" + ip + " $ ")) {
+            run = false;
+        }
+    }
 
     printf("\n");
     fflush(stdout);

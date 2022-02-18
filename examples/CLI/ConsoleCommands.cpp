@@ -4,13 +4,14 @@
 #include <sstream>
 
 std::map< std::string, ConsoleCommands::CommandDef > ConsoleCommands::commands;
-int ConsoleCommands::command_word_counter;
+std::vector<std::string> ConsoleCommands::completions;
 
 ConsoleCommands::ConsoleCommands() {
-    command_word_counter = 0;
     // Configure readline to auto-complete paths when the tab key is hit.
     rl_bind_key('\t', rl_complete);
     rl_attempted_completion_function = &ConsoleCommands::attempted_completion_function;
+    // we always interpret a complete line
+    rl_completer_word_break_characters = "";
 }
 
 ConsoleCommands::~ConsoleCommands() {}
@@ -30,43 +31,71 @@ bool ConsoleCommands::readline(const std::string& prompt) {
         params.push_back(param);
     }
     runCommand(command, params);
-    command_word_counter = 0;
     free(input);
     return true;
 }
 
-char* ConsoleCommands::match_finder(const char *text, int state) {
-    static std::map< std::string, CommandDef >::iterator it;
+char* ConsoleCommands::command_finder(const char *text, int state) {
+    static std::vector< std::string >::iterator it;
+    
     // state is 0 when a "word" is finished
-    if ( state == 0 ){
-        it = begin(commands);
-        command_word_counter++;
-    }
+    if ( state == 0 ) it = completions.begin();
 
     // check for "incomplete commands"
-    if (command_word_counter == 1) {
-        while ( it != end(commands) ) {
-            auto & command = it->first;
-            ++it;
+    while ( it != completions.end() ) {
+        auto & command = *it;
+        ++it;
 
-            if ( command.rfind(text, 0) == 0 ) {
-                return strdup(command.c_str());
-            }
+        if ( command.rfind(text, 0) == 0 ) {
+            return strdup(command.c_str());
         }
-    } else if (command_word_counter == 2) {
-        std::string command = text;
-        if (command[command.size()-1] == ' ') {
-            command.erase(command.size()-1, 1);
-        }
-        printf("command: %s\n",command.c_str());
     }
-
     return NULL;
 }
 
-char** ConsoleCommands::attempted_completion_function(const char * text, int start, int) {
+char * ConsoleCommands::param_finder(const char *text, int state) {
+    static int oldcount = 0;
+    static int paramsent = 0;
+    // if (state == 0) {
+    //     proposedparamtype = 0;
+    // }
+    //printf("'%i'",state);
+    std::string line (text);
+    std::istringstream commandstream;
+    commandstream.str(line);
+    std::string command;
+    std::getline(commandstream, command, ' ');
+
+    int params = std::count(line.begin(), line.end(), ' ');
+
+    if ( params > oldcount ) {
+        oldcount = params;
+    }
+
+    if (state == 0 && params > 0 && params <= commands[command].params.size()) {
+        return strdup((line + "<" + commands[command].params[params-1].hint + "> ").c_str());
+    }
+    if (state == 1 && params > 0 && params <= commands[command].params.size()) {
+        return strdup((line + commands[command].params[params-1].defaultvalue + " ").c_str());
+    }
+    return NULL;
+}
+
+char** ConsoleCommands::attempted_completion_function(const char * text, int start, int end) {
+    // disable default completion
     rl_attempted_completion_over = 1;
-    return rl_completion_matches(text, &ConsoleCommands::match_finder);
+    
+    std::string line (text);
+    std::istringstream commandstream;
+    commandstream.str(line);
+    std::string command;
+    std::getline(commandstream, command, ' ');
+
+    if (commands.count(command)) {
+        return rl_completion_matches(text, &ConsoleCommands::param_finder);
+    }
+    // generate completions
+    return rl_completion_matches(text, &ConsoleCommands::command_finder);
 }
 
 
@@ -75,11 +104,15 @@ void ConsoleCommands::registerCommand(const std::string &name, std::function<voi
     def.func = func;
     def.use_thread = use_thread;
     commands[name] = def;
+    completions.push_back(name);
 }
 
 int ConsoleCommands::registerParamsForCommand(const std::string &name, const std::vector<ParamDef> &params) {
     if (commands.find(name) != commands.end()) {
         commands[name].params = params;
+        // std::string cmd = name;
+        // std::for_each(params.begin(),params.end(),[&](const ParamDef &param){cmd += " "+param.defaultvalue;});
+        // completions.push_back(cmd);
         return true;
     }
     printf("unknown command %s\n\tyou need to register the command before adding paramater definitions\n", name.c_str());
