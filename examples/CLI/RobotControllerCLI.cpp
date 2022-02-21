@@ -104,7 +104,16 @@ int main(int argc, char** argv) {
     console.registerCommand("requestsimpleactions", [&](const std::vector<std::string> &params){
         robot_remote_control::SimpleActions actions;
         controller.requestSimpleActions(&actions);
-        //TODO: add to autocomplete
+        // add param options to autocomplete
+        std::vector<ConsoleCommands::ParamDef> simpleactionparams;
+        simpleactionparams.push_back(ConsoleCommands::ParamDef("name (string)", "name"));
+        simpleactionparams.push_back(ConsoleCommands::ParamDef("value (float)", "0"));
+        for (auto &simpleaction : actions.actions()) {
+            simpleactionparams[0].defaultvalues.push_back(simpleaction.name());
+            // simpleactionparams[1].defaultvalues.push_back(simpleaction.state());
+        }
+        // replace generic params
+        console.registerParamsForCommand("simpleaction", simpleactionparams);
         actions.PrintDebugString();
     });
 

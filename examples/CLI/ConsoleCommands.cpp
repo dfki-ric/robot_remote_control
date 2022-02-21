@@ -21,6 +21,7 @@ std::vector<std::string> ConsoleCommands::parseLine(const std::string &line, boo
     std::istringstream linestream;
     linestream.str(line);
     std::string part;
+    // TODO quotes
     while (std::getline(linestream, part, ' ')) {
         if (filter_empty) {
             // when part is not created because of double space
@@ -64,29 +65,27 @@ char* ConsoleCommands::command_finder(const char *text, int state) {
 
 char * ConsoleCommands::param_finder(const char *text, int state) {
     std::string currentline(text);
-    
-    //count params available in line, first space ist after command, so -1
-    int params = std::count(currentline.begin(), currentline.end(), ' ') - 1;
 
     std::vector<std::string> line = parseLine(currentline, false);
     std::string &command = line.front();
+    // count params available in line, first space ist after command, so -1
+    // TODO: quoting
+    int finished_params = std::count(currentline.begin(), currentline.end(), ' ') - 1;
 
     int lastSpacepos = currentline.rfind(' ');
     std::string completed = currentline;
     completed.erase(lastSpacepos);
     std::string curpart = currentline;
-    //+1 also remove " "
     curpart.erase(0, completed.size());
 
-    // printf("\n'%s':'%s'\n", completed.c_str(), curpart.c_str());
 
     // has params left to type
-    if (params >= 0 && params < commands[command].params.size()) {
-        //find suitable params for current line
-        std::vector<std::string> &defaultvalues = commands[command].params[params].defaultvalues;
+    if (finished_params >= 0 && finished_params < commands[command].params.size()) {
+        // find suitable params for current line
+        std::vector<std::string> &defaultvalues = commands[command].params[finished_params].defaultvalues;
         std::vector<std::string> matchingValues;
         std::for_each(defaultvalues.begin(), defaultvalues.end(), [&](const std::string& val) {
-            //check id prev param was completed (space at end of line)
+            // check id prev param was completed (space at end of line)
             if (curpart == " ") {
                 matchingValues.push_back(val);
             } else {
@@ -98,12 +97,11 @@ char * ConsoleCommands::param_finder(const char *text, int state) {
                 }
             }
         });
-
         if (state < matchingValues.size()) {
             return strdup((completed + " " + matchingValues[state]).c_str());
         }
         if (state == matchingValues.size() && currentline[currentline.size()-1] == ' ') {
-            return strdup((currentline + "<" + commands[command].params[params].hint + "> ").c_str());
+            return strdup((currentline + "<" + commands[command].params[finished_params].hint + "> ").c_str());
         }
     }
 
