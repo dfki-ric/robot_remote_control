@@ -16,14 +16,18 @@ ConsoleCommands::ConsoleCommands() {
 
 ConsoleCommands::~ConsoleCommands() {}
 
-std::vector<std::string> ConsoleCommands::parseLine(const std::string &line) {
+std::vector<std::string> ConsoleCommands::parseLine(const std::string &line, bool filter_empty) {
     std::vector<std::string> linevec;
     std::istringstream linestream;
     linestream.str(line);
     std::string part;
     while (std::getline(linestream, part, ' ')) {
-        // when part is not created because of double space
-        if (part.size()) {
+        if (filter_empty) {
+            // when part is not created because of double space
+            if (part.size()) {
+                linevec.push_back(part);
+            }
+        } else {
             linevec.push_back(part);
         }
     }
@@ -59,37 +63,50 @@ char* ConsoleCommands::command_finder(const char *text, int state) {
 }
 
 char * ConsoleCommands::param_finder(const char *text, int state) {
-    
     std::string currentline(text);
-    std::vector<std::string> line = parseLine(currentline);
+    
+    //count params available in line, first space ist after command, so -1
+    int params = std::count(currentline.begin(), currentline.end(), ' ') - 1;
+
+    std::vector<std::string> line = parseLine(currentline, false);
     std::string &command = line.front();
 
-    int params = line.size();
+    int lastSpacepos = currentline.rfind(' ');
+    std::string completed = currentline;
+    completed.erase(lastSpacepos);
+    std::string curpart = currentline;
+    //+1 also remove " "
+    curpart.erase(0, completed.size());
 
-    std::string completed;
-    std::for_each(line.begin(), line.end()-1 ,[&](const std::string& part) {
-        completed += part + " ";
-    });
+    // printf("\n'%s':'%s'\n", completed.c_str(), curpart.c_str());
 
-    std::string curpart;
-    if ( line.size() > 1 ) {
-        curpart = line.back();
-        //std::cout << curpart << std::endl;
+    // has params left to type
+    if (params >= 0 && params < commands[command].params.size()) {
+        //find suitable params for current line
+        std::vector<std::string> &defaultvalues = commands[command].params[params].defaultvalues;
+        std::vector<std::string> matchingValues;
+        std::for_each(defaultvalues.begin(), defaultvalues.end(), [&](const std::string& val) {
+            //check id prev param was completed (space at end of line)
+            if (curpart == " ") {
+                matchingValues.push_back(val);
+            } else {
+                // it is is currently typed: provide only fitting params
+                // curpart start with " ", remove it
+                std::string parameterPart(curpart.begin()+1, curpart.end());
+                if (val.rfind(parameterPart, 0) == 0) {
+                    matchingValues.push_back(val);
+                }
+            }
+        });
+
+        if (state < matchingValues.size()) {
+            return strdup((completed + " " + matchingValues[state]).c_str());
+        }
+        if (state == matchingValues.size() && currentline[currentline.size()-1] == ' ') {
+            return strdup((currentline + "<" + commands[command].params[params].hint + "> ").c_str());
+        }
     }
-     
 
-    if (params > 0 && params <= commands[command].params.size()) {
-        
-        if (state == 0) {
-            return strdup((completed + curpart + " ").c_str());
-        }
-        if (state == 1) {
-            return strdup((completed + curpart + " " + commands[command].params[params-1].defaultvalue + " ").c_str());
-        }
-        if (state == 2 && currentline[currentline.size()-1] == ' ') {
-            return strdup((currentline + "<" + commands[command].params[params-1].hint + "> ").c_str());
-        }
-    }
     return NULL;
 }
 
@@ -140,12 +157,12 @@ void ConsoleCommands::runCommand(std::vector<std::string> &line) {
     auto iter = commands.find(cmd);
     if (iter != commands.end()) {
         while (params.size() < iter->second.params.size()) {
-            std::string question = iter->second.params[params.size()].hint + "[" + iter->second.params[params.size()].defaultvalue +"]:";
+            std::string question = iter->second.params[params.size()].hint + "[" + iter->second.params[params.size()].defaultvalues.front() +"]:";
             std::string param;
             std::cout << "missing paramater: " << question;
             std::getline(std::cin, param);
             if (param == "") {
-                param = iter->second.params[params.size()].defaultvalue;
+                param = iter->second.params[params.size()].defaultvalues.front();
             }
             params.push_back(param);
         }

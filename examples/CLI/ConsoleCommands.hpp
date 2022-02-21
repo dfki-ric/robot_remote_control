@@ -16,9 +16,10 @@ class ConsoleCommands {
     virtual ~ConsoleCommands();
 
     struct ParamDef {
-        ParamDef(const std::string& hint, const std::string& defaultvalue):hint(hint), defaultvalue(defaultvalue) {}
+        ParamDef(const std::string& hint, const std::string& defaultvalue):hint(hint), defaultvalues({defaultvalue}) {
+        }
         std::string hint;
-        std::string defaultvalue;
+        std::vector<std::string> defaultvalues;
     };
 
     struct CommandDef {
@@ -42,7 +43,7 @@ class ConsoleCommands {
 
     void runCommand(std::vector<std::string> &line);
 
-    static std::vector<std::string> parseLine(const std::string &line);
+    static std::vector<std::string> parseLine(const std::string &line, bool filter_empty = false);
 
  private:
     static std::map< std::string, CommandDef > commands;
