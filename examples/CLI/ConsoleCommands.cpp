@@ -149,34 +149,36 @@ int ConsoleCommands::registerParamsForCommand(const std::string &name, const std
 }
 
 void ConsoleCommands::runCommand(std::vector<std::string> &line) {
-    std::string cmd = line.front();
-    std::vector<std::string> params(line.begin()+1, line.end());
+    if (line.size()) {
+        std::string cmd = line.front();
+        std::vector<std::string> params(line.begin()+1, line.end());
 
-    auto iter = commands.find(cmd);
-    if (iter != commands.end()) {
-        while (params.size() < iter->second.params.size()) {
-            std::string question = iter->second.params[params.size()].hint + "[" + iter->second.params[params.size()].defaultvalues.front() +"]:";
-            std::string param;
-            std::cout << "missing paramater: " << question;
-            std::getline(std::cin, param);
-            if (param == "") {
-                param = iter->second.params[params.size()].defaultvalues.front();
-            }
-            params.push_back(param);
-        }
-
-        if (iter->second.use_thread) {
-            thread_running = true;
-            cmdthread = std::thread([&](){
-                while (thread_running) {
-                    iter->second.func(params);
+        auto iter = commands.find(cmd);
+        if (iter != commands.end()) {
+            while (params.size() < iter->second.params.size()) {
+                std::string question = iter->second.params[params.size()].hint + "[" + iter->second.params[params.size()].defaultvalues.front() +"]:";
+                std::string param;
+                std::cout << "missing paramater: " << question;
+                std::getline(std::cin, param);
+                if (param == "") {
+                    param = iter->second.params[params.size()].defaultvalues.front();
                 }
-            });
-            readline("press enter to stop\n");
-            thread_running = false;
-            cmdthread.join();
-        } else {
-            iter->second.func(params);
+                params.push_back(param);
+            }
+
+            if (iter->second.use_thread) {
+                thread_running = true;
+                cmdthread = std::thread([&](){
+                    while (thread_running) {
+                        iter->second.func(params);
+                    }
+                });
+                readline("press enter to stop\n");
+                thread_running = false;
+                cmdthread.join();
+            } else {
+                iter->second.func(params);
+            }
         }
     }
 }
