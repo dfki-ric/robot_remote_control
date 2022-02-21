@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-add_executable(robot_remote_control-robot_controller_cli RobotControllerCLI.cpp ConsoleCommands.cpp)
-target_link_libraries(robot_remote_control-robot_controller_cli
+add_executable(robot_controller RobotControllerCLI.cpp ConsoleCommands.cpp)
+target_link_libraries(robot_controller
     robot_remote_control-robot_controller
     robot_remote_control-transport_zmq
     readline
 )
-target_include_directories(robot_remote_control-robot_controller_cli
+target_include_directories(robot_controller
 	PUBLIC
         $<BUILD_INTERFACE:/usr/include/readline>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
@@ -14,3 +14,7 @@ target_include_directories(robot_remote_control-robot_controller_cli
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+install (TARGETS robot_controller
+         EXPORT robot_remote_control-targets
+         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

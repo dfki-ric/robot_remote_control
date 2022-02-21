@@ -6,6 +6,7 @@ namespace robot_remote_control {
 Statistics::Stats::Stats(const double &runningAvgSamples) {
     statdata.bytesTotal = 0;
     statdata.bytesSinceLast = 0;
+    statdata.lastBytesSize = 0;
     statdata.bpsLast = 0;
     statdata.bpsAvg = 0;
     statdata.frequencyAvg = 0;

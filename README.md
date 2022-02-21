@@ -44,7 +44,7 @@ If you want to cite this library you can use this bibtex entry:
 
 The library is using the high-level networking library ZeroMQ (ZMQ) and Google's language- and platform-neutral proto3 for de-/serialization. Therefor you need to manually install the following OS dependencies: protobuf and zeromq
 
-    sudo apt install libprotobuf-dev protobuf-compiler libzmqpp-dev
+    sudo apt install libprotobuf-dev protobuf-compiler libzmqpp-dev libreadline-dev
 
 ### Building
 
@@ -61,7 +61,7 @@ Optionally you can add the flags -DBUILD_EXAMPLES=ON and -DBUILD_TESTS=ON to bui
 
 In order to install protobuf3 from source you need additional dependencies:
 
-    apt-get install autoconf automake libtool curl make g++ unzip lsb-release libreadline-dev
+    apt-get install autoconf automake libtool curl make g++ unzip lsb-release
 
 You can use the compile_protobuf_from_source.bash script to build protobuf from source. Optionally you can path the install destination as follows:
 

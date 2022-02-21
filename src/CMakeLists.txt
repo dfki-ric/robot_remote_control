@@ -12,6 +12,8 @@ add_subdirectory(Transports)
 add_subdirectory(ControlledRobot)
 add_subdirectory(RobotController)
 
+add_subdirectory(CLI)
+
 #install src folder headers
 install(FILES
 	MessageTypes.hpp
