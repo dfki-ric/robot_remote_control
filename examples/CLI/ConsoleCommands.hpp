@@ -40,8 +40,9 @@ class ConsoleCommands {
 
     static int registerParamsForCommand(const std::string &name, const std::vector<ParamDef> &params);
 
-    void runCommand(const std::string &name, std::vector<std::string> &params);
+    void runCommand(std::vector<std::string> &line);
 
+    static std::vector<std::string> parseLine(const std::string &line);
 
  private:
     static std::map< std::string, CommandDef > commands;

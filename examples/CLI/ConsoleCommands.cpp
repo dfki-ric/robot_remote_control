@@ -16,28 +16,33 @@ ConsoleCommands::ConsoleCommands() {
 
 ConsoleCommands::~ConsoleCommands() {}
 
+std::vector<std::string> ConsoleCommands::parseLine(const std::string &line) {
+    std::vector<std::string> linevec;
+    std::istringstream linestream;
+    linestream.str(line);
+    std::string part;
+    while (std::getline(linestream, part, ' ')) {
+        // when part is not created because of double space
+        if (part.size()) {
+            linevec.push_back(part);
+        }
+    }
+    return linevec;
+}
+
 bool ConsoleCommands::readline(const std::string& prompt) {
     char* input = ::readline(prompt.c_str());
     if (!input) return false;
     add_history(input);
-    std::istringstream commandstream;
-    commandstream.str(std::string(input));
-    std::string command;
-    std::getline(commandstream, command, ' ');
-    std::string param;
-    std::vector<std::string> params;
+    std::vector<std::string> line = parseLine(input);
 
-    while (std::getline(commandstream, param, ' ')) {
-        params.push_back(param);
-    }
-    runCommand(command, params);
+    runCommand(line);
     free(input);
     return true;
 }
 
 char* ConsoleCommands::command_finder(const char *text, int state) {
     static std::vector< std::string >::iterator it;
-    
     // state is 0 when a "word" is finished
     if ( state == 0 ) it = completions.begin();
 
@@ -54,29 +59,36 @@ char* ConsoleCommands::command_finder(const char *text, int state) {
 }
 
 char * ConsoleCommands::param_finder(const char *text, int state) {
-    static int oldcount = 0;
-    static int paramsent = 0;
-    // if (state == 0) {
-    //     proposedparamtype = 0;
-    // }
-    //printf("'%i'",state);
-    std::string line (text);
-    std::istringstream commandstream;
-    commandstream.str(line);
-    std::string command;
-    std::getline(commandstream, command, ' ');
+    
+    std::string currentline(text);
+    std::vector<std::string> line = parseLine(currentline);
+    std::string &command = line.front();
 
-    int params = std::count(line.begin(), line.end(), ' ');
+    int params = line.size();
 
-    if ( params > oldcount ) {
-        oldcount = params;
+    std::string completed;
+    std::for_each(line.begin(), line.end()-1 ,[&](const std::string& part) {
+        completed += part + " ";
+    });
+
+    std::string curpart;
+    if ( line.size() > 1 ) {
+        curpart = line.back();
+        //std::cout << curpart << std::endl;
     }
+     
 
-    if (state == 0 && params > 0 && params <= commands[command].params.size()) {
-        return strdup((line + "<" + commands[command].params[params-1].hint + "> ").c_str());
-    }
-    if (state == 1 && params > 0 && params <= commands[command].params.size()) {
-        return strdup((line + commands[command].params[params-1].defaultvalue + " ").c_str());
+    if (params > 0 && params <= commands[command].params.size()) {
+        
+        if (state == 0) {
+            return strdup((completed + curpart + " ").c_str());
+        }
+        if (state == 1) {
+            return strdup((completed + curpart + " " + commands[command].params[params-1].defaultvalue + " ").c_str());
+        }
+        if (state == 2 && currentline[currentline.size()-1] == ' ') {
+            return strdup((currentline + "<" + commands[command].params[params-1].hint + "> ").c_str());
+        }
     }
     return NULL;
 }
@@ -84,12 +96,14 @@ char * ConsoleCommands::param_finder(const char *text, int state) {
 char** ConsoleCommands::attempted_completion_function(const char * text, int start, int end) {
     // disable default completion
     rl_attempted_completion_over = 1;
-    
-    std::string line (text);
-    std::istringstream commandstream;
-    commandstream.str(line);
+
+    std::string line(text);
+    std::vector<std::string> linevec = parseLine(line);
+
     std::string command;
-    std::getline(commandstream, command, ' ');
+    if (linevec.size()) {
+        command = linevec.front();
+    }
 
     if (commands.count(command)) {
         return rl_completion_matches(text, &ConsoleCommands::param_finder);
@@ -119,11 +133,10 @@ int ConsoleCommands::registerParamsForCommand(const std::string &name, const std
     return false;
 }
 
-void ConsoleCommands::runCommand(const std::string &name, std::vector<std::string> &params) {
-    std::string cmd = name;
-    if (name[name.size()-1] == ' ') {
-        cmd.erase(name.size()-1, 1);
-    }
+void ConsoleCommands::runCommand(std::vector<std::string> &line) {
+    std::string cmd = line.front();
+    std::vector<std::string> params(line.begin()+1, line.end());
+
     auto iter = commands.find(cmd);
     if (iter != commands.end()) {
         while (params.size() < iter->second.params.size()) {
