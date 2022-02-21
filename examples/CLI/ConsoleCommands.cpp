@@ -128,8 +128,9 @@ char** ConsoleCommands::attempted_completion_function(const char * text, int sta
 }
 
 
-void ConsoleCommands::registerCommand(const std::string &name, std::function<void(const std::vector<std::string> &params)> func, bool use_thread) {
+void ConsoleCommands::registerCommand(const std::string &name, const std::string &doc, std::function<void(const std::vector<std::string> &params)> func, bool use_thread) {
     CommandDef def;
+    def.doc = doc;
     def.func = func;
     def.use_thread = use_thread;
     commands[name] = def;
@@ -181,4 +182,14 @@ void ConsoleCommands::runCommand(std::vector<std::string> &line) {
             }
         }
     }
+}
+
+void ConsoleCommands::printHelp() {
+    std::for_each(commands.begin(), commands.end(), [](const std::pair<std::string, CommandDef> &cmd) {
+        std::string params;
+        std::for_each(cmd.second.params.begin(), cmd.second.params.end(), [&](const ParamDef &paramdef){
+            params += "<"+paramdef.hint + "> ";
+        });
+        printf("%s %s \n\t - %s\n\n", cmd.first.c_str(), params.c_str(), cmd.second.doc.c_str());
+    });
 }

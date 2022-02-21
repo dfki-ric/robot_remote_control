@@ -12,9 +12,9 @@ using robot_remote_control::TransportZmq;
 #define STRING(A) #A
 
 // rrc_type defined outside of lamda to print latest values if no new ones are received
-#define DEFINE_WATCH_COMMAND(TYPE, FUNCTION) \
+#define DEFINE_WATCH_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_watch_##FUNCTION; \
-    console.registerCommand("watch_" STRING(FUNCTION), [&](const std::vector<std::string> &params){ \
+    console.registerCommand("watch_" STRING(FUNCTION), DOC, [&](const std::vector<std::string> &params){ \
             if (controller.FUNCTION(&rrc_type_watch_##FUNCTION)) { \
                 rrc_type_watch_##FUNCTION.PrintDebugString(); \
             } else { \
@@ -22,9 +22,9 @@ using robot_remote_control::TransportZmq;
             } \
     }, true);
 
-#define DEFINE_PRINT_COMMAND(TYPE, FUNCTION) \
+#define DEFINE_PRINT_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
-    console.registerCommand(#FUNCTION, [&](const std::vector<std::string> &params){ \
+    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params){ \
         bool received = false; \
         while (controller.FUNCTION(&rrc_type_##FUNCTION)) {received = true;} \
         rrc_type_##FUNCTION.PrintDebugString(); \
@@ -32,7 +32,7 @@ using robot_remote_control::TransportZmq;
             printf("no new data received \n"); \
         } \
     }); \
-    DEFINE_WATCH_COMMAND(TYPE, FUNCTION)
+    DEFINE_WATCH_COMMAND(TYPE, FUNCTION, "continuously "#DOC", press Enter to stop")
 
 int main(int argc, char** argv) {
     printf("\nThis is work in progress, not a fully functional CLI.\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
@@ -69,23 +69,24 @@ int main(int argc, char** argv) {
 
     bool run = true;
 
-    console.registerCommand("help", [&](const std::vector<std::string> &params){
-        printf("Use TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
+    console.registerCommand("help", "display this help" , [&](const std::vector<std::string> &params){
+        console.printHelp();
+        printf("\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
     });
 
-    console.registerCommand("exit", [&](const std::vector<std::string> &params){
+    console.registerCommand("exit", "exit this CLI", [&](const std::vector<std::string> &params){
         printf("\n");
         fflush(stdout);
         run = false;
     });
 
 
-    console.registerCommand("stats", [&](const std::vector<std::string> &params){
+    console.registerCommand("stats", "show telemetry statistics", [&](const std::vector<std::string> &params){
         controller.getStatistics().calculate();
         controller.getStatistics().print(true);
     });
 
-    console.registerCommand("simpleaction", [&](const std::vector<std::string> &params){
+    console.registerCommand("simpleaction", "execute a simpleaction", [&](const std::vector<std::string> &params){
         std::for_each(params.begin(), params.end(), [](const std::string &param) {
             std::cout << param << std::endl;
         });
@@ -106,7 +107,7 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("simpleaction", params);
     params.clear();
 
-    console.registerCommand("requestsimpleactions", [&](const std::vector<std::string> &params){
+    console.registerCommand("requestsimpleactions", "request simple actions and add them to autocomplete", [&](const std::vector<std::string> &params){
         robot_remote_control::SimpleActions actions;
         controller.requestSimpleActions(&actions);
         // add param options to autocomplete
@@ -122,9 +123,9 @@ int main(int argc, char** argv) {
         actions.PrintDebugString();
     });
 
-    DEFINE_PRINT_COMMAND(Pose, getCurrentPose);
-    DEFINE_PRINT_COMMAND(JointState, getCurrentJointState);
-    DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints);
+    DEFINE_PRINT_COMMAND(Pose, getCurrentPose, "print current Pose");
+    DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
+    DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
 
 
     while (run) {
