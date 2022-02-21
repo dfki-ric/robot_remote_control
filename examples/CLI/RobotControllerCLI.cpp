@@ -35,7 +35,7 @@ using robot_remote_control::TransportZmq;
     DEFINE_WATCH_COMMAND(TYPE, FUNCTION)
 
 int main(int argc, char** argv) {
-    printf("\nThis is work in progress, not a functional CLI\n\n");
+    printf("\nThis is work in progress, not a fully functional CLI.\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
 
     std::string ip;
     std::string commandport;
@@ -69,15 +69,20 @@ int main(int argc, char** argv) {
 
     bool run = true;
 
-    console.registerCommand("stats", [&](const std::vector<std::string> &params){
-        controller.getStatistics().calculate();
-        controller.getStatistics().print(true);
+    console.registerCommand("help", [&](const std::vector<std::string> &params){
+        printf("Use TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
     });
 
     console.registerCommand("exit", [&](const std::vector<std::string> &params){
         printf("\n");
         fflush(stdout);
         run = false;
+    });
+
+
+    console.registerCommand("stats", [&](const std::vector<std::string> &params){
+        controller.getStatistics().calculate();
+        controller.getStatistics().print(true);
     });
 
     console.registerCommand("simpleaction", [&](const std::vector<std::string> &params){
