@@ -21,15 +21,26 @@ std::vector<std::string> ConsoleCommands::parseLine(const std::string &line, boo
     std::istringstream linestream;
     linestream.str(line);
     std::string part;
-    // TODO quotes
     while (std::getline(linestream, part, ' ')) {
         if (filter_empty) {
             // when part is not created because of double space
             if (part.size()) {
-                linevec.push_back(part);
+                if (linevec.size() && linevec.back()[linevec.back().size()-1] == '\\') {
+                    linevec.back().erase(linevec.back().size()-1);
+                    // escaped space was removed by getline
+                    linevec.back() += " " + part;
+                } else {
+                    linevec.push_back(part);
+                }
             }
         } else {
-            linevec.push_back(part);
+            if (linevec.size() && linevec.back().size() >= 2 && linevec.back()[linevec.back().size()-1] == '\\') {
+                linevec.back().erase(linevec.back().size()-1);
+                // escaped space was removed by getline
+                linevec.back() += " " + part;
+            } else {
+                linevec.push_back(part);
+            }
         }
     }
     return linevec;
@@ -69,8 +80,17 @@ char * ConsoleCommands::param_finder(const char *text, int state) {
     std::vector<std::string> line = parseLine(currentline, false);
     std::string &command = line.front();
     // count params available in line, first space ist after command, so -1
-    // TODO: quoting
     int finished_params = std::count(currentline.begin(), currentline.end(), ' ') - 1;
+    
+    // find escapes an substract from finished params
+    int escaped_spaces = 0;
+    size_t position = currentline.find("\\ ", 0);
+    while (position != std::string::npos) {
+        // continue search after modyfied place
+        position = currentline.find("\\ ", position+1);
+        ++escaped_spaces;
+    }
+    finished_params -= escaped_spaces;
 
     int lastSpacepos = currentline.rfind(' ');
     std::string completed = currentline;
@@ -139,10 +159,21 @@ void ConsoleCommands::registerCommand(const std::string &name, const std::string
 
 int ConsoleCommands::registerParamsForCommand(const std::string &name, const std::vector<ParamDef> &params) {
     if (commands.find(name) != commands.end()) {
-        commands[name].params = params;
-        // std::string cmd = name;
-        // std::for_each(params.begin(),params.end(),[&](const ParamDef &param){cmd += " "+param.defaultvalue;});
-        // completions.push_back(cmd);
+        std::vector<ParamDef> escaped_params = params;
+        std::for_each(escaped_params.begin(), escaped_params.end(), [&](ParamDef& param) {
+            std::for_each(param.defaultvalues.begin(), param.defaultvalues.end(), [&](std::string& value) {
+                // check for spaces to escape
+                size_t position = value.find(" ", 0);
+                while (position != std::string::npos) {
+                    // escape space
+                    value.insert(position, "\\");
+                    // continue search after modyfied place
+                    position = value.find(" ", position+2);
+                }
+            });
+        });
+
+        commands[name].params = escaped_params;
         return true;
     }
     printf("unknown command %s\n\tyou need to register the command before adding paramater definitions\n", name.c_str());
