@@ -128,6 +128,25 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
 
 
+
+    robot_remote_control::Image rrc_type_image;
+    console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
+        bool received = false;
+        while (controller.getImage(&rrc_type_image)) {received = true;}
+        printf("image type: %s (%ix%i) frame: %s size: %i bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
+        if (!received) {
+            printf("no new data received \n");
+        }
+    });
+    console.registerCommand("watch_getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params){
+        robot_remote_control::Image rrc_type_image;
+        while (controller.getImage(&rrc_type_image)) {
+            printf("image type: %s (%ix%i) frame: %s size: %i bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
+        }
+    }, true);
+
+
+
     while (run) {
         if (!console.readline("rrc@" + ip + " $ ")) {
             run = false;
