@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
             // simpleactionparams[1].defaultvalues.push_back(simpleaction.state());
         }
         // replace generic params
-        console.registerParamsForCommand("simpleaction", simpleactionparams);
+        console.registerParamsForCommand("setSimpleActionCommand", simpleactionparams);
         actions.PrintDebugString();
     });
 
