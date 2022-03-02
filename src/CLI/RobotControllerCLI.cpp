@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
     controller.startUpdateThread(0);
 
     ConsoleCommands console;
+    std::vector<ConsoleCommands::ParamDef> params;
 
     // set Heartbeat to one second
     controller.setHeartBeatDuration(1);
@@ -86,7 +87,34 @@ int main(int argc, char** argv) {
         controller.getStatistics().print(true);
     });
 
-    console.registerCommand("simpleaction", "execute a simpleaction", [&](const std::vector<std::string> &params){
+    console.registerCommand("setTwistCommand", "execute a twist", [&](const std::vector<std::string> &params){
+        robot_remote_control::Twist twist;
+        int i = 0;
+        try {
+            twist.mutable_linear()->set_x(std::stof(params[i++]));
+            twist.mutable_linear()->set_y(std::stof(params[i++]));
+            twist.mutable_linear()->set_z(std::stof(params[i++]));
+            twist.mutable_angular()->set_x(std::stof(params[i++]));
+            twist.mutable_angular()->set_y(std::stof(params[i++]));
+            twist.mutable_angular()->set_z(std::stof(params[i++]));
+        } catch (const std::invalid_argument &e) {
+            std::cout << "value must be a number, was '" << params[i] <<"' " << std::endl;
+            std::cout << e.what() << std::endl;
+            return;
+        }
+        controller.setTwistCommand(twist);
+    });
+
+    params.push_back(ConsoleCommands::ParamDef("linear x (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("linear y (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("linear z (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("angular x (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("angular y (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("angular z (float)", "0"));
+    console.registerParamsForCommand("setTwistCommand", params);
+    params.clear();
+
+    console.registerCommand("setSimpleActionCommand", "execute a simpleaction", [&](const std::vector<std::string> &params){
         std::for_each(params.begin(), params.end(), [](const std::string &param) {
             std::cout << param << std::endl;
         });
@@ -101,13 +129,12 @@ int main(int argc, char** argv) {
         }
         controller.setSimpleActionCommand(action);
     });
-    std::vector<ConsoleCommands::ParamDef> params;
     params.push_back(ConsoleCommands::ParamDef("name (string)", "name"));
     params.push_back(ConsoleCommands::ParamDef("value (float)", "0"));
     console.registerParamsForCommand("simpleaction", params);
     params.clear();
 
-    console.registerCommand("requestsimpleactions", "request simple actions and add them to autocomplete", [&](const std::vector<std::string> &params){
+    console.registerCommand("requestSimpleActions", "request simple actions and add them to autocomplete", [&](const std::vector<std::string> &params){
         robot_remote_control::SimpleActions actions;
         controller.requestSimpleActions(&actions);
         // add param options to autocomplete
