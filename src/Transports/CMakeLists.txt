@@ -74,15 +74,16 @@ if(ZLIB_FOUND)
     )
 endif()
 
-set(CMAKE_BUILD_TYPE Debug)
 
-add_executable(robot_remote_control-zmq_telemetry_proxy ZMQProxyMain.cpp)
-target_link_libraries(robot_remote_control-zmq_telemetry_proxy
+find_package(Threads REQUIRED)
+add_executable(robot_remote_control-zmq_proxy ZMQProxyMain.cpp)
+target_link_libraries(robot_remote_control-zmq_proxy
     ${ZMQ_LIBRARIES}
+    Threads::Threads
 )
 
-install (TARGETS robot_remote_control-zmq_telemetry_proxy
-         EXPORT robot_remote_control-zmq_telemetry_proxy-targets
+install (TARGETS robot_remote_control-zmq_proxy
+         EXPORT robot_remote_control-zmq_proxy-targets
          RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
