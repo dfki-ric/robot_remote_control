@@ -19,9 +19,15 @@ int main(int argc, char** argv) {
     if (argc == 1) {
         robotip = "localhost";
         robot_commandport = "7001";
-        local_commandport = "8001";
+        local_commandport = "7001";
         robot_telemetryport = "7002";
-        local_telemetryport = "8002";
+        local_telemetryport = "7002";
+    } else if (argc == 2) {
+        robotip = argv[1];
+        robot_commandport = "7001";
+        local_commandport = "7001";
+        robot_telemetryport = "7002";
+        local_telemetryport = "7002";
     } else if (argc == 4) {
         robotip = argv[1];
         robot_telemetryport = argv[2];
@@ -29,7 +35,7 @@ int main(int argc, char** argv) {
         robot_telemetryport = argv[4];
         local_telemetryport = argv[5];
     } else {
-        printf("needs 0 or 5 params: robot_ip robot_commandport robot_telemetryport local_commandport local_telemetryport\n");
+        printf("needs 0, 1, or 5 params: [robot_ip] [robot_commandport robot_telemetryport local_commandport local_telemetryport]\n");
         exit(1);
     }
 
