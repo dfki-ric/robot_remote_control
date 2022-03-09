@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(Pose, getCurrentPose, "print current Pose");
     DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
-
+    DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
 
 
     robot_remote_control::Image rrc_type_image;
