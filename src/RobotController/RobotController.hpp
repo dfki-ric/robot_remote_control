@@ -67,12 +67,12 @@ class RobotController: public UpdateThread {
         }
 
         /**
-         * @brief Get the Heart Breat Round Trip Time
+         * @brief Get the Heart Beat Round Trip Time
          * 
          * @return float time in seconds needed to send/receive the last heartbeat (if used)
          */
-        float getHeartBreatRoundTripTime() {
-            return heartBreatRoundTripTime.load();
+        float getHeartBeatRoundTripTime() {
+            return heartBeatRoundTripTime.load();
         }
 
         /**
@@ -477,7 +477,7 @@ class RobotController: public UpdateThread {
 
         float heartBeatDuration;
         Timer heartBeatTimer;
-        std::atomic<float> heartBreatRoundTripTime;
+        std::atomic<float> heartBeatRoundTripTime;
         Timer latencyTimer;
         Timer requestTimer;
         Timer lastConnectedTimer;
