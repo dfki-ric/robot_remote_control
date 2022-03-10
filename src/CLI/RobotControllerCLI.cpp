@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    printf("conencting to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
+    printf("connecting to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
 
     TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+commandport, TransportZmq::REQ));
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+telemetryport, TransportZmq::SUB));
@@ -81,6 +81,9 @@ int main(int argc, char** argv) {
         run = false;
     });
 
+    console.registerCommand("clear", "clear console display", [&](const std::vector<std::string> &params){
+        int exit_code = system("clear");
+    });
 
     console.registerCommand("stats", "show telemetry statistics", [&](const std::vector<std::string> &params){
         controller.getStatistics().calculate();
@@ -153,14 +156,14 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(Pose, getCurrentPose, "print current Pose");
     DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
-
+    DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
 
 
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
         bool received = false;
         while (controller.getImage(&rrc_type_image)) {received = true;}
-        printf("image type: %s (%ix%i) frame: %s size: %i bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
+        printf("image type: %s (%ix%i) frame: %s size: %lu bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
         if (!received) {
             printf("no new data received \n");
         }
@@ -168,10 +171,27 @@ int main(int argc, char** argv) {
     console.registerCommand("watch_getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params){
         robot_remote_control::Image rrc_type_image;
         while (controller.getImage(&rrc_type_image)) {
-            printf("image type: %s (%ix%i) frame: %s size: %i bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
+            printf("image type: %s (%ix%i) frame: %s size: %lu bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
         }
     }, true);
 
+    robot_remote_control::PointCloud rrc_type_pointcloud;
+    console.registerCommand("getPointCloud", "get a single pointcloud and print its properties (without data)", [&](const std::vector<std::string> &params) {
+        bool received = false;
+        while (controller.getPointCloud(&rrc_type_pointcloud)) {
+            received = true;
+            printf("pointcloud in frame %s with %i points\n", rrc_type_pointcloud.header().frame().c_str(), rrc_type_pointcloud.points().size());
+        }
+        if (!received) {
+            printf("no new data received \n");
+        }
+    });
+    console.registerCommand("watch_getPointCloud", "get a single pointcloud and print its properties (without data)", [&](const std::vector<std::string> &params){
+        robot_remote_control::PointCloud rrc_type_pointcloud;
+        while (controller.getPointCloud(&rrc_type_pointcloud)) {
+            printf("pointcloud in frame %s with %i points\n", rrc_type_pointcloud.header().frame().c_str(), rrc_type_pointcloud.points().size());
+        }
+    }, true);
 
 
     while (run) {
