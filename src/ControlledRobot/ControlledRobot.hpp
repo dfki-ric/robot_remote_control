@@ -26,7 +26,14 @@ class ControlledRobot: public UpdateThread {
          */
         virtual void update();
 
-
+        /**
+         * @brief setup a periodic heardbeat to detect connection loses on the robot side
+         * 
+         * @warning When there are multiple connections (e.g. vis zmq) with different heartbeats in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
+         * 
+         * @param allowedLatency the maximum latency allowed if the heartbeat arrives late
+         * @param callback the callback when no heartbeat message arrived in time
+         */
         void setupHeartbeatCallback(const float &allowedLatency, const std::function<void(const float&)> &callback) {
             heartbeatAllowedLatency = allowedLatency;
             heartbeatExpiredCallback = callback;
@@ -36,8 +43,6 @@ class ControlledRobot: public UpdateThread {
             return connected.load();
         }
 
-
-        
 
         // Command Callbacks
 

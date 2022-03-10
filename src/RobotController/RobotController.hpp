@@ -465,7 +465,6 @@ class RobotController: public UpdateThread {
 
 
     protected:
-
         virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
@@ -509,6 +508,7 @@ class RobotController: public UpdateThread {
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
+
          protected:
             std::shared_ptr<TelemetryBuffer>  buffers;
         };

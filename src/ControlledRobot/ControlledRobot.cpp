@@ -60,6 +60,9 @@ ControlledRobot::~ControlledRobot() {
 void ControlledRobot::update() {
     while (receiveRequest() != NO_CONTROL_DATA) {}
 
+    // if there are multiple connections with different frequencies it can happen that if the high frequency conenction is lost
+    // and the last heartbeat message came from the low fewquency connection, the heartbeatExpiredCallback is called after
+    // the low frequency timer is expired
     if (heartbeatCommand.read(&heartbeatValues)) {
         connected.store(true);
         // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
