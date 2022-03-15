@@ -41,7 +41,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<Map>(MAP);
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
-    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
+    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST);  // no need to buffer, fills future
     registerTelemetryType<PointCloud>(POINTCLOUD);
     registerTelemetryType<IMU>(IMU_VALUES);
     registerTelemetryType<ContactPoints>(CONTACT_POINTS);
@@ -49,8 +49,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<Acceleration>(CURRENT_ACCELERATION);
     registerTelemetryType<CameraInformation>(CAMERA_INFORMATION);
     registerTelemetryType<Image>(IMAGE);
-    registerTelemetryType<ImageLayers>(IMAGE_LAYERS); 
-    registerTelemetryType<Odometry>(ODOMETRY); 
+    registerTelemetryType<ImageLayers>(IMAGE_LAYERS);
+    registerTelemetryType<Odometry>(ODOMETRY);
+    registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES);
 }
 
 ControlledRobot::~ControlledRobot() {

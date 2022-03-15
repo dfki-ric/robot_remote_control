@@ -95,7 +95,7 @@ template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, c
   while (!robot.commandbuffers[type]->read(&recv)) {
     usleep(10000);
     if (count++ > 100) {
-      BOOST_FAIL( "did not receive data in time" );
+      BOOST_FAIL("did not receive data in time");
     }
   }
 
@@ -524,6 +524,26 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   return received;
 }
 
+template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, const TelemetryMessageType &type) {
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  robot.startUpdateThread(10);
+
+  robot.sendTelemetry(protodata, type);
+
+  // check request
+  PROTOBUFDATA received;
+  controller.requestTelemetry(type, &received);
+
+  robot.stopUpdateThread();
+
+  return received;
+}
+
+
 BOOST_AUTO_TEST_CASE(check_telemetry_pose) {
   // not using the set/get functions
   Pose send, recv;
@@ -572,19 +592,19 @@ BOOST_AUTO_TEST_CASE(check_telemetry_complex_actions) {
   COMPARE_PROTOBUF(send, recv);
 }
 
-BOOST_AUTO_TEST_CASE(check_telemetry_robotname) {
+BOOST_AUTO_TEST_CASE(check_request_robotname) {
   // not using the set/get functions
   RobotName send, recv;
-  send = TypeGenerator::genRobotName();
-  recv = testTelemetry(send, ROBOT_NAME);
+  send.set_value("testname");
+  recv = testRequest(send, ROBOT_NAME);
   COMPARE_PROTOBUF(send, recv);
 }
 
-BOOST_AUTO_TEST_CASE(check_telemetry_videostreams) {
+BOOST_AUTO_TEST_CASE(check_request_videostreams) {
   // not using the set/get functions
   VideoStreams send, recv;
   send = TypeGenerator::genVideoStreams();
-  recv = testTelemetry(send, VIDEO_STREAMS);
+  recv = testRequest(send, VIDEO_STREAMS);
   COMPARE_PROTOBUF(send, recv);
 }
 
@@ -612,11 +632,11 @@ BOOST_AUTO_TEST_CASE(check_telemetry_imagelayers) {
   COMPARE_PROTOBUF(send, recv);
 }
 
-BOOST_AUTO_TEST_CASE(check_telemetry_camerainformation) {
+BOOST_AUTO_TEST_CASE(check_request_camerainformation) {
   // not using the set/get functions
   CameraInformation send, recv;
   send = TypeGenerator::genCameraInformation();
-  recv = testTelemetry(send, CAMERA_INFORMATION);
+  recv = testRequest(send, CAMERA_INFORMATION);
   COMPARE_PROTOBUF(send, recv);
 }
 
@@ -625,6 +645,14 @@ BOOST_AUTO_TEST_CASE(check_telemetry_odometry) {
   Odometry send, recv;
   send = TypeGenerator::genOdometry();
   recv = testTelemetry(send, ODOMETRY);
+  COMPARE_PROTOBUF(send, recv);
+}
+
+BOOST_AUTO_TEST_CASE(check_request_controllableframes) {
+  // not using the set/get functions
+  ControllableFrames send, recv;
+  send = TypeGenerator::genControllableFrames();
+  recv = testRequest(send, CONTROLLABLE_FRAMES);
   COMPARE_PROTOBUF(send, recv);
 }
 
@@ -730,6 +758,7 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
 
   //COMPARE_PROTOBUF(robotpose, controlpose);
 }
+
 
 // BOOST_AUTO_TEST_CASE(check_permissions) {
 //   // not using the set/get functions

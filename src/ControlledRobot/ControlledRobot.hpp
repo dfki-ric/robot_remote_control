@@ -190,7 +190,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initControllableJoints(const JointState& telemetry) {
-            return sendTelemetry(telemetry, CONTROLLABLE_JOINTS);
+            return sendTelemetry(telemetry, CONTROLLABLE_JOINTS, true);
         }
 
         /**
@@ -201,7 +201,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initSimpleActions(const SimpleActions& telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_ACTIONS);
+            return sendTelemetry(telemetry, SIMPLE_ACTIONS, true);
         }
 
         /**
@@ -211,7 +211,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initComplexActions(const ComplexActions& telemetry) {
-            return sendTelemetry(telemetry, COMPLEX_ACTIONS);
+            return sendTelemetry(telemetry, COMPLEX_ACTIONS, true);
         }
 
         /**
@@ -222,7 +222,7 @@ class ControlledRobot: public UpdateThread {
          * @return int  number of bytes sent
          */
         int initSimpleSensors(const SimpleSensors &telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION);
+            return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION, true);
         }
 
         /**
@@ -243,7 +243,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initRobotName(const RobotName& telemetry) {
-            return sendTelemetry(telemetry, ROBOT_NAME);
+            return sendTelemetry(telemetry, ROBOT_NAME, true);
         }
 
         /**
@@ -253,7 +253,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initVideoStreams(const VideoStreams& telemetry) {
-            return sendTelemetry(telemetry, VIDEO_STREAMS);
+            return sendTelemetry(telemetry, VIDEO_STREAMS, true);
         }
 
         /**
@@ -263,20 +263,30 @@ class ControlledRobot: public UpdateThread {
          * @return int 
          */
         int initCameraInformation(const CameraInformation& telemetry) {
-            return sendTelemetry(telemetry, CAMERA_INFORMATION);
+            return sendTelemetry(telemetry, CAMERA_INFORMATION, true);
         }
 
+        /**
+         * @brief When more than a single frame can be the target of a pose twist or goto command, this can be used to notify the RobotController
+         * which combinationa are possible.
+         * 
+         * @param telemetry List of frames that can be used to send twist, pose or goto (which target can be set in the header of the command)
+         * @return int 
+         */
+        int initControllableFrames(const ControllableFrames& telemetry) {
+            return sendTelemetry(telemetry, CONTROLLABLE_FRAMES, true);
+        }
 
         std::shared_future<bool> requestPermission(const PermissionRequest &permissionrequest) {
             // get and init promise in map
             std::promise<bool> &promise = pendingPermissionRequests[permissionrequest.requestuid()];
             sendTelemetry(permissionrequest, PERMISSION_REQUEST);
-            try {
-                return promise.get_future().share();
-            }
-            catch (const std::future_error& e) {
-                // printf("%s\n", e.what());
-            }
+            // try {
+            return promise.get_future().share();
+            // }
+            // catch (const std::future_error& e) {
+            //     // printf("%s\n", e.what());
+            // }
         }
 
         /**

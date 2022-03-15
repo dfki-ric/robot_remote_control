@@ -19,13 +19,13 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
         registerTelemetryType<JointState>(JOINT_STATE, buffersize);
         registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
-        registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, buffersize);
-        registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, buffersize);
-        registerTelemetryType<RobotName>(ROBOT_NAME, buffersize);
+        registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<RobotName>(ROBOT_NAME, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
         registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
-        registerTelemetryType<VideoStreams>(VIDEO_STREAMS, buffersize);
-        registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, buffersize);
+        registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
@@ -35,10 +35,11 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
         registerTelemetryType<Twist>(CURRENT_TWIST, buffersize);
         registerTelemetryType<Acceleration>(CURRENT_ACCELERATION, buffersize);
-        registerTelemetryType<CameraInformation>(CAMERA_INFORMATION, buffersize);
+        registerTelemetryType<CameraInformation>(CAMERA_INFORMATION, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<Image>(IMAGE, buffersize);
         registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
-        registerTelemetryType<Odometry>(ODOMETRY, buffersize); 
+        registerTelemetryType<Odometry>(ODOMETRY, buffersize);
+        registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
 
         #ifdef RRC_STATISTICS
             // add names to buffer, this types have aspecial treatment, the should not be registered

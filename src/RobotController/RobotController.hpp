@@ -390,8 +390,17 @@ class RobotController: public UpdateThread {
 
         void requestMap(Map *map, const uint16_t &mapId);
 
-        void requestMap(std::string *map, const uint16_t &mapId){
+        void requestMap(std::string *map, const uint16_t &mapId) {
             requestBinary(mapId, map, MAP_REQUEST);
+        }
+
+        /**
+         * @brief Request which movement commands (in which frames) are supported by the robot
+         * 
+         * @param frames 
+         */
+        void requestControllableFrames(ControllableFrames *frames) {
+            requestTelemetry(CONTROLLABLE_FRAMES, frames);
         }
 
         /**
