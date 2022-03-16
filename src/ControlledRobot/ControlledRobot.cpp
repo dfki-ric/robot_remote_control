@@ -59,7 +59,7 @@ ControlledRobot::~ControlledRobot() {
 }
 
 void ControlledRobot::update() {
-    while (receiveRequest() != NO_CONTROL_DATA) {}
+    while (receiveRequest() != NO_CONTROL_DATA) {connected.store(true);}
 
     // if there are multiple connections with different frequencies it can happen that if the high frequency conenction is lost
     // and the last heartbeat message came from the low fewquency connection, the heartbeatExpiredCallback is called after
