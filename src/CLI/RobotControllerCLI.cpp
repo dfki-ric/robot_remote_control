@@ -14,7 +14,7 @@ using robot_remote_control::TransportZmq;
 // rrc_type defined outside of lamda to print latest values if no new ones are received
 #define DEFINE_WATCH_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_watch_##FUNCTION; \
-    console.registerCommand("watch_" STRING(FUNCTION), DOC, [&](const std::vector<std::string> &params){ \
+    console.registerCommand("watch_" STRING(FUNCTION), DOC, [&](const std::vector<std::string> &params) { \
             if (controller.FUNCTION(&rrc_type_watch_##FUNCTION)) { \
                 rrc_type_watch_##FUNCTION.PrintDebugString(); \
             } else { \
@@ -24,7 +24,7 @@ using robot_remote_control::TransportZmq;
 
 #define DEFINE_PRINT_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
-    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params){ \
+    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) { \
         bool received = false; \
         while (controller.FUNCTION(&rrc_type_##FUNCTION)) {received = true;} \
         rrc_type_##FUNCTION.PrintDebugString(); \
@@ -34,6 +34,15 @@ using robot_remote_control::TransportZmq;
     }); \
     DEFINE_WATCH_COMMAND(TYPE, FUNCTION, "continuously "#DOC", press Enter to stop")
 
+#define DEFINE_REQUEST_COMMAND(TYPE, FUNCTION, DOC) \
+    robot_remote_control::TYPE rrc_type_##FUNCTION; \
+    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) { \
+        if (controller.FUNCTION(&rrc_type_##FUNCTION)) { \
+            rrc_type_##FUNCTION.PrintDebugString(); \
+        } else { \
+            printf("no new data received \n"); \
+        } \
+    });
 
 int main(int argc, char** argv) {
     printf("\nThis is work in progress, not a fully functional CLI.\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
@@ -158,7 +167,7 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
-    DEFINE_PRINT_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
+    DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
 
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
