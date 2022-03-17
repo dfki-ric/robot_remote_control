@@ -135,12 +135,13 @@ void RobotController::update() {
     }
 }
 
-void RobotController::requestMap(Map *map, const uint16_t &mapId){
+bool RobotController::requestMap(Map *map, const uint16_t &mapId){
     std::string replybuf;
-    requestBinary(mapId, &replybuf, MAP_REQUEST);
+    bool result = requestBinary(mapId, &replybuf, MAP_REQUEST);
     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
     cistream.SetTotalBytesLimit(replybuf.size(), replybuf.size());
     map->ParseFromCodedStream(&cistream);
+    return result;
 }
 
 void RobotController::updateStatistics(const uint32_t &bytesSent, const uint16_t &type) {

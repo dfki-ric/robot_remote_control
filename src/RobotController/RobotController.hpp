@@ -302,13 +302,14 @@ class RobotController: public UpdateThread {
          * 
          * @param state the string to write the state to
          */
-        void requestRobotState(std::vector<std::string> *state) {
+        bool requestRobotState(std::vector<std::string> *state) {
             RobotState protostate;
-            requestTelemetry(ROBOT_STATE, &protostate);
+            bool result = requestTelemetry(ROBOT_STATE, &protostate);
             state->clear();
             for (const std::string &line : protostate.state()) {
                 state->push_back(line);
             }
+            return result;
         }
 
         /**
@@ -317,8 +318,8 @@ class RobotController: public UpdateThread {
          * @param complexActions where to write the data to
          * @return void
          */
-        void requestComplexActions(ComplexActions *complexActions) {
-            requestTelemetry(COMPLEX_ACTIONS, complexActions);
+        bool requestComplexActions(ComplexActions *complexActions) {
+            return requestTelemetry(COMPLEX_ACTIONS, complexActions);
         }
 
         /**
@@ -327,8 +328,8 @@ class RobotController: public UpdateThread {
          * @param simpleActions where to write the data to
          * @return void
          */
-        void requestSimpleActions(SimpleActions *simpleActions) {
-            requestTelemetry(SIMPLE_ACTIONS, simpleActions);
+        bool requestSimpleActions(SimpleActions *simpleActions) {
+            return requestTelemetry(SIMPLE_ACTIONS, simpleActions);
         }
 
         /**
@@ -337,8 +338,8 @@ class RobotController: public UpdateThread {
          * @param jointState where to write the data to
          * @return void
          */
-        void requestControllableJoints(JointState *jointState) {
-            requestTelemetry(CONTROLLABLE_JOINTS, jointState);
+        bool requestControllableJoints(JointState *jointState) {
+            return requestTelemetry(CONTROLLABLE_JOINTS, jointState);
         }
 
         /**
@@ -346,8 +347,8 @@ class RobotController: public UpdateThread {
          * 
          * @param sensors sensord array to wtite the information to
          */
-        void requestSimpleSensors(SimpleSensors *sensors) {
-            requestTelemetry(SIMPLE_SENSOR_DEFINITION, sensors);
+        bool requestSimpleSensors(SimpleSensors *sensors) {
+            return requestTelemetry(SIMPLE_SENSOR_DEFINITION, sensors);
         }
 
         /**
@@ -356,8 +357,8 @@ class RobotController: public UpdateThread {
          * @param robotName where to write the data to
          * @return void
          */
-        void requestRobotName(RobotName *robotName) {
-            requestTelemetry(ROBOT_NAME, robotName);
+        bool requestRobotName(RobotName *robotName) {
+            return requestTelemetry(ROBOT_NAME, robotName);
         }
 
         /**
@@ -365,8 +366,8 @@ class RobotController: public UpdateThread {
          * 
          * @param streams where to write the data to
          */
-        void requestVideoStreams(VideoStreams *streams) {
-            requestTelemetry(VIDEO_STREAMS, streams);
+        bool requestVideoStreams(VideoStreams *streams) {
+            return requestTelemetry(VIDEO_STREAMS, streams);
         }
 
         /**
@@ -374,8 +375,8 @@ class RobotController: public UpdateThread {
          * 
          * @param camerainformation 
          */
-        void requestCameraInformation(CameraInformation *camerainformation) {
-            requestTelemetry(CAMERA_INFORMATION, camerainformation);
+        bool requestCameraInformation(CameraInformation *camerainformation) {
+            return requestTelemetry(CAMERA_INFORMATION, camerainformation);
         }
 
         /**
@@ -384,14 +385,14 @@ class RobotController: public UpdateThread {
          * @param Pose where to write the data to
          * @return void
          */
-        void requestCurrentPose(Pose *pose) {
-            requestTelemetry(CURRENT_POSE, pose);
+        bool requestCurrentPose(Pose *pose) {
+            return requestTelemetry(CURRENT_POSE, pose);
         }
 
-        void requestMap(Map *map, const uint16_t &mapId);
+        bool requestMap(Map *map, const uint16_t &mapId);
 
-        void requestMap(std::string *map, const uint16_t &mapId) {
-            requestBinary(mapId, map, MAP_REQUEST);
+        bool requestMap(std::string *map, const uint16_t &mapId) {
+            return requestBinary(mapId, map, MAP_REQUEST);
         }
 
         /**
@@ -399,8 +400,8 @@ class RobotController: public UpdateThread {
          * 
          * @param frames 
          */
-        void requestControllableFrames(ControllableFrames *frames) {
-            requestTelemetry(CONTROLLABLE_FRAMES, frames);
+        bool requestControllableFrames(ControllableFrames *frames) {
+            return requestTelemetry(CONTROLLABLE_FRAMES, frames);
         }
 
         /**
@@ -435,10 +436,11 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+        template< class DATATYPE > bool requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string replybuf;
-            requestBinary(type, &replybuf, requestType);
+            bool received = requestBinary(type, &replybuf, requestType);
             result->ParseFromString(replybuf);
+            return received;
         }
 
         template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const DATATYPE & data)> &function) {
@@ -449,7 +451,7 @@ class RobotController: public UpdateThread {
             telemetryReceivedCallbacks.push_back(function);
         }
 
-        void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string buf;
             buf.resize(sizeof(uint16_t)*2);
 
@@ -460,6 +462,7 @@ class RobotController: public UpdateThread {
             // add the requested type
             *data = type;
             *result = sendRequest(buf);
+            return (result->size() > 0) ? true : false;
         }
 
        /**
