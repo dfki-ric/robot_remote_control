@@ -34,6 +34,7 @@ using robot_remote_control::TransportZmq;
     }); \
     DEFINE_WATCH_COMMAND(TYPE, FUNCTION, "continuously "#DOC", press Enter to stop")
 
+
 int main(int argc, char** argv) {
     printf("\nThis is work in progress, not a fully functional CLI.\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
 
@@ -157,7 +158,7 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
-
+    DEFINE_PRINT_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
 
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
