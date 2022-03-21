@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    printf("proxy connecting to %s, ports: %s,%s, listening on: %s,%s (commands,telemetry)\n", robotip.c_str(), robot_telemetryport.c_str(), local_telemetryport.c_str(), robot_commandport.c_str(), local_commandport.c_str());
+    printf("proxy connecting to %s, ports: %s,%s, listening on: %s,%s (commands,telemetry)\n", robotip.c_str(), robot_commandport.c_str(), robot_telemetryport.c_str(), local_commandport.c_str(), local_telemetryport.c_str());
 
     std::thread tememetrythread = std::thread([&](){
         zmq::context_t context(4);
