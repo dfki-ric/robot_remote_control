@@ -1,5 +1,6 @@
 # Command Line Interfaces
 
+These interafces are "work in progress", if you are missing a feature please request it in an issue on github.
 
 ## robot_controller
 
