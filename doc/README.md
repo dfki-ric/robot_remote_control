@@ -1,4 +1,6 @@
-# Robot Remote Control (rrc)
+# Robot Remote Control (RRC)
+
+This readme is meant as a quick start guide and does not cover the full capabilities of the rrc library
 
 ## Libraries to use
 
@@ -76,11 +78,65 @@ The total time after which the callback on the robot side (ControlledRobot) is e
 With these the robot expects the next heartbeat message after duration+latency seconds, if no heartbeat message arrives in time the callback will be called. The paramater of the callback gived the elapsed time since the last received message.
 
 
-## Defining Controllable Frames
-Work in progress
+## Controlling Different Robot Parts (Defining Controllable Frames)
+
+There is mostly only one function to send a command, e.g. setTwistCommand(), while some robots have multiple parts that can be moved with a twist command (e.g. they can have a mobile platform and a arm).
+
+In these cases, the "header" part of the command can be used to set the target frame of the command.
+When time synchronization of the command is important, a "ComplexAction" can be used to send the commands.
+
+When the robot should be usable for generic user interfaces (that use the RobotController library), the initControllableFrames() function should be used to report the availabe commands. 
+
 
 ## Defining Actions
-Work in progress
+
+Actions are funtions of the robot that it can finish on its own.
+This can be simple switches (light on) or autonomous behaviors (return to docking station).
+They devided into "simple" and "complex" actions. Where thsi only defines 
+
+### Simple Actions
+
+Simple actions are name-based and contain only a float value as command. They can be used as a trigger or set a single value (e.g. "stop", "maximumSpeed", "controlMode").
+
+When the robot should be usable for generic user interfaces (that use the RobotController library), the initSimpleActions() function should be used to report the availabe actions, the type (NamedValue) setting is only important for generated GUIs, not for the content of the message.
+
+### Complex Actions
+
+Complex actions are also name-baed and contain a array of Twists and/or Poses. These action can be used for more complex behaviors. (e.g. "AreaExploration", "FollowTrajectory", "SyncronousDualArmTwistControl") 
+
+When the robot should be usable for generic user interfaces (that use the RobotController library), the initComplexActions() function should be used to report the availabe actions, the type (NamedValue) setting is only important for generated GUIs, not for the content of the message.
+
+
+## Tools
+
+### ZeroMQ Proxy
+
+While other transports might only support single one to one connections, the ZeroMQ Transport supports a one to many connections.
+Each instance of RobotController connects to the ControlledRobot instance on the robot.
+This also means all telemetry is send to all connected RobotController instances and thus using more Bandwidth. 
+This can be a problem for Robots with limited bandwidth (e.g. wirelessly connected).
+
+For these cases, RRC contains a ZeroMQ proxy implementation which allows to have onle one connection to the robot and to connect other instances of RobotController to the proxy (`$> robot_remote_control-zmq_proxy`). This way the telemetry is only sent once on the robot-proxy connection.
+
+### Statistics
+
+RRC has an Statistics module for the telemetry on both sided of the communication.
+
+The cmake define "RRC_STATISTICS" toggles the availability and calculation of the statistics.
+
+You can use the `getStatistics()` function to get the data. The indes is based on the TelemetryMessageType enum in src/MessageTypes.hpp, where the index 0 (NO_TELEMETRY_DATA) contains the global statistic.
+
+### Command Line Interface
+
+RRC comes with an command line interface for testing purposes (`$> robot_controller`). 
+
+It establishes a connection to the robot and provides basic requests and controls for the robot.
+It can also be used to access the statistics module to check which telemetry at which rates are actually send by the robot.
+
+(please see the CLI readme)[CLI.md]
+
+
+
 
 
 

@@ -55,6 +55,10 @@ int main(int argc, char** argv) {
         ip = "localhost";
         commandport = "7001";
         telemetryport = "7002";
+    } else if (argc == 2) {
+        ip = argv[1];
+        commandport = "7001";
+        telemetryport = "7002";
     } else if (argc == 4) {
         ip = argv[1];
         commandport = argv[2];

@@ -21,6 +21,9 @@ In the default setup (ZeroMQ), each RobotController receives ALL telemetry and e
 
 ```$> robot_remote_control-zmq_proxy ROBOT_IP [robot_commandport robot_telemetryport local_commandport local_telemetryport]``` 
 
+Another option is to compress the data using the gzip transport wrapper (see doc/README.md).
+
+
 ## How can I increase reaction times
 
 Rather than polling in your update loop, you can 

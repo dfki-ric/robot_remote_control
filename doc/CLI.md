@@ -1,13 +1,16 @@
-# Command Line Interface
+# Command Line Interfaces
 
 
 ## robot_controller
-There is a Command Line Interface for debugging and simple commands.
+
+The robot_controller CLI establishes a connection to the robot and provides basic requests and controls for the robot.
+It can also be used to access the statistics module to check which telemetry at which rates are actually send by the robot.
 
 ```bash
-    $> robot_controller
+    $> robot_controller [ROBOT_IP] [COMMAND_PORT TELEMETRY_PORT]
 ```
-It uses tab completion to show available commands.
+
+It supports tab completion to show available commands.
 
 The "stats" command is only working in case the library was build with this feature enabled.
 
