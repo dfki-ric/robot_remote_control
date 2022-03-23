@@ -52,7 +52,7 @@ void Statistics::Stats::calculate(timeval* currenttime) {
 
 void Statistics::Stats::print(const std::string& name) {
     #ifdef RRC_STATISTICS
-        printf("%.2f kBytes/s (size kB: %.2f, freq: %06.2f): %s\n", statdata.bpsAvg/1000.0, statdata.lastBytesSize/1000.0, statdata.frequencyAvg, name.c_str());
+        printf("%.2f kBytes/s (size kB: %.2f, freq: %06.2f): %s\n", statdata.bpsAvg/1024.0, statdata.bytesTotal/1024.0, statdata.frequencyAvg, name.c_str());
     #endif
 }
 
