@@ -9,6 +9,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     heartbeatAllowedLatency(0.1),
+    connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1) {
     registerCommandType(TARGET_POSE_COMMAND, &poseCommand);

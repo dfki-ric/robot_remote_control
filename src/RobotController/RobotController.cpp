@@ -15,7 +15,8 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     heartBreatRoundTripTime(0),
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
-    simplesensorbuffer(std::make_shared< SimpleBuffer<SimpleSensor> >()) {
+    simplesensorbuffer(std::make_shared< SimpleBuffer<SimpleSensor> >()),
+    connected(false) {
         registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
         registerTelemetryType<JointState>(JOINT_STATE, buffersize);
         registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
@@ -121,17 +122,23 @@ void RobotController::update() {
         printf("ERROR no telemetry Transport set\n");
     }
 
-    if (heartBeatDuration != 0 && heartBeatTimer.isExpired()) {
-        //TODO: check if send needed?
-        if (commandTransport.get()) {
-            HeartBeat hb;
-            hb.set_heartbeatduration(heartBeatDuration);
-            latencyTimer.start();
-            std::string rep = sendProtobufData(hb, HEARTBEAT);
-            float time = latencyTimer.getElapsedTime();
-            heartBreatRoundTripTime.store(time);
+    if (heartBeatDuration != 0) {
+        if (heartBeatTimer.isExpired()) {
+            // TODO: check if send needed?
+            if (commandTransport.get()) {
+                HeartBeat hb;
+                hb.set_heartbeatduration(heartBeatDuration);
+                latencyTimer.start();
+                std::string rep = sendProtobufData(hb, HEARTBEAT);
+                float time = latencyTimer.getElapsedTime();
+                heartBreatRoundTripTime.store(time);
+                connected.store(true);
+            }
+            heartBeatTimer.start(heartBeatDuration);
+        } else {
+            heartBreatRoundTripTime.store(-1);
+            connected.store(false);
         }
-        heartBeatTimer.start(heartBeatDuration);
     }
 }
 
