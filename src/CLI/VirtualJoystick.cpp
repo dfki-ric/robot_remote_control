@@ -17,11 +17,27 @@ using robot_remote_control::TransportZmq;
 template<typename T>
 using windowPtr = std::unique_ptr<T,std::function<void(T*)>>;
 
-//TODO use shared or unique pointers instead of raw pointers!?
-//TODO Make a box for +/- and 0
-//TODO better method to highlight button press (black background for window?
-//TODO clearing Warning Window does not work properly
-//TODO Fix button highlighing with color?
+//TODO integrate virtual joystick in robot_controller
+//TODO name executable rrc_virtual_joystick
+//TODO split into several files
+
+//TODO remap controls
+//     space or zero = 0
+//     ad = ty, ws=tx, qe=tz
+//     left/right = ay, up/down=ax, Bild=az
+//     +/- for increment
+//     use escape and Ctrl-C to stop
+
+// TODO use lower two windows for input visualization wasd and arrows including iteration step
+//      use top two windows for info:
+//          - Right hand side status: connection, heartbeat, sent Twist
+//          - Left hand side tab switchable getCurrentTwist, getCurrentPose, getCurrentIMU
+
+
+//    mvwprintw(helpWindow , 1, 2, "INFO:"); 
+//    mvwprintw(helpWindow , 3, 4, "Use arrow keys to change twist command"); 
+//    mvwprintw(helpWindow , 4, 4, "Use -/+ to change increment_"); 
+//    mvwprintw(helpWindow , 5, 4, "Press 0 to send stop command"); 
 
 struct Connection
 {
@@ -40,57 +56,25 @@ class WindowManager
           connectionInfo_(connectionInfo),
           controller_(controller)
         {
-            //TODO remove those and work with mv(y,x,..)
             ipString_ = "IP: "+connectionInfo_.ip;
             portString_ = "Port: "+connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort;
 
             initScreen();
             initWindows();
-            updateArrowWindows();
-            showStatusWindow();
             initController();
-
-//            std::string loadString = ".";
-//            while(not controller_->isConnected())
-//            {
-//                mvprintw(LINES/2.0, COLS/2.0,"Connecting to the robot%s", loadString);
-//                loadString+=".";
-//                sleep(0.1);
-//            }
+            refreshAllWindows();
         }
 
         ~WindowManager()
         {
-            //TODO should I stop update thread?!
             if (controller_->isConnected())
             {
                 controller_->stopUpdateThread();
             }
             deleteAllWindows();
             use_default_colors();
-//            standend();
+            standend(); //turn off all attributes
 	        endwin();
-        }
-
-        void initScreen()
-        {
-        	initscr();
-            raw();                   // disable line buffering
-        	keypad(stdscr, TRUE);	 // required for arrow keys
-            curs_set(0);             // hide cursor
-        	noecho();                // Don't echo() while we do getch
-            timeout(200);            // clear buttons if nothing is pressed
-//            start_color();
-//            init_pair(1,COLOR_RED, COLOR_BLUE);
-            refresh();
-        }
-
-        void initController()
-        {
-            controller_->startUpdateThread(0);
-            controller_->setHeartBeatDuration(1);
-            controller_->setupLostConnectionCallback([&](const float& time){});
-            controller_->requestRobotName(&robotName_);
         }
 
         void run()
@@ -99,6 +83,11 @@ class WindowManager
             int ch;
 	        while((ch = getch()) != 'q')
 	        {	
+                if ( LINES != currHeight_ || COLS != currWidth_ )
+                {
+                    regenerateAllWindows();
+                    warned = false;
+                }
                 if(not controller_->isConnected() && not warned)
                 {
                     deleteAllWindows();
@@ -119,31 +108,100 @@ class WindowManager
 	        }
         }
 
+        void refreshAllWindows()
+        {
+            for(auto&& entry : windowMap_)
+            {
+        	    box(entry.second.get(), 0 , 0);
+                wrefresh(entry.second.get());
+            }
+            printTwistCmd();
+            showStatusWindow();
+            updateArrowWindows();
+        }
+
+    private:
+        std::map<std::string, windowPtr<WINDOW >> windowMap_;
+        std::map<std::string, windowPtr<WINDOW >> arrowMap_;
+        windowPtr<WINDOW> warnWindow_;
+        Connection connectionInfo_;
+        std::string ipString_, portString_;
+        std::shared_ptr<robot_remote_control::RobotController> controller_;
+        robot_remote_control::Twist twistCmd_;
+        robot_remote_control::RobotName robotName_;
+        int currWidth_;
+        int currHeight_;
+        double increment_ = 0.1;
+
+        windowPtr<WINDOW> create_newwin(int height, int width, int starty, int startx)
+        {
+            windowPtr<WINDOW> local_win( newwin(height, width, starty, startx), [](WINDOW* w) { werase(w) && wrefresh(w) && delwin(w); });
+        	box(local_win.get(), 0 , 0);
+        	wrefresh(local_win.get());
+            return local_win;
+        }
+
+        void initScreen()
+        {
+        	initscr();
+            currWidth_ = COLS;
+            currHeight_ = LINES;
+            raw();                   // disable line buffering
+        	keypad(stdscr, TRUE);	 // required for arrow keys
+            curs_set(0);             // hide cursor
+        	noecho();                // Don't echo() while we do getch
+            timeout(200);            // clear buttons if nothing is pressed
+            start_color();           
+            init_pair(1,COLOR_WHITE, COLOR_GREEN);
+            refresh();
+        }
+
+        void initWindows()
+        {
+            windowMap_["helpWindow"]    = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
+            windowMap_["statusWindow"]  = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0));
+            windowMap_["arrowWindow"]   = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0));
+            windowMap_["cmdWindow"]     = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0));
+
+            arrowMap_["arrowUp"]        = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)-(LINES/10.0)), 2*COLS/10.0));
+            arrowMap_["arrowDown"]      = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)+(LINES/10.0)), 2*COLS/10.0));
+            arrowMap_["arrowLeft"]      = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), COLS/10.0));
+            arrowMap_["arrowRight"]     = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), 3*COLS/10.0));
+        }
+
+        void initController()
+        {
+            controller_->startUpdateThread(0);
+            controller_->setHeartBeatDuration(1);
+            controller_->setupLostConnectionCallback([&](const float& time){});
+            controller_->requestRobotName(&robotName_);
+        }
+
         void evaluateKey(int key)
         {
             switch(key)
 	        {	case KEY_LEFT:
                     twistCmd_.mutable_linear()->set_y(twistCmd_.linear().y()-increment_);
                     controller_->setTwistCommand(twistCmd_);
-                    refreshCmdWindow();
+                    printTwistCmd();
                     highlightButton("arrowLeft");
                     break;
 	        	case KEY_RIGHT:
                     twistCmd_.mutable_linear()->set_y(twistCmd_.linear().y()+increment_);
                     controller_->setTwistCommand(twistCmd_);
-                    refreshCmdWindow();
+                    printTwistCmd();
                     highlightButton("arrowRight");
                     break;
 	        	case KEY_UP:
                     twistCmd_.mutable_linear()->set_x(twistCmd_.linear().x()+increment_);
                     controller_->setTwistCommand(twistCmd_);
-                    refreshCmdWindow();
+                    printTwistCmd();
                     highlightButton("arrowUp");
                     break;
 	        	case KEY_DOWN:
                     twistCmd_.mutable_linear()->set_x(twistCmd_.linear().x()-increment_);
                     controller_->setTwistCommand(twistCmd_);
-                    refreshCmdWindow();
+                    printTwistCmd();
                     highlightButton("arrowDown");
                     break;
 	        	case '0':
@@ -151,7 +209,7 @@ class WindowManager
                     twistCmd_.mutable_linear()->set_y(0);
                     twistCmd_.mutable_linear()->set_z(0);
                     controller_->setTwistCommand(twistCmd_);
-                    refreshCmdWindow();
+                    printTwistCmd();
                     break;
                 case '+':
                     increment_+=0.1;
@@ -168,10 +226,19 @@ class WindowManager
 	        }
         }
 
+        void highlightButton(const std::string & windowKey, bool enable=true)
+        {
+            if (enable)
+            {
+                wbkgd(arrowMap_[windowKey].get(), COLOR_PAIR(1));
+            } else {
+                wbkgd(arrowMap_[windowKey].get(), COLOR_PAIR(0));
+            }
+            wrefresh(arrowMap_[windowKey].get());
+        }
+
         void showWarning()
         {
-//            warnWindow_.reset(create_newwin(LINES/2.0, COLS/2.0, LINES/4.0, COLS/4.0));
-            warnWindow_.reset();
             warnWindow_ = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/4.0, COLS/4.0));
             mvwprintw(warnWindow_.get() , 1, 2, "Connection to robot could not be established."); 
             mvwprintw(warnWindow_.get() , 3, 4, ipString_.c_str()); 
@@ -182,56 +249,20 @@ class WindowManager
 
         void clearWarning()
         {
-            werase(warnWindow_.get());
-            wrefresh(warnWindow_.get());
-            delwin(warnWindow_.get());
-//            warnWindow_.reset();
-//            refreshAllWindows(); //TODO where else is this used
+            warnWindow_.reset();
         }
 
-        //TODO still needed?
-        void clearAllWindows(std::map<std::string, windowPtr<WINDOW>> map)
+        void regenerateAllWindows()
         {
-            for(auto&& entry : map)
-            {
-                werase(entry.second.get());
-                wrefresh(entry.second.get());
-            }
-        }
-
-        void refreshAllWindows()
-        {
-            for(auto&& entry : windowMap_)
-            {
-        	    box(entry.second.get(), 0 , 0);
-                wrefresh(entry.second.get());
-            }
-            showStatusWindow();
-            updateArrowWindows();
-        }
-
-    private:
-        std::map<std::string, windowPtr<WINDOW >> windowMap_;
-        std::map<std::string, windowPtr<WINDOW >> arrowMap_;
-        windowPtr<WINDOW> warnWindow_;
-        Connection connectionInfo_;
-        std::string ipString_, portString_;
-        std::shared_ptr<robot_remote_control::RobotController> controller_;
-        robot_remote_control::Twist twistCmd_;
-        robot_remote_control::RobotName robotName_;
-        double increment_ = 0.1;
-
-        windowPtr<WINDOW> create_newwin(int height, int width, int starty, int startx)
-        {
-            windowPtr<WINDOW> local_win( newwin(height, width, starty, startx), [](WINDOW* w) { werase(w) && delwin(w); });
-        	box(local_win.get(), 0 , 0);
-        	wrefresh(local_win.get());
-            return local_win;
+            currHeight_ = LINES;
+            currWidth_ = COLS;
+            deleteAllWindows();
+            initWindows();
+            refreshAllWindows();
         }
 
         void showStatusWindow()
         {
-            // print status window
             std::string connected = "Connected to ";
             mvwprintw(windowMap_["statusWindow"].get() , 1, 2, connected.c_str()); 
             wattron(windowMap_["statusWindow"].get(), A_BOLD);	
@@ -240,65 +271,6 @@ class WindowManager
             mvwprintw(windowMap_["statusWindow"].get() , 2, 4, ipString_.c_str()); 
             mvwprintw(windowMap_["statusWindow"].get() , 3, 4, portString_.c_str()); 
             wrefresh(windowMap_["statusWindow"].get());
-        }
-
-        void highlightButton(const std::string & windowKey, bool enable=true)
-        {
-            if (enable)
-            {
-                attron(COLOR_PAIR(1));
-//                wbkgd(windowMap_[windowKey], COLOR_PAIR(1));
-                mvwprintw(windowMap_[windowKey].get() , 1, 1, "++++");
-            } else {
-                attroff(COLOR_PAIR(1));
-                mvwprintw(windowMap_[windowKey].get() , 1, 1, "    ");
-            }
-            wrefresh(windowMap_[windowKey].get());
-        }
-
-        void refreshCmdWindow()
-        {
-            werase(windowMap_["cmdWindow"].get());
-	        box(windowMap_["cmdWindow"].get(), 0 , 0);
-            mvwprintw(windowMap_["cmdWindow"].get() , 1, 2, "Sending Twist command:");
-            mvwprintw(windowMap_["cmdWindow"].get(), 4, 4, twistCmd_.ShortDebugString().c_str());
-            wrefresh(windowMap_["cmdWindow"].get());
-        }
-
-        void deleteAllWindows()
-        {
-
-            windowMap_.clear();
-            arrowMap_.clear();
-            refresh();
-        }
-
-        void initWindows()
-        {
-//            windowMap_["helpWindow"].reset();
-//            windowMap_["statusWindow"].reset();
-//            windowMap_["arrowWindow"].reset();
-//            windowMap_["cmdWindow"].reset();
-//
-            windowMap_["helpWindow"]    = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
-            windowMap_["statusWindow"]  = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0));
-            windowMap_["arrowWindow"]   = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0));
-            windowMap_["cmdWindow"]     = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0));
-
-//            windowMap_["helpWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
-//            windowMap_["statusWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0));
-//            windowMap_["arrowWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0));
-//            windowMap_["cmdWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0));
-              
-//            windowMap_["helpWindow"]    = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
-//            windowMap_["statusWindow"]  = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0));
-//            windowMap_["arrowWindow"]   = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0));
-//            windowMap_["cmdWindow"]     = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0));
-
-//            arrowMap_["arrowUp"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)-(LINES/10.0)), 2*COLS/10.0)));
-//            arrowMap_["arrowDown"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)+(LINES/10.0)), 2*COLS/10.0)));
-//            arrowMap_["arrowLeft"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), COLS/10.0)));
-//            arrowMap_["arrowRight"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), 3*COLS/10.0)));
         }
 
         void updateArrowWindows()
@@ -313,6 +285,20 @@ class WindowManager
                 box(entry.second.get(), 0, 0);
                 wrefresh(entry.second.get());
             }
+        }
+
+        void deleteAllWindows()
+        {
+            windowMap_.clear();
+            arrowMap_.clear();
+            refresh();
+        }
+
+        void printTwistCmd()
+        {
+            mvwprintw(windowMap_["cmdWindow"].get() , 1, 2, "Sending Twist command:");
+            mvwprintw(windowMap_["cmdWindow"].get(), 4, 4, twistCmd_.ShortDebugString().c_str());
+            wrefresh(windowMap_["cmdWindow"].get());
         }
 
         void printHeartBeat()
@@ -358,18 +344,5 @@ int main(int argc, char** argv)
     wm.refreshAllWindows();
     wm.run();
 
-    //TODO why doesnt it exit?!
-
-//TODO distribute on other windows
-//    // print info in help window
-//    mvwprintw(helpWindow , 1, 2, "INFO:"); 
-//    mvwprintw(helpWindow , 3, 4, "Use arrow keys to change twist command"); 
-//    mvwprintw(helpWindow , 4, 4, "Use -/+ to change increment_"); 
-//    mvwprintw(helpWindow , 5, 4, "Press 0 to send stop command"); 
-
-//    // print info on cmdWindow
-//    mvwprintw(cmdWindow , 1, 2, "Sending Twist command:");
-
-//    exit(0);
 	return 0;
 }
