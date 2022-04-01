@@ -1,8 +1,9 @@
-#include <iostream>
-#include <unistd.h>
-#include <ncurses.h> 
-#include <memory> 
 #include <cmath>
+#include <functional>
+#include <iostream>
+#include <memory> 
+#include <ncurses.h> 
+#include <unistd.h>
 
 #include "RobotController.hpp"
 #include "Transports/TransportZmq.hpp"
@@ -11,6 +12,10 @@
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
 
+// typedef for unique_ptr with custom deleter 
+// https://stackoverflow.com/questions/19053351/how-do-i-use-a-custom-deleter-with-a-stdunique-ptr-member
+template<typename T>
+using windowPtr = std::unique_ptr<T,std::function<void(T*)>>;
 
 //TODO use shared or unique pointers instead of raw pointers!?
 //TODO Make a box for +/- and 0
@@ -38,19 +43,32 @@ class WindowManager
             //TODO remove those and work with mv(y,x,..)
             ipString_ = "IP: "+connectionInfo_.ip;
             portString_ = "Port: "+connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort;
+
             initScreen();
             initWindows();
-            initController();
+            updateArrowWindows();
             showStatusWindow();
+            initController();
+
+//            std::string loadString = ".";
+//            while(not controller_->isConnected())
+//            {
+//                mvprintw(LINES/2.0, COLS/2.0,"Connecting to the robot%s", loadString);
+//                loadString+=".";
+//                sleep(0.1);
+//            }
         }
 
         ~WindowManager()
         {
             //TODO should I stop update thread?!
-            controller_->stopUpdateThread();
+            if (controller_->isConnected())
+            {
+                controller_->stopUpdateThread();
+            }
             deleteAllWindows();
             use_default_colors();
-            standend();
+//            standend();
 	        endwin();
         }
 
@@ -81,14 +99,18 @@ class WindowManager
             int ch;
 	        while((ch = getch()) != 'q')
 	        {	
-                if(not controller_->isConnected())
+                if(not controller_->isConnected() && not warned)
                 {
+                    deleteAllWindows();
                     showWarning();
                     warned = true;
-                } else if (warned) {
+                } else if (controller_->isConnected() && warned) {
                     clearWarning();
+                    initWindows();
                     refreshAllWindows();
                     warned = false;
+                } else if (not controller_->isConnected() && warned) {
+                    continue;
                 } else {
                     printHeartBeat();
                     printIncrement();
@@ -148,126 +170,163 @@ class WindowManager
 
         void showWarning()
         {
-            mvwprintw(warnWindow_ , 1, 2, "Connection to robot could not be established."); 
-            mvwprintw(warnWindow_ , 3, 4, ipString_.c_str()); 
-            mvwprintw(warnWindow_ , 4, 4, portString_.c_str()); 
-        	wborder(warnWindow_, '!', '!', '-','-','+','+','+','+');
-            wrefresh(warnWindow_);
+//            warnWindow_.reset(create_newwin(LINES/2.0, COLS/2.0, LINES/4.0, COLS/4.0));
+            warnWindow_.reset();
+            warnWindow_ = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/4.0, COLS/4.0));
+            mvwprintw(warnWindow_.get() , 1, 2, "Connection to robot could not be established."); 
+            mvwprintw(warnWindow_.get() , 3, 4, ipString_.c_str()); 
+            mvwprintw(warnWindow_.get() , 4, 4, portString_.c_str()); 
+        	wborder(warnWindow_.get(), '!', '!', '-','-','+','+','+','+');
+            wrefresh(warnWindow_.get());
         }
 
         void clearWarning()
         {
-            werase(warnWindow_);
-            wrefresh(warnWindow_);
-            refreshAllWindows();
+            werase(warnWindow_.get());
+            wrefresh(warnWindow_.get());
+            delwin(warnWindow_.get());
+//            warnWindow_.reset();
+//            refreshAllWindows(); //TODO where else is this used
+        }
+
+        //TODO still needed?
+        void clearAllWindows(std::map<std::string, windowPtr<WINDOW>> map)
+        {
+            for(auto&& entry : map)
+            {
+                werase(entry.second.get());
+                wrefresh(entry.second.get());
+            }
         }
 
         void refreshAllWindows()
         {
-            for(auto entry : windowMap)
+            for(auto&& entry : windowMap_)
             {
-                wrefresh(entry.second);
+        	    box(entry.second.get(), 0 , 0);
+                wrefresh(entry.second.get());
             }
+            showStatusWindow();
+            updateArrowWindows();
         }
 
     private:
-        std::map<std::string, WINDOW *> windowMap;
-        WINDOW * warnWindow_;
+        std::map<std::string, windowPtr<WINDOW >> windowMap_;
+        std::map<std::string, windowPtr<WINDOW >> arrowMap_;
+        windowPtr<WINDOW> warnWindow_;
         Connection connectionInfo_;
         std::string ipString_, portString_;
         std::shared_ptr<robot_remote_control::RobotController> controller_;
         robot_remote_control::Twist twistCmd_;
         robot_remote_control::RobotName robotName_;
         double increment_ = 0.1;
-        bool connectionLost_;
 
-
-        WINDOW * create_newwin(int height, int width, int starty, int startx)
+        windowPtr<WINDOW> create_newwin(int height, int width, int starty, int startx)
         {
-        	WINDOW *local_win;
-        	local_win = newwin(height, width, starty, startx);
-        	box(local_win, 0 , 0);
-        	wrefresh(local_win);
-        	return local_win;
+            windowPtr<WINDOW> local_win( newwin(height, width, starty, startx), [](WINDOW* w) { werase(w) && delwin(w); });
+        	box(local_win.get(), 0 , 0);
+        	wrefresh(local_win.get());
+            return local_win;
         }
 
         void showStatusWindow()
         {
             // print status window
             std::string connected = "Connected to ";
-            mvwprintw(windowMap["statusWindow"] , 1, 2, connected.c_str()); 
-            attron(A_BOLD);	
-            mvwprintw(windowMap["statusWindow"] , 1, 16, robotName_.value().c_str()); 
-            attroff(A_BOLD);
-            mvwprintw(windowMap["statusWindow"] , 2, 4, ipString_.c_str()); 
-            mvwprintw(windowMap["statusWindow"] , 3, 4, portString_.c_str()); 
-            wrefresh(windowMap["statusWindow"]);
+            mvwprintw(windowMap_["statusWindow"].get() , 1, 2, connected.c_str()); 
+            wattron(windowMap_["statusWindow"].get(), A_BOLD);	
+            mvwprintw(windowMap_["statusWindow"].get() , 1, 16, robotName_.value().c_str()); 
+            wattroff(windowMap_["statusWindow"].get(), A_BOLD);
+            mvwprintw(windowMap_["statusWindow"].get() , 2, 4, ipString_.c_str()); 
+            mvwprintw(windowMap_["statusWindow"].get() , 3, 4, portString_.c_str()); 
+            wrefresh(windowMap_["statusWindow"].get());
         }
 
         void highlightButton(const std::string & windowKey, bool enable=true)
         {
             if (enable)
             {
-//                attron(COLOR_PAIR(1));
-//                wbkgd(windowMap[windowKey], COLOR_PAIR(1));
-                mvwprintw(windowMap[windowKey] , 1, 1, "++++");
+                attron(COLOR_PAIR(1));
+//                wbkgd(windowMap_[windowKey], COLOR_PAIR(1));
+                mvwprintw(windowMap_[windowKey].get() , 1, 1, "++++");
             } else {
-//                attroff(COLOR_PAIR(1));
-                mvwprintw(windowMap[windowKey] , 1, 1, "    ");
+                attroff(COLOR_PAIR(1));
+                mvwprintw(windowMap_[windowKey].get() , 1, 1, "    ");
             }
-            wrefresh(windowMap[windowKey]);
+            wrefresh(windowMap_[windowKey].get());
         }
 
         void refreshCmdWindow()
         {
-            werase(windowMap["cmdWindow"]);
-	        box(windowMap["cmdWindow"], 0 , 0);
-            mvwprintw(windowMap["cmdWindow"] , 1, 2, "Sending Twist command:");
-            mvwprintw(windowMap["cmdWindow"], 4, 4, twistCmd_.ShortDebugString().c_str());
-            wrefresh(windowMap["cmdWindow"]);
+            werase(windowMap_["cmdWindow"].get());
+	        box(windowMap_["cmdWindow"].get(), 0 , 0);
+            mvwprintw(windowMap_["cmdWindow"].get() , 1, 2, "Sending Twist command:");
+            mvwprintw(windowMap_["cmdWindow"].get(), 4, 4, twistCmd_.ShortDebugString().c_str());
+            wrefresh(windowMap_["cmdWindow"].get());
         }
 
         void deleteAllWindows()
         {
-            for(auto entry : windowMap)
-            {
-                delwin(entry.second);
-            }
-            delwin(warnWindow_);
+
+            windowMap_.clear();
+            arrowMap_.clear();
+            refresh();
         }
 
         void initWindows()
         {
-            warnWindow_    = create_newwin(LINES/2.0, COLS/2.0, LINES/4.0, COLS/4.0);
-            windowMap["helpWindow"]    = create_newwin(LINES/2.0, COLS/2.0, 0, 0);
-            windowMap["statusWindow"]  = create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0);
-            windowMap["arrowWindow"]   = create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0);
-            windowMap["cmdWindow"]     = create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0);
-            windowMap["arrowUp"]       = create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)-(LINES/10.0)), 2*COLS/10.0);
-            windowMap["arrowDown"]     = create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)+(LINES/10.0)), 2*COLS/10.0);
-            windowMap["arrowLeft"]     = create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), COLS/10.0);
-            windowMap["arrowRight"]    = create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), 3*COLS/10.0);
+//            windowMap_["helpWindow"].reset();
+//            windowMap_["statusWindow"].reset();
+//            windowMap_["arrowWindow"].reset();
+//            windowMap_["cmdWindow"].reset();
+//
+            windowMap_["helpWindow"]    = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
+            windowMap_["statusWindow"]  = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0));
+            windowMap_["arrowWindow"]   = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0));
+            windowMap_["cmdWindow"]     = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0));
 
-            // print keys on arrow boxes
-            mvwprintw(windowMap["arrowUp"]    , 0, COLS/20.0-1, "UP");
-            mvwprintw(windowMap["arrowDown"]  , 0, COLS/20.0-2, "DOWN");
-            mvwprintw(windowMap["arrowLeft"]  , 0, COLS/20.0-2, "LEFT");
-            mvwprintw(windowMap["arrowRight"] , 0, COLS/20.0-2, "RIGHT");
+//            windowMap_["helpWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
+//            windowMap_["statusWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0));
+//            windowMap_["arrowWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0));
+//            windowMap_["cmdWindow"].reset(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0));
+              
+//            windowMap_["helpWindow"]    = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
+//            windowMap_["statusWindow"]  = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, COLS/2.0));
+//            windowMap_["arrowWindow"]   = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, 0));
+//            windowMap_["cmdWindow"]     = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/2.0, COLS/2.0));
+
+//            arrowMap_["arrowUp"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)-(LINES/10.0)), 2*COLS/10.0)));
+//            arrowMap_["arrowDown"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)+(LINES/10.0)), 2*COLS/10.0)));
+//            arrowMap_["arrowLeft"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), COLS/10.0)));
+//            arrowMap_["arrowRight"].reset(std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), 3*COLS/10.0)));
+        }
+
+        void updateArrowWindows()
+        {
+            mvwprintw(arrowMap_["arrowUp"].get()    , 0, COLS/20.0-1, "UP");
+            mvwprintw(arrowMap_["arrowDown"].get()  , 0, COLS/20.0-2, "DOWN");
+            mvwprintw(arrowMap_["arrowLeft"].get()  , 0, COLS/20.0-2, "LEFT");
+            mvwprintw(arrowMap_["arrowRight"].get() , 0, COLS/20.0-2, "RIGHT");
+
+            for(auto&& entry : arrowMap_)
+            {
+                box(entry.second.get(), 0, 0);
+                wrefresh(entry.second.get());
+            }
         }
 
         void printHeartBeat()
         {
             std::string heartBeat = "HeartBeat RTT: " + std::to_string(controller_->getHeartBeatRoundTripTime());
-            mvwprintw(windowMap["statusWindow"] , 5, 2, heartBeat.c_str()); 
-            wrefresh(windowMap["statusWindow"]);
-            //TODO set lostConnection_ to false somewhere!
+            mvwprintw(windowMap_["statusWindow"].get() , 5, 2, heartBeat.c_str()); 
+            wrefresh(windowMap_["statusWindow"].get());
         }
 
         void printIncrement()
         {
-            mvwprintw(windowMap["arrowWindow"] , 1, 1, "Current Increment: "); 
-            mvwprintw(windowMap["arrowWindow"] , 1, 21, std::to_string(increment_).c_str()); 
-            wrefresh(windowMap["arrowWindow"]);
+            mvwprintw(windowMap_["arrowWindow"].get() , 1, 1, "Current Increment: "); 
+            mvwprintw(windowMap_["arrowWindow"].get() , 1, 21, std::to_string(increment_).c_str()); 
+            wrefresh(windowMap_["arrowWindow"].get());
         }
 };
 
@@ -295,7 +354,7 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+connectionInfo.ip+":"+connectionInfo.telemetryPort, TransportZmq::SUB));
     std::shared_ptr<robot_remote_control::RobotController> controller_ = std::make_shared<robot_remote_control::RobotController>(commands, telemetry);
 
-    WindowManager wm = WindowManager(controller_, connectionInfo);
+    WindowManager wm(controller_, connectionInfo);
     wm.refreshAllWindows();
     wm.run();
 
@@ -311,6 +370,6 @@ int main(int argc, char** argv)
 //    // print info on cmdWindow
 //    mvwprintw(cmdWindow , 1, 2, "Sending Twist command:");
 
-    exit(0);
-//	return 0;
+//    exit(0);
+	return 0;
 }
