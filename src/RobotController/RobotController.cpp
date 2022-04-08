@@ -132,12 +132,8 @@ void RobotController::update() {
                 std::string rep = sendProtobufData(hb, HEARTBEAT);
                 float time = latencyTimer.getElapsedTime();
                 heartBreatRoundTripTime.store(time);
-                connected.store(true);
             }
             heartBeatTimer.start(heartBeatDuration);
-        } else {
-            heartBreatRoundTripTime.store(-1);
-            connected.store(false);
         }
     }
 }
