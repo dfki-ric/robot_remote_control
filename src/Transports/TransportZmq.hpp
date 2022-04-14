@@ -26,6 +26,7 @@ class TransportZmq: public Transport {
 
  private:
     std::string addr;
+    ConnectionType type;
     std::shared_ptr<zmq::context_t> context;
     std::shared_ptr<zmq::socket_t> socket;
 };

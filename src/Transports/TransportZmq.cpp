@@ -10,12 +10,12 @@ std::shared_ptr<zmq::context_t> TransportZmq::getContextInstance(unsigned int th
 }
 
 TransportZmq::~TransportZmq() {
-    if (socket.get()) {
+    if (socket.get() && (type == REQ || type == SUB)) {
         socket->disconnect(addr);
     }
 }
 
-TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type) : addr(addr) {
+TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type) : addr(addr), type(type) {
     context = getContextInstance();
 
     switch (type) {
