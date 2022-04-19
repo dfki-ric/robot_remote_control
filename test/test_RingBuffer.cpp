@@ -150,4 +150,31 @@ BOOST_AUTO_TEST_CASE(resize_buffer) {
     CHECK_BUFFER(5, buffer, 0);
 }
 
+BOOST_AUTO_TEST_CASE(only_newest) {
+    RingBuffer<int> buffer(5);
+    fillBuffer(5, &buffer);
+
+    int newest = -1;
+    // get latest value
+    buffer.popData(&newest, true);
+    BOOST_CHECK_EQUAL(newest, 4);
+
+    BOOST_CHECK_EQUAL(buffer.popData(&newest, true), false);
+    BOOST_CHECK_EQUAL(buffer.popData(&newest), false);
+
+    // new fill
+    fillBuffer(3, &buffer);
+
+    int next = 0;
+    buffer.popData(&next, false);
+    BOOST_CHECK_EQUAL(next, 0);
+
+    buffer.popData(&newest, true);
+    BOOST_CHECK_EQUAL(newest, 2);
+
+    BOOST_CHECK_EQUAL(buffer.popData(&newest, true), false);
+    BOOST_CHECK_EQUAL(buffer.popData(&newest), false);
+}
+
+
 }  // namespace robot_remote_control

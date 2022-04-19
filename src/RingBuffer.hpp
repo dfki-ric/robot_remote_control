@@ -105,8 +105,14 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             return false;
         }
 
-        bool popData(TYPE *data) {
+        bool popData(TYPE *data, bool onlyNewest = false) {
             if (contentsize > 0) {
+                if (onlyNewest) {
+                    // move out pointer forward to last value
+                    out += contentsize-1;
+                    out %= buffersize;
+                    contentsize = 1;
+                }
                 *data = buffer[out];
                 --contentsize;
                 ++out;
@@ -155,10 +161,10 @@ class RingBufferAccess{
             return false;
         }
 
-        template<class DATATYPE> static bool popData(std::shared_ptr<RingBufferBase> buffer, DATATYPE *data) {
+        template<class DATATYPE> static bool popData(std::shared_ptr<RingBufferBase> buffer, DATATYPE *data, bool onlyNewest = false) {
             std::shared_ptr< RingBuffer<DATATYPE> > dataclass = std::dynamic_pointer_cast< RingBuffer<DATATYPE> >(buffer);
             if (dataclass.get()) {
-                return dataclass->popData(data);
+                return dataclass->popData(data, onlyNewest);
             }
             return false;
         }
