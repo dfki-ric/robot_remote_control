@@ -32,6 +32,24 @@ class RobotController: public UpdateThread {
         virtual void update();
 
         /**
+         * @brief Set the overwrite mode of the buffers (default false)
+         * 
+         * @param type TelemetryMessageType enum
+         * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
+         */
+        bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true);
+
+        /**
+         * @brief Set the buffer size of a sinlgle telemetry type (default value set in RobotController() constructor)
+         * 
+         * @warning buffer will be emptied on resize
+         * 
+         * @param type TelemetryMessageType enum
+         * @param newsize the new size of the buffer 
+         */
+        bool setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize = 10);
+
+        /**
          * @brief sets the expected next heartbeat time on the robot side
          * The value is trasmitted with the heartbeat message and is evaluated on the robot side, (stable) latency
          * it not an issue
@@ -74,6 +92,22 @@ class RobotController: public UpdateThread {
         float getHeartBreatRoundTripTime() {
             return heartBreatRoundTripTime.load();
         }
+
+        /**
+         * @brief Get the number of objects in the buffer
+         * 
+         * @param type 
+         * @return uint32_t 
+         */
+        uint32_t getTelemetryBufferDataSize(const TelemetryMessageType &type);
+
+        /**
+         * @brief Get the messages dropped of a specific because of full buffer
+         * 
+         * @param type 
+         * @return uint32_t 
+         */
+        size_t getDroppedTelemetry(const TelemetryMessageType &type);
 
         /**
          * @brief Set the Target Pose of the ControlledRobot
@@ -517,20 +551,25 @@ class RobotController: public UpdateThread {
 
         class TelemetryAdderBase{
          public:
-            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers) {}
+            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers), overwrite(false) {}
             virtual ~TelemetryAdderBase() {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
+            void setOverwrite(bool mode = true) {
+                overwrite = mode;
+            }
 
          protected:
+            bool overwrite;
             std::shared_ptr<TelemetryBuffer>  buffers;
         };
+
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
-                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], data);
+                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], data, overwrite);
             }
         };
 

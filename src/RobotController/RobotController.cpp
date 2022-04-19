@@ -61,6 +61,29 @@ RobotController::~RobotController() {
     stopUpdateThread();
 }
 
+bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite) {
+    std::shared_ptr<TelemetryAdderBase> adder =  telemetryAdders[type];
+    if (adder.get()) {
+        adder->setOverwrite(overwrite);
+        return true;
+    }
+    return false;
+}
+
+bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize) {
+    auto lockedTelemetryBuffers = buffers->lockedAccess();
+    std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type];
+    buffer->resize(newsize);
+}
+
+uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type) {
+    return buffers->lockedAccess().get()[type]->size();
+}
+
+size_t RobotController::getDroppedTelemetry(const TelemetryMessageType &type) {
+    return buffers->lockedAccess().get()[type]->dropped();
+}
+
 void RobotController::setTargetPose(const Pose & pose) {
     sendProtobufData(pose, TARGET_POSE_COMMAND);
 }

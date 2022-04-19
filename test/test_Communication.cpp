@@ -656,6 +656,145 @@ BOOST_AUTO_TEST_CASE(check_request_controllableframes) {
   COMPARE_PROTOBUF(send, recv);
 }
 
+BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
+  initComms();
+
+  // start with default buffer size and overwrite off (defaults)
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(0);
+  robot.startUpdateThread(0);
+
+  // use pose as telemetry dummy, x value is the counter
+  Pose pose = TypeGenerator::genPose();
+  Pose currentpose;
+
+  // fill buffer (overwrite is default off)
+  for (int i = 0; i < 20; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+
+  // wait a litte to let messages arrive
+  while (controller.getDroppedTelemetry(CURRENT_POSE) < 10) {
+    usleep(10000);
+  }
+
+  // read buffer (in buffersize)
+  for (int i = 0; i < 10; ++i) {
+    // buffer should be the first values
+    if (controller.getCurrentPose(&currentpose)) {
+      BOOST_TEST_MESSAGE(std::to_string(currentpose.position().x()));
+      BOOST_TEST(i == currentpose.position().x());
+    }
+  }
+  // buffer schould be empty
+  BOOST_TEST(controller.getCurrentPose(&currentpose) == false);
+
+  controller.setSingleTelemetryBufferOverwrite(CURRENT_POSE, true);
+
+  // fill buffer (overwrite is default on)
+  for (int i = 0; i < 25; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+  // wait a litte to let messages arrive
+  while (controller.getDroppedTelemetry(CURRENT_POSE) < 25) {
+    usleep(100000);
+  }
+  // read buffer (in buffersize)
+  for (int i = 15; i < 25; ++i) {
+    if (controller.getCurrentPose(&currentpose)) {
+      // buffer should be the last values
+      BOOST_TEST(i == currentpose.position().x());
+    }
+  }
+  // buffer schould be empty
+  BOOST_TEST(controller.getCurrentPose(&currentpose) == false);
+}
+
+BOOST_AUTO_TEST_CASE(buffer_setting_resize) {
+  initComms();
+
+  // start with default buffer size and overwrite off (defaults)
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(0);
+  robot.startUpdateThread(0);
+
+  // use pose as telemetry dummy, x value is the counter
+  Pose pose = TypeGenerator::genPose();
+  Pose currentpose;
+
+  // fill buffer (overwrite is default off)
+  for (int i = 0; i < 20; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+
+  // wait until all messages arrive (also the later dropped ones)
+  while (controller.getDroppedTelemetry(CURRENT_POSE) < 10) {
+    usleep(10000);
+  }
+
+  // resize buffer
+  controller.setSingleTelemetryBufferSize(CURRENT_POSE, 5);
+  // buffer schould be empty
+  BOOST_TEST(controller.getCurrentPose(&currentpose) == false);
+
+  // fill buffer (overwrite is default off)
+  for (int i = 0; i < 10; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+
+  // BOOST_TEST(controller.getDroppedTelemetry(CURRENT_POSE) == 15);
+
+  // wait until messages arrives (buffer full)
+  while (controller.getDroppedTelemetry(CURRENT_POSE) < 15) {
+    usleep(10000);
+  }
+
+
+  // read buffer (in buffersize)
+  for (int i = 0; i < 5; ++i) {
+    // buffer should be the first values
+    if (controller.getCurrentPose(&currentpose)) {
+      BOOST_TEST_MESSAGE(std::to_string(currentpose.position().x()));
+      BOOST_TEST(i == currentpose.position().x());
+    }
+  }
+
+  // buffer schould be empty
+  BOOST_TEST(controller.getCurrentPose(&currentpose) == false);
+
+  controller.setSingleTelemetryBufferSize(CURRENT_POSE, 20);
+
+  // fill buffer (overwrite is default off)
+  for (int i = 0; i < 30; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+
+  while (controller.getDroppedTelemetry(CURRENT_POSE) < 25) {
+    usleep(10000);
+  }
+
+  // read buffer (in buffersize)
+  for (int i = 0; i < 20; ++i) {
+    // buffer should be the first values
+    if (controller.getCurrentPose(&currentpose)) {
+      BOOST_TEST_MESSAGE(std::to_string(currentpose.position().x()));
+      BOOST_TEST(i == currentpose.position().x());
+    }
+  }
+
+  // buffer schould be empty
+  BOOST_TEST(controller.getCurrentPose(&currentpose) == false);
+}
+
 BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   initComms();
 
