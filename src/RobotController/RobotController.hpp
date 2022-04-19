@@ -178,8 +178,8 @@ class RobotController: public UpdateThread {
          * @param pose the pose to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentPose(Pose *pose) {
-            return getTelemetry(CURRENT_POSE, pose);
+        bool getCurrentPose(Pose *pose, bool onlyNewest = false) {
+            return getTelemetry(CURRENT_POSE, pose, onlyNewest);
         }
 
         /**
@@ -189,8 +189,8 @@ class RobotController: public UpdateThread {
          * @return true if new data was read
          * @return false otherwise
          */
-        bool getCurrentTwist(Twist *telemetry) {
-            return getTelemetry(CURRENT_TWIST, telemetry);
+        bool getCurrentTwist(Twist *telemetry, bool onlyNewest = false) {
+            return getTelemetry(CURRENT_TWIST, telemetry, onlyNewest);
         }
 
         /**
@@ -200,8 +200,8 @@ class RobotController: public UpdateThread {
          * @return true if new data was read
          * @return false otherwise
          */
-        bool getCurrentAcceleration(Acceleration *telemetry) {
-            return getTelemetry(CURRENT_ACCELERATION, telemetry);
+        bool getCurrentAcceleration(Acceleration *telemetry, bool onlyNewest = false) {
+            return getTelemetry(CURRENT_ACCELERATION, telemetry, onlyNewest);
         }
 
         /**
@@ -210,8 +210,8 @@ class RobotController: public UpdateThread {
          * @param repeated field of poses to write the data to
          * @return bool true if new data was read
          */
-        bool getPoses(Poses *poses) {
-            return getTelemetry(POSES, poses);
+        bool getPoses(Poses *poses, bool onlyNewest = false) {
+            return getTelemetry(POSES, poses, onlyNewest);
         }
 
         /**
@@ -220,8 +220,8 @@ class RobotController: public UpdateThread {
          * @param jointState the JointState to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentJointState(JointState *jointState) {
-            return getTelemetry(JOINT_STATE, jointState);
+        bool getCurrentJointState(JointState *jointState, bool onlyNewest = false) {
+            return getTelemetry(JOINT_STATE, jointState, onlyNewest);
         }
 
         /**
@@ -230,16 +230,16 @@ class RobotController: public UpdateThread {
          * @param wrenchState the WrenchState to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentWrenchState(WrenchState* wrenchState) {
-            return getTelemetry(WRENCH_STATE, wrenchState);
+        bool getCurrentWrenchState(WrenchState* wrenchState, bool onlyNewest = false) {
+            return getTelemetry(WRENCH_STATE, wrenchState, onlyNewest);
         }
 
-        int getCurrentIMUState(IMU* imu) {
-            return getTelemetry(IMU_VALUES, imu);
+        int getCurrentIMUState(IMU* imu, bool onlyNewest = false) {
+            return getTelemetry(IMU_VALUES, imu, onlyNewest);
         }
 
-        int getCurrentContactPoints(ContactPoints* points) {
-            return getTelemetry(CONTACT_POINTS, points);
+        int getCurrentContactPoints(ContactPoints* points, bool onlyNewest = false) {
+            return getTelemetry(CONTACT_POINTS, points, onlyNewest);
         }
 
 
@@ -304,8 +304,8 @@ class RobotController: public UpdateThread {
          * @param Transforms object to write the transforms to
          * @return bool true if new data was read
          */
-        bool getCurrentTransforms(Transforms *transforms) {
-            return getTelemetry(TRANSFORMS, transforms);
+        bool getCurrentTransforms(Transforms *transforms, bool onlyNewest = false) {
+            return getTelemetry(TRANSFORMS, transforms, onlyNewest);
         }
 
         /**
@@ -315,20 +315,20 @@ class RobotController: public UpdateThread {
          * @return true 
          * @return false 
          */
-        bool getPointCloud(PointCloud *pointcloud) {
-            return getTelemetry(POINTCLOUD, pointcloud);
+        bool getPointCloud(PointCloud *pointcloud, bool onlyNewest = false) {
+            return getTelemetry(POINTCLOUD, pointcloud, onlyNewest);
         }
 
-        bool getImage(Image *image) {
-            return getTelemetry(IMAGE, image);
+        bool getImage(Image *image, bool onlyNewest = false) {
+            return getTelemetry(IMAGE, image, onlyNewest);
         }
 
-        bool getImageLayers(ImageLayers *imagelayers) {
-            return getTelemetry(IMAGE_LAYERS, imagelayers);
+        bool getImageLayers(ImageLayers *imagelayers, bool onlyNewest = false) {
+            return getTelemetry(IMAGE_LAYERS, imagelayers, onlyNewest);
         }
 
-        bool getOdometry(Odometry* telemetry) {
-            return getTelemetry(ODOMETRY, telemetry);
+        bool getOdometry(Odometry* telemetry, bool onlyNewest = false) {
+            return getTelemetry(ODOMETRY, telemetry, onlyNewest);
         }
 
         /**
@@ -459,14 +459,14 @@ class RobotController: public UpdateThread {
          * @return unsigned int 
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data);
+        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data, bool onlyNewest = false) {
+            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data, onlyNewest);
             return result;
         }
 
-        template< class DATATYPE > unsigned int getTelemetryRaw(const uint16_t &type, DATATYPE *data, std::string *dataSerialized) {
+        template< class DATATYPE > unsigned int getTelemetryRaw(const uint16_t &type, DATATYPE *data, std::string *dataSerialized, bool onlyNewest = false) {
             *dataSerialized = buffers->peekSerialized(type);
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data);
+            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data, onlyNewest);
             return result;
         }
 
@@ -551,7 +551,7 @@ class RobotController: public UpdateThread {
 
         class TelemetryAdderBase{
          public:
-            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers), overwrite(false) {}
+            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers), overwrite(true) {}
             virtual ~TelemetryAdderBase() {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
             void setOverwrite(bool mode = true) {

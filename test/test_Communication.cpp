@@ -670,6 +670,8 @@ BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
   Pose pose = TypeGenerator::genPose();
   Pose currentpose;
 
+  controller.setSingleTelemetryBufferOverwrite(CURRENT_POSE, false);
+
   // fill buffer (overwrite is default off)
   for (int i = 0; i < 20; ++i) {
     pose.mutable_position()->set_x(i);
@@ -685,7 +687,6 @@ BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
   for (int i = 0; i < 10; ++i) {
     // buffer should be the first values
     if (controller.getCurrentPose(&currentpose)) {
-      BOOST_TEST_MESSAGE(std::to_string(currentpose.position().x()));
       BOOST_TEST(i == currentpose.position().x());
     }
   }
@@ -758,11 +759,10 @@ BOOST_AUTO_TEST_CASE(buffer_setting_resize) {
   }
 
 
-  // read buffer (in buffersize)
-  for (int i = 0; i < 5; ++i) {
+  // read buffer (in buffersize) (overwrite default on)
+  for (int i = 5; i < 15; ++i) {
     // buffer should be the first values
     if (controller.getCurrentPose(&currentpose)) {
-      BOOST_TEST_MESSAGE(std::to_string(currentpose.position().x()));
       BOOST_TEST(i == currentpose.position().x());
     }
   }
@@ -783,7 +783,7 @@ BOOST_AUTO_TEST_CASE(buffer_setting_resize) {
   }
 
   // read buffer (in buffersize)
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 10; i < 30; ++i) {
     // buffer should be the first values
     if (controller.getCurrentPose(&currentpose)) {
       BOOST_TEST_MESSAGE(std::to_string(currentpose.position().x()));
@@ -892,10 +892,78 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
   });
   robot.setCurrentPose(robotpose);
 
+}
 
 
+BOOST_AUTO_TEST_CASE(test_get_newest) {
+  initComms();
 
-  //COMPARE_PROTOBUF(robotpose, controlpose);
+  // start with default buffer size and overwrite off (defaults)
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(0);
+  robot.startUpdateThread(0);
+
+  // use pose as telemetry dummy, x value is the counter
+  Pose pose = TypeGenerator::genPose();
+  Pose currentpose;
+
+  // fill buffer (overwrite is default off)
+  for (int i = 0; i < 5; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+
+  while (controller.getBufferSize(CURRENT_POSE) < 5) {
+    usleep(10000);
+  }
+  usleep(100*1000);
+  // gets the newest value
+  // while (controller.getCurrentPose(&currentpose)){};
+  controller.getCurrentPose(&currentpose, true);
+  BOOST_CHECK_EQUAL(currentpose.position().x(), 4);
+
+  // buffer schould be empty
+  BOOST_CHECK_EQUAL(controller.getBufferSize(CURRENT_POSE), 0);
+  BOOST_CHECK_EQUAL(controller.getCurrentPose(&currentpose, true), false);
+
+  // test with buffer wrap (completely full)
+  for (int i = 0; i < 10; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+  while (controller.getBufferSize(CURRENT_POSE) < 10) {
+    usleep(10000);
+  }
+
+  controller.getCurrentPose(&currentpose, true);
+  BOOST_CHECK_EQUAL(currentpose.position().x(), 9);
+
+  // buffer schould be empty
+  BOOST_CHECK_EQUAL(controller.getBufferSize(CURRENT_POSE), 0);
+  BOOST_CHECK_EQUAL(controller.getCurrentPose(&currentpose, true), false);
+
+
+  // test with buffer wrap (overfull)
+  for (int i = 0; i < 20; ++i) {
+    pose.mutable_position()->set_x(i);
+    robot.setCurrentPose(pose);
+  }
+  while (controller.getBufferSize(CURRENT_POSE) < 10) {
+    usleep(10000);
+  }
+  // buffer full, but still receiving, wait more
+  usleep(100 * 1000);
+
+  controller.getCurrentPose(&currentpose, true);
+  BOOST_CHECK_EQUAL(currentpose.position().x(), 19);
+
+  // buffer schould be empty
+  BOOST_CHECK_EQUAL(controller.getBufferSize(CURRENT_POSE), 0);
+  BOOST_CHECK_EQUAL(controller.getCurrentPose(&currentpose, true), false);
+
+
 }
 
 
