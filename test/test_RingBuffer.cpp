@@ -135,6 +135,7 @@ BOOST_AUTO_TEST_CASE(resize_buffer) {
 
     buffer.resize(10);
     BOOST_CHECK_EQUAL(buffer.capacity(), 10);
+    BOOST_CHECK_EQUAL(buffer.size(), 0);
 
     fillBuffer(10, &buffer);  // fill
     CHECK_BUFFER(10, buffer, 0);  // check
@@ -142,7 +143,7 @@ BOOST_AUTO_TEST_CASE(resize_buffer) {
     fillBuffer(10, &buffer);  // fill again
     buffer.resize(5);
     BOOST_CHECK_EQUAL(buffer.capacity(), 5);
-    CHECK_BUFFER(5, buffer, 0);  // has oldest values (resize chops at the end of buffer)
+    BOOST_CHECK_EQUAL(buffer.size(), 0);
 
     // works as before
     fillBuffer(5, &buffer);

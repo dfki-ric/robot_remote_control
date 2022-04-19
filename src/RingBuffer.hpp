@@ -20,6 +20,7 @@ class RingBufferBase{
         virtual size_t size() = 0;
         virtual size_t capacity() = 0;
         virtual void resize(const size_t &newsize) = 0;
+        virtual void clear() = 0;
         // virtual void clear();
 };
 
@@ -46,9 +47,15 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             return buffersize;
         }
 
+
+        void clear() {
+            contentsize = 0;
+            in = 0;
+            out = 0;
+        }
         void resize(const size_t &newsize) {
             if (contentsize > 0) {
-                printf("possible data loss due to resize on nonemty buffer\n");
+                clear();
             }
 
             buffersize = newsize;
@@ -105,6 +112,10 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
 
         void addDataReceivedCallback(const std::function<void(const TYPE & data)> &cb) {
             callbacks.push_back(cb);
+        }
+
+        void printState() {
+            printf("%s : buffersize: %i, contentsize %i, in %i, out %i\n", typeid(*this).name(), buffersize, contentsize, in, out);
         }
 
     private:
