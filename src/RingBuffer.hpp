@@ -19,8 +19,10 @@ class RingBufferBase{
 
         virtual size_t size() = 0;
         virtual size_t capacity() = 0;
+        virtual size_t dropped() = 0;
         virtual void resize(const size_t &newsize) = 0;
         virtual void clear() = 0;
+        
         // virtual void clear();
 };
 
@@ -33,7 +35,7 @@ class RingBufferBase{
 
 template <class TYPE> class RingBuffer: public RingBufferBase {
     public:
-        explicit RingBuffer(const size_t & buffersize): RingBufferBase(), buffersize(buffersize), contentsize(0), in(0), out(0) {
+        explicit RingBuffer(const size_t & buffersize): RingBufferBase(), buffersize(buffersize), contentsize(0), in(0), out(0), droppedMessages(0) {
             buffer.resize(buffersize);
         }
 
@@ -47,12 +49,22 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             return buffersize;
         }
 
+        size_t dropped() {
+            return droppedMessages;
+        }
 
         void clear() {
             contentsize = 0;
             in = 0;
             out = 0;
         }
+
+        /**
+         * @brief resize the buffer
+         * @warning buffer will be emptied
+         * 
+         * @param newsize the size of the new buffer
+         */
         void resize(const size_t &newsize) {
             if (contentsize > 0) {
                 clear();
@@ -86,8 +98,10 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
                 in++;
                 in %= buffersize;
                 notify(data);
+                ++droppedMessages;
                 return true;
             }
+            ++droppedMessages;
             return false;
         }
 
@@ -124,6 +138,7 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             std::for_each(callbacks.begin(), callbacks.end(), callCb);
         }
         size_t buffersize, contentsize, in, out;
+        size_t droppedMessages;
         std::vector<TYPE> buffer;
 
         std::vector< std::function<void (const TYPE & data)> > callbacks;
