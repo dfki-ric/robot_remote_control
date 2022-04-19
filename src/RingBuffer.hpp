@@ -85,17 +85,17 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
         bool pushData(const TYPE & data, bool overwriteIfFull = false) {
             if (contentsize != buffersize) {
                 buffer[in] = data;
-                contentsize++;
-                in++;
+                ++contentsize;
+                ++in;
                 in %= buffersize;
                 notify(data);
                 return true;
             } else if (overwriteIfFull) {
                 // buffer full, force-push (overwrite latest)
                 buffer[in] = data;
-                out++;
+                ++out;
                 out %= buffersize;
-                in++;
+                ++in;
                 in %= buffersize;
                 notify(data);
                 ++droppedMessages;
@@ -108,8 +108,8 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
         bool popData(TYPE *data) {
             if (contentsize > 0) {
                 *data = buffer[out];
-                contentsize--;
-                out++;
+                --contentsize;
+                ++out;
                 out %= buffersize;
                 return true;
             }
