@@ -551,7 +551,7 @@ class RobotController: public UpdateThread {
 
         class TelemetryAdderBase{
          public:
-            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers), overwrite(true) {}
+            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
             void setOverwrite(bool mode = true) {
