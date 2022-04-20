@@ -1,11 +1,12 @@
 #include "SendTimers.hpp"
 
+namespace robot_remote_control {
+
 SendTimers::SendTimers(uint32_t size, bool enabled) {
     config.resize(size, Config(enabled));
 }
 
 SendTimers::~SendTimers() {}
-
 
 void SendTimers::enable(const uint32_t &type) {
     config[type].enable();
@@ -40,3 +41,5 @@ bool SendTimers::isTimeOver(Config* conf) {
     }
     return false;
 }
+
+}  // namespace robot_remote_control

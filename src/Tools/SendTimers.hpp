@@ -4,8 +4,18 @@
 #include <sys/time.h>
 #include <cstdint>
 
+namespace robot_remote_control {
+
 class SendTimers {
  public:
+    /**
+     * @brief Construct a new Send Timers object
+     * 
+     * @warning you need to call resize to inti the timers
+     * 
+     */
+    SendTimers() {}
+
     /**
      * @brief Construct a new Send Timers object
      * 
@@ -17,6 +27,10 @@ class SendTimers {
      */
     explicit SendTimers(uint32_t size, bool enabled = true);
     virtual ~SendTimers();
+
+    void resize(const uint32_t &size, bool enabled = true) {
+        config.resize(size, Config(enabled));
+    }
 
     /**
      * @brief check if data needs to be send based on the config
@@ -58,7 +72,7 @@ class SendTimers {
     static const int UsecPerSec = 1000000LL;
     class Config {
      public:
-        explicit Config(bool enabled):speed(-1), enabled(enabled) {
+        explicit Config(bool enabled = true):speed(-1), enabled(enabled) {
             lastSendTime.tv_sec = 0;
             lastSendTime.tv_usec = 0;
             enabled = false;
@@ -79,3 +93,5 @@ class SendTimers {
 
     std::vector<Config> config;
 };
+
+}  // namespace robot_remote_control
