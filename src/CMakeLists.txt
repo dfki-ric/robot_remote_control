@@ -13,6 +13,7 @@ add_subdirectory(ControlledRobot)
 add_subdirectory(RobotController)
 
 add_subdirectory(CLI)
+add_subdirectory(Tools)
 
 #install src folder headers
 install(FILES

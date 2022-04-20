@@ -8,12 +8,14 @@ set (COMMON_SOURCE suite.cpp
             test_Communication.cpp
             test_RingBuffer.cpp
             test_Thread.cpp
+            test_SendTimers.cpp
 )
 set (COMMON_LIBS
    ${CMAKE_THREAD_LIBS_INIT}
    robot_remote_control-transport_zmq
    robot_remote_control-controlled_robot
    robot_remote_control-robot_controller
+   robot_remote_control-send_timers
    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
 )
 
