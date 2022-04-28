@@ -131,6 +131,24 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("setTwistCommand", params);
     params.clear();
 
+    console.registerCommand("setJointCommand", "send joint position command", [&](const std::vector<std::string> &params){
+        robot_remote_control::JointCommand cmd;
+        try {
+            cmd.add_name(params[0]);
+            cmd.add_position(std::stof(params[1]));
+        } catch (const std::invalid_argument &e) {
+            std::cout << "second value must be a number, was '" << params[1] <<"' " << std::endl;
+            std::cout << e.what() << std::endl;
+            return;
+        }
+        controller.setJointCommand(cmd);
+    });
+
+    params.push_back(ConsoleCommands::ParamDef("joint_name (string)", "empty"));
+    params.push_back(ConsoleCommands::ParamDef("position (float)", "0"));
+    console.registerParamsForCommand("setJointCommand", params);
+    params.clear();
+
     console.registerCommand("setSimpleActionCommand", "execute a simpleaction", [&](const std::vector<std::string> &params){
         std::for_each(params.begin(), params.end(), [](const std::string &param) {
             std::cout << param << std::endl;
