@@ -18,7 +18,7 @@ namespace robot_remote_control {
 
     std::string TelemetryBuffer::peekSerialized(const uint16_t &type) {
         std::string buf("");
-        if (type != NO_TELEMETRY_DATA || type != TELEMETRY_MESSAGE_TYPES_NUMBER) {
+        if (type != NO_TELEMETRY_DATA || type < TELEMETRY_MESSAGE_TYPES_NUMBER) {
             buf = converters[type]->get();
         }
 
