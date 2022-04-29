@@ -73,7 +73,11 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
 bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize) {
     auto lockedTelemetryBuffers = buffers->lockedAccess();
     std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type];
-    buffer->resize(newsize);
+    if (buffer.get()) {
+        buffer->resize(newsize);
+        return true;
+    }
+    return false;
 }
 
 uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type) {
