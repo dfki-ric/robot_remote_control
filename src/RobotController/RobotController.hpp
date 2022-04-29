@@ -346,6 +346,10 @@ class RobotController: public UpdateThread {
             return result;
         }
 
+        bool requestRobotState(RobotState *state) {
+            return requestTelemetry(ROBOT_STATE, state);
+        }
+
         /**
          * @brief Request information about the complex actions of the robot.
          * 

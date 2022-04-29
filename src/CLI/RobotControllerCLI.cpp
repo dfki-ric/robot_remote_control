@@ -191,9 +191,13 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
     DEFINE_PRINT_COMMAND(RobotState, getRobotState, "print current Robot state");
 
+
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
     DEFINE_REQUEST_COMMAND(JointState, requestControllableJoints, "print ControllableJoints set by the robot");
     DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
+    DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
+    DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
+
 
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
