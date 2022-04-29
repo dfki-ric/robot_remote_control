@@ -189,6 +189,8 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
+    DEFINE_PRINT_COMMAND(RobotState, getRobotState, "print current Robot state");
+
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
 
     robot_remote_control::Image rrc_type_image;
