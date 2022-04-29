@@ -116,11 +116,11 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case MAP_REQUEST: {
             uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             std::string map;
-            //get map
+            // get map
             {
                 auto lockedAccess = mapBuffer.lockedAccess();
-                if (*requestedMap < lockedAccess.get().size()){
-                    RingBufferAccess::peekData(lockedAccess.get()[*requestedMap],&map);
+                if (*requestedMap < lockedAccess.get().size()) {
+                    RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
                 }
             }
             commandTransport->send(map);
