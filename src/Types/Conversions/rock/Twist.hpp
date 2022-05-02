@@ -5,6 +5,8 @@
 #include "Eigen.hpp"
 #include "Time.hpp"
 
+//Conversion from and to base/samples/RigidBodyState can be found in RigidBodyState.hpp
+
 namespace robot_remote_control {
 namespace RockConversion {
 
