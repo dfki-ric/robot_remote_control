@@ -5,6 +5,8 @@
 #include <memory>
 #include <mutex>
 #include <atomic>
+#include <experimental/filesystem>
+#include <fstream>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -442,6 +444,12 @@ class RobotController: public UpdateThread {
             return requestTelemetry(CONTROLLABLE_FRAMES, frames);
         }
 
+        bool requestAvailableFiles(FileDefinition *files) {
+            return requestTelemetry(FILE_DEFINITION, files);
+        }
+
+        bool requestFile(const uint16_t &index, const bool &compressed = false,  const std::string targetpath = "./");
+
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type
          * 
@@ -501,6 +509,17 @@ class RobotController: public UpdateThread {
             *data = type;
             *result = sendRequest(buf);
             return (result->size() > 0) ? true : false;
+        }
+
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const uint16_t &requestType) {
+            std::string sendbuf, recvbuf;
+            sendbuf.resize(sizeof(uint16_t));
+            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(sendbuf.data()));
+            *data = requestType;
+            requestdata.AppendToString(&sendbuf);
+            recvbuf = sendRequest(sendbuf);
+            reply->ParseFromString(recvbuf);
+            return (recvbuf.size() > 0) ? true : false;
         }
 
        /**

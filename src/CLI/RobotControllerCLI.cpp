@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
     });
     params.push_back(ConsoleCommands::ParamDef("name (string)", "name"));
     params.push_back(ConsoleCommands::ParamDef("value (float)", "0"));
-    console.registerParamsForCommand("simpleaction", params);
+    console.registerParamsForCommand("setSimpleActionCommand", params);
     params.clear();
 
     console.registerCommand("requestSimpleActions", "request simple actions and add them to autocomplete", [&](const std::vector<std::string> &params){
@@ -197,7 +197,8 @@ int main(int argc, char** argv) {
     DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
     DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
     DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
-
+    DEFINE_REQUEST_COMMAND(FileDefinition, requestAvailableFiles, "print fiale available for download");
+    
 
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
@@ -232,6 +233,24 @@ int main(int argc, char** argv) {
             printf("pointcloud in frame %s with %i points\n", rrc_type_pointcloud.header().frame().c_str(), rrc_type_pointcloud.points().size());
         }
     }, true);
+
+
+    /**
+     * @brief todo autocomplete after request
+     * 
+     */
+    console.registerCommand("requestFile", "download a file", [&](const std::vector<std::string> &params){
+        if (controller.requestFile(std::stoi(params[0]), std::stoi(params[1]), params[2])) {
+            printf("files written\n");
+        } else {
+            printf("no files received\n");
+        }
+    });
+    params.push_back(ConsoleCommands::ParamDef("index (int)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("compress (bool)", "1"));
+    params.push_back(ConsoleCommands::ParamDef("target path (string)", "./"));
+    console.registerParamsForCommand("requestFile", params);
+    params.clear();
 
 
     while (run) {

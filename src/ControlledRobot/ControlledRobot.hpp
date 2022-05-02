@@ -61,8 +61,13 @@ class ControlledRobot: public UpdateThread {
          * @param type the Command type id from the MessageTypes header
          * @param function 
          */
-        void addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
-            commandbuffers[type]->addCommandReceivedCallback(function);
+        bool addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
+            if (commandbuffers[type]) {
+                commandbuffers[type]->addCommandReceivedCallback(function);
+            } else {
+                printf("%s:%i there is no bufferes comamnd of type %i\n", __PRETTY_FUNCTION__, __LINE__, type);
+            }
+
         }
 
         /**
@@ -275,6 +280,17 @@ class ControlledRobot: public UpdateThread {
          */
         int initControllableFrames(const ControllableFrames& telemetry) {
             return sendTelemetry(telemetry, CONTROLLABLE_FRAMES, true);
+        }
+
+        /**
+         * @brief set of fialed that may be downloaded via the rrc lib
+         * 
+         * @param files name:path list of named files/foilders that can be downloaded
+         * @return int 
+         */
+        int initFiles(const FileDefinition& files) {
+            this->files.CopyFrom(files);
+            return sendTelemetry(files, FILE_DEFINITION, true);
         }
 
         std::shared_future<bool> requestPermission(const PermissionRequest &permissionrequest) {
@@ -500,6 +516,10 @@ class ControlledRobot: public UpdateThread {
 
         virtual ControlMessageType evaluateRequest(const std::string& request);
 
+        bool loadFile(File* file, const std::string &path, bool compressed = false);
+
+        bool loadFolder(Folder* folder, const std::string &path, bool compressed = false);
+
         void notifyCommandCallbacks(const uint16_t &type);
 
         struct CommandBufferBase{
@@ -624,6 +644,7 @@ class ControlledRobot: public UpdateThread {
 
         std::vector< std::function<void(const uint16_t &type)> > commandCallbacks;
 
+        FileDefinition files;
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;

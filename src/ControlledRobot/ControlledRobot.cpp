@@ -1,6 +1,12 @@
 #include "ControlledRobot.hpp"
 #include <iostream>
+#include <experimental/filesystem>
+#include <fstream>
+#include <sstream>
 
+#ifdef ZLIB_FOUND
+#include "../Tools/Compression.hpp"
+#endif
 
 namespace robot_remote_control {
 
@@ -53,6 +59,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<ImageLayers>(IMAGE_LAYERS);
     registerTelemetryType<Odometry>(ODOMETRY);
     registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES);
+    registerTelemetryType<FileDefinition>(FILE_DEFINITION);
 }
 
 ControlledRobot::~ControlledRobot() {
@@ -140,6 +147,35 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             } catch (const std::future_error &e) {
                 printf("%s\n", e.what());
             }
+            return PERMISSION;
+        }
+        case FILE_REQUEST: {
+            FileRequest request;
+            request.ParseFromString(serializedMessage);
+            Folder folder;
+            std::string buf;
+            #ifndef ZLIB_FOUND
+                printf("zlib for compression not available, sending uncompressed files\n");
+                request.set_compressed(false);
+            #endif
+            if (request.index() < files.file().size()) {
+                bool isFolder = files.isfolder(request.index());
+                File filedef = files.file(request.index());
+                // todo: read folderfolder
+                if (isFolder) {
+                    loadFolder(&folder, filedef.path(), request.compressed());
+                } else {
+                    File* file = folder.add_file();
+                    loadFile(file, filedef.path(), request.compressed());
+                    folder.set_compressed(request.compressed());
+                }
+            } else {
+                printf("requested file id %i not available, sending empty folder\n", request.index());
+                folder.set_identifier("file/folder with index:" + std::to_string(request.index()) + " undefined");
+            }
+            folder.SerializeToString(&buf);
+            commandTransport->send(buf);
+            return FILE_REQUEST;
         }
         default: {
             CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
@@ -228,6 +264,43 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
     std::string buf;
     addControlMessageType(&buf, type);
     return buf;
+}
+
+
+bool ControlledRobot::loadFile(File* file, const std::string &path, bool compressed) {
+    file->set_path(path);
+    // read file (if it is and directory, no data is set)
+    std::ifstream in(path, std::ios::in | std::ios::binary);
+    if (in) {
+        std::stringstream filestr;
+        filestr << in.rdbuf();
+        in.close();
+        #ifdef ZLIB_FOUND
+            if (compressed) {
+                std::string compressed;
+                Compression::compressString(filestr.str(), &compressed);
+                file->set_data(compressed);
+            } else {
+                file->set_data(filestr.str());
+            }
+        #else
+            file->set_data(filestr.str());
+        #endif
+    }
+}
+
+bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed) {
+    try {
+        for (const auto & entry : std::experimental::filesystem::recursive_directory_iterator(path)) {
+            File* file = folder->add_file();
+            loadFile(file, entry.path(), compressed);
+        }
+        folder->set_compressed(compressed);
+    } catch (const std::experimental::filesystem::v1::__cxx11::filesystem_error &e) {
+        printf("%s\n", e.what());
+        // set "someting non-default" to actially send values
+        folder->set_identifier(e.what());
+    }
 }
 
 

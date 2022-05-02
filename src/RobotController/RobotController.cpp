@@ -5,6 +5,11 @@
 #include <stdexcept>
 #include <google/protobuf/io/coded_stream.h>
 
+#ifdef ZLIB_FOUND
+#include "../Tools/Compression.hpp"
+#endif
+
+
 using namespace robot_remote_control;
 
 
@@ -41,6 +46,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
         registerTelemetryType<Odometry>(ODOMETRY, buffersize);
         registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
 
         #ifdef RRC_STATISTICS
             // add names to buffer, this types have aspecial treatment, the should not be registered
@@ -257,4 +263,58 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     // }
 
     RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
+}
+
+bool RobotController::requestFile(const uint16_t &index, const bool &compressed,  const std::string targetpath) {
+    std::string buffer;
+    FileRequest request;
+    request.set_index(index);
+
+    #ifdef ZLIB_FOUND
+        request.set_compressed(compressed);
+    #else
+        printf("zlib for compression not available, requesting files uncompressed\n");
+        request.set_compressed(false);
+    #endif
+
+    Folder folder;
+
+    bool result = requestProtobuf(request, &folder, FILE_REQUEST);
+    if (result) {
+        if (folder.file().size() == 0) {
+            // no files defined in ControlledRobot
+            folder.PrintDebugString();
+            return false;
+        }
+        std::experimental::filesystem::create_directories(targetpath);
+        for (auto &file : folder.file()) {
+            std::string filename = targetpath  + "/" + file.path();
+
+            if (file.data().size() == 0) {
+                // is directory
+                std::experimental::filesystem::create_directories(filename);
+            } else {
+                // is file
+                std::experimental::filesystem::path path(filename);
+                std::experimental::filesystem::create_directories(path.parent_path());
+                // printf("file %s\n dir %s\n", filename.c_str(), path.parent_path().c_str());
+                std::ofstream out(filename, std::ios::out | std::ios::binary);
+                if (out) {
+                    #ifdef ZLIB_FOUND
+                        if (folder.compressed()) {
+                            std::string decompressed;
+                            Compression::decompressString(file.data(), &decompressed);
+                            out.write(decompressed.data(), decompressed.size());
+                        } else {
+                            out.write(file.data().data(), file.data().size());
+                        }
+                    #else
+                        out.write(file.data().data(), file.data().size());
+                    #endif
+                    out.close();
+                }
+            }
+        }
+    }
+    return result;
 }
