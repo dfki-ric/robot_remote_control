@@ -265,10 +265,10 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
 }
 
-bool RobotController::requestFile(const uint16_t &index, const bool &compressed,  const std::string targetpath) {
+bool RobotController::requestFile(const std::string &identifier, const bool &compressed,  const std::string targetpath) {
     std::string buffer;
     FileRequest request;
-    request.set_index(index);
+    request.set_identifier(identifier);
 
     #ifdef ZLIB_FOUND
         request.set_compressed(compressed);

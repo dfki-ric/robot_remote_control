@@ -154,13 +154,21 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             request.ParseFromString(serializedMessage);
             Folder folder;
             std::string buf;
+            int index = -1;
+            for (int i = 0; i < files.file().size(); ++i) {
+                if (files.file(i).identifier() == request.identifier()) {
+                    index = i;
+                    break;
+                }
+            }
+
             #ifndef ZLIB_FOUND
                 printf("zlib for compression not available, sending uncompressed files\n");
                 request.set_compressed(false);
             #endif
-            if (request.index() < files.file().size()) {
-                bool isFolder = files.isfolder(request.index());
-                File filedef = files.file(request.index());
+            if (index >= 0 && index < files.file().size()) {
+                bool isFolder = files.isfolder(index);
+                File filedef = files.file(index);
                 // todo: read folderfolder
                 if (isFolder) {
                     loadFolder(&folder, filedef.path(), request.compressed());
@@ -170,8 +178,8 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
                     folder.set_compressed(request.compressed());
                 }
             } else {
-                printf("requested file id %i not available, sending empty folder\n", request.index());
-                folder.set_identifier("file/folder with index:" + std::to_string(request.index()) + " undefined");
+                printf("requested file id %i not available, sending empty folder\n", index);
+                folder.set_identifier("file/folder with index:" + std::to_string(index) + " undefined");
             }
             folder.SerializeToString(&buf);
             commandTransport->send(buf);

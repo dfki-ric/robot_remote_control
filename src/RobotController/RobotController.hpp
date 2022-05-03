@@ -448,7 +448,8 @@ class RobotController: public UpdateThread {
             return requestTelemetry(FILE_DEFINITION, files);
         }
 
-        bool requestFile(const uint16_t &index, const bool &compressed = false,  const std::string targetpath = "./");
+        bool requestFile(const std::string &identifier, const bool &compressed = false,  const std::string targetpath = "./");
+
 
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type

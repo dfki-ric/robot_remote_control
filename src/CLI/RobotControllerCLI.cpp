@@ -241,13 +241,13 @@ int main(int argc, char** argv) {
      * 
      */
     console.registerCommand("requestFile", "download a file", [&](const std::vector<std::string> &params){
-        if (controller.requestFile(std::stoi(params[0]), std::stoi(params[1]), params[2])) {
+        if (controller.requestFile(params[0], std::stoi(params[1]), params[2])) {
             printf("files written\n");
         } else {
             printf("no files received\n");
         }
     });
-    params.push_back(ConsoleCommands::ParamDef("index (int)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("identifier (string)", ""));
     params.push_back(ConsoleCommands::ParamDef("compress (bool)", "1"));
     params.push_back(ConsoleCommands::ParamDef("target path (string)", "./"));
     console.registerParamsForCommand("requestFile", params);

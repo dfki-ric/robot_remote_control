@@ -995,7 +995,7 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     robot.startUpdateThread(0);
 
     //should return false if no files set up
-    BOOST_CHECK_EQUAL(controller.requestFile(0, false, "./"), false);
+    BOOST_CHECK_EQUAL(controller.requestFile("folder", false, "./"), false);
 
 
     FileDefinition files;
@@ -1025,21 +1025,21 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     COMPARE_PROTOBUF(files, availablefiles);
 
     // download folder
-    BOOST_CHECK_EQUAL(controller.requestFile(0, false, "./folder"), true);
+    BOOST_CHECK_EQUAL(controller.requestFile("folder", false, "./folder"), true);
     BOOST_TEST(boost::filesystem::exists("./folder/test/testfiles/topfolderfile"));
     BOOST_TEST(boost::filesystem::exists("./folder/test/testfiles/subfolder/subfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./folder/test/testfiles/topfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder/test/testfiles/subfolder/subfolderfile"));
 
     // download single file
-    BOOST_CHECK_EQUAL(controller.requestFile(1, false, "./folder2"), true);
+    BOOST_CHECK_EQUAL(controller.requestFile("topfolderfile", false, "./folder2"), true);
     BOOST_TEST(boost::filesystem::exists("./folder2/test/testfiles/topfolderfile"));
     BOOST_TEST(!boost::filesystem::exists("./folder2/test/testfiles/subfolder/subfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./folder2/test/testfiles/topfolderfile"));
 
 
     // download single subfolder file
-    BOOST_CHECK_EQUAL(controller.requestFile(2, false, "./folder3"), true);
+    BOOST_CHECK_EQUAL(controller.requestFile("subfolderfile", false, "./folder3"), true);
     BOOST_TEST(boost::filesystem::exists("./folder3/test/testfiles/subfolder/subfolderfile"));
     BOOST_TEST(!boost::filesystem::exists("./folder3/test/testfiles/topfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder3/test/testfiles/subfolder/subfolderfile"));
@@ -1052,20 +1052,20 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
 
     // with compression
     // download folder
-    BOOST_CHECK_EQUAL(controller.requestFile(0, true, "./cfolder"), true);
+    BOOST_CHECK_EQUAL(controller.requestFile("folder", true, "./cfolder"), true);
     BOOST_TEST(boost::filesystem::exists("./cfolder/test/testfiles/topfolderfile"));
     BOOST_TEST(boost::filesystem::exists("./cfolder/test/testfiles/subfolder/subfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./cfolder/test/testfiles/topfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./cfolder/test/testfiles/subfolder/subfolderfile"));
 
     // // download single file
-    BOOST_CHECK_EQUAL(controller.requestFile(1, true, "./cfolder2"), true);
+    BOOST_CHECK_EQUAL(controller.requestFile("topfolderfile", true, "./cfolder2"), true);
     BOOST_TEST(boost::filesystem::exists("./cfolder2/test/testfiles/topfolderfile"));
     BOOST_TEST(!boost::filesystem::exists("./cfolder2/test/testfiles/subfolder/subfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./cfolder2/test/testfiles/topfolderfile"));
 
     // download single subfolder file
-    BOOST_CHECK_EQUAL(controller.requestFile(2, true, "./cfolder3"), true);
+    BOOST_CHECK_EQUAL(controller.requestFile("subfolderfile", true, "./cfolder3"), true);
     BOOST_TEST(boost::filesystem::exists("./cfolder3/test/testfiles/subfolder/subfolderfile"));
     BOOST_TEST(!boost::filesystem::exists("./cfolder3/test/testfiles/topfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./cfolder3/test/testfiles/subfolder/subfolderfile"));
@@ -1076,7 +1076,8 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     boost::filesystem::remove_all("./cfolder3");
 
     // non-existent ID leads to error
-    BOOST_CHECK_EQUAL(controller.requestFile(5, false, "./"), false);
+    BOOST_CHECK_EQUAL(controller.requestFile("", false, "./"), false);
+    BOOST_CHECK_EQUAL(controller.requestFile("nonexist", false, "./"), false);
 
 }
 
