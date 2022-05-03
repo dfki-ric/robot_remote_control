@@ -1080,6 +1080,57 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     BOOST_CHECK_EQUAL(controller.requestFile("nonexist", false, "./"), false);
 }
 
+#ifdef TRANSPORT_DEFAULT
+BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
+    initComms();
+
+    RobotController controller(commands, telemetry);
+    ControlledRobot robot(command, telemetri);
+
+    controller.startUpdateThread(0);
+    robot.startUpdateThread(0);
+
+    bool detected_on_controller = false;
+    bool detected_on_robot = false;
+
+    controller.setHeartBeatDuration(0.1);
+
+    controller.setupLostConnectionCallback([&](const float& since) {
+      detected_on_controller = true;
+    });
+    robot.setupHeartbeatCallback(0.1, [&](const float& since) {
+      detected_on_robot = true;
+    });
+
+    // wait for connection
+    while (!controller.isConnected()) {
+      usleep(10000);
+    }
+
+    BOOST_CHECK_EQUAL(controller.isConnected(), true);
+    BOOST_CHECK_EQUAL(robot.isConnected(), true);
+
+    auto zmqptr = std::dynamic_pointer_cast<TransportZmq>(commands);
+    zmqptr->disconnect();
+
+    usleep(300000);
+    BOOST_TEST(detected_on_controller);
+    BOOST_TEST(detected_on_robot);
+
+    BOOST_CHECK_EQUAL(controller.isConnected(), false);
+    BOOST_CHECK_EQUAL(robot.isConnected(), false);
+
+    zmqptr->connect();
+    // wait for connection
+    while (!controller.isConnected()) {
+      usleep(10000);
+    }
+
+    BOOST_CHECK_EQUAL(controller.isConnected(), true);
+    BOOST_CHECK_EQUAL(robot.isConnected(), true);
+}
+#endif
+
 // BOOST_AUTO_TEST_CASE(check_permissions) {
 //   // not using the set/get functions
 
