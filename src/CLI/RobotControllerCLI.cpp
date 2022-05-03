@@ -153,6 +153,36 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("setTwistCommand", params);
     params.clear();
 
+    console.registerCommand("setTargetPose3D", "send target pose command", [&](const std::vector<std::string> &params) {
+        robot_remote_control::Pose pose;
+        int i = 0;
+        try {
+            pose.mutable_position()->set_x(std::stof(params[i++]));
+            pose.mutable_position()->set_y(std::stof(params[i++]));
+            pose.mutable_position()->set_z(std::stof(params[i++]));
+            pose.mutable_orientation()->set_x(std::stof(params[i++]));
+            pose.mutable_orientation()->set_y(std::stof(params[i++]));
+            pose.mutable_orientation()->set_z(std::stof(params[i++]));
+            pose.mutable_orientation()->set_w(std::stof(params[i++]));
+            pose.mutable_header()->set_frame(params[i++]);
+        } catch (const std::invalid_argument &e) {
+            std::cout << "value must be a number, was '" << params[i] <<"' " << std::endl;
+            std::cout << e.what() << std::endl;
+            return;
+        }
+        controller.setTargetPose(pose);
+    });
+    params.push_back(ConsoleCommands::ParamDef("pos x (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("pos y (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("pos z (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation x (float, quaternion)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation y (float, quaternion)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation z (float, quaternion)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation w (float, quaternion)", "1"));
+    params.push_back(ConsoleCommands::ParamDef("frame (string)", "base"));
+    console.registerParamsForCommand("setTargetPose3D", params);
+    params.clear();
+
     console.registerCommand("setJointCommand", "send joint position command", [&](const std::vector<std::string> &params){
         robot_remote_control::JointCommand cmd;
         try {
