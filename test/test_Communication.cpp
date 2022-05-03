@@ -1078,7 +1078,6 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     // non-existent ID leads to error
     BOOST_CHECK_EQUAL(controller.requestFile("", false, "./"), false);
     BOOST_CHECK_EQUAL(controller.requestFile("nonexist", false, "./"), false);
-
 }
 
 // BOOST_AUTO_TEST_CASE(check_permissions) {

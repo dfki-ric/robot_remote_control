@@ -178,8 +178,8 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
                     folder.set_compressed(request.compressed());
                 }
             } else {
-                printf("requested file id %i not available, sending empty folder\n", index);
-                folder.set_identifier("file/folder with index:" + std::to_string(index) + " undefined");
+                printf("requested file '%s' undefined, sending empty folder\n", request.identifier().c_str());
+                folder.set_identifier("file/folder :" + request.identifier() + " undefined");
             }
             folder.SerializeToString(&buf);
             commandTransport->send(buf);

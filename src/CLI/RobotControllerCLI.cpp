@@ -198,7 +198,6 @@ int main(int argc, char** argv) {
     DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
     DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
     DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
-    DEFINE_REQUEST_COMMAND(FileDefinition, requestAvailableFiles, "print fiale available for download");
     
 
     robot_remote_control::Image rrc_type_image;
@@ -240,6 +239,20 @@ int main(int argc, char** argv) {
      * @brief todo autocomplete after request
      * 
      */
+
+    console.registerCommand("requestAvailableFiles", "print files available for download", [&](const std::vector<std::string> &params){
+        robot_remote_control::FileDefinition files;
+        if (controller.requestAvailableFiles(&files)) {
+            files.PrintDebugString();
+        } else {
+            printf("no new data received \n");
+        }
+        // add param options to autocomplete
+        for (auto &file : files.file()) {
+            console.addDefaultValue("requestFile", 0, file.identifier());
+        }
+    });
+
     console.registerCommand("requestFile", "download a file", [&](const std::vector<std::string> &params){
         if (controller.requestFile(params[0], std::stoi(params[1]), params[2])) {
             printf("files written\n");
@@ -248,7 +261,7 @@ int main(int argc, char** argv) {
         }
     });
     params.push_back(ConsoleCommands::ParamDef("identifier (string)", ""));
-    params.push_back(ConsoleCommands::ParamDef("compress (bool)", "1"));
+    params.push_back(ConsoleCommands::ParamDef("compressed (bool)", "1"));
     params.push_back(ConsoleCommands::ParamDef("target path (string)", "./"));
     console.registerParamsForCommand("requestFile", params);
     params.clear();

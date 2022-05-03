@@ -444,12 +444,23 @@ class RobotController: public UpdateThread {
             return requestTelemetry(CONTROLLABLE_FRAMES, frames);
         }
 
+        /**
+         * @brief Request which files can be downloaded from the robot
+         * 
+         * @param files file definition for the result
+         */
         bool requestAvailableFiles(FileDefinition *files) {
             return requestTelemetry(FILE_DEFINITION, files);
         }
 
-        bool requestFile(const std::string &identifier, const bool &compressed = false,  const std::string targetpath = "./");
-
+        /**
+         * @brief download one of the defined files od folders
+         * 
+         * @param identifier identifier string from FileDefinition received by requestAvailableFiles()
+         * @param compressed if true (and compiled with gzip) compredd filed before sending
+         * @param targetpath local path where to save files (path from robot is preserved)
+         */
+        bool requestFile(const std::string &identifier, const bool &compressed = false, const std::string targetpath = "./");
 
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type
