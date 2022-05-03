@@ -171,18 +171,15 @@ int main(int argc, char** argv) {
 
     console.registerCommand("requestSimpleActions", "request simple actions and add them to autocomplete", [&](const std::vector<std::string> &params){
         robot_remote_control::SimpleActions actions;
-        controller.requestSimpleActions(&actions);
-        // add param options to autocomplete
-        std::vector<ConsoleCommands::ParamDef> simpleactionparams;
-        simpleactionparams.push_back(ConsoleCommands::ParamDef("name (string)", "name"));
-        simpleactionparams.push_back(ConsoleCommands::ParamDef("value (float)", "0"));
-        for (auto &simpleaction : actions.actions()) {
-            simpleactionparams[0].defaultvalues.push_back(simpleaction.name());
-            // simpleactionparams[1].defaultvalues.push_back(simpleaction.state());
+        if (controller.requestSimpleActions(&actions)) {
+            actions.PrintDebugString();
+            // add param options to autocomplete
+            for (auto &simpleaction : actions.actions()) {
+                console.addParamDefaultValue("setSimpleActionCommand", 0, simpleaction.name());
+            }
+        } else {
+            printf("no new data received \n");
         }
-        // replace generic params
-        console.registerParamsForCommand("setSimpleActionCommand", simpleactionparams);
-        actions.PrintDebugString();
     });
 
     DEFINE_PRINT_COMMAND(Pose, getCurrentPose, "print current Pose");
@@ -236,20 +233,18 @@ int main(int argc, char** argv) {
 
 
     /**
-     * @brief todo autocomplete after request
-     * 
+     * Files
      */
-
     console.registerCommand("requestAvailableFiles", "print files available for download", [&](const std::vector<std::string> &params){
         robot_remote_control::FileDefinition files;
         if (controller.requestAvailableFiles(&files)) {
             files.PrintDebugString();
+            // add param options to autocomplete
+            for (auto &file : files.file()) {
+                console.addParamDefaultValue("requestFile", 0, file.identifier());
+            }
         } else {
             printf("no new data received \n");
-        }
-        // add param options to autocomplete
-        for (auto &file : files.file()) {
-            console.addDefaultValue("requestFile", 0, file.identifier());
         }
     });
 

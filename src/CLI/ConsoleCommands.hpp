@@ -42,7 +42,7 @@ class ConsoleCommands {
     static int registerParamsForCommand(const std::string &name, const std::vector<ParamDef> &params);
 
 
-    static void addDefaultValue(const std::string &name, const int &paramindex, const std::string &defaultvalue) {
+    static void addParamDefaultValue(const std::string &name, const int &paramindex, const std::string &defaultvalue) {
         commands[name].params[paramindex].defaultvalues.push_back(defaultvalue);
     }
 
