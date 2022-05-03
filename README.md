@@ -1,4 +1,6 @@
-[![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control) CircleCI build and test
+Master: [![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/master.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/master) CircleCI build and test
+
+Devel: [![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/devel.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/devel)
 
 # Robot Remote Control
 
