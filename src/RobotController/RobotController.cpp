@@ -191,7 +191,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     std::lock_guard<std::mutex> lock(commandTransportMutex);
     try {
         commandTransport->send(serializedMessage, flags);
-    }catch (const std::exception &error) {
+    } catch (const std::exception &error) {
         connected.store(false);
         lostConnectionCallback(maxLatency);
         return "";
@@ -199,9 +199,16 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     std::string replystr;
 
     requestTimer.start(maxLatency);
-    while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
-        // wait time depends on how long the transports recv blocks
-        usleep(1000);
+
+    try {
+        while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
+            // wait time depends on how long the transports recv blocks
+            usleep(1000);
+        }
+    } catch (const std::exception &error) {
+        connected.store(false);
+        lostConnectionCallback(maxLatency);
+        return "";
     }
     if (replystr.size() == 0 && requestTimer.isExpired()) {
         connected.store(false);
