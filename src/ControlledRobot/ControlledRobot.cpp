@@ -147,6 +147,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             } catch (const std::future_error &e) {
                 printf("%s\n", e.what());
             }
+            commandTransport->send(serializeControlMessageType(msgtype));
             return PERMISSION;
         }
         case FILE_REQUEST: {

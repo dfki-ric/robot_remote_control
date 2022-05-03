@@ -522,7 +522,7 @@ class ControlledRobot: public UpdateThread {
 
         void notifyCommandCallbacks(const uint16_t &type);
 
-        struct CommandBufferBase{
+        struct CommandBufferBase {
             CommandBufferBase() {}
             virtual ~CommandBufferBase() {}
             virtual bool write(const std::string &serializedMessage) = 0;
