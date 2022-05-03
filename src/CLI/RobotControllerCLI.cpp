@@ -104,6 +104,28 @@ int main(int argc, char** argv) {
         controller.getStatistics().print(true);
     });
 
+    /**
+     * generic defines
+     */
+    DEFINE_PRINT_COMMAND(Pose, getCurrentPose, "print current Pose");
+    DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
+    DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
+    DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
+    DEFINE_PRINT_COMMAND(Odometry, getOdometry, "print current Odometry");
+    DEFINE_PRINT_COMMAND(RobotState, getRobotState, "print current Robot state");
+
+
+    DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
+    DEFINE_REQUEST_COMMAND(JointState, requestControllableJoints, "print ControllableJoints set by the robot");
+    DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
+    DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
+    DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
+    
+
+    /**
+     * Commands
+     */
+
     console.registerCommand("setTwistCommand", "execute a twist", [&](const std::vector<std::string> &params){
         robot_remote_control::Twist twist;
         int i = 0;
@@ -182,20 +204,10 @@ int main(int argc, char** argv) {
         }
     });
 
-    DEFINE_PRINT_COMMAND(Pose, getCurrentPose, "print current Pose");
-    DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
-    DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
-    DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
-    DEFINE_PRINT_COMMAND(Odometry, getOdometry, "print current Odometry");
-    DEFINE_PRINT_COMMAND(RobotState, getRobotState, "print current Robot state");
 
-
-    DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
-    DEFINE_REQUEST_COMMAND(JointState, requestControllableJoints, "print ControllableJoints set by the robot");
-    DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
-    DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
-    DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
-    
+    /**
+     * Special telemetry functions (non-default print etc.)
+     */
 
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
@@ -261,6 +273,9 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("requestFile", params);
     params.clear();
 
+    /**
+     * Main loop
+     */
 
     while (run) {
         if (!console.readline("rrc@" + ip + " $ ")) {
