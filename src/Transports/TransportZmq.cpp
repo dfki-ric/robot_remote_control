@@ -10,39 +10,12 @@ std::shared_ptr<zmq::context_t> TransportZmq::getContextInstance(unsigned int th
 }
 
 TransportZmq::~TransportZmq() {
-    if (socket.get() && (type == REQ || type == SUB)) {
-        socket->disconnect(addr);
-    }
+    disconnect();
 }
 
 TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type) : addr(addr), type(type) {
     context = getContextInstance();
-
-    switch (type) {
-        case REQ: {
-            socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REQ));
-            socket->setsockopt(ZMQ_REQ_CORRELATE, 1);
-            socket->setsockopt(ZMQ_REQ_RELAXED, 1);
-            socket->connect(addr);
-            break;
-        }
-        case REP: {
-            socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REP));
-            socket->bind(addr);
-            break;
-        }
-        case PUB: {
-            socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_PUB));
-            socket->bind(addr);
-            break;
-        }
-        case SUB: {
-            socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_SUB));
-            socket->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
-            socket->connect(addr);
-            break;
-        }
-    }
+    connect();
 }
 
 int TransportZmq::send(const std::string& buf, Flags flags) {
@@ -69,3 +42,41 @@ int TransportZmq::receive(std::string* buf, Flags flags) {
     return requestmsg.size();
 }
 
+
+void TransportZmq::connect() {
+    if (!connected) {
+        switch (type) {
+            case REQ: {
+                socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REQ));
+                socket->setsockopt(ZMQ_REQ_CORRELATE, 1);
+                socket->setsockopt(ZMQ_REQ_RELAXED, 1);
+                socket->connect(addr);
+                break;
+            }
+            case REP: {
+                socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REP));
+                socket->bind(addr);
+                break;
+            }
+            case PUB: {
+                socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_PUB));
+                socket->bind(addr);
+                break;
+            }
+            case SUB: {
+                socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_SUB));
+                socket->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
+                socket->connect(addr);
+                break;
+            }
+        }
+        connected = true;
+    }
+}
+
+void TransportZmq::disconnect() {
+    if (connected && socket.get() && (type == REQ || type == SUB)) {
+        socket->disconnect(addr);
+        connected = false;
+    }
+}

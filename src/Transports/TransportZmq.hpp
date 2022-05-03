@@ -24,7 +24,14 @@ class TransportZmq: public Transport {
 
     int receive(std::string* buf, Flags flags = NONE);
 
+    /**
+     * @brief disconnect socket (only for connection tests)
+     */
+    void disconnect();
+    void connect();
+
  private:
+    bool connected;
     std::string addr;
     ConnectionType type;
     std::shared_ptr<zmq::context_t> context;
