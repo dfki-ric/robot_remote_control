@@ -26,9 +26,9 @@ using robot_remote_control::TransportZmq;
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
     console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) { \
         bool received = false; \
-        while (controller.FUNCTION(&rrc_type_##FUNCTION)) {received = true;} \
-        rrc_type_##FUNCTION.PrintDebugString(); \
-        if (!received) { \
+        if (controller.FUNCTION(&rrc_type_##FUNCTION, true)) { \
+            rrc_type_##FUNCTION.PrintDebugString(); \
+        } else { \
             printf("no new data received \n"); \
         } \
     }); \
@@ -112,7 +112,6 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
     DEFINE_PRINT_COMMAND(Odometry, getOdometry, "print current Odometry");
-    DEFINE_PRINT_COMMAND(RobotState, getRobotState, "print current Robot state");
 
 
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
@@ -120,7 +119,24 @@ int main(int argc, char** argv) {
     DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
     DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
     DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
-    
+
+
+    /**
+     * @brief specialized getRobotState (no optional onlyNewest flag)
+     */
+    robot_remote_control::RobotState rrc_type_getRobotState;
+    console.registerCommand("getRobotState", "print current Robot state", [&](const std::vector<std::string> &params) {
+        bool received = false;
+        while (controller.getRobotState(&rrc_type_requestRobotState)) {
+            received = true;
+            rrc_type_requestRobotState.PrintDebugString();
+        }
+        if (!received){
+            printf("no new data received \n");
+        }
+    });
+    DEFINE_WATCH_COMMAND(RobotState, getRobotState, "continuously print current Robot state, press Enter to stop")
+
 
     /**
      * Commands
@@ -302,6 +318,27 @@ int main(int argc, char** argv) {
     params.push_back(ConsoleCommands::ParamDef("target path (string)", "./"));
     console.registerParamsForCommand("requestFile", params);
     params.clear();
+
+    /**
+     * Simeplesensors
+     */
+    console.registerCommand("getSimpleSensor", "get simple sensor", [&](const std::vector<std::string> &params){
+        robot_remote_control::SimpleSensor simplesensor;
+        // simplesensores have a buffer of size 1
+        if (controller.getSimpleSensor(std::stoi(params[0]), &simplesensor)) {
+            if (simplesensor.value().size() > 25) {
+                // delete data (so it is not printed)
+                simplesensor.mutable_value()->Clear();
+            }
+            simplesensor.PrintDebugString();
+        } else {
+            printf("no files received\n");
+        }
+    });
+    params.push_back(ConsoleCommands::ParamDef("id (int)", ""));
+    console.registerParamsForCommand("getSimpleSensor", params);
+    params.clear();
+
 
     /**
      * Main loop
