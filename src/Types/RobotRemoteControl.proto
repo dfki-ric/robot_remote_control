@@ -327,6 +327,7 @@ message SimpleSensor{
     Vector2 scale = 6;
     repeated string value_names = 7;
     Position local_offset = 8; //local offset of the data
+    Orientation local_orientation = 9; //local orientation of the data
 }
 
 message SimpleSensors{

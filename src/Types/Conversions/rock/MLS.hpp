@@ -35,6 +35,8 @@ namespace RockConversion {
         convert(num_cell, rrc_type->mutable_size());
         convert((base::Vector2d)rock_type.getResolution(), rrc_type->mutable_scale());
         convert(rock_type.translation(), rrc_type->mutable_local_offset());
+        convert(rock_type.rotation(), rrc_type->mutable_local_orientation());
+
 
         // reserve space for all value entries
         rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
