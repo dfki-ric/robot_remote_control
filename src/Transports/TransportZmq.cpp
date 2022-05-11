@@ -13,7 +13,7 @@ TransportZmq::~TransportZmq() {
     disconnect();
 }
 
-TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type) : addr(addr), type(type) {
+TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type) : addr(addr), type(type), connected(false) {
     context = getContextInstance();
     connect();
 }
