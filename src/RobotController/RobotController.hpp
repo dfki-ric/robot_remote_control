@@ -488,9 +488,9 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > unsigned int getTelemetryRaw(const uint16_t &type, DATATYPE *data, std::string *dataSerialized, bool onlyNewest = false) {
+        unsigned int getTelemetryRaw(const uint16_t &type, std::string *dataSerialized, bool onlyNewest = false) {
             *dataSerialized = buffers->peekSerialized(type);
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data, onlyNewest);
+            bool result = buffers->lockedAccess().get()[type]->pop(onlyNewest);
             return result;
         }
 
