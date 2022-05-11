@@ -21,8 +21,11 @@ namespace robot_remote_control {
         if (type != NO_TELEMETRY_DATA || type < TELEMETRY_MESSAGE_TYPES_NUMBER) {
             buf = converters[type]->get();
         }
-
         return buf;
+    }
+
+    bool TelemetryBuffer::pushSerialized(const uint16_t &type, const std::string& data) {
+        return convertersToProto[type]->set(data);
     }
 
 }  // namespace robot_remote_control
