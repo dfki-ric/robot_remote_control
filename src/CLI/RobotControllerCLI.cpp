@@ -115,7 +115,6 @@ int main(int argc, char** argv) {
 
 
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
-    DEFINE_REQUEST_COMMAND(JointState, requestControllableJoints, "print ControllableJoints set by the robot");
     DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
     DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
     DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
@@ -216,6 +215,19 @@ int main(int argc, char** argv) {
     params.push_back(ConsoleCommands::ParamDef("position (float)", "0"));
     console.registerParamsForCommand("setJointCommand", params);
     params.clear();
+
+    console.registerCommand("requestControllableJoints", "print ControllableJoints set by the robot", [&](const std::vector<std::string> &params){
+        robot_remote_control::JointState joints;
+        if (controller.requestControllableJoints(&joints)) {
+            joints.PrintDebugString();
+            // add param options to autocomplete
+            for (auto &jointname : joints.name()) {
+                console.addParamDefaultValue("setJointCommand", 0, jointname);
+            }
+        } else {
+            printf("no new data received \n");
+        }
+    });
 
     console.registerCommand("setSimpleActionCommand", "execute a simpleaction", [&](const std::vector<std::string> &params){
         std::for_each(params.begin(), params.end(), [](const std::string &param) {

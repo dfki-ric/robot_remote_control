@@ -64,10 +64,11 @@ class ControlledRobot: public UpdateThread {
         bool addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
             if (commandbuffers[type]) {
                 commandbuffers[type]->addCommandReceivedCallback(function);
+                return true;
             } else {
                 printf("%s:%i there is no bufferes comamnd of type %i\n", __PRETTY_FUNCTION__, __LINE__, type);
             }
-
+            return false;
         }
 
         /**
