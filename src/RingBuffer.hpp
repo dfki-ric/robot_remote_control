@@ -134,6 +134,7 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
                 out %= buffersize;
                 return true;
             }
+            return false;
         }
 
         bool peekData(TYPE *data) {

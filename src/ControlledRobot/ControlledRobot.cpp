@@ -295,7 +295,9 @@ bool ControlledRobot::loadFile(File* file, const std::string &path, bool compres
         #else
             file->set_data(filestr.str());
         #endif
+        return true;
     }
+    return false;
 }
 
 bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed) {
@@ -309,7 +311,9 @@ bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool c
         printf("%s\n", e.what());
         // set "someting non-default" to actially send values
         folder->set_identifier(e.what());
+        return false;
     }
+    return true;
 }
 
 

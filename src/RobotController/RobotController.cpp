@@ -135,6 +135,7 @@ void RobotController::setLogLevel(const uint16_t &level) {
 
 bool RobotController::setPermission(const Permission& permission) {
     sendProtobufData(permission, PERMISSION);
+    return true;
 }
 
 void RobotController::update() {
