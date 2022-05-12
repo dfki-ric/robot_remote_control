@@ -32,6 +32,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, 1);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
@@ -230,12 +231,7 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     updateStatistics(serializedMessage.size(), *type);
 
-    // try to resolve through registered types
-    std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
-    if (adder.get()) {
-        adder->addToTelemetryBuffer(msgtype, serializedMessage);
-        return msgtype;
-    }
+
 
     // handle special types
 
@@ -251,7 +247,14 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         }
         default:
         {
-            throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
+            // try to resolve through registered types
+            std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
+            if (adder.get()) {
+                adder->addToTelemetryBuffer(msgtype, serializedMessage);
+                return msgtype;
+            } else {
+                throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
+            }
             return msgtype;
         }
     }
@@ -271,6 +274,9 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     // }
 
     RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
+    // also push the data to the "traditional" buffer
+    RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE], data, true);
+
 }
 
 bool RobotController::requestFile(const std::string &identifier, const bool &compressed,  const std::string targetpath) {
