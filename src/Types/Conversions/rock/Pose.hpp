@@ -37,5 +37,11 @@ namespace RockConversion {
         convert(rrc_type.orientation(), &rock_type->orientation);
     }
 
+    inline static void convert(const Eigen::Affine3d &affine, Pose *rrc_type) {
+        base::Pose pose(affine);
+        convert(pose, rrc_type);
+    }
+
+
 }  // namespace RockConversion
 }  // namespace robot_remote_control
