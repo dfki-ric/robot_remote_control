@@ -63,16 +63,17 @@ namespace RockConversion {
         convert(rrc_type.scale(), &res);
         rock_type->setResolution(res);
 
-        base::Vector3d translation;
-        convert(rrc_type.local_offset(), &translation);
-        rock_type->translate(translation);
         // rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
         for (size_t y = 0; y < num_cell.y(); y++) {
             for (size_t x = 0; x < num_cell.x(); x++) {
-                maps::grid::SurfacePatch<maps::grid::MLSConfig::KALMAN> patch(rrc_type.value().Get(x+y*num_cell.x()), 0);  // set 0 variance
+                maps::grid::SurfacePatch<maps::grid::MLSConfig::KALMAN> patch(rrc_type.value(x+y*num_cell.x()), 0);  // set 0 variance
                 rock_type->at(x, y).insert(patch);
             }
         }
+
+        base::Vector3d translation;
+        convert(rrc_type.local_offset(), &translation);
+        rock_type->translate(translation);
     }
 
     /**

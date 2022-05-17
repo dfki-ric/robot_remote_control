@@ -11,9 +11,10 @@ namespace RockConversion {
     inline static void convert(base::samples::Pointcloud rock_type, PointCloud *rrc_type, const std::string frame = "world") {
         int counter = 0;
 
-        rrc_type->mutable_points()->Reserve(rock_type.colors.size());
+        rrc_type->mutable_points()->Reserve(rock_type.points.size());
         for (auto &point : rock_type.points) {
-            robot_remote_control::Position* p = rrc_type->mutable_points(counter);
+            robot_remote_control::Position *p = rrc_type->add_points();
+            //robot_remote_control::Position* p = rrc_type->mutable_points(counter);
             p->set_x(point[0]);
             p->set_y(point[1]);
             p->set_z(point[2]);
@@ -24,8 +25,8 @@ namespace RockConversion {
         if (rock_type.colors.size()) {
             rrc_type->mutable_channels()->Reserve(rock_type.colors.size());
             for (auto &color : rock_type.colors) {
-                //robot_remote_control::ChannelFloat *channel = rrc_type->add_channels();
-                robot_remote_control::ChannelFloat *channel = rrc_type->mutable_channels(counter);
+                robot_remote_control::ChannelFloat *channel = rrc_type->add_channels();
+                //robot_remote_control::ChannelFloat *channel = rrc_type->mutable_channels(counter);
                 channel->set_name("color_rgba");
                 channel->add_values(color[0]);
                 channel->add_values(color[1]);
