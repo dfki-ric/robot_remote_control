@@ -92,7 +92,7 @@ namespace RockConversion {
         convert(rock_type.rotation(), rrc_type->mutable_local_orientation());
 
         // reserve space for all value entries
-        //rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
+        rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
         for (size_t y = 0; y < num_cell.y(); y++) {
             for (size_t x = 0; x < num_cell.x(); x++) {
                 const auto &list = rock_type.at(x, y);
@@ -101,8 +101,8 @@ namespace RockConversion {
                     auto patch = list.begin();
                     // set the only the lowest data point, but it's maximum value
                     // when a block is the lowest entry, we want to use the top of it
-                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
-                    rrc_type->add_value(patch->getMax());
+                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
+                    //rrc_type->add_value(patch->getMax());
                 } else {
                     rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
@@ -147,7 +147,7 @@ namespace RockConversion {
         convert(rock_type.rotation(), rrc_type->mutable_local_orientation());
 
         // reserve space for all value entries
-        //rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
+        rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
         for (size_t y = 0; y < num_cell.y(); y++) {
             for (size_t x = 0; x < num_cell.x(); x++) {
                 const auto &list = rock_type.at(x, y);
@@ -156,8 +156,8 @@ namespace RockConversion {
                     auto patch = list.begin();
                     // set the only the lowest data point, but it's maximum value
                     // when a block is the lowest entry, we want to use the top of it
-                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
-                    rrc_type->add_value(patch->getMax());
+                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
+                    //rrc_type->add_value(patch->getMax());
                 } else {
                     rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
