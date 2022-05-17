@@ -7,6 +7,7 @@
 #include <atomic>
 #include <experimental/filesystem>
 #include <fstream>
+#include <unistd.h>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -84,6 +85,15 @@ class RobotController: public UpdateThread {
          */
         bool isConnected() {
             return connected.load();
+        }
+
+        /**
+         * @brief return then current state of the connection using the heartbeat.
+         * @return the current status of the connection, if a hearbeat duration iss set using setHeartBeatDuration()
+         * 
+         */
+        void waitForConnection() {
+            while (not isConnected()){ usleep(100);}
         }
 
         /**

@@ -11,7 +11,7 @@ ConsoleCommands::ConsoleCommands() {
     rl_bind_key('\t', rl_complete);
     rl_attempted_completion_function = &ConsoleCommands::attempted_completion_function;
     // we always interpret a complete line
-    rl_completer_word_break_characters = "";
+    rl_completer_word_break_characters = (char*)"";
 }
 
 ConsoleCommands::~ConsoleCommands() {}
@@ -47,14 +47,11 @@ std::vector<std::string> ConsoleCommands::parseLine(const std::string &line, boo
 }
 
 bool ConsoleCommands::readline(const std::string& prompt) {
-    char* input = ::readline(prompt.c_str());
-    if (!input) return false;
-    add_history(input);
-    std::vector<std::string> line = parseLine(input);
-
-    runCommand(line);
-    free(input);
-    return true;
+    std::unique_ptr<char[]> input = std::unique_ptr<char[]>(::readline(prompt.c_str()));
+    if (not input.get()) return false;
+    add_history(input.get());
+    std::vector<std::string> line = parseLine(input.get());
+    return runCommand(line);
 }
 
 char* ConsoleCommands::command_finder(const char *text, int state) {
@@ -148,7 +145,7 @@ char** ConsoleCommands::attempted_completion_function(const char * text, int sta
 }
 
 
-void ConsoleCommands::registerCommand(const std::string &name, const std::string &doc, std::function<void(const std::vector<std::string> &params)> func, bool use_thread) {
+void ConsoleCommands::registerCommand(const std::string &name, const std::string &doc, std::function<bool(const std::vector<std::string> &params)> func, bool use_thread) {
     CommandDef def;
     def.doc = doc;
     def.func = func;
@@ -180,7 +177,8 @@ int ConsoleCommands::registerParamsForCommand(const std::string &name, const std
     return false;
 }
 
-void ConsoleCommands::runCommand(std::vector<std::string> &line) {
+bool ConsoleCommands::runCommand(std::vector<std::string> &line) {
+    bool success = false;
     if (line.size()) {
         std::string cmd = line.front();
         std::vector<std::string> params(line.begin()+1, line.end());
@@ -202,17 +200,18 @@ void ConsoleCommands::runCommand(std::vector<std::string> &line) {
                 thread_running = true;
                 cmdthread = std::thread([&](){
                     while (thread_running) {
-                        iter->second.func(params);
+                        success = iter->second.func(params);
                     }
                 });
                 readline("press enter to stop\n");
                 thread_running = false;
                 cmdthread.join();
             } else {
-                iter->second.func(params);
+                success = iter->second.func(params);
             }
         }
     }
+    return success;
 }
 
 void ConsoleCommands::printHelp() {
