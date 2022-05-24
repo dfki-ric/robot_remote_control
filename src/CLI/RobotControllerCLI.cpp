@@ -288,7 +288,9 @@ int main(int argc, char** argv) {
         bool received = false;
         while (controller.getPointCloud(&rrc_type_pointcloud)) {
             received = true;
-            printf("pointcloud in frame %s with %i points\n", rrc_type_pointcloud.header().frame().c_str(), rrc_type_pointcloud.points().size());
+            rrc_type_pointcloud.header().PrintDebugString();
+            rrc_type_pointcloud.origin().PrintDebugString();
+            printf("pointcloud with %i points and %i channels\n", rrc_type_pointcloud.points().size(), rrc_type_pointcloud.channels().size());
         }
         if (!received) {
             printf("no new data received \n");
@@ -297,7 +299,9 @@ int main(int argc, char** argv) {
     console.registerCommand("watch_getPointCloud", "get a single pointcloud and print its properties (without data)", [&](const std::vector<std::string> &params){
         robot_remote_control::PointCloud rrc_type_pointcloud;
         while (controller.getPointCloud(&rrc_type_pointcloud)) {
-            printf("pointcloud in frame %s with %i points\n", rrc_type_pointcloud.header().frame().c_str(), rrc_type_pointcloud.points().size());
+            rrc_type_pointcloud.header().PrintDebugString();
+            rrc_type_pointcloud.origin().PrintDebugString();
+            printf("pointcloud with %i points and %i channels\n", rrc_type_pointcloud.points().size(), rrc_type_pointcloud.channels().size());
         }
     }, true);
 
