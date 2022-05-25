@@ -654,7 +654,7 @@ class ControlledRobot: public UpdateThread {
 
         SimpleBuffer<std::string> mapBuffer;
 
-        std::map<uint32_t, CommandBufferBase*> commandbuffers;
+        std::array<CommandBufferBase*, CONTROL_MESSAGE_TYPE_NUMBER> commandbuffers;
         void registerCommandType(const uint32_t & ID, CommandBufferBase *bufptr) {
             commandbuffers[ID] = bufptr;
         }
