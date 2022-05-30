@@ -148,6 +148,10 @@ class ControlledRobot: public UpdateThread {
             return robotTrajectoryCommand.read(command);
         }
 
+        bool getCommandRaw(uint16_t type, std::string *dataSerialized) {
+            return commandbuffers[type]->read(dataSerialized);
+        }
+
         /**
          * @brief Helper function to get TimeStamp object
          *

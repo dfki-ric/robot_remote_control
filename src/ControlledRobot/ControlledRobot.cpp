@@ -20,12 +20,13 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     logLevel(CUSTOM-1) {
     registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
     registerCommandType(TWIST_COMMAND, &twistCommand);
-    registerCommandType(GOTO_COMMAND, &goToCommand);
+    registerCommandType(JOINTS_COMMAND, &jointsCommand);
     simpleActionsCommand = std::make_unique<CommandRingBuffer<SimpleAction>>(buffersize);
     registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
     complexActionCommandBuffer = std::make_unique<CommandRingBuffer<ComplexAction>>(buffersize);
     registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
-    registerCommandType(JOINTS_COMMAND, &jointsCommand);
+    registerCommandType(GOTO_COMMAND, &goToCommand);
+    // some are missing here
     registerCommandType(HEARTBEAT, &heartbeatCommand);
     registerCommandType(PERMISSION, &permissionCommand);
     registerCommandType(ROBOT_TRAJECTORY_COMMAND, &robotTrajectoryCommand);
