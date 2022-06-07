@@ -22,7 +22,7 @@ class ConsoleCommands {
     };
 
     struct CommandDef {
-        std::function<void(const std::vector<std::string> &params)> func;
+        std::function<bool(const std::vector<std::string> &params)> func;
         std::vector<ParamDef> params;
         std::string doc;
         bool use_thread;
@@ -37,7 +37,7 @@ class ConsoleCommands {
     static char** attempted_completion_function(const char * text, int start, int end);
 
 
-    static void registerCommand(const std::string &name, const std::string &doc, std::function<void(const std::vector<std::string> &params)> func, bool use_thread = false);
+    static void registerCommand(const std::string &name, const std::string &doc, std::function<bool(const std::vector<std::string> &params)> func, bool use_thread = false);
 
     static int registerParamsForCommand(const std::string &name, const std::vector<ParamDef> &params);
 
@@ -46,7 +46,7 @@ class ConsoleCommands {
         commands[name].params[paramindex].defaultvalues.push_back(defaultvalue);
     }
 
-    void runCommand(std::vector<std::string> &line);
+    bool runCommand(std::vector<std::string> &line);
 
     static std::vector<std::string> parseLine(const std::string &line, bool filter_empty = false);
 

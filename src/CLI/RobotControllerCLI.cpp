@@ -14,33 +14,37 @@ using robot_remote_control::TransportZmq;
 // rrc_type defined outside of lamda to print latest values if no new ones are received
 #define DEFINE_WATCH_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_watch_##FUNCTION; \
-    console.registerCommand("watch_" STRING(FUNCTION), DOC, [&](const std::vector<std::string> &params) { \
+    console.registerCommand("watch_" STRING(FUNCTION), DOC, [&](const std::vector<std::string> &params) -> bool { \
             if (controller.FUNCTION(&rrc_type_watch_##FUNCTION)) { \
                 rrc_type_watch_##FUNCTION.PrintDebugString(); \
             } else { \
                 usleep(10000); \
             } \
+            return true; \
     }, true);
 
 #define DEFINE_PRINT_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
-    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) { \
-        bool received = false; \
+    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) -> bool { \
         if (controller.FUNCTION(&rrc_type_##FUNCTION, true)) { \
             rrc_type_##FUNCTION.PrintDebugString(); \
+            return true; \
         } else { \
             printf("no new data received \n"); \
+            return false; \
         } \
     }); \
     DEFINE_WATCH_COMMAND(TYPE, FUNCTION, "continuously "#DOC", press Enter to stop")
 
 #define DEFINE_REQUEST_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
-    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) { \
+    console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) -> bool { \
         if (controller.FUNCTION(&rrc_type_##FUNCTION)) { \
             rrc_type_##FUNCTION.PrintDebugString(); \
+            return true; \
         } else { \
             printf("no new data received \n"); \
+            return false; \
         } \
     });
 
@@ -50,6 +54,7 @@ int main(int argc, char** argv) {
     std::string ip;
     std::string commandport;
     std::string telemetryport;
+    bool SUCCESS = true;
 
     if (argc == 1) {
         ip = "localhost";
@@ -87,21 +92,25 @@ int main(int argc, char** argv) {
     console.registerCommand("help", "display this help" , [&](const std::vector<std::string> &params){
         console.printHelp();
         printf("\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
+        return true;
     });
 
     console.registerCommand("exit", "exit this CLI", [&](const std::vector<std::string> &params){
         printf("\n");
         fflush(stdout);
         run = false;
+        return true;
     });
 
     console.registerCommand("clear", "clear console display", [&](const std::vector<std::string> &params){
         int exit_code = system("clear");
+        return true;
     });
 
     console.registerCommand("stats", "show telemetry statistics", [&](const std::vector<std::string> &params){
         controller.getStatistics().calculate();
         controller.getStatistics().print(true);
+        return true;
     });
 
     /**
@@ -133,6 +142,7 @@ int main(int argc, char** argv) {
         if (!received){
             printf("no new data received \n");
         }
+        return received;
     });
     DEFINE_WATCH_COMMAND(RobotState, getRobotState, "continuously print current Robot state, press Enter to stop")
 
@@ -154,9 +164,10 @@ int main(int argc, char** argv) {
         } catch (const std::invalid_argument &e) {
             std::cout << "value must be a number, was '" << params[i] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
-            return;
+            return false;
         }
         controller.setTwistCommand(twist);
+        return true;
     });
 
     params.push_back(ConsoleCommands::ParamDef("linear x (float)", "0"));
@@ -183,9 +194,10 @@ int main(int argc, char** argv) {
         } catch (const std::invalid_argument &e) {
             std::cout << "value must be a number, was '" << params[i] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
-            return;
+            return false;
         }
         controller.setTargetPose(pose);
+        return true;
     });
     params.push_back(ConsoleCommands::ParamDef("pos x (float)", "0"));
     params.push_back(ConsoleCommands::ParamDef("pos y (float)", "0"));
@@ -206,9 +218,10 @@ int main(int argc, char** argv) {
         } catch (const std::invalid_argument &e) {
             std::cout << "second value must be a number, was '" << params[1] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
-            return;
+            return false;
         }
         controller.setJointCommand(cmd);
+        return true;
     });
 
     params.push_back(ConsoleCommands::ParamDef("joint_name (string)", "empty"));
@@ -224,8 +237,10 @@ int main(int argc, char** argv) {
             for (auto &jointname : joints.name()) {
                 console.addParamDefaultValue("setJointCommand", 0, jointname);
             }
+            return true;
         } else {
             printf("no new data received \n");
+            return false;
         }
     });
 
@@ -240,9 +255,10 @@ int main(int argc, char** argv) {
         } catch (const std::invalid_argument &e) {
             std::cout << "Simpleaction state must be a number, was '" << params[1] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
-            return;
+            return false;
         }
         controller.setSimpleActionCommand(action);
+        return true;
     });
     params.push_back(ConsoleCommands::ParamDef("name (string)", "name"));
     params.push_back(ConsoleCommands::ParamDef("value (float)", "0"));
@@ -257,8 +273,10 @@ int main(int argc, char** argv) {
             for (auto &simpleaction : actions.actions()) {
                 console.addParamDefaultValue("setSimpleActionCommand", 0, simpleaction.name());
             }
+            return true;
         } else {
             printf("no new data received \n");
+            return false;
         }
     });
 
@@ -275,12 +293,14 @@ int main(int argc, char** argv) {
         if (!received) {
             printf("no new data received \n");
         }
+        return received;
     });
     console.registerCommand("watch_getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params){
         robot_remote_control::Image rrc_type_image;
         while (controller.getImage(&rrc_type_image)) {
             printf("image type: %s (%ix%i) frame: %s size: %lu bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
         }
+        return true;
     }, true);
 
     robot_remote_control::PointCloud rrc_type_pointcloud;
@@ -295,6 +315,7 @@ int main(int argc, char** argv) {
         if (!received) {
             printf("no new data received \n");
         }
+        return received;
     });
     console.registerCommand("watch_getPointCloud", "get a single pointcloud and print its properties (without data)", [&](const std::vector<std::string> &params){
         robot_remote_control::PointCloud rrc_type_pointcloud;
@@ -303,6 +324,7 @@ int main(int argc, char** argv) {
             rrc_type_pointcloud.origin().PrintDebugString();
             printf("pointcloud with %i points and %i channels\n", rrc_type_pointcloud.points().size(), rrc_type_pointcloud.channels().size());
         }
+        return true;
     }, true);
 
 
@@ -317,16 +339,20 @@ int main(int argc, char** argv) {
             for (auto &file : files.file()) {
                 console.addParamDefaultValue("requestFile", 0, file.identifier());
             }
+            return true;
         } else {
             printf("no new data received \n");
         }
+        return false;
     });
 
     console.registerCommand("requestFile", "download a file", [&](const std::vector<std::string> &params){
         if (controller.requestFile(params[0], std::stoi(params[1]), params[2])) {
             printf("files written\n");
+            return true;
         } else {
             printf("no files received\n");
+            return false;
         }
     });
     params.push_back(ConsoleCommands::ParamDef("identifier (string)", ""));
@@ -347,8 +373,10 @@ int main(int argc, char** argv) {
                 simplesensor.mutable_value()->Clear();
             }
             simplesensor.PrintDebugString();
+            return true;
         } else {
             printf("no files received\n");
+            return false;
         }
     });
     params.push_back(ConsoleCommands::ParamDef("id (int)", ""));
@@ -359,15 +387,13 @@ int main(int argc, char** argv) {
     /**
      * Main loop
      */
-
-    while (run) {
-        if (!console.readline("rrc@" + ip + " $ ")) {
-            run = false;
-        }
+    controller.waitForConnection();
+    while (run && SUCCESS) {
+        SUCCESS = console.readline("rrc@" + ip + " $ ");
     }
 
     printf("\n");
     fflush(stdout);
 
-    return 0;
+    return not SUCCESS;
 }
