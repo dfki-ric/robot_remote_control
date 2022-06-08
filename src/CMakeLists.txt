@@ -19,6 +19,7 @@ add_subdirectory(Tools)
 install(FILES
 	MessageTypes.hpp
 	RingBuffer.hpp
+	CommandBuffer.hpp
 	TelemetryBuffer.hpp
 	SimpleBuffer.hpp
 	Statistics.hpp
