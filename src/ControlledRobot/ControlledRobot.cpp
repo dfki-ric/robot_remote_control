@@ -18,18 +18,30 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1) {
-    registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
-    registerCommandType(TWIST_COMMAND, &twistCommand);
-    registerCommandType(JOINTS_COMMAND, &jointsCommand);
+
+    poseCommand = std::make_unique<CommandRingBuffer<Pose>>(buffersize);
+    registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
+
+    twistCommand = std::make_unique<CommandRingBuffer<Twist>>(buffersize);
+    registerCommandType(TWIST_COMMAND, twistCommand.get());
+
+    goToCommand = std::make_unique<CommandRingBuffer<GoTo>>(buffersize);
+    registerCommandType(GOTO_COMMAND, goToCommand.get());
+
     simpleActionsCommand = std::make_unique<CommandRingBuffer<SimpleAction>>(buffersize);
     registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
+
     complexActionCommandBuffer = std::make_unique<CommandRingBuffer<ComplexAction>>(buffersize);
     registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
-    registerCommandType(GOTO_COMMAND, &goToCommand);
-    // some are missing here
+
+    jointsCommand = std::make_unique<CommandRingBuffer<JointCommand>>(buffersize);
+    registerCommandType(JOINTS_COMMAND, jointsCommand.get());
+
     registerCommandType(HEARTBEAT, &heartbeatCommand);
     registerCommandType(PERMISSION, &permissionCommand);
-    registerCommandType(ROBOT_TRAJECTORY_COMMAND, &robotTrajectoryCommand);
+
+    robotTrajectoryCommand = std::make_unique<CommandRingBuffer<Poses>>(buffersize);
+    registerCommandType(ROBOT_TRAJECTORY_COMMAND, robotTrajectoryCommand.get());
 
 
     registerTelemetryType<Pose>(CURRENT_POSE);

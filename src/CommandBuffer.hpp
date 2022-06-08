@@ -10,7 +10,7 @@ struct CommandBufferBase {
     CommandBufferBase() {}
     virtual ~CommandBufferBase() {}
     virtual bool write(const std::string &serializedMessage) = 0;
-    virtual bool read(std::string *receivedMessage) = 0;
+    virtual bool read(std::string *receivedMessage, bool onlyNewest = true) = 0;
     void notify() {
         auto callCb = [](const std::function<void()> &cb){cb();};
         std::for_each(callbacks.begin(), callbacks.end(), callCb);
@@ -27,7 +27,7 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
 
     virtual ~CommandBuffer() {}
 
-    bool read(COMMAND *target) {
+    bool read(COMMAND *target, bool onlyNewest = true) {
         bool oldval = isnew.load();
         *target = command.lockedAccess().get();
         isnew.store(false);
@@ -51,7 +51,7 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
         return true;
     }
 
-    virtual bool read(std::string *receivedMessage) {
+    virtual bool read(std::string *receivedMessage, bool onlyNewest = true) {
         bool oldval = isnew.load();
         command.lockedAccess()->SerializeToString(receivedMessage);
         isnew.store(false);
@@ -69,10 +69,10 @@ template<class COMMAND> struct CommandRingBuffer: public CommandBufferBase{
 
     virtual ~CommandRingBuffer() {}
 
-    bool read(COMMAND *target) {
+    bool read(COMMAND *target, bool onlyNewest = true) {
         bool oldval = isnew.load();
         auto lockable = buffer.lockedAccess();
-        if (!lockable->popData(target, true)) {
+        if (!lockable->popData(target, onlyNewest)) {
             auto protocommand = lastcommand.lockedAccess();
             target->CopyFrom(protocommand.get());
         }
@@ -103,11 +103,11 @@ template<class COMMAND> struct CommandRingBuffer: public CommandBufferBase{
         return true;
     }
 
-    virtual bool read(std::string *receivedMessage) {
+    virtual bool read(std::string *receivedMessage, bool onlyNewest = true) {
         bool oldval = isnew.load();
         auto protocommand = lastcommand.lockedAccess();
         auto lockable = buffer.lockedAccess();
-        lockable->popData(&(protocommand.get()), true);
+        lockable->popData(&(protocommand.get()), onlyNewest);
         protocommand->SerializeToString(receivedMessage);
         isnew.store(lockable->size());
         return oldval;

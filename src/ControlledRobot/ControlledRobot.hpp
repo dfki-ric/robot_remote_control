@@ -89,8 +89,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getTargetPoseCommand(Pose *command) {
-            return poseCommand.read(command);
+        bool getTargetPoseCommand(Pose *command, bool onlyNewest = true) {
+            return poseCommand->read(command, onlyNewest);
         }
 
         /**
@@ -99,8 +99,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getTwistCommand(Twist *command) {
-            return twistCommand.read(command);
+        bool getTwistCommand(Twist *command, bool onlyNewest = true) {
+            return twistCommand->read(command, onlyNewest);
         }
 
         /**
@@ -109,8 +109,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getGoToCommand(GoTo *command) {
-            return goToCommand.read(command);
+        bool getGoToCommand(GoTo *command, bool onlyNewest = true) {
+            return goToCommand->read(command, onlyNewest);
         }
 
         /**
@@ -120,8 +120,8 @@ class ControlledRobot: public UpdateThread {
          * @param command the last received command
          */
 
-        bool getJointsCommand(JointCommand *command) {
-            return jointsCommand.read(command);
+        bool getJointsCommand(JointCommand *command, bool onlyNewest = true) {
+            return jointsCommand->read(command, onlyNewest);
         }
 
 
@@ -131,8 +131,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getSimpleActionCommand(SimpleAction *command) {
-            return simpleActionsCommand->read(command);
+        bool getSimpleActionCommand(SimpleAction *command, bool onlyNewest = true) {
+            return simpleActionsCommand->read(command, onlyNewest);
         }
 
         /**
@@ -141,16 +141,16 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getComplexActionCommand(ComplexAction *command) {
-            return complexActionCommandBuffer->read(command);
+        bool getComplexActionCommand(ComplexAction *command, bool onlyNewest = true) {
+            return complexActionCommandBuffer->read(command, onlyNewest);
         }
 
-        bool getRobotTrajectoryCommand(Poses *command) {
-            return robotTrajectoryCommand.read(command);
+        bool getRobotTrajectoryCommand(Poses *command, bool onlyNewest = true) {
+            return robotTrajectoryCommand->read(command, onlyNewest);
         }
 
-        bool getCommandRaw(uint16_t type, std::string *dataSerialized) {
-            return commandbuffers[type]->read(dataSerialized);
+        bool getCommandRaw(uint16_t type, std::string *dataSerialized, bool onlyNewest = true) {
+            return commandbuffers[type]->read(dataSerialized, onlyNewest);
         }
 
         /**
@@ -530,15 +530,15 @@ class ControlledRobot: public UpdateThread {
 
 
         // command buffers
-        CommandBuffer<Pose> poseCommand;
-        CommandBuffer<Twist> twistCommand;
-        CommandBuffer<GoTo> goToCommand;
+        std::unique_ptr<CommandRingBuffer<Pose>> poseCommand;
+        std::unique_ptr<CommandRingBuffer<Twist>> twistCommand;
+        std::unique_ptr<CommandRingBuffer<GoTo>> goToCommand;
         std::unique_ptr<CommandRingBuffer<SimpleAction>> simpleActionsCommand;
         std::unique_ptr<CommandRingBuffer<ComplexAction>> complexActionCommandBuffer;
-        CommandBuffer<JointCommand> jointsCommand;
+        std::unique_ptr<CommandRingBuffer<JointCommand>> jointsCommand;
         CommandBuffer<HeartBeat> heartbeatCommand;
         CommandBuffer<Permission> permissionCommand;
-        CommandBuffer<Poses> robotTrajectoryCommand;
+        std::unique_ptr<CommandRingBuffer<Poses>> robotTrajectoryCommand;
 
         std::vector< std::function<void(const uint16_t &type)> > commandCallbacks;
 
