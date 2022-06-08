@@ -19,28 +19,31 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1) {
 
-    poseCommand = std::make_unique<CommandRingBuffer<Pose>>(buffersize);
+    poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
     registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
 
-    twistCommand = std::make_unique<CommandRingBuffer<Twist>>(buffersize);
+    twistCommand = std::make_unique<CommandBuffer<Twist>>(buffersize);
     registerCommandType(TWIST_COMMAND, twistCommand.get());
 
-    goToCommand = std::make_unique<CommandRingBuffer<GoTo>>(buffersize);
+    goToCommand = std::make_unique<CommandBuffer<GoTo>>(buffersize);
     registerCommandType(GOTO_COMMAND, goToCommand.get());
 
-    simpleActionsCommand = std::make_unique<CommandRingBuffer<SimpleAction>>(buffersize);
+    simpleActionsCommand = std::make_unique<CommandBuffer<SimpleAction>>(buffersize);
     registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
 
-    complexActionCommandBuffer = std::make_unique<CommandRingBuffer<ComplexAction>>(buffersize);
+    complexActionCommandBuffer = std::make_unique<CommandBuffer<ComplexAction>>(buffersize);
     registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
 
-    jointsCommand = std::make_unique<CommandRingBuffer<JointCommand>>(buffersize);
+    jointsCommand = std::make_unique<CommandBuffer<JointCommand>>(buffersize);
     registerCommandType(JOINTS_COMMAND, jointsCommand.get());
 
-    registerCommandType(HEARTBEAT, &heartbeatCommand);
-    registerCommandType(PERMISSION, &permissionCommand);
+    heartbeatCommand = std::make_unique<CommandBuffer<HeartBeat>>(1);
+    registerCommandType(HEARTBEAT, heartbeatCommand.get());
 
-    robotTrajectoryCommand = std::make_unique<CommandRingBuffer<Poses>>(buffersize);
+    permissionCommand = std::make_unique<CommandBuffer<Permission>>(1);
+    registerCommandType(PERMISSION, permissionCommand.get());
+
+    robotTrajectoryCommand = std::make_unique<CommandBuffer<Poses>>(buffersize);
     registerCommandType(ROBOT_TRAJECTORY_COMMAND, robotTrajectoryCommand.get());
 
 
@@ -85,7 +88,7 @@ void ControlledRobot::update() {
     // if there are multiple connections with different frequencies it can happen that if the high frequency conenction is lost
     // and the last heartbeat message came from the low fewquency connection, the heartbeatExpiredCallback is called after
     // the low frequency timer is expired
-    if (heartbeatCommand.read(&heartbeatValues)) {
+    if (heartbeatCommand->read(&heartbeatValues)) {
         connected.store(true);
         // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
         heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);

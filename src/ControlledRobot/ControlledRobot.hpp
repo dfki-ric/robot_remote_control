@@ -530,15 +530,15 @@ class ControlledRobot: public UpdateThread {
 
 
         // command buffers
-        std::unique_ptr<CommandRingBuffer<Pose>> poseCommand;
-        std::unique_ptr<CommandRingBuffer<Twist>> twistCommand;
-        std::unique_ptr<CommandRingBuffer<GoTo>> goToCommand;
-        std::unique_ptr<CommandRingBuffer<SimpleAction>> simpleActionsCommand;
-        std::unique_ptr<CommandRingBuffer<ComplexAction>> complexActionCommandBuffer;
-        std::unique_ptr<CommandRingBuffer<JointCommand>> jointsCommand;
-        CommandBuffer<HeartBeat> heartbeatCommand;
-        CommandBuffer<Permission> permissionCommand;
-        std::unique_ptr<CommandRingBuffer<Poses>> robotTrajectoryCommand;
+        std::unique_ptr<CommandBuffer<Pose>> poseCommand;
+        std::unique_ptr<CommandBuffer<Twist>> twistCommand;
+        std::unique_ptr<CommandBuffer<GoTo>> goToCommand;
+        std::unique_ptr<CommandBuffer<SimpleAction>> simpleActionsCommand;
+        std::unique_ptr<CommandBuffer<ComplexAction>> complexActionCommandBuffer;
+        std::unique_ptr<CommandBuffer<JointCommand>> jointsCommand;
+        std::unique_ptr<CommandBuffer<HeartBeat>> heartbeatCommand;
+        std::unique_ptr<CommandBuffer<Permission>> permissionCommand;
+        std::unique_ptr<CommandBuffer<Poses>> robotTrajectoryCommand;
 
         std::vector< std::function<void(const uint16_t &type)> > commandCallbacks;
 

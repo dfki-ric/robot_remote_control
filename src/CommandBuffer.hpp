@@ -23,62 +23,9 @@ struct CommandBufferBase {
 
 template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
  public:
-    CommandBuffer():isnew(false) {}
+    explicit CommandBuffer(const size_t & buffersize):isnew(false), buffer(RingBuffer<COMMAND>(buffersize)) {}
 
     virtual ~CommandBuffer() {}
-
-    bool read(COMMAND *target, bool onlyNewest = true) {
-        bool oldval = isnew.load();
-        *target = command.lockedAccess().get();
-        isnew.store(false);
-        return oldval;
-    }
-
-    void write(const COMMAND &src) {
-        command.lockedAccess().set(src);
-        isnew.store(true);
-        notify();
-    }
-
-    virtual bool write(const std::string &serializedMessage) {
-        // command.lock();
-        if (!command.lockedAccess()->ParseFromString(serializedMessage)) {
-            isnew.store(false);
-            return false;
-        }
-        isnew.store(true);
-        notify();
-        return true;
-    }
-
-    virtual bool read(std::string *receivedMessage, bool onlyNewest = true) {
-        bool oldval = isnew.load();
-        command.lockedAccess()->SerializeToString(receivedMessage);
-        isnew.store(false);
-        return oldval;
-    }
-
- private:
-    LockableClass<COMMAND> command;
-    std::atomic<bool> isnew;
-};
-
-template<class COMMAND> struct CommandRingBuffer: public CommandBufferBase{
- public:
-    explicit CommandRingBuffer(const size_t & buffersize):isnew(false), buffer(RingBuffer<COMMAND>(buffersize)) {}
-
-    virtual ~CommandRingBuffer() {}
-
-    bool read(COMMAND *target, bool onlyNewest = true) {
-        bool oldval = isnew.load();
-        auto lockable = buffer.lockedAccess();
-        if (!lockable->popData(target, onlyNewest)) {
-            auto protocommand = lastcommand.lockedAccess();
-            target->CopyFrom(protocommand.get());
-        }
-        isnew.store(lockable->size());
-        return oldval;
-    }
 
     void write(const COMMAND &src) {
         {
@@ -101,6 +48,17 @@ template<class COMMAND> struct CommandRingBuffer: public CommandBufferBase{
         }
         notify();
         return true;
+    }
+
+    bool read(COMMAND *target, bool onlyNewest = true) {
+        bool oldval = isnew.load();
+        auto lockable = buffer.lockedAccess();
+        if (!lockable->popData(target, onlyNewest)) {
+            auto protocommand = lastcommand.lockedAccess();
+            target->CopyFrom(protocommand.get());
+        }
+        isnew.store(lockable->size());
+        return oldval;
     }
 
     virtual bool read(std::string *receivedMessage, bool onlyNewest = true) {
