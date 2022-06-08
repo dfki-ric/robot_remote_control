@@ -19,31 +19,26 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1) {
 
+    // init buffers for non-cast access in getters
     poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
-    registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
-
     twistCommand = std::make_unique<CommandBuffer<Twist>>(buffersize);
-    registerCommandType(TWIST_COMMAND, twistCommand.get());
-
     goToCommand = std::make_unique<CommandBuffer<GoTo>>(buffersize);
-    registerCommandType(GOTO_COMMAND, goToCommand.get());
-
     simpleActionsCommand = std::make_unique<CommandBuffer<SimpleAction>>(buffersize);
-    registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
-
     complexActionCommandBuffer = std::make_unique<CommandBuffer<ComplexAction>>(buffersize);
-    registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
-
     jointsCommand = std::make_unique<CommandBuffer<JointCommand>>(buffersize);
-    registerCommandType(JOINTS_COMMAND, jointsCommand.get());
-
     heartbeatCommand = std::make_unique<CommandBuffer<HeartBeat>>(1);
-    registerCommandType(HEARTBEAT, heartbeatCommand.get());
-
     permissionCommand = std::make_unique<CommandBuffer<Permission>>(1);
-    registerCommandType(PERMISSION, permissionCommand.get());
-
     robotTrajectoryCommand = std::make_unique<CommandBuffer<Poses>>(buffersize);
+
+    // register command buffers
+    registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
+    registerCommandType(TWIST_COMMAND, twistCommand.get());
+    registerCommandType(GOTO_COMMAND, goToCommand.get());
+    registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
+    registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
+    registerCommandType(JOINTS_COMMAND, jointsCommand.get());
+    registerCommandType(HEARTBEAT, heartbeatCommand.get());
+    registerCommandType(PERMISSION, permissionCommand.get());
     registerCommandType(ROBOT_TRAJECTORY_COMMAND, robotTrajectoryCommand.get());
 
 
