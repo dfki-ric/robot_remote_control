@@ -55,6 +55,7 @@ int main(int argc, char** argv) {
     std::string commandport;
     std::string telemetryport;
     bool SUCCESS = true;
+    bool NON_INTERACTIVE = false;
 
     if (argc == 1) {
         ip = "localhost";
@@ -110,6 +111,11 @@ int main(int argc, char** argv) {
     console.registerCommand("stats", "show telemetry statistics", [&](const std::vector<std::string> &params){
         controller.getStatistics().calculate();
         controller.getStatistics().print(true);
+        return true;
+    });
+
+    console.registerCommand("non-interactive", "used for parsing text files for automatic api tests", [&](const std::vector<std::string> &params){
+        NON_INTERACTIVE=true;
         return true;
     });
 
@@ -388,8 +394,11 @@ int main(int argc, char** argv) {
      * Main loop
      */
     controller.waitForConnection();
-    while (run && SUCCESS) {
+    while (run)  {
         SUCCESS = console.readline("rrc@" + ip + " $ ");
+        if (NON_INTERACTIVE && not SUCCESS) {
+            break;
+        }
     }
 
     printf("\n");
