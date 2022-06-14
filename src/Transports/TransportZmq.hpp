@@ -25,7 +25,6 @@ class TransportZmq: public Transport {
      * @warning This methond has to be called before instaciating any TransportZmq object
      * 
      * @param threads number of zmq context threads
-     * @return std::shared_ptr<zmq::context_t> 
      */
     static void initContextThreads(unsigned int threads) {
         getContextInstance(threads);
