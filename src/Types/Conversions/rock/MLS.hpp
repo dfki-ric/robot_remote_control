@@ -66,7 +66,7 @@ namespace RockConversion {
         convert(rrc_type.scale(), &res);
         rock_type->setResolution(res);
 
-        // rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
+        rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
         for (size_t y = 0; y < num_cell.y(); y++) {
             for (size_t x = 0; x < num_cell.x(); x++) {
                 maps::grid::SurfacePatch<maps::grid::MLSConfig::KALMAN> patch(rrc_type.value(x+y*num_cell.x()), 0);  // set 0 variance
@@ -105,11 +105,11 @@ namespace RockConversion {
                     auto patch = list.begin();
                     // set the only the lowest data point, but it's maximum value
                     // when a block is the lowest entry, we want to use the top of it
-                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
-                    //rrc_type->add_value(patch->getMax());
+                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
+                    rrc_type->add_value(patch->getMax());
                 } else {
-                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
-                    //rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
+                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
+                    rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }
         }
@@ -161,11 +161,11 @@ namespace RockConversion {
                     auto patch = list.begin();
                     // set the only the lowest data point, but it's maximum value
                     // when a block is the lowest entry, we want to use the top of it
-                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
-                    //rrc_type->add_value(patch->getMax());
+                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
+                    rrc_type->add_value(patch->getMax());
                 } else {
-                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
-                    //rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
+                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
+                    rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }
         }
