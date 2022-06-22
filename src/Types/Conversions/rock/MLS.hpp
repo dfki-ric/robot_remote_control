@@ -49,6 +49,9 @@ namespace RockConversion {
                     // set the only the lowest data point, but it's maximum value
                     // when a block is the lowest entry, we want to use the top of it
                     rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
+                } else {
+                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
+                    //rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }
         }
@@ -105,7 +108,8 @@ namespace RockConversion {
                     rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
                     //rrc_type->add_value(patch->getMax());
                 } else {
-                    rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
+                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
+                    //rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }
         }
@@ -160,7 +164,8 @@ namespace RockConversion {
                     rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
                     //rrc_type->add_value(patch->getMax());
                 } else {
-                    rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
+                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
+                    //rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }
         }
