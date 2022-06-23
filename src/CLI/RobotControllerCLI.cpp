@@ -119,6 +119,15 @@ int main(int argc, char** argv) {
         return true;
     });
 
+    console.registerCommand("sleep", "sleep for a defined amount of seconds. used for file parsing.", [&](const std::vector<std::string> &params){
+        usleep(std::stof(params[0])*1000000);
+        return true;
+    });
+    params.push_back(ConsoleCommands::ParamDef("seconds (float)", "0"));
+    console.registerParamsForCommand("sleep", params);
+    params.clear();
+
+
     /**
      * generic defines
      */
@@ -403,6 +412,6 @@ int main(int argc, char** argv) {
 
     printf("\n");
     fflush(stdout);
-
+    controller.stopUpdateThread();
     return not SUCCESS;
 }
