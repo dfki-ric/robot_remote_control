@@ -1131,6 +1131,41 @@ BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
 }
 #endif
 
+
+BOOST_AUTO_TEST_CASE(robot_model) {
+    initComms();
+
+    RobotController controller(commands, telemetry);
+    ControlledRobot robot(command, telemetri);
+
+    controller.startUpdateThread(0);
+    robot.startUpdateThread(0);
+
+    // should return false if no files set up
+    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder"), "");
+
+
+    FileDefinition model;
+    File* file;
+
+    file = model.add_file();
+    model.add_isfolder(true);
+    file->set_identifier("robotmodel");
+    file->set_path("./test/testfiles");
+
+    robot.initRobotModel(model, "model/model.urdf");
+
+    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder"), "./test/testfiles/model/model.urdf");
+    BOOST_TEST(boost::filesystem::exists("./downloaded_model_folder/test/testfiles/model/model.urdf"));
+    BOOST_TEST(isFileEqual("./test/testfiles/model/model.urdf", "./downloaded_model_folder/test/testfiles/model/model.urdf"));
+
+    // cleanup
+    boost::filesystem::remove_all("./downloaded_model_folder");
+}
+
+
+
+
 // BOOST_AUTO_TEST_CASE(check_permissions) {
 //   // not using the set/get functions
 

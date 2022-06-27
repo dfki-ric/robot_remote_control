@@ -295,8 +295,25 @@ class ControlledRobot: public UpdateThread {
          * @return int 
          */
         int initFiles(const FileDefinition& files) {
-            this->files.CopyFrom(files);
+            this->files.MergeFrom(files);
             return sendTelemetry(files, FILE_DEFINITION, true);
+        }
+
+        int initRobotModel(const FileDefinition& filedef, const std::string& modelfilename = "") {
+            RobotModelInformation modelinfo;
+
+            if (modelfilename == "") {
+                // single file model
+                modelinfo.mutable_filedef()->CopyFrom(filedef);
+            } else {
+                // folder model
+                modelinfo.mutable_filedef()->CopyFrom(filedef);
+                modelinfo.set_modelfilename(modelfilename);
+            }
+            if (!initFiles(filedef)) {
+                return -1;
+            }
+            return sendTelemetry(modelinfo, ROBOT_MODEL_INFORMATION, true);
         }
 
         std::shared_future<bool> requestPermission(const PermissionRequest &permissionrequest) {

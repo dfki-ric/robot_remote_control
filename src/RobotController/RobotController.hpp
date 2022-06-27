@@ -470,6 +470,16 @@ class RobotController: public UpdateThread {
          */
         bool requestFile(const std::string &identifier, const bool &compressed = false, const std::string targetpath = "./");
 
+
+        /**
+         * @brief requestt a model file/definition from the robot, most probably an urdf
+         * 
+         * @param targetfolder folder to save the model information to
+         * @return std::string robot model file to open
+         */
+        std::string requestRobotModel(const std::string &targetfolder = "./");
+
+
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type
          * 

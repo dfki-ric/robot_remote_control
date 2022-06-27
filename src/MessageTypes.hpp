@@ -54,6 +54,7 @@ namespace robot_remote_control {
                                 ODOMETRY,                   // Odometry message (similar to ROS nav_msgs/Odometry)
                                 CONTROLLABLE_FRAMES,        // List of frames that can be used to send twist, pose or goto (which target can be set in the header of the command)
                                 FILE_DEFINITION,            // List of downloadable files (by name)
+                                ROBOT_MODEL_INFORMATION,                // Robot Model Imformation
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

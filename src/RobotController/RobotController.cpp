@@ -50,6 +50,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<Odometry>(ODOMETRY, buffersize);
         registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
+        registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
 
         #ifdef RRC_STATISTICS
             // add names to buffer, this types have aspecial treatment, the should not be registered
@@ -334,3 +335,15 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
     }
     return result;
 }
+
+std::string RobotController::requestRobotModel(const std::string &targetfolder) {
+    RobotModelInformation model;
+    if (requestTelemetry(ROBOT_MODEL_INFORMATION, &model)) {
+        if (requestFile(model.filedef().file(0).identifier(), true, targetfolder)) {
+            return model.filedef().file(0).path() + "/" + model.modelfilename();
+        }
+    }
+    return "";
+}
+
+
