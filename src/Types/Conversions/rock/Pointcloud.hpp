@@ -8,7 +8,7 @@
 namespace robot_remote_control {
 namespace RockConversion {
 
-    inline static void convert(base::samples::Pointcloud rock_type, PointCloud *rrc_type, const std::string frame = "no_frame") {
+    inline static void convert(base::samples::Pointcloud rock_type, PointCloud *rrc_type, const std::string frame = "") {
         int counter = 0;
 
         rrc_type->mutable_points()->Reserve(rock_type.points.size());
