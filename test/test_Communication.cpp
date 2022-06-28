@@ -1142,7 +1142,8 @@ BOOST_AUTO_TEST_CASE(robot_model) {
     robot.startUpdateThread(0);
 
     // should return false if no files set up
-    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder"), "");
+    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder").first, "");
+    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder").second, "");
 
 
     FileDefinition model;
@@ -1155,7 +1156,9 @@ BOOST_AUTO_TEST_CASE(robot_model) {
 
     robot.initRobotModel(model, "model/model.urdf");
 
-    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder"), "./test/testfiles/model/model.urdf");
+    auto modelpath = controller.requestRobotModel("./downloaded_model_folder");
+    BOOST_CHECK_EQUAL(modelpath.first, "./test/testfiles/");
+    BOOST_CHECK_EQUAL(modelpath.second, "model/model.urdf");
     BOOST_TEST(boost::filesystem::exists("./downloaded_model_folder/test/testfiles/model/model.urdf"));
     BOOST_TEST(isFileEqual("./test/testfiles/model/model.urdf", "./downloaded_model_folder/test/testfiles/model/model.urdf"));
 

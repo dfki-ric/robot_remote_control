@@ -476,9 +476,9 @@ class RobotController: public UpdateThread {
          * @brief requestt a model file/definition from the robot, most probably an urdf
          * 
          * @param targetfolder folder to save the model information to
-         * @return std::string robot model file to open
+         * @return std::pair<std::string, std::string> robot model path and file to open
          */
-        std::string requestRobotModel(const std::string &targetfolder = "./", const float &overrideMaxLatency = 120);
+        std::pair<std::string, std::string> requestRobotModel(const std::string &targetfolder = "./", const float &overrideMaxLatency = 120);
 
 
         /**

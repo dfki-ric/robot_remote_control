@@ -340,14 +340,14 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
     return result;
 }
 
-std::string RobotController::requestRobotModel(const std::string &targetfolder, const float &overrideMaxLatency) {
+std::pair<std::string, std::string> RobotController::requestRobotModel(const std::string &targetfolder, const float &overrideMaxLatency) {
     RobotModelInformation model;
     if (requestTelemetry(ROBOT_MODEL_INFORMATION, &model)) {
         if (requestFile(model.filedef().file(0).identifier(), true, targetfolder, overrideMaxLatency)) {
-            return model.filedef().file(0).path() + "/" + model.modelfilename();
+            return {model.filedef().file(0).path(), model.modelfilename()};
         }
     }
-    return "";
+    return {"",""};
 }
 
 
