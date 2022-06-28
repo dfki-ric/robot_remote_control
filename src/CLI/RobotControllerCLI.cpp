@@ -376,6 +376,20 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("requestFile", params);
     params.clear();
 
+    console.registerCommand("requestRobotModel", "download a robot model", [&](const std::vector<std::string> &params) {
+        std::string filename = controller.requestRobotModel(params[0]);
+        if (filename != "") {
+            printf("\ndownloaded model, please open '%s' with an external viewer\n\n", filename.c_str());
+            return true;
+        } else {
+            printf("no model received, possibly the robot does not define one\n");
+            return false;
+        }
+    });
+    params.push_back(ConsoleCommands::ParamDef("target folder (string)", "./model"));
+    console.registerParamsForCommand("requestRobotModel", params);
+    params.clear();
+
     /**
      * Simeplesensors
      */
@@ -405,7 +419,7 @@ int main(int argc, char** argv) {
     controller.waitForConnection();
     while (run)  {
         SUCCESS = console.readline("rrc@" + ip + " $ ");
-        if (NON_INTERACTIVE && not SUCCESS) {
+        if (!SUCCESS) {
             break;
         }
     }
@@ -413,5 +427,5 @@ int main(int argc, char** argv) {
     printf("\n");
     fflush(stdout);
     controller.stopUpdateThread();
-    return not SUCCESS;
+    return !SUCCESS;
 }

@@ -3,7 +3,6 @@
 #include <memory>
 #include <unistd.h>
 #include <stdexcept>
-#include <google/protobuf/io/coded_stream.h>
 
 #ifdef ZLIB_FOUND
 #include "../Tools/Compression.hpp"
@@ -192,18 +191,24 @@ void RobotController::updateStatistics(const uint32_t &bytesSent, const uint16_t
     #endif
 }
 
-std::string RobotController::sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags) {
+std::string RobotController::sendRequest(const std::string& serializedMessage, const float &overrideMaxLatency, const robot_remote_control::Transport::Flags &flags) {
     std::lock_guard<std::mutex> lock(commandTransportMutex);
+
+    float currentMaxLatency = maxLatency;
+    if (overrideMaxLatency > 0) {
+        currentMaxLatency = overrideMaxLatency;
+    }
+
     try {
         commandTransport->send(serializedMessage, flags);
     } catch (const std::exception &error) {
         connected.store(false);
-        lostConnectionCallback(maxLatency);
+        lostConnectionCallback(currentMaxLatency);
         return "";
     }
     std::string replystr;
 
-    requestTimer.start(maxLatency);
+    requestTimer.start(currentMaxLatency);
 
     try {
         while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
@@ -212,7 +217,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         }
     } catch (const std::exception &error) {
         connected.store(false);
-        lostConnectionCallback(maxLatency);
+        lostConnectionCallback(currentMaxLatency);
         return "";
     }
     if (replystr.size() == 0 && requestTimer.isExpired()) {
@@ -279,10 +284,9 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
     // also push the data to the "traditional" buffer
     RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE], data, true);
-
 }
 
-bool RobotController::requestFile(const std::string &identifier, const bool &compressed,  const std::string targetpath) {
+bool RobotController::requestFile(const std::string &identifier, const bool &compressed,  const std::string targetpath, const float &overrideMaxLatency) {
     std::string buffer;
     FileRequest request;
     request.set_identifier(identifier);
@@ -296,7 +300,7 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
 
     Folder folder;
 
-    bool result = requestProtobuf(request, &folder, FILE_REQUEST);
+    bool result = requestProtobuf(request, &folder, FILE_REQUEST, overrideMaxLatency);
     if (result) {
         if (folder.file().size() == 0) {
             // no files defined in ControlledRobot
@@ -336,10 +340,10 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
     return result;
 }
 
-std::string RobotController::requestRobotModel(const std::string &targetfolder) {
+std::string RobotController::requestRobotModel(const std::string &targetfolder, const float &overrideMaxLatency) {
     RobotModelInformation model;
     if (requestTelemetry(ROBOT_MODEL_INFORMATION, &model)) {
-        if (requestFile(model.filedef().file(0).identifier(), true, targetfolder)) {
+        if (requestFile(model.filedef().file(0).identifier(), true, targetfolder, overrideMaxLatency)) {
             return model.filedef().file(0).path() + "/" + model.modelfilename();
         }
     }
