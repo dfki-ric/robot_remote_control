@@ -28,7 +28,7 @@ class ConsoleCommands {
         bool use_thread;
     };
 
-    bool readline(const std::string& prompt);
+    bool readline(const std::string& prompt, bool exitOnFailure=false);
 
     static char *command_finder(const char *text, int state);
 

@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
     std::string commandport;
     std::string telemetryport;
     bool SUCCESS = true;
-    bool NON_INTERACTIVE = false;
+    bool EXIT_ON_FAILURE = false;
 
     if (argc == 1) {
         ip = "localhost";
@@ -114,8 +114,8 @@ int main(int argc, char** argv) {
         return true;
     });
 
-    console.registerCommand("non-interactive", "used for parsing text files for automatic api tests", [&](const std::vector<std::string> &params){
-        NON_INTERACTIVE=true;
+    console.registerCommand("exit_on_failure", "used for parsing text files for automatic api tests", [&](const std::vector<std::string> &params){
+        EXIT_ON_FAILURE=true;
         return true;
     });
 
@@ -418,7 +418,7 @@ int main(int argc, char** argv) {
      */
     controller.waitForConnection();
     while (run)  {
-        SUCCESS = console.readline("rrc@" + ip + " $ ");
+        SUCCESS = console.readline("rrc@" + ip + " $ ", EXIT_ON_FAILURE);
         if (!SUCCESS) {
             break;
         }
