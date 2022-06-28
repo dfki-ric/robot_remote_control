@@ -46,12 +46,17 @@ std::vector<std::string> ConsoleCommands::parseLine(const std::string &line, boo
     return linevec;
 }
 
-bool ConsoleCommands::readline(const std::string& prompt) {
+bool ConsoleCommands::readline(const std::string& prompt, bool exitOnFailure) {
     std::unique_ptr<char[]> input = std::unique_ptr<char[]>(::readline(prompt.c_str()));
     if (not input.get()) return false;
     add_history(input.get());
     std::vector<std::string> line = parseLine(input.get());
-    return runCommand(line);
+    if (exitOnFailure) {
+        return runCommand(line);
+    } else {
+        runCommand(line);
+        return true;
+    }
 }
 
 char* ConsoleCommands::command_finder(const char *text, int state) {
