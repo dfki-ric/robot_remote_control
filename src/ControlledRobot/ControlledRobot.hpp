@@ -131,7 +131,7 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getSimpleActionCommand(SimpleAction *command, bool onlyNewest = true) {
+        bool getSimpleActionCommand(SimpleAction *command, bool onlyNewest = false) {
             return simpleActionsCommand->read(command, onlyNewest);
         }
 
@@ -141,7 +141,7 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getComplexActionCommand(ComplexAction *command, bool onlyNewest = true) {
+        bool getComplexActionCommand(ComplexAction *command, bool onlyNewest = false) {
             return complexActionCommandBuffer->read(command, onlyNewest);
         }
 
