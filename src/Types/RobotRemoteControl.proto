@@ -393,7 +393,8 @@ message Wrench {
 }
 
 message WrenchState {
-    repeated Wrench wrenches = 1;
+    Header header = 1;
+    repeated Wrench wrenches = 2;
 }
 
 // message DepthMap {
