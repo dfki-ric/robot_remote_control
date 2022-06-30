@@ -8,6 +8,7 @@
 #include <experimental/filesystem>
 #include <fstream>
 #include <unistd.h>
+#include <google/protobuf/io/coded_stream.h>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -91,7 +92,7 @@ class RobotController: public UpdateThread {
          * @brief sleeps until isConnected is true. Only works if setHeartBeatDuration is set or the controlled robot is sending something 
          */
         void waitForConnection() {
-            while (not isConnected()){ usleep(100);}
+            while (not isConnected()){ usleep(100000);}
         }
 
         /**
@@ -468,7 +469,17 @@ class RobotController: public UpdateThread {
          * @param compressed if true (and compiled with gzip) compredd filed before sending
          * @param targetpath local path where to save files (path from robot is preserved)
          */
-        bool requestFile(const std::string &identifier, const bool &compressed = false, const std::string targetpath = "./");
+        bool requestFile(const std::string &identifier, const bool &compressed = false, const std::string targetpath = "./", const float &overrideMaxLatency = 0);
+
+
+        /**
+         * @brief requestt a model file/definition from the robot, most probably an urdf
+         * 
+         * @param targetfolder folder to save the model information to
+         * @return std::pair<std::string, std::string> robot model path and file to open
+         */
+        std::pair<std::string, std::string> requestRobotModel(const std::string &targetfolder = "./", const float &overrideMaxLatency = 120);
+
 
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type
@@ -531,14 +542,18 @@ class RobotController: public UpdateThread {
             return (result->size() > 0) ? true : false;
         }
 
-        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const uint16_t &requestType) {
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const uint16_t &requestType, const float &overrideMaxLatency = 0) {
             std::string sendbuf, recvbuf;
             sendbuf.resize(sizeof(uint16_t));
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(sendbuf.data()));
             *data = requestType;
             requestdata.AppendToString(&sendbuf);
-            recvbuf = sendRequest(sendbuf);
-            reply->ParseFromString(recvbuf);
+            recvbuf = sendRequest(sendbuf, overrideMaxLatency);
+
+            google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
+            cistream.SetTotalBytesLimit(recvbuf.size(), recvbuf.size());
+            reply->ParseFromCodedStream(&cistream);
+
             return (recvbuf.size() > 0) ? true : false;
         }
 
@@ -554,7 +569,7 @@ class RobotController: public UpdateThread {
 
 
     protected:
-        virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
+        virtual std::string sendRequest(const std::string& serializedMessage, const float &overrideMaxLatency = 0, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
@@ -588,7 +603,7 @@ class RobotController: public UpdateThread {
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
             *data = type;
             protodata.AppendToString(&buf);
-            return sendRequest(buf, flags);
+            return sendRequest(buf, 0, flags);
         }
 
 

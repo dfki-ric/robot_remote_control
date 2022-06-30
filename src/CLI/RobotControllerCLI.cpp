@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
     std::string commandport;
     std::string telemetryport;
     bool SUCCESS = true;
-    bool NON_INTERACTIVE = false;
+    bool EXIT_ON_FAILURE = false;
 
     if (argc == 1) {
         ip = "localhost";
@@ -114,8 +114,8 @@ int main(int argc, char** argv) {
         return true;
     });
 
-    console.registerCommand("non-interactive", "used for parsing text files for automatic api tests", [&](const std::vector<std::string> &params){
-        NON_INTERACTIVE=true;
+    console.registerCommand("exit_on_failure", "used for parsing text files for automatic api tests", [&](const std::vector<std::string> &params){
+        EXIT_ON_FAILURE=true;
         return true;
     });
 
@@ -376,6 +376,20 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("requestFile", params);
     params.clear();
 
+    console.registerCommand("requestRobotModel", "download a robot model", [&](const std::vector<std::string> &params) {
+        std::pair<std::string, std::string> filename = controller.requestRobotModel(params[0]);
+        if (filename.first != "" && filename.second != "") {
+            printf("\ndownloaded model, please open '%s/%s' with an external viewer\n\n", filename.first.c_str(), filename.second.c_str());
+            return true;
+        } else {
+            printf("no model received, possibly the robot does not define one\n");
+            return false;
+        }
+    });
+    params.push_back(ConsoleCommands::ParamDef("target folder (string)", "./model"));
+    console.registerParamsForCommand("requestRobotModel", params);
+    params.clear();
+
     /**
      * Simeplesensors
      */
@@ -404,8 +418,8 @@ int main(int argc, char** argv) {
      */
     controller.waitForConnection();
     while (run)  {
-        SUCCESS = console.readline("rrc@" + ip + " $ ");
-        if (NON_INTERACTIVE && not SUCCESS) {
+        SUCCESS = console.readline("rrc@" + ip + " $ ", EXIT_ON_FAILURE);
+        if (!SUCCESS) {
             break;
         }
     }
@@ -413,5 +427,5 @@ int main(int argc, char** argv) {
     printf("\n");
     fflush(stdout);
     controller.stopUpdateThread();
-    return not SUCCESS;
+    return !SUCCESS;
 }

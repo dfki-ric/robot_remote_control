@@ -275,6 +275,11 @@ message RegionOfInterest {
     bool do_rectify = 5;
 }
 
+message RobotModelInformation {
+    FileDefinition filedef = 1;
+    string modelfilename = 2;
+}
+
 message RobotName {
     string value = 1;
 }
