@@ -136,6 +136,7 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
     DEFINE_PRINT_COMMAND(Odometry, getOdometry, "print current Odometry");
+    DEFINE_PRINT_COMMAND(Transforms, getCurrentTransforms, "print current Transforms");
 
 
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
