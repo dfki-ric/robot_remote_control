@@ -96,7 +96,9 @@ char * ConsoleCommands::param_finder(const char *text, int state) {
 
     int lastSpacepos = currentline.rfind(' ');
     std::string completed = currentline;
-    completed.erase(lastSpacepos);
+    if (lastSpacepos != std::string::npos) {
+        completed.erase(lastSpacepos);
+    }
     std::string curpart = currentline;
     curpart.erase(0, completed.size());
 
