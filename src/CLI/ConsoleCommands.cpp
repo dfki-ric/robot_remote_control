@@ -102,22 +102,23 @@ char * ConsoleCommands::param_finder(const char *text, int state) {
     std::string curpart = currentline;
     curpart.erase(0, completed.size());
 
-
     // has params left to type
     if (finished_params >= 0 && finished_params < commands[command].params.size()) {
         // find suitable params for current line
-        std::vector<std::string> &defaultvalues = commands[command].params[finished_params].defaultvalues;
+        std::vector<DefaultParam> &defaultvalues = commands[command].params[finished_params].defaultvalues;
         std::vector<std::string> matchingValues;
-        std::for_each(defaultvalues.begin(), defaultvalues.end(), [&](const std::string& val) {
+        std::for_each(defaultvalues.begin(), defaultvalues.end(), [&](const DefaultParam& val) {
             // check id prev param was completed (space at end of line)
             if (curpart == " ") {
-                matchingValues.push_back(val);
+                if (val.only_if_before == "" || val.only_if_before + " " == currentline) {
+                    matchingValues.push_back(val.param);
+                }
             } else {
                 // it is is currently typed: provide only fitting params
                 // curpart start with " ", remove it
                 std::string parameterPart(curpart.begin()+1, curpart.end());
-                if (val.rfind(parameterPart, 0) == 0) {
-                    matchingValues.push_back(val);
+                if (val.param.rfind(parameterPart, 0) == 0) {
+                    matchingValues.push_back(val.param);
                 }
             }
         });
@@ -165,14 +166,14 @@ int ConsoleCommands::registerParamsForCommand(const std::string &name, const std
     if (commands.find(name) != commands.end()) {
         std::vector<ParamDef> escaped_params = params;
         std::for_each(escaped_params.begin(), escaped_params.end(), [&](ParamDef& param) {
-            std::for_each(param.defaultvalues.begin(), param.defaultvalues.end(), [&](std::string& value) {
+            std::for_each(param.defaultvalues.begin(), param.defaultvalues.end(), [&](DefaultParam& value) {
                 // check for spaces to escape
-                size_t position = value.find(" ", 0);
+                size_t position = value.param.find(" ", 0);
                 while (position != std::string::npos) {
                     // escape space
-                    value.insert(position, "\\");
+                    value.param.insert(position, "\\");
                     // continue search after modyfied place
-                    position = value.find(" ", position+2);
+                    position = value.param.find(" ", position+2);
                 }
             });
         });
@@ -193,12 +194,12 @@ bool ConsoleCommands::runCommand(std::vector<std::string> &line) {
         auto iter = commands.find(cmd);
         if (iter != commands.end()) {
             while (params.size() < iter->second.params.size()) {
-                std::string question = iter->second.params[params.size()].hint + "[" + iter->second.params[params.size()].defaultvalues.front() +"]:";
+                std::string question = iter->second.params[params.size()].hint + "[" + iter->second.params[params.size()].defaultvalues.front().param +"]:";
                 std::string param;
                 std::cout << "missing paramater: " << question;
                 std::getline(std::cin, param);
                 if (param == "") {
-                    param = iter->second.params[params.size()].defaultvalues.front();
+                    param = iter->second.params[params.size()].defaultvalues.front().param;
                 }
                 params.push_back(param);
             }
