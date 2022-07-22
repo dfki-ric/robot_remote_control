@@ -16,7 +16,7 @@ class ConsoleCommands {
     virtual ~ConsoleCommands();
 
     struct DefaultParam {
-        DefaultParam(const std::string& param, const std::string &only_if_before):param(param), only_if_before(only_if_before){};
+        DefaultParam(const std::string& param, const std::string &only_if_before = ""):param(param), only_if_before(only_if_before){};
         std::string param;
         std::string only_if_before;
     };

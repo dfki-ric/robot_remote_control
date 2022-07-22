@@ -229,36 +229,53 @@ int main(int argc, char** argv) {
     console.registerCommand("setJointCommand", "send joint position command", [&](const std::vector<std::string> &params){
         robot_remote_control::JointCommand cmd;
         try {
-            cmd.add_name(params[0]);
-            cmd.add_position(std::stof(params[1]));
+            cmd.add_name(params[1]);
+            if (params[0] == "position") {
+                cmd.add_position(std::stof(params[2]));
+            } else if (params[0] == "velocity") {
+                cmd.add_velocity(std::stof(params[2]));
+            } else if (params[0] == "effort") {
+                cmd.add_effort(std::stof(params[2]));
+            }
+            
         } catch (const std::invalid_argument &e) {
             std::cout << "second value must be a number, was '" << params[1] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
             return false;
         }
+        cmd.PrintDebugString();
         controller.setJointCommand(cmd);
         return true;
     });
-
+    params.push_back(ConsoleCommands::ParamDef("mode [position, velocity, effort]", "position"));
+    params.back().defaultvalues.push_back(ConsoleCommands::DefaultParam("velocity"));
+    params.back().defaultvalues.push_back(ConsoleCommands::DefaultParam("effort"));
     params.push_back(ConsoleCommands::ParamDef("joint_name (string)", "empty"));
     params.push_back(ConsoleCommands::ParamDef("position (float)", "0"));
     console.registerParamsForCommand("setJointCommand", params);
     params.clear();
 
-    console.registerCommand("requestControllableJoints", "print ControllableJoints set by the robot", [&](const std::vector<std::string> &params){
+
+    // defien lamda externally to be able to call it in init without output
+    bool printRequestControllableJoints = false;
+    auto requestControllableJoints = [&](const std::vector<std::string> &params) {
         robot_remote_control::JointState joints;
         if (controller.requestControllableJoints(&joints)) {
-            joints.PrintDebugString();
+            if (printRequestControllableJoints) {
+                joints.PrintDebugString();
+            }
             // add param options to autocomplete
             for (auto &jointname : joints.name()) {
-                console.addParamDefaultValue("setJointCommand", 0, jointname);
+                console.addParamDefaultValue("setJointCommand", 1, jointname);
             }
             return true;
         } else {
             printf("no new data received \n");
             return false;
         }
-    });
+    };
+
+    console.registerCommand("requestControllableJoints", "print ControllableJoints set by the robot", requestControllableJoints);
 
     std::map<std::string, float> simpleActionNamesValues;
     console.registerCommand("setSimpleActionCommand", "execute a simpleaction", [&](const std::vector<std::string> &params){
@@ -287,10 +304,14 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("setSimpleActionCommand", params);
     params.clear();
 
-    console.registerCommand("requestSimpleActions", "request simple actions and add them to autocomplete", [&](const std::vector<std::string> &params){
+
+    bool printRequestSimpleActions = false;
+    auto requestSimpleActions = [&](const std::vector<std::string> &params){
         robot_remote_control::SimpleActions actions;
         if (controller.requestSimpleActions(&actions)) {
-            actions.PrintDebugString();
+            if (printRequestSimpleActions) {
+                actions.PrintDebugString();
+            }
             // add param options to autocomplete
             for (auto &simpleaction : actions.actions()) {
                 console.addParamDefaultValue("setSimpleActionCommand", 0, simpleaction.name());
@@ -305,7 +326,9 @@ int main(int argc, char** argv) {
             printf("no new data received \n");
             return false;
         }
-    });
+    };
+
+    console.registerCommand("requestSimpleActions", "request simple actions and add them to autocomplete", requestSimpleActions);
 
 
     /**
@@ -429,6 +452,16 @@ int main(int argc, char** argv) {
      * Main loop
      */
     controller.waitForConnection();
+
+    printf("connected\n");
+
+    // call request lamda (output off)
+    requestControllableJoints(std::vector<std::string>());
+    printRequestControllableJoints = true;
+
+    requestSimpleActions(std::vector<std::string>());
+    printRequestSimpleActions = true;
+
     while (run)  {
         SUCCESS = console.readline("rrc@" + ip + " $ ", EXIT_ON_FAILURE);
         if (!SUCCESS) {
