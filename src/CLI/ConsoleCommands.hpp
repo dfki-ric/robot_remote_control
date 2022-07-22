@@ -15,10 +15,16 @@ class ConsoleCommands {
     ConsoleCommands();
     virtual ~ConsoleCommands();
 
+    struct DefaultParam {
+        DefaultParam(const std::string& param, const std::string &only_if_before):param(param), only_if_before(only_if_before){};
+        std::string param;
+        std::string only_if_before;
+    };
+
     struct ParamDef {
-        ParamDef(const std::string& hint, const std::string& defaultvalue):hint(hint), defaultvalues({defaultvalue}) {}
+        ParamDef(const std::string& hint, const std::string& defaultvalue):hint(hint), defaultvalues({DefaultParam(defaultvalue, "")}) {}
         std::string hint;
-        std::vector<std::string> defaultvalues;
+        std::vector<DefaultParam> defaultvalues;
     };
 
     struct CommandDef {
@@ -42,8 +48,8 @@ class ConsoleCommands {
     static int registerParamsForCommand(const std::string &name, const std::vector<ParamDef> &params);
 
 
-    static void addParamDefaultValue(const std::string &name, const int &paramindex, const std::string &defaultvalue) {
-        commands[name].params[paramindex].defaultvalues.push_back(defaultvalue);
+    static void addParamDefaultValue(const std::string &name, const int &paramindex, const std::string &defaultvalue, const std::string only_if_before = "") {
+        commands[name].params[paramindex].defaultvalues.push_back(DefaultParam(defaultvalue, only_if_before));
     }
 
     bool runCommand(std::vector<std::string> &line);

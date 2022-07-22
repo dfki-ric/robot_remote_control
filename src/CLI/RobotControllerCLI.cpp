@@ -260,6 +260,7 @@ int main(int argc, char** argv) {
         }
     });
 
+    std::map<std::string, float> simpleActionNamesValues;
     console.registerCommand("setSimpleActionCommand", "execute a simpleaction", [&](const std::vector<std::string> &params){
         std::for_each(params.begin(), params.end(), [](const std::string &param) {
             std::cout << param << std::endl;
@@ -269,9 +270,14 @@ int main(int argc, char** argv) {
         try {
             action.set_state(std::stof(params[1]));
         } catch (const std::invalid_argument &e) {
-            std::cout << "Simpleaction state must be a number, was '" << params[1] <<"' " << std::endl;
-            std::cout << e.what() << std::endl;
-            return false;
+            auto value = simpleActionNamesValues.find(params[1]);
+            if (value != simpleActionNamesValues.end()) {
+                action.set_state(value->second);
+            } else {
+                std::cout << "Simpleaction state must be a number, was '" << params[1] <<"' " << std::endl;
+                std::cout << e.what() << std::endl;
+                return false;
+            }
         }
         controller.setSimpleActionCommand(action);
         return true;
@@ -288,6 +294,11 @@ int main(int argc, char** argv) {
             // add param options to autocomplete
             for (auto &simpleaction : actions.actions()) {
                 console.addParamDefaultValue("setSimpleActionCommand", 0, simpleaction.name());
+
+                for (auto namedvalue : simpleaction.type().value_names()) {
+                    simpleActionNamesValues[namedvalue.name()] = namedvalue.value();
+                    console.addParamDefaultValue("setSimpleActionCommand", 1, namedvalue.name(), "setSimpleActionCommand " + simpleaction.name());
+                }
             }
             return true;
         } else {
