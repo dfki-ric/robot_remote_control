@@ -528,27 +528,15 @@ class RobotController: public UpdateThread {
             telemetryReceivedCallbacks.push_back(function);
         }
 
-        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
-            std::string buf;
-            buf.resize(sizeof(uint16_t)*2);
 
-            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
-            *data = requestType;
-            data++;
+        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST);
+        bool requestBinary(const std::string &request, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
-            // add the requested type
-            *data = type;
-            *result = sendRequest(buf);
-            return (result->size() > 0) ? true : false;
-        }
 
         template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const uint16_t &requestType, const float &overrideMaxLatency = 0) {
-            std::string sendbuf, recvbuf;
-            sendbuf.resize(sizeof(uint16_t));
-            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(sendbuf.data()));
-            *data = requestType;
-            requestdata.AppendToString(&sendbuf);
-            recvbuf = sendRequest(sendbuf, overrideMaxLatency);
+            std::string request, recvbuf;
+            requestdata.SerializeToString(&request);
+            requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
 
             google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
             cistream.SetTotalBytesLimit(recvbuf.size(), recvbuf.size());

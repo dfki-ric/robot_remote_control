@@ -286,6 +286,30 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE], data, true);
 }
 
+
+bool RobotController::requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType) {
+    std::string request;
+    request.resize(sizeof(uint16_t));
+    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
+    *data = type;
+    return requestBinary(request, result, requestType);
+}
+
+bool RobotController::requestBinary(const std::string &request, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
+    std::string buf;
+    buf.resize(sizeof(uint16_t)+request.size());
+
+    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+    *data = requestType;
+    data++;
+
+    // add the requested data
+    memcpy(data, request.data(), request.size());
+    *result = sendRequest(buf, overrideMaxLatency);
+    return (result->size() > 0) ? true : false;
+}
+
+
 bool RobotController::requestFile(const std::string &identifier, const bool &compressed,  const std::string targetpath, const float &overrideMaxLatency) {
     std::string buffer;
     FileRequest request;
