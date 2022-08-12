@@ -191,6 +191,21 @@ class ControlledRobot: public UpdateThread {
             return 0;
         }
 
+        int sendTelemetryRaw(const uint16_t& type, const std::string& serialized) {
+            if (telemetryTransport.get()) {
+                std::string buf;
+                buf.resize(sizeof(uint16_t));
+                uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+                *data = type;
+                buf.append(serialized);
+                uint32_t bytes = telemetryTransport->send(buf);
+                updateStatistics(bytes, type);
+                return bytes - sizeof(uint16_t);
+            }
+            printf("ERROR Transport invalid\n");
+            return 0;
+        }
+
         void updateStatistics(const uint32_t &bytesSent, const uint16_t &type);
 
     public:
