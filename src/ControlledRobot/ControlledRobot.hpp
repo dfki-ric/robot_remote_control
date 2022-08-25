@@ -14,6 +14,7 @@
 #include <vector>
 #include <atomic>
 #include <algorithm>
+#include <unistd.h>
 
 namespace robot_remote_control {
 
@@ -42,6 +43,13 @@ class ControlledRobot: public UpdateThread {
 
         bool isConnected() {
             return connected.load();
+        }
+
+        /**
+         * @brief sleeps until isConnected is true. Only works if setHeartBeatDuration is set or the controlled robot is sending something 
+         */
+        void waitForConnection() {
+            while (!isConnected()){ usleep(100000);}
         }
 
 

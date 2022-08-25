@@ -92,7 +92,7 @@ class RobotController: public UpdateThread {
          * @brief sleeps until isConnected is true. Only works if setHeartBeatDuration is set or the controlled robot is sending something 
          */
         void waitForConnection() {
-            while (not isConnected()){ usleep(100000);}
+            while (! isConnected()){ usleep(100000);}
         }
 
         /**
