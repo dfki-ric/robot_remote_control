@@ -4,6 +4,8 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework system filesystem)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
+add_subdirectory(performance)
+
 add_definitions(-DBOOST_TEST_DYN_LINK)
 
 set (COMMON_SOURCE suite.cpp
