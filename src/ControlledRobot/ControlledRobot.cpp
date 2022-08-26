@@ -17,7 +17,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     heartbeatAllowedLatency(0.1),
     connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
-    logLevel(CUSTOM-1) {
+    logLevel(CUSTOM-1),
+    receiveflags(Transport::NOBLOCK) {
 
     // init buffers for non-cast access in getters
     poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
@@ -79,12 +80,16 @@ ControlledRobot::~ControlledRobot() {
 }
 
 void ControlledRobot::update() {
-    while (receiveRequest() != NO_CONTROL_DATA) {connected.store(true);}
+    bool received = false;
+    while (receiveRequest() != NO_CONTROL_DATA) {received = true;}
+    if (received == true) {
+        connected.store(true);
+    }
 
     // if there are multiple connections with different frequencies it can happen that if the high frequency conenction is lost
     // and the last heartbeat message came from the low fewquency connection, the heartbeatExpiredCallback is called after
     // the low frequency timer is expired
-    if (heartbeatCommand->read(&heartbeatValues)) {
+    if (heartbeatCommand->hasNew() && heartbeatCommand->read(&heartbeatValues)) {
         connected.store(true);
         // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
         heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);
@@ -107,11 +112,7 @@ void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const uint16_t
 
 ControlMessageType ControlledRobot::receiveRequest() {
     std::string msg;
-    Transport::Flags flags = Transport::NONE;
-    // if (!this->threaded()){
-        flags = Transport::NOBLOCK;
-    // }
-    int result = commandTransport->receive(&msg, flags);
+    int result = commandTransport->receive(&msg, receiveflags);
     if (result) {
         ControlMessageType requestType = evaluateRequest(msg);
         return requestType;

@@ -50,6 +50,10 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
         return true;
     }
 
+    int hasNew() {
+        return buffer.lockedAccess()->size();
+    }
+
     bool read(COMMAND *target, bool onlyNewest = true) {
         bool oldval = isnew.load();
         auto lockable = buffer.lockedAccess();

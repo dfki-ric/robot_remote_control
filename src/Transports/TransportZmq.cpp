@@ -37,8 +37,11 @@ int TransportZmq::receive(std::string* buf, Flags flags) {
     if (flags & NOBLOCK) {
         zmqflag = ZMQ_NOBLOCK;
     }
-    int result = socket->recv(&requestmsg, zmqflag);
-    *buf = std::string(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
+
+    if (socket->recv(&requestmsg, zmqflag)) {
+        buf->assign(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
+    }
+
     return requestmsg.size();
 }
 

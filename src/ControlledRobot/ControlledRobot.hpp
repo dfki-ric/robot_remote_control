@@ -621,6 +621,8 @@ class ControlledRobot: public UpdateThread {
 
         Statistics statistics;
 
+        Transport::Flags receiveflags;
+
 };
 
 }  // namespace robot_remote_control
