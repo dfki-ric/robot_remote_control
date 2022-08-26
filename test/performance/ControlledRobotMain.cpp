@@ -16,6 +16,8 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
+
+ 
     robot.startUpdateThread(0);
 
     // set a callback for connection losses, allow 100ms of later arrival
@@ -23,33 +25,48 @@ int main(int argc, char** argv)
     // the elapsed time may be used to have different stages of escalation
     // when there are multiple connections to this robots with different heartbeats
     // in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
-    robot.setupHeartbeatCallback(0.1, [](const float &elapsed){
-        printf("no heartbeat since %.2f seconds\n", elapsed);
-    });
 
-    
-    // for requests to work, you need a valid connection:
-    // only works when heartbeats are set up
-    while (!robot.isConnected()) {
-        printf("waiting for connection\n");
-        usleep(100000);
-    }
+    bool running = true;
+    int counter = 0;
+    // robot.setupHeartbeatCallback(0.5, [&](const float &elapsed){
+    //     printf("test finished\n");
+    //     if counter 
+    //     running=false;
+    // });
+
+    robot.waitForConnection();
 
     robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
         // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads
         //printf("Pose Command Callback\n");
     });
 
+    robot_remote_control::Pose pose;
+    
+    robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, [&](){
+        ++counter;
+        if (counter == 2000) {
+             printf("switching scheduler\n");
+             if (!robot.setUpdateThreadPriority(99, SCHED_FIFO)) {
+                 printf("error setting thread priority\n");
+            };
+        }
+        if (counter == 4000) {
+             printf("switching scheduler\n");
+             if (!robot.setUpdateThreadPriority(99, SCHED_RR)) {
+                 printf("error setting thread priority\n");
+            };
+        }
+        if (counter>=6000) {
+            // exit(0);
+            running=false;
+        }
+    });
 
-    while (true) {
-
-        //do nothing
-
+    while(running) {
         usleep(100000);
     }
 
-
-    return 0;
 }
 
 

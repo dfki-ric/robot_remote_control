@@ -39,13 +39,12 @@ int main(int argc, char** argv) {
     controller.waitForConnection();
 
     
-
-    while (true) {
+    for (int i = 0; i<=6000;++i){
+    // while (true) {
         auto start = std::chrono::high_resolution_clock::now();
         controller.setTargetPose(pose);
         auto end = std::chrono::high_resolution_clock::now();
         std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
     }
-
     return 0;
 }
