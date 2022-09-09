@@ -167,7 +167,7 @@ int main(int argc, char** argv) {
      * Commands
      */
 
-    console.registerCommand("setTwistCommand", "execute a twist", [&](const std::vector<std::string> &params){
+    auto processTwist = [](const std::vector<std::string> &params) {
         robot_remote_control::Twist twist;
         int i = 0;
         try {
@@ -180,12 +180,18 @@ int main(int argc, char** argv) {
         } catch (const std::invalid_argument &e) {
             std::cout << "value must be a number, was '" << params[i] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
-            return false;
         }
+        if (params.size() > 6){
+            twist.mutable_header()->set_frame(params[i++]);
+        }
+        return twist;
+    };
+
+    console.registerCommand("setTwistCommand", "execute a twist", [&](const std::vector<std::string> &params){
+        robot_remote_control::Twist twist = processTwist(params);
         controller.setTwistCommand(twist);
         return true;
     });
-
     params.push_back(ConsoleCommands::ParamDef("linear x (float)", "0"));
     params.push_back(ConsoleCommands::ParamDef("linear y (float)", "0"));
     params.push_back(ConsoleCommands::ParamDef("linear z (float)", "0"));
@@ -194,6 +200,23 @@ int main(int argc, char** argv) {
     params.push_back(ConsoleCommands::ParamDef("angular z (float)", "0"));
     console.registerParamsForCommand("setTwistCommand", params);
     params.clear();
+
+
+    console.registerCommand("setTwistCommandForFrame", "execute a twist", [&](const std::vector<std::string> &params){
+        robot_remote_control::Twist twist = processTwist(params);
+        controller.setTwistCommand(twist);
+        return true;
+    });
+    params.push_back(ConsoleCommands::ParamDef("linear x (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("linear y (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("linear z (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("angular x (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("angular y (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("angular z (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("frame name", ""));
+    console.registerParamsForCommand("setTwistCommandForFrame", params);
+    params.clear();
+
 
     console.registerCommand("setTargetPose3D", "send target pose command", [&](const std::vector<std::string> &params) {
         robot_remote_control::Pose pose;
@@ -274,7 +297,6 @@ int main(int argc, char** argv) {
             return false;
         }
     };
-
     console.registerCommand("requestControllableJoints", "print ControllableJoints set by the robot", requestControllableJoints);
 
     std::map<std::string, float> simpleActionNamesValues;
