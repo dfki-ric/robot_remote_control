@@ -357,9 +357,11 @@ int main(int argc, char** argv) {
        int id = std::atoi(params[0].c_str());
         if (controller.requestMap(&map,id)) {
             printf("%s\n", map.ShortDebugString().c_str());
-            //map.PrintDebugString(); 
+            //map.PrintDebugString();
+            return true;
         } else { 
-            printf("no new data received \n"); 
+            printf("no new data received \n");
+            return false; 
         } 
     });
     params.push_back(ConsoleCommands::ParamDef("value (int)", "1"));
