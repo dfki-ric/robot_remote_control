@@ -35,6 +35,8 @@ namespace RockConversion {
         convert(num_cell, rrc_type->mutable_size());
         convert((base::Vector2d)rock_type.getResolution(), rrc_type->mutable_scale());
         convert(rock_type.translation(), rrc_type->mutable_local_offset());
+        convert(rock_type.rotation(), rrc_type->mutable_local_orientation());
+
 
         // reserve space for all value entries
         rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
@@ -47,6 +49,9 @@ namespace RockConversion {
                     // set the only the lowest data point, but it's maximum value
                     // when a block is the lowest entry, we want to use the top of it
                     rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
+                } else {
+                    rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
+                    //rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }
         }
@@ -61,16 +66,16 @@ namespace RockConversion {
         convert(rrc_type.scale(), &res);
         rock_type->setResolution(res);
 
-        base::Vector3d translation;
-        convert(rrc_type.local_offset(), &translation);
-        rock_type->translate(translation);
-        // rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
         for (size_t y = 0; y < num_cell.y(); y++) {
             for (size_t x = 0; x < num_cell.x(); x++) {
-                maps::grid::SurfacePatch<maps::grid::MLSConfig::KALMAN> patch(rrc_type.value().Get(x+y*num_cell.x()), 0);  // set 0 variance
+                maps::grid::SurfacePatch<maps::grid::MLSConfig::KALMAN> patch(rrc_type.value(x+y*num_cell.x()), 0);  // set 0 variance
                 rock_type->at(x, y).insert(patch);
             }
         }
+
+        base::Vector3d translation;
+        convert(rrc_type.local_offset(), &translation);
+        rock_type->translate(translation);
     }
 
     /**
@@ -87,9 +92,10 @@ namespace RockConversion {
         convert(num_cell, rrc_type->mutable_size());
         convert((base::Vector2d)rock_type.getResolution(), rrc_type->mutable_scale());
         convert(rock_type.translation(), rrc_type->mutable_local_offset());
+        convert(rock_type.rotation(), rrc_type->mutable_local_orientation());
 
         // reserve space for all value entries
-        //rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
+        rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
         for (size_t y = 0; y < num_cell.y(); y++) {
             for (size_t x = 0; x < num_cell.x(); x++) {
                 const auto &list = rock_type.at(x, y);
@@ -101,6 +107,7 @@ namespace RockConversion {
                     //rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
                     rrc_type->add_value(patch->getMax());
                 } else {
+                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
                     rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }
@@ -141,9 +148,10 @@ namespace RockConversion {
         convert(num_cell, rrc_type->mutable_size());
         convert((base::Vector2d)rock_type.getResolution(), rrc_type->mutable_scale());
         convert(rock_type.translation(), rrc_type->mutable_local_offset());
+        convert(rock_type.rotation(), rrc_type->mutable_local_orientation());
 
         // reserve space for all value entries
-        //rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
+        rrc_type->mutable_value()->Reserve(num_cell.x() * num_cell.y());
         for (size_t y = 0; y < num_cell.y(); y++) {
             for (size_t x = 0; x < num_cell.x(); x++) {
                 const auto &list = rock_type.at(x, y);
@@ -155,6 +163,7 @@ namespace RockConversion {
                     //rrc_type->mutable_value()->Set(x+y*num_cell.x(), patch->getMax());
                     rrc_type->add_value(patch->getMax());
                 } else {
+                    //rrc_type->mutable_value()->Set(x+y*num_cell.x(), std::numeric_limits<float>::quiet_NaN());
                     rrc_type->add_value(std::numeric_limits<float>::quiet_NaN());
                 }
             }

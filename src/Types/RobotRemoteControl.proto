@@ -88,6 +88,29 @@ message ControllableFrames {
     repeated ControllableFrame controllable_frames = 1;
 }
 
+message File {
+    string identifier = 1;
+    string path = 2;
+    bytes data = 4;
+}
+
+message Folder {
+    string identifier = 1;
+    bool compressed = 2;
+    repeated File file = 3;
+    int32 uncompressed_size = 4;
+}
+
+message FileDefinition {
+    repeated File file = 1;
+    repeated bool isFolder = 2;
+}
+
+message FileRequest {
+    string identifier = 1;
+    bool compressed = 2;
+}
+
 message GridMap {
     Header header = 1;
     string frame = 2;
@@ -252,6 +275,11 @@ message RegionOfInterest {
     bool do_rectify = 5;
 }
 
+message RobotModelInformation {
+    FileDefinition filedef = 1;
+    string modelfilename = 2;
+}
+
 message RobotName {
     string value = 1;
 }
@@ -304,6 +332,7 @@ message SimpleSensor{
     Vector2 scale = 6;
     repeated string value_names = 7;
     Position local_offset = 8; //local offset of the data
+    Orientation local_orientation = 9; //local orientation of the data
 }
 
 message SimpleSensors{
@@ -369,7 +398,8 @@ message Wrench {
 }
 
 message WrenchState {
-    repeated Wrench wrenches = 1;
+    Header header = 1;
+    repeated Wrench wrenches = 2;
 }
 
 // message DepthMap {

@@ -124,6 +124,31 @@ int main(int argc, char** argv)
     velocity.add_value(0);
     velocity.add_value(0);
 
+
+
+    robot_remote_control::FileDefinition files;
+    robot_remote_control::File* file;
+
+    file = files.add_file();
+    files.add_isfolder(true);
+    file->set_identifier("folder");
+    file->set_path("./test/testfiles/");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("topfolderfile");
+    file->set_path("./test/testfiles/topfolderfile");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("subfolderfile");
+    file->set_path("./test/testfiles/subfolder/subfolderfile");
+
+    robot.initFiles(files);
+
+
+
+
     // commands
     robot_remote_control::Twist twistcommand;
     robot_remote_control::GoTo gotocommand;

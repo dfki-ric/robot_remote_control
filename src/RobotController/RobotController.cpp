@@ -3,7 +3,11 @@
 #include <memory>
 #include <unistd.h>
 #include <stdexcept>
-#include <google/protobuf/io/coded_stream.h>
+
+#ifdef ZLIB_FOUND
+#include "../Tools/Compression.hpp"
+#endif
+
 
 using namespace robot_remote_control;
 
@@ -27,7 +31,10 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, 1);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
+        registerTelemetryType<MapsDefinition>(MAPS_DEFINITION, 1);
+        registerTelemetryType<Map>(MAP, 1);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
         registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
@@ -41,6 +48,8 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
         registerTelemetryType<Odometry>(ODOMETRY, buffersize);
         registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
+        registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
 
         #ifdef RRC_STATISTICS
             // add names to buffer, this types have aspecial treatment, the should not be registered
@@ -73,7 +82,11 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
 bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize) {
     auto lockedTelemetryBuffers = buffers->lockedAccess();
     std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type];
-    buffer->resize(newsize);
+    if (buffer.get()) {
+        buffer->resize(newsize);
+        return true;
+    }
+    return false;
 }
 
 uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type) {
@@ -125,6 +138,7 @@ void RobotController::setLogLevel(const uint16_t &level) {
 
 bool RobotController::setPermission(const Permission& permission) {
     sendProtobufData(permission, PERMISSION);
+    return true;
 }
 
 void RobotController::update() {
@@ -177,21 +191,34 @@ void RobotController::updateStatistics(const uint32_t &bytesSent, const uint16_t
     #endif
 }
 
-std::string RobotController::sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags) {
+std::string RobotController::sendRequest(const std::string& serializedMessage, const float &overrideMaxLatency, const robot_remote_control::Transport::Flags &flags) {
     std::lock_guard<std::mutex> lock(commandTransportMutex);
+
+    float currentMaxLatency = maxLatency;
+    if (overrideMaxLatency > 0) {
+        currentMaxLatency = overrideMaxLatency;
+    }
+
     try {
         commandTransport->send(serializedMessage, flags);
-    }catch (const std::exception &error) {
+    } catch (const std::exception &error) {
         connected.store(false);
-        lostConnectionCallback(maxLatency);
+        lostConnectionCallback(currentMaxLatency);
         return "";
     }
     std::string replystr;
 
-    requestTimer.start(maxLatency);
-    while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
-        // wait time depends on how long the transports recv blocks
-        usleep(1000);
+    requestTimer.start(currentMaxLatency);
+
+    try {
+        while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
+            // wait time depends on how long the transports recv blocks
+            usleep(1000);
+        }
+    } catch (const std::exception &error) {
+        connected.store(false);
+        lostConnectionCallback(currentMaxLatency);
+        return "";
     }
     if (replystr.size() == 0 && requestTimer.isExpired()) {
         connected.store(false);
@@ -212,12 +239,7 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     updateStatistics(serializedMessage.size(), *type);
 
-    // try to resolve through registered types
-    std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
-    if (adder.get()) {
-        adder->addToTelemetryBuffer(msgtype, serializedMessage);
-        return msgtype;
-    }
+
 
     // handle special types
 
@@ -233,7 +255,14 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         }
         default:
         {
-            throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
+            // try to resolve through registered types
+            std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
+            if (adder.get()) {
+                adder->addToTelemetryBuffer(msgtype, serializedMessage);
+                return msgtype;
+            } else {
+                throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
+            }
             return msgtype;
         }
     }
@@ -253,4 +282,96 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
     // }
 
     RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
+    // also push the data to the "traditional" buffer
+    RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE], data, true);
 }
+
+
+bool RobotController::requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType) {
+    std::string request;
+    request.resize(sizeof(uint16_t));
+    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
+    *data = type;
+    return requestBinary(request, result, requestType);
+}
+
+bool RobotController::requestBinary(const std::string &request, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
+    std::string buf;
+    buf.resize(sizeof(uint16_t)+request.size());
+
+    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+    *data = requestType;
+    data++;
+
+    // add the requested data
+    memcpy(data, request.data(), request.size());
+    *result = sendRequest(buf, overrideMaxLatency);
+    return (result->size() > 0) ? true : false;
+}
+
+
+bool RobotController::requestFile(const std::string &identifier, const bool &compressed,  const std::string targetpath, const float &overrideMaxLatency) {
+    std::string buffer;
+    FileRequest request;
+    request.set_identifier(identifier);
+
+    #ifdef ZLIB_FOUND
+        request.set_compressed(compressed);
+    #else
+        printf("zlib for compression not available, requesting files uncompressed\n");
+        request.set_compressed(false);
+    #endif
+
+    Folder folder;
+
+    bool result = requestProtobuf(request, &folder, FILE_REQUEST, overrideMaxLatency);
+    if (result) {
+        if (folder.file().size() == 0) {
+            // no files defined in ControlledRobot
+            folder.PrintDebugString();
+            return false;
+        }
+        std::experimental::filesystem::create_directories(targetpath);
+        for (auto &file : folder.file()) {
+            std::string filename = targetpath  + "/" + file.path();
+
+            if (file.data().size() == 0) {
+                // is directory
+                std::experimental::filesystem::create_directories(filename);
+            } else {
+                // is file
+                std::experimental::filesystem::path path(filename);
+                std::experimental::filesystem::create_directories(path.parent_path());
+                // printf("file %s\n dir %s\n", filename.c_str(), path.parent_path().c_str());
+                std::ofstream out(filename, std::ios::out | std::ios::binary);
+                if (out) {
+                    #ifdef ZLIB_FOUND
+                        if (folder.compressed()) {
+                            std::string decompressed;
+                            Compression::decompressString(file.data(), &decompressed);
+                            out.write(decompressed.data(), decompressed.size());
+                        } else {
+                            out.write(file.data().data(), file.data().size());
+                        }
+                    #else
+                        out.write(file.data().data(), file.data().size());
+                    #endif
+                    out.close();
+                }
+            }
+        }
+    }
+    return result;
+}
+
+std::pair<std::string, std::string> RobotController::requestRobotModel(const std::string &targetfolder, const float &overrideMaxLatency) {
+    RobotModelInformation model;
+    if (requestTelemetry(ROBOT_MODEL_INFORMATION, &model)) {
+        if (requestFile(model.filedef().file(0).identifier(), true, targetfolder, overrideMaxLatency)) {
+            return {model.filedef().file(0).path(), model.modelfilename()};
+        }
+    }
+    return {"",""};
+}
+
+

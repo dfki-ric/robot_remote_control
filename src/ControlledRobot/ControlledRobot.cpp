@@ -1,6 +1,12 @@
 #include "ControlledRobot.hpp"
 #include <iostream>
+#include <experimental/filesystem>
+#include <fstream>
+#include <sstream>
 
+#ifdef ZLIB_FOUND
+#include "../Tools/Compression.hpp"
+#endif
 
 namespace robot_remote_control {
 
@@ -11,18 +17,30 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     heartbeatAllowedLatency(0.1),
     connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
-    logLevel(CUSTOM-1) {
-    registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
-    registerCommandType(TWIST_COMMAND, &twistCommand);
-    registerCommandType(GOTO_COMMAND, &goToCommand);
-    simpleActionsCommand = std::make_unique<CommandRingBuffer<SimpleAction>>(buffersize);
+    logLevel(CUSTOM-1),
+    receiveflags(Transport::NOBLOCK) {
+
+    // init buffers for non-cast access in getters
+    poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
+    twistCommand = std::make_unique<CommandBuffer<Twist>>(buffersize);
+    goToCommand = std::make_unique<CommandBuffer<GoTo>>(buffersize);
+    simpleActionsCommand = std::make_unique<CommandBuffer<SimpleAction>>(buffersize);
+    complexActionCommandBuffer = std::make_unique<CommandBuffer<ComplexAction>>(buffersize);
+    jointsCommand = std::make_unique<CommandBuffer<JointCommand>>(buffersize);
+    heartbeatCommand = std::make_unique<CommandBuffer<HeartBeat>>(1);
+    permissionCommand = std::make_unique<CommandBuffer<Permission>>(1);
+    robotTrajectoryCommand = std::make_unique<CommandBuffer<Poses>>(buffersize);
+
+    // register command buffers
+    registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
+    registerCommandType(TWIST_COMMAND, twistCommand.get());
+    registerCommandType(GOTO_COMMAND, goToCommand.get());
     registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
-    complexActionCommandBuffer = std::make_unique<CommandRingBuffer<ComplexAction>>(buffersize);
     registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
-    registerCommandType(JOINTS_COMMAND, &jointsCommand);
-    registerCommandType(HEARTBEAT, &heartbeatCommand);
-    registerCommandType(PERMISSION, &permissionCommand);
-    registerCommandType(ROBOT_TRAJECTORY_COMMAND, &robotTrajectoryCommand);
+    registerCommandType(JOINTS_COMMAND, jointsCommand.get());
+    registerCommandType(HEARTBEAT, heartbeatCommand.get());
+    registerCommandType(PERMISSION, permissionCommand.get());
+    registerCommandType(ROBOT_TRAJECTORY_COMMAND, robotTrajectoryCommand.get());
 
 
     registerTelemetryType<Pose>(CURRENT_POSE);
@@ -53,6 +71,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<ImageLayers>(IMAGE_LAYERS);
     registerTelemetryType<Odometry>(ODOMETRY);
     registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES);
+    registerTelemetryType<FileDefinition>(FILE_DEFINITION);
+    registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION);
 }
 
 ControlledRobot::~ControlledRobot() {
@@ -60,12 +80,16 @@ ControlledRobot::~ControlledRobot() {
 }
 
 void ControlledRobot::update() {
-    while (receiveRequest() != NO_CONTROL_DATA) {connected.store(true);}
+    bool received = false;
+    while (receiveRequest() != NO_CONTROL_DATA) {received = true;}
+    if (received == true) {
+        connected.store(true);
+    }
 
     // if there are multiple connections with different frequencies it can happen that if the high frequency conenction is lost
     // and the last heartbeat message came from the low fewquency connection, the heartbeatExpiredCallback is called after
     // the low frequency timer is expired
-    if (heartbeatCommand.read(&heartbeatValues)) {
+    if (heartbeatCommand->hasNew() && heartbeatCommand->read(&heartbeatValues)) {
         connected.store(true);
         // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
         heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);
@@ -88,11 +112,7 @@ void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const uint16_t
 
 ControlMessageType ControlledRobot::receiveRequest() {
     std::string msg;
-    Transport::Flags flags = Transport::NONE;
-    // if (!this->threaded()){
-        flags = Transport::NOBLOCK;
-    // }
-    int result = commandTransport->receive(&msg, flags);
+    int result = commandTransport->receive(&msg, receiveflags);
     if (result) {
         ControlMessageType requestType = evaluateRequest(msg);
         return requestType;
@@ -116,11 +136,11 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case MAP_REQUEST: {
             uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             std::string map;
-            //get map
+            // get map
             {
                 auto lockedAccess = mapBuffer.lockedAccess();
-                if (*requestedMap < lockedAccess.get().size()){
-                    RingBufferAccess::peekData(lockedAccess.get()[*requestedMap],&map);
+                if (*requestedMap < lockedAccess.get().size()) {
+                    RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
                 }
             }
             commandTransport->send(map);
@@ -140,6 +160,44 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             } catch (const std::future_error &e) {
                 printf("%s\n", e.what());
             }
+            commandTransport->send(serializeControlMessageType(msgtype));
+            return PERMISSION;
+        }
+        case FILE_REQUEST: {
+            FileRequest request;
+            request.ParseFromString(serializedMessage);
+            Folder folder;
+            std::string buf;
+            int index = -1;
+            for (int i = 0; i < files.file().size(); ++i) {
+                if (files.file(i).identifier() == request.identifier()) {
+                    index = i;
+                    break;
+                }
+            }
+
+            #ifndef ZLIB_FOUND
+                printf("zlib for compression not available, sending uncompressed files\n");
+                request.set_compressed(false);
+            #endif
+            if (index >= 0 && index < files.file().size()) {
+                bool isFolder = files.isfolder(index);
+                File filedef = files.file(index);
+                // todo: read folderfolder
+                if (isFolder) {
+                    loadFolder(&folder, filedef.path(), request.compressed());
+                } else {
+                    File* file = folder.add_file();
+                    loadFile(file, filedef.path(), request.compressed());
+                    folder.set_compressed(request.compressed());
+                }
+            } else {
+                printf("requested file '%s' undefined, sending empty folder\n", request.identifier().c_str());
+                folder.set_identifier("file/folder :" + request.identifier() + " undefined");
+            }
+            folder.SerializeToString(&buf);
+            commandTransport->send(buf);
+            return FILE_REQUEST;
         }
         default: {
             CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
@@ -228,6 +286,47 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
     std::string buf;
     addControlMessageType(&buf, type);
     return buf;
+}
+
+
+bool ControlledRobot::loadFile(File* file, const std::string &path, bool compressed) {
+    file->set_path(path);
+    // read file (if it is and directory, no data is set)
+    std::ifstream in(path, std::ios::in | std::ios::binary);
+    if (in) {
+        std::stringstream filestr;
+        filestr << in.rdbuf();
+        in.close();
+        #ifdef ZLIB_FOUND
+            if (compressed) {
+                std::string compressed;
+                Compression::compressString(filestr.str(), &compressed);
+                file->set_data(compressed);
+            } else {
+                file->set_data(filestr.str());
+            }
+        #else
+            file->set_data(filestr.str());
+        #endif
+        return true;
+    }
+    return false;
+}
+
+bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed) {
+    try {
+        for (const auto & entry : std::experimental::filesystem::recursive_directory_iterator(path)) {
+            File* file = folder->add_file();
+            loadFile(file, entry.path(), compressed);
+        }
+        folder->set_compressed(compressed);
+    } catch (const std::experimental::filesystem::v1::__cxx11::filesystem_error &e) {
+        printf("%s\n", e.what());
+        // set "someting non-default" to actially send values
+        folder->set_identifier(e.what());
+        return false;
+    }
+    return true;
 }
 
 

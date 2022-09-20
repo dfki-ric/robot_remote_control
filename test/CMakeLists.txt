@@ -1,6 +1,10 @@
 find_package (Threads)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework system)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework system filesystem)
+
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
+add_subdirectory(performance)
 
 add_definitions(-DBOOST_TEST_DYN_LINK)
 
@@ -16,7 +20,7 @@ set (COMMON_LIBS
    robot_remote_control-controlled_robot
    robot_remote_control-robot_controller
    robot_remote_control-send_timers
-   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+   ${Boost_LIBRARIES}
 )
 
 add_executable(test_suite ${COMMON_SOURCE} )

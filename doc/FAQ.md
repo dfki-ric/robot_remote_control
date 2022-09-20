@@ -13,6 +13,8 @@ There are several approaches possible, our recommondation is to use the header f
 
 For generic controller implementations you can report frames that can be used by using initControllableFrames()/requestControllableFrames()
 
+When using this option, please set the "onlyNewest" option of the command getters in the ControlledRobot to false in order not to loose commands for different frames ans select a fitting buffer size in the ControlledRobot constructor (default: 10).
+
 A less recommended way is to define a "SimpleAction" that switches the controlled part instead of using the header.
 
 ## Ho can I save Bandwidth

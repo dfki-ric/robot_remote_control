@@ -98,6 +98,27 @@ They devided into "simple" and "complex" actions. Where thsi only defines
 
 Simple actions are name-based and contain only a float value as command. They can be used as a trigger or set a single value (e.g. "stop", "maximumSpeed", "controlMode").
 
+```c++
+    SimpleAction maxSpeed;
+    maxSpeed.set_name("maximumSpeed");
+    maxSpeed.set_value(1);
+    controller.setSimpleActionCommand(maxSpeed);
+```
+
+The robot can receive the SimpleActions and react to it by name
+
+```c++
+    SimpleAction simepleaction;
+    robot.getSimpleActionCommand(simepleaction);
+    if (simepleaction.name() == "maximumSpeed") {
+        setMaxSpeed(simepleaction.value());
+    } else if (simepleaction.name() == "stop") {
+        stop();
+    }
+```
+
+
+
 When the robot should be usable for generic user interfaces (that use the RobotController library), the initSimpleActions() function should be used to report the availabe actions, the type (NamedValue) setting is only important for generated GUIs, not for the content of the message.
 
 ### Complex Actions

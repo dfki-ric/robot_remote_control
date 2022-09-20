@@ -5,6 +5,10 @@
 #include <memory>
 #include <mutex>
 #include <atomic>
+#include <experimental/filesystem>
+#include <fstream>
+#include <unistd.h>
+#include <google/protobuf/io/coded_stream.h>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -77,11 +81,18 @@ class RobotController: public UpdateThread {
 
         /**
          * @brief return then current state of the connection using the heartbeat.
-         * @return the current status of the connection, if a hearbeat duration iss set using setHeartBeatDuration()
+         * @return the current status of the connection, if a hearbeat duration is set using setHeartBeatDuration()
          * 
          */
         bool isConnected() {
             return connected.load();
+        }
+
+        /**
+         * @brief sleeps until isConnected is true. Only works if setHeartBeatDuration is set or the controlled robot is sending something 
+         */
+        void waitForConnection() {
+            while (! isConnected()){ usleep(100000);}
         }
 
         /**
@@ -346,6 +357,10 @@ class RobotController: public UpdateThread {
             return result;
         }
 
+        bool requestRobotState(RobotState *state) {
+            return requestTelemetry(ROBOT_STATE, state);
+        }
+
         /**
          * @brief Request information about the complex actions of the robot.
          * 
@@ -439,6 +454,34 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Request which files can be downloaded from the robot
+         * 
+         * @param files file definition for the result
+         */
+        bool requestAvailableFiles(FileDefinition *files) {
+            return requestTelemetry(FILE_DEFINITION, files);
+        }
+
+        /**
+         * @brief download one of the defined files od folders
+         * 
+         * @param identifier identifier string from FileDefinition received by requestAvailableFiles()
+         * @param compressed if true (and compiled with gzip) compredd filed before sending
+         * @param targetpath local path where to save files (path from robot is preserved)
+         */
+        bool requestFile(const std::string &identifier, const bool &compressed = false, const std::string targetpath = "./", const float &overrideMaxLatency = 0);
+
+
+        /**
+         * @brief requestt a model file/definition from the robot, most probably an urdf
+         * 
+         * @param targetfolder folder to save the model information to
+         * @return std::pair<std::string, std::string> robot model path and file to open
+         */
+        std::pair<std::string, std::string> requestRobotModel(const std::string &targetfolder = "./", const float &overrideMaxLatency = 120);
+
+
+        /**
          * @brief Get the Number of pending messages for a specific Telemetry type
          * 
          * @param TelemetryMessageType  
@@ -464,9 +507,9 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > unsigned int getTelemetryRaw(const uint16_t &type, DATATYPE *data, std::string *dataSerialized, bool onlyNewest = false) {
+        unsigned int getTelemetryRaw(const uint16_t &type, std::string *dataSerialized, bool onlyNewest = false) {
             *dataSerialized = buffers->peekSerialized(type);
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data, onlyNewest);
+            bool result = buffers->lockedAccess().get()[type]->pop(onlyNewest);
             return result;
         }
 
@@ -485,18 +528,21 @@ class RobotController: public UpdateThread {
             telemetryReceivedCallbacks.push_back(function);
         }
 
-        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
-            std::string buf;
-            buf.resize(sizeof(uint16_t)*2);
 
-            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
-            *data = requestType;
-            data++;
+        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST);
+        bool requestBinary(const std::string &request, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
-            // add the requested type
-            *data = type;
-            *result = sendRequest(buf);
-            return (result->size() > 0) ? true : false;
+
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const uint16_t &requestType, const float &overrideMaxLatency = 0) {
+            std::string request, recvbuf;
+            requestdata.SerializeToString(&request);
+            requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
+
+            google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
+            cistream.SetTotalBytesLimit(recvbuf.size(), recvbuf.size());
+            reply->ParseFromCodedStream(&cistream);
+
+            return (recvbuf.size() > 0) ? true : false;
         }
 
        /**
@@ -511,7 +557,7 @@ class RobotController: public UpdateThread {
 
 
     protected:
-        virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
+        virtual std::string sendRequest(const std::string& serializedMessage, const float &overrideMaxLatency = 0, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
@@ -545,7 +591,7 @@ class RobotController: public UpdateThread {
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
             *data = type;
             protodata.AppendToString(&buf);
-            return sendRequest(buf, flags);
+            return sendRequest(buf, 0, flags);
         }
 
 

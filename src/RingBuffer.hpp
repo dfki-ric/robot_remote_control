@@ -22,8 +22,7 @@ class RingBufferBase{
         virtual size_t dropped() = 0;
         virtual void resize(const size_t &newsize) = 0;
         virtual void clear() = 0;
-        
-        // virtual void clear();
+        virtual bool pop(bool onlyNewest = false) = 0;
 };
 
 /**
@@ -114,6 +113,22 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
                     contentsize = 1;
                 }
                 *data = buffer[out];
+                --contentsize;
+                ++out;
+                out %= buffersize;
+                return true;
+            }
+            return false;
+        }
+
+        bool pop(bool onlyNewest = false) {
+            if (contentsize > 0) {
+                if (onlyNewest) {
+                    // move out pointer forward to last value
+                    out += contentsize-1;
+                    out %= buffersize;
+                    contentsize = 1;
+                }
                 --contentsize;
                 ++out;
                 out %= buffersize;

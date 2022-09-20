@@ -176,5 +176,24 @@ BOOST_AUTO_TEST_CASE(only_newest) {
     BOOST_CHECK_EQUAL(buffer.popData(&newest), false);
 }
 
+BOOST_AUTO_TEST_CASE(pop_no_data) {
+    RingBuffer<int> buffer(5);
+    fillBuffer(5, &buffer);
+
+    int newest = -1;
+    // get latest value
+    //pop all
+    buffer.pop(true);
+
+    BOOST_CHECK_EQUAL(buffer.size(), 0);
+
+    fillBuffer(3, &buffer);
+    buffer.pop();
+    BOOST_CHECK_EQUAL(buffer.size(), 2);
+
+    BOOST_CHECK_EQUAL(buffer.popData(&newest), true);
+    BOOST_CHECK_EQUAL(newest, 1);
+}
+
 
 }  // namespace robot_remote_control

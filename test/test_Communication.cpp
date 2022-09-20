@@ -18,6 +18,9 @@
 #include "../src/RobotController/RobotController.hpp"
 #include "../src/ControlledRobot/ControlledRobot.hpp"
 
+//use boost::filesystem instead of std::filesystem here (tests have boost dependency anyways)
+#include <boost/filesystem.hpp>
+
 using namespace robot_remote_control;
 
 TransportSharedPtr commands;
@@ -76,6 +79,22 @@ void initComms() {
         telemetry = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7002, "127.0.0.1"));
     }
   #endif
+}
+
+bool isFileEqual(const std::string& path1, const std::string& path2) {
+    std::ifstream f1(path1, std::ios::in | std::ios::binary);
+    std::ifstream f2(path2, std::ios::in | std::ios::binary);
+    if (f1 && f2) {
+        std::stringstream filestr1, filestr2;
+        filestr1 << f1.rdbuf();
+        filestr2 << f2.rdbuf();
+        if (filestr1.str() != filestr2.str()) {
+            std::cout << filestr1.str() << ":" << filestr2.str() << std::endl;
+            return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, const ControlMessageType &type) {
@@ -519,7 +538,18 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
     usleep(10000);
   }
 
+  // check if raw telemetry sending works
+  std::string binarydata;
+  PROTOBUFDATA receivedraw;
+  protodata.SerializeToString(&binarydata);
+  robot.sendTelemetryRaw(type, binarydata);
+  while (!controller.getTelemetry(type, &receivedraw)) {
+    usleep(10000);
+  }
+
   controller.stopUpdateThread();
+
+  COMPARE_PROTOBUF(received, receivedraw);
 
   return received;
 }
@@ -965,6 +995,189 @@ BOOST_AUTO_TEST_CASE(test_get_newest) {
 
 
 }
+
+BOOST_AUTO_TEST_CASE(file_transfer) {
+    initComms();
+
+    RobotController controller(commands, telemetry);
+    ControlledRobot robot(command, telemetri);
+
+    controller.startUpdateThread(0);
+    robot.startUpdateThread(0);
+
+    //should return false if no files set up
+    BOOST_CHECK_EQUAL(controller.requestFile("folder", false, "./"), false);
+
+
+    FileDefinition files;
+    File* file;
+
+    file = files.add_file();
+    files.add_isfolder(true);
+    file->set_identifier("folder");
+    file->set_path("./test/testfiles/");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("topfolderfile");
+    file->set_path("./test/testfiles/topfolderfile");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("subfolderfile");
+    file->set_path("./test/testfiles/subfolder/subfolderfile");
+
+    robot.initFiles(files);
+
+
+    FileDefinition availablefiles;
+    controller.requestAvailableFiles(&availablefiles);
+
+    COMPARE_PROTOBUF(files, availablefiles);
+
+    // download folder
+    BOOST_CHECK_EQUAL(controller.requestFile("folder", false, "./folder"), true);
+    BOOST_TEST(boost::filesystem::exists("./folder/test/testfiles/topfolderfile"));
+    BOOST_TEST(boost::filesystem::exists("./folder/test/testfiles/subfolder/subfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./folder/test/testfiles/topfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder/test/testfiles/subfolder/subfolderfile"));
+
+    // download single file
+    BOOST_CHECK_EQUAL(controller.requestFile("topfolderfile", false, "./folder2"), true);
+    BOOST_TEST(boost::filesystem::exists("./folder2/test/testfiles/topfolderfile"));
+    BOOST_TEST(!boost::filesystem::exists("./folder2/test/testfiles/subfolder/subfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./folder2/test/testfiles/topfolderfile"));
+
+
+    // download single subfolder file
+    BOOST_CHECK_EQUAL(controller.requestFile("subfolderfile", false, "./folder3"), true);
+    BOOST_TEST(boost::filesystem::exists("./folder3/test/testfiles/subfolder/subfolderfile"));
+    BOOST_TEST(!boost::filesystem::exists("./folder3/test/testfiles/topfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder3/test/testfiles/subfolder/subfolderfile"));
+
+
+    // cleanup
+    boost::filesystem::remove_all("./folder");
+    boost::filesystem::remove_all("./folder2");
+    boost::filesystem::remove_all("./folder3");
+
+    // with compression
+    // download folder
+    BOOST_CHECK_EQUAL(controller.requestFile("folder", true, "./cfolder"), true);
+    BOOST_TEST(boost::filesystem::exists("./cfolder/test/testfiles/topfolderfile"));
+    BOOST_TEST(boost::filesystem::exists("./cfolder/test/testfiles/subfolder/subfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./cfolder/test/testfiles/topfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./cfolder/test/testfiles/subfolder/subfolderfile"));
+
+    // // download single file
+    BOOST_CHECK_EQUAL(controller.requestFile("topfolderfile", true, "./cfolder2"), true);
+    BOOST_TEST(boost::filesystem::exists("./cfolder2/test/testfiles/topfolderfile"));
+    BOOST_TEST(!boost::filesystem::exists("./cfolder2/test/testfiles/subfolder/subfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/topfolderfile", "./cfolder2/test/testfiles/topfolderfile"));
+
+    // download single subfolder file
+    BOOST_CHECK_EQUAL(controller.requestFile("subfolderfile", true, "./cfolder3"), true);
+    BOOST_TEST(boost::filesystem::exists("./cfolder3/test/testfiles/subfolder/subfolderfile"));
+    BOOST_TEST(!boost::filesystem::exists("./cfolder3/test/testfiles/topfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./cfolder3/test/testfiles/subfolder/subfolderfile"));
+
+    // cleanup
+    boost::filesystem::remove_all("./cfolder");
+    boost::filesystem::remove_all("./cfolder2");
+    boost::filesystem::remove_all("./cfolder3");
+
+    // non-existent ID leads to error
+    BOOST_CHECK_EQUAL(controller.requestFile("", false, "./"), false);
+    BOOST_CHECK_EQUAL(controller.requestFile("nonexist", false, "./"), false);
+}
+
+#ifdef TRANSPORT_DEFAULT
+BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
+    initComms();
+
+    RobotController controller(commands, telemetry);
+    ControlledRobot robot(command, telemetri);
+
+    controller.startUpdateThread(0);
+    robot.startUpdateThread(0);
+
+    bool detected_on_controller = false;
+    bool detected_on_robot = false;
+
+    controller.setHeartBeatDuration(0.1);
+
+    controller.setupLostConnectionCallback([&](const float& since) {
+      detected_on_controller = true;
+    });
+    robot.setupHeartbeatCallback(0.1, [&](const float& since) {
+      detected_on_robot = true;
+    });
+
+    // wait for connection
+    while (!controller.isConnected()) {
+      usleep(10000);
+    }
+
+    BOOST_CHECK_EQUAL(controller.isConnected(), true);
+    BOOST_CHECK_EQUAL(robot.isConnected(), true);
+
+    auto zmqptr = std::dynamic_pointer_cast<TransportZmq>(commands);
+    zmqptr->disconnect();
+
+    usleep(300000);
+    BOOST_TEST(detected_on_controller);
+    BOOST_TEST(detected_on_robot);
+
+    BOOST_CHECK_EQUAL(controller.isConnected(), false);
+    BOOST_CHECK_EQUAL(robot.isConnected(), false);
+
+    zmqptr->connect();
+    // wait for connection
+    while (!controller.isConnected()) {
+      usleep(10000);
+    }
+
+    BOOST_CHECK_EQUAL(controller.isConnected(), true);
+    BOOST_CHECK_EQUAL(robot.isConnected(), true);
+}
+#endif
+
+
+BOOST_AUTO_TEST_CASE(robot_model) {
+    initComms();
+
+    RobotController controller(commands, telemetry);
+    ControlledRobot robot(command, telemetri);
+
+    controller.startUpdateThread(0);
+    robot.startUpdateThread(0);
+
+    // should return false if no files set up
+    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder").first, "");
+    BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder").second, "");
+
+
+    FileDefinition model;
+    File* file;
+
+    file = model.add_file();
+    model.add_isfolder(true);
+    file->set_identifier("robotmodel");
+    file->set_path("./test/testfiles");
+
+    robot.initRobotModel(model, "model/model.urdf");
+
+    auto modelpath = controller.requestRobotModel("./downloaded_model_folder");
+    BOOST_CHECK_EQUAL(modelpath.first, "./test/testfiles");
+    BOOST_CHECK_EQUAL(modelpath.second, "model/model.urdf");
+    BOOST_TEST(boost::filesystem::exists("./downloaded_model_folder/test/testfiles/model/model.urdf"));
+    BOOST_TEST(isFileEqual("./test/testfiles/model/model.urdf", "./downloaded_model_folder/test/testfiles/model/model.urdf"));
+
+    // cleanup
+    boost::filesystem::remove_all("./downloaded_model_folder");
+}
+
+
 
 
 // BOOST_AUTO_TEST_CASE(check_permissions) {
