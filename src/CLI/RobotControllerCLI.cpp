@@ -172,6 +172,20 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
+    
+    robot_remote_control::Map map;
+    console.registerCommand("requestMap", "get a map", [&](const std::vector<std::string> &params) {
+       int id = std::atoi(params[0].c_str());
+        if (controller.requestMap(&map,id)) {
+            printf("%s\n", map.ShortDebugString().c_str());
+            //map.PrintDebugString(); 
+        } else { 
+            printf("no new data received \n"); 
+        } 
+    });
+    params.push_back(ConsoleCommands::ParamDef("value (int)", "1"));
+    console.registerParamsForCommand("requestMap", params);
+    params.clear();
 
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
