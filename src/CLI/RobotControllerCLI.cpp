@@ -351,6 +351,23 @@ int main(int argc, char** argv) {
     };
 
     console.registerCommand("requestSimpleActions", "request simple actions and add them to autocomplete", requestSimpleActions);
+    
+    robot_remote_control::Map map;
+    console.registerCommand("requestMap", "get a map", [&](const std::vector<std::string> &params) {
+       int id = std::atoi(params[0].c_str());
+        if (controller.requestMap(&map,id)) {
+            printf("%s\n", map.ShortDebugString().c_str());
+            //map.PrintDebugString();
+            return true;
+        } else { 
+            printf("no new data received \n");
+            return false; 
+        } 
+    });
+    params.push_back(ConsoleCommands::ParamDef("value (int)", "1"));
+    console.registerParamsForCommand("requestMap", params);
+    params.clear();
+   
 
 
     /**
