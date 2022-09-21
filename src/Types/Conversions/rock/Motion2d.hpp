@@ -26,12 +26,6 @@ namespace RockConversion {
         rock_type->translation = sqrt(pow(rrc_type.linear().x(), 2) + pow(rrc_type.linear().y(), 2));
         rock_type->rotation = rrc_type.angular().z();
         rock_type->heading.rad = angle;
-
-        // TODO Set limits from yaml and limit them here!
-        if (rock_type->translation > 1) {
-            printf("[INFO] Restricting translation to a maximum value of 1");
-            rock_type->translation = 1;
-        }
     }
 }  // namespace RockConversion
 }  // namespace robot_remote_control
