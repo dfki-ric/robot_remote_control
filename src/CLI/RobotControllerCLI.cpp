@@ -132,6 +132,7 @@ int main(int argc, char** argv) {
      * generic defines
      */
     DEFINE_PRINT_COMMAND(Pose, getCurrentPose, "print current Pose");
+    DEFINE_PRINT_COMMAND(Poses, getPoses, "print currently available Poses");
     DEFINE_PRINT_COMMAND(JointState, getCurrentJointState, "print current JointState");
     DEFINE_PRINT_COMMAND(ContactPoints, getCurrentContactPoints, "print current ContactPoints");
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
@@ -247,6 +248,41 @@ int main(int argc, char** argv) {
     params.push_back(ConsoleCommands::ParamDef("orientation w (float, quaternion)", "1"));
     params.push_back(ConsoleCommands::ParamDef("frame (string)", "base"));
     console.registerParamsForCommand("setTargetPose3D", params);
+    params.clear();
+
+    console.registerCommand("setGoToCommand", "send target pose command", [&](const std::vector<std::string> &params) {
+        robot_remote_control::GoTo pose;
+        int i = 0;
+        try {
+            pose.mutable_waypoint_pose()->mutable_position()->set_x(std::stof(params[i++]));
+            pose.mutable_waypoint_pose()->mutable_position()->set_y(std::stof(params[i++]));
+            pose.mutable_waypoint_pose()->mutable_position()->set_z(std::stof(params[i++]));
+            pose.mutable_waypoint_pose()->mutable_orientation()->set_x(std::stof(params[i++]));
+            pose.mutable_waypoint_pose()->mutable_orientation()->set_y(std::stof(params[i++]));
+            pose.mutable_waypoint_pose()->mutable_orientation()->set_z(std::stof(params[i++]));
+            pose.mutable_waypoint_pose()->mutable_orientation()->set_w(std::stof(params[i++]));
+            pose.mutable_header()->set_frame(params[i++]);
+            pose.set_max_forward_speed(std::stof(params[i++]));
+            pose.set_waypoint_max_forward_speed(std::stof(params[i++]));
+        } catch (const std::invalid_argument &e) {
+            std::cout << "value must be a number, was '" << params[i] <<"' " << std::endl;
+            std::cout << e.what() << std::endl;
+            return false;
+        }
+        controller.setGoToCommand(pose);
+        return true;
+    });
+    params.push_back(ConsoleCommands::ParamDef("pos x (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("pos y (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("pos z (float)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation x (float, quaternion)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation y (float, quaternion)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation z (float, quaternion)", "0"));
+    params.push_back(ConsoleCommands::ParamDef("orientation w (float, quaternion)", "1"));
+    params.push_back(ConsoleCommands::ParamDef("frame (string)", "base"));
+    params.push_back(ConsoleCommands::ParamDef("max speed (float)", "1"));
+    params.push_back(ConsoleCommands::ParamDef("arrive speed (float)", "0"));
+    console.registerParamsForCommand("setGoToCommand", params);
     params.clear();
 
     console.registerCommand("setJointCommand", "send joint position command", [&](const std::vector<std::string> &params){
