@@ -48,8 +48,14 @@ std::vector<std::string> ConsoleCommands::parseLine(const std::string &line, boo
 
 bool ConsoleCommands::readline(const std::string& prompt, bool exitOnFailure) {
     std::unique_ptr<char[]> input = std::unique_ptr<char[]>(::readline(prompt.c_str()));
+
     if (not input.get()) return false;
-    add_history(input.get());
+
+    if (std::string(input.get()) != lastLine) {
+        add_history(input.get());
+        lastLine = input.get();
+    }
+
     std::vector<std::string> line = parseLine(input.get());
     if (exitOnFailure) {
         return runCommand(line);
