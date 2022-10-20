@@ -38,5 +38,15 @@ namespace RockConversion {
         convert(rrc_type.angular(), &rock_type->angular_velocity);
     }
 
+    inline static void convert(const base::samples::RigidBodyState &rock_type, Odometry *rrc_type) {
+        convert(rock_type.time, rrc_type->mutable_header()->mutable_timestamp());
+        rrc_type->mutable_header()->set_frame(rock_type.sourceFrame);
+        rrc_type->set_child_frame_id(rock_type.targetFrame);
+        convert(rock_type.position, rrc_type->mutable_pose()->mutable_pose()->mutable_position());
+        convert(rock_type.orientation, rrc_type->mutable_pose()->mutable_pose()->mutable_orientation());
+
+        //TODO add covariance
+    }
+
 }  // namespace RockConversion
 }  // namespace robot_remote_control
