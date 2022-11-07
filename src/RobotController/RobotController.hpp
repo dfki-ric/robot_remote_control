@@ -438,10 +438,10 @@ class RobotController: public UpdateThread {
             return requestTelemetry(CURRENT_POSE, pose);
         }
 
-        bool requestMap(Map *map, const uint16_t &mapId);
+        bool requestMap(Map *map, const uint16_t &mapId, const float &overrideMaxLatency = 120);
 
-        bool requestMap(std::string *map, const uint16_t &mapId) {
-            return requestBinary(mapId, map, MAP_REQUEST);
+        bool requestMap(std::string *map, const uint16_t &mapId, const float &overrideMaxLatency = 120) {
+            return requestBinary(mapId, map, MAP_REQUEST, overrideMaxLatency);
         }
 
         /**
@@ -529,7 +529,7 @@ class RobotController: public UpdateThread {
         }
 
 
-        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST);
+        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
         bool requestBinary(const std::string &request, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
 

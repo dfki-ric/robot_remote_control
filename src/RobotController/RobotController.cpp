@@ -175,9 +175,9 @@ void RobotController::update() {
     }
 }
 
-bool RobotController::requestMap(Map *map, const uint16_t &mapId){
+bool RobotController::requestMap(Map *map, const uint16_t &mapId, const float &overrideMaxLatency){
     std::string replybuf;
-    bool result = requestBinary(mapId, &replybuf, MAP_REQUEST);
+    bool result = requestBinary(mapId, &replybuf, MAP_REQUEST, overrideMaxLatency);
     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
     cistream.SetTotalBytesLimit(replybuf.size(), replybuf.size());
     map->ParseFromCodedStream(&cistream);
@@ -287,12 +287,12 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
 }
 
 
-bool RobotController::requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType) {
+bool RobotController::requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
     std::string request;
     request.resize(sizeof(uint16_t));
     uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
     *data = type;
-    return requestBinary(request, result, requestType);
+    return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
 bool RobotController::requestBinary(const std::string &request, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
