@@ -127,24 +127,10 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
 
     switch (msgtype) {
         case TELEMETRY_REQUEST: {
-            uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
-            TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
-            std::string reply = buffers->peekSerialized(type);
-            commandTransport->send(reply);
-            return TELEMETRY_REQUEST;
+            return handleTelemetryRequest(serializedMessage, commandTransport);
         }
         case MAP_REQUEST: {
-            uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
-            std::string map;
-            // get map
-            {
-                auto lockedAccess = mapBuffer.lockedAccess();
-                if (*requestedMap < lockedAccess.get().size()) {
-                    RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
-                }
-            }
-            commandTransport->send(map);
-            return MAP_REQUEST;
+            return handleMapRequest(serializedMessage, commandTransport);
         }
         case LOG_LEVEL_SELECT: {
             logLevel = *reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
@@ -152,68 +138,13 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             return LOG_LEVEL_SELECT;
         }
         case PERMISSION: {
-            Permission perm;
-            perm.ParseFromString(serializedMessage);
-            std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
-            try {
-                promise.set_value(perm.granted());
-            } catch (const std::future_error &e) {
-                printf("%s\n", e.what());
-            }
-            commandTransport->send(serializeControlMessageType(msgtype));
-            return PERMISSION;
+            return handlePermissionRequest(serializedMessage, commandTransport);
         }
         case FILE_REQUEST: {
-            FileRequest request;
-            request.ParseFromString(serializedMessage);
-            Folder folder;
-            std::string buf;
-            int index = -1;
-            for (int i = 0; i < files.file().size(); ++i) {
-                if (files.file(i).identifier() == request.identifier()) {
-                    index = i;
-                    break;
-                }
-            }
-
-            #ifndef ZLIB_FOUND
-                printf("zlib for compression not available, sending uncompressed files\n");
-                request.set_compressed(false);
-            #endif
-            if (index >= 0 && index < files.file().size()) {
-                bool isFolder = files.isfolder(index);
-                File filedef = files.file(index);
-                // todo: read folderfolder
-                if (isFolder) {
-                    loadFolder(&folder, filedef.path(), request.compressed());
-                } else {
-                    File* file = folder.add_file();
-                    loadFile(file, filedef.path(), request.compressed());
-                    folder.set_compressed(request.compressed());
-                }
-            } else {
-                printf("requested file '%s' undefined, sending empty folder\n", request.identifier().c_str());
-                folder.set_identifier("file/folder :" + request.identifier() + " undefined");
-            }
-            folder.SerializeToString(&buf);
-            commandTransport->send(buf);
-            return FILE_REQUEST;
+            return handleFileRequest(serializedMessage, commandTransport);
         }
         default: {
-            CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
-            if (cmdbuffer) {
-                if (!cmdbuffer->write(serializedMessage)) {
-                    printf("unable to parse message of type %i in %s:%i\n", msgtype, __FILE__, __LINE__);
-                    commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
-                    return NO_CONTROL_DATA;
-                }
-                commandTransport->send(serializeControlMessageType(msgtype));
-                notifyCommandCallbacks(*type);
-                return msgtype;
-            } else {
-                commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
-                return msgtype;
-            }
+            return handleCommandRequest(msgtype, serializedMessage, commandTransport);
         }
     }
 }
@@ -328,6 +259,97 @@ bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool c
     }
     return true;
 }
+
+
+ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
+    TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
+    std::string reply = buffers->peekSerialized(type);
+    commandTransport->send(reply);
+    return TELEMETRY_REQUEST;
+}
+
+ControlMessageType ControlledRobot::handleMapRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
+    std::string map;
+    // get map
+    {
+        auto lockedAccess = mapBuffer.lockedAccess();
+        if (*requestedMap < lockedAccess.get().size()) {
+            RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
+        }
+    }
+    commandTransport->send(map);
+    return MAP_REQUEST;
+}
+
+ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    Permission perm;
+    perm.ParseFromString(serializedMessage);
+    std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
+    try {
+        promise.set_value(perm.granted());
+    } catch (const std::future_error &e) {
+        printf("%s\n", e.what());
+    }
+    commandTransport->send(serializeControlMessageType(PERMISSION));
+    return PERMISSION;
+}
+
+ControlMessageType ControlledRobot::handleFileRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    FileRequest request;
+    request.ParseFromString(serializedMessage);
+    Folder folder;
+    std::string buf;
+    int index = -1;
+    for (int i = 0; i < files.file().size(); ++i) {
+        if (files.file(i).identifier() == request.identifier()) {
+            index = i;
+            break;
+        }
+    }
+
+    #ifndef ZLIB_FOUND
+        printf("zlib for compression not available, sending uncompressed files\n");
+        request.set_compressed(false);
+    #endif
+    if (index >= 0 && index < files.file().size()) {
+        bool isFolder = files.isfolder(index);
+        File filedef = files.file(index);
+        // todo: read folderfolder
+        if (isFolder) {
+            loadFolder(&folder, filedef.path(), request.compressed());
+        } else {
+            File* file = folder.add_file();
+            loadFile(file, filedef.path(), request.compressed());
+            folder.set_compressed(request.compressed());
+        }
+    } else {
+        printf("requested file '%s' undefined, sending empty folder\n", request.identifier().c_str());
+        folder.set_identifier("file/folder :" + request.identifier() + " undefined");
+    }
+    folder.SerializeToString(&buf);
+    commandTransport->send(buf);
+    return FILE_REQUEST;
+}
+
+ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageType &msgtype, const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
+    if (cmdbuffer) {
+        if (!cmdbuffer->write(serializedMessage)) {
+            printf("unable to parse message of type %i in %s:%i\n", msgtype, __FILE__, __LINE__);
+            commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
+            return NO_CONTROL_DATA;
+        }
+        commandTransport->send(serializeControlMessageType(msgtype));
+        notifyCommandCallbacks(msgtype);
+        return msgtype;
+    } else {
+        commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
+        return msgtype;
+    }
+}
+
 
 
 }  // namespace robot_remote_control

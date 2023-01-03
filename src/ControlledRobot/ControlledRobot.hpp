@@ -569,6 +569,13 @@ class ControlledRobot: public UpdateThread {
         void notifyCommandCallbacks(const uint16_t &type);
 
 
+        virtual ControlMessageType handleTelemetryRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handleMapRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handlePermissionRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handleFileRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handleCommandRequest(const ControlMessageType &msgtype, const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport);
+
+
         // command buffers
         std::unique_ptr<CommandBuffer<Pose>> poseCommand;
         std::unique_ptr<CommandBuffer<Twist>> twistCommand;
