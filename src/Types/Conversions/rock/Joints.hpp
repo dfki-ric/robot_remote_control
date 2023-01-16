@@ -80,5 +80,21 @@ namespace RockConversion {
         }
     }
 
+    inline static void convert(const base::samples::Joints &rock_type, JointCommand *rrc_type) {
+        convert(rock_type.time, rrc_type->mutable_header());
+        // Clear last state
+        rrc_type->clear_name();
+        rrc_type->clear_position();
+        rrc_type->clear_velocity();
+        rrc_type->clear_effort();
+
+        for (unsigned int i = 0; i < rock_type.size(); i++) {
+            rrc_type->add_name(rock_type.names[i]);
+            rrc_type->add_position(rock_type.elements[i].position);
+            rrc_type->add_velocity(rock_type.elements[i].speed);
+            rrc_type->add_effort(rock_type.elements[i].effort);
+        }
+    }
+
 }  // namespace RockConversion
 }  // namespace robot_remote_control

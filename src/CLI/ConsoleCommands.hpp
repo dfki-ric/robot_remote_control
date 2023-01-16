@@ -63,4 +63,5 @@ class ConsoleCommands {
     static std::vector<std::string> completions;
     std::thread cmdthread;
     std::atomic<bool> thread_running;
+    std::string lastLine;
 };

@@ -255,10 +255,20 @@ message PoseWithCovariance {
     repeated float covariance = 2;
 }
 
+enum PosesType {
+    POSES_UNDEFINED = 0;
+    POSES_PATH = 1; 
+    POSES_BOX = 2;
+    POSES_CIRCLE = 3;
+    POSES_SPHERE = 4;
+    POSES_CYLINDER = 5;
+}
+
 message Poses {
     Header header = 1;
     Pose origin  = 2;         // TODO: in converter, set transform from world if no frame is given
     repeated Pose poses = 3;
+    PosesType type = 4;
 }
 
 message Position {
