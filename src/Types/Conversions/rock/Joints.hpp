@@ -64,7 +64,7 @@ namespace RockConversion {
         }
     }
 
-    inline static void convert(const bsae::samples::Joints & rock_type, JointCommand* rrc_type) {
+    inline static void convert(const base::samples::Joints & rock_type, JointCommand* rrc_type) {
         convert(rock_type.time, rrc_type->mutable_header());
         // Clear last state
         rrc_type->clear_name();
