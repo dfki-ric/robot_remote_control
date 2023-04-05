@@ -21,6 +21,8 @@ int main(int argc, char** argv)
     // set a callback for connection losses, allow 100ms of later arrival
     // (due to differences in latency between heartbeat commands)
     // the elapsed time may be used to have different stages of escalation
+    // when there are multiple connections to this robots with different heartbeats
+    // in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
     robot.setupHeartbeatCallback(0.1, [](const float &elapsed){
         printf("no heartbeat since %.2f seconds\n", elapsed);
     });
@@ -121,6 +123,31 @@ int main(int argc, char** argv)
     velocity.add_value(0);
     velocity.add_value(0);
     velocity.add_value(0);
+
+
+
+    robot_remote_control::FileDefinition files;
+    robot_remote_control::File* file;
+
+    file = files.add_file();
+    files.add_isfolder(true);
+    file->set_identifier("folder");
+    file->set_path("./test/testfiles/");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("topfolderfile");
+    file->set_path("./test/testfiles/topfolderfile");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("subfolderfile");
+    file->set_path("./test/testfiles/subfolder/subfolderfile");
+
+    robot.initFiles(files);
+
+
+
 
     // commands
     robot_remote_control::Twist twistcommand;

@@ -1,4 +1,7 @@
-[![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control) CircleCI build and test
+CircleCI build and test:
+
+Master: [![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/master.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/master)
+Devel: [![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/devel.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/devel)
 
 # Robot Remote Control
 
@@ -44,7 +47,7 @@ If you want to cite this library you can use this bibtex entry:
 
 The library is using the high-level networking library ZeroMQ (ZMQ) and Google's language- and platform-neutral proto3 for de-/serialization. Therefor you need to manually install the following OS dependencies: protobuf and zeromq
 
-    sudo apt install libprotobuf-dev protobuf-compiler libzmqpp-dev libreadline-dev
+    sudo apt install libprotobuf-dev protobuf-compiler libzmq3-dev libreadline-dev
 
 ### Building
 

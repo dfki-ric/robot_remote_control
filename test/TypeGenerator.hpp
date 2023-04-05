@@ -288,6 +288,22 @@ class TypeGenerator{
     }
 
 
+    static ControllableFrame genControllableFrame() {
+        ControllableFrame data;
+        data.set_frame(genString());
+        // data.set_type(std::rand(std::rand()%3));
+        return data;
+    }
+
+    static ControllableFrames genControllableFrames() {
+        ControllableFrames data;
+        for (int values = 0; values < 10; ++values) {
+            *data.add_controllable_frames() = genControllableFrame();
+        }
+        return data;
+    }
+
+
 
 };
 

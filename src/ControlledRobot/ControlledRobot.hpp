@@ -6,6 +6,7 @@
 #include "UpdateThread/Timer.hpp"
 #include "TelemetryBuffer.hpp"
 #include "SimpleBuffer.hpp"
+#include "CommandBuffer.hpp"
 #include "Statistics.hpp"
 #include <map>
 #include <string>
@@ -13,6 +14,7 @@
 #include <vector>
 #include <atomic>
 #include <algorithm>
+#include <unistd.h>
 
 namespace robot_remote_control {
 
@@ -26,7 +28,14 @@ class ControlledRobot: public UpdateThread {
          */
         virtual void update();
 
-
+        /**
+         * @brief setup a periodic heardbeat to detect connection loses on the robot side
+         * 
+         * @warning When there are multiple connections (e.g. vis zmq) with different heartbeats in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
+         * 
+         * @param allowedLatency the maximum latency allowed if the heartbeat arrives late
+         * @param callback the callback when no heartbeat message arrived in time
+         */
         void setupHeartbeatCallback(const float &allowedLatency, const std::function<void(const float&)> &callback) {
             heartbeatAllowedLatency = allowedLatency;
             heartbeatExpiredCallback = callback;
@@ -36,8 +45,13 @@ class ControlledRobot: public UpdateThread {
             return connected.load();
         }
 
+        /**
+         * @brief sleeps until isConnected is true. Only works if setHeartBeatDuration is set or the controlled robot is sending something 
+         */
+        void waitForConnection() {
+            while (!isConnected()){ usleep(100000);}
+        }
 
-        
 
         // Command Callbacks
 
@@ -56,8 +70,14 @@ class ControlledRobot: public UpdateThread {
          * @param type the Command type id from the MessageTypes header
          * @param function 
          */
-        void addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
-            commandbuffers[type]->addCommandReceivedCallback(function);
+        bool addCommandReceivedCallback(const uint16_t &type, const std::function<void()> &function) {
+            if (commandbuffers[type]) {
+                commandbuffers[type]->addCommandReceivedCallback(function);
+                return true;
+            } else {
+                printf("%s:%i there is no bufferes comamnd of type %i\n", __PRETTY_FUNCTION__, __LINE__, type);
+            }
+            return false;
         }
 
         /**
@@ -77,8 +97,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getTargetPoseCommand(Pose *command) {
-            return poseCommand.read(command);
+        bool getTargetPoseCommand(Pose *command, bool onlyNewest = true) {
+            return poseCommand->read(command, onlyNewest);
         }
 
         /**
@@ -87,8 +107,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getTwistCommand(Twist *command) {
-            return twistCommand.read(command);
+        bool getTwistCommand(Twist *command, bool onlyNewest = true) {
+            return twistCommand->read(command, onlyNewest);
         }
 
         /**
@@ -97,8 +117,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getGoToCommand(GoTo *command) {
-            return goToCommand.read(command);
+        bool getGoToCommand(GoTo *command, bool onlyNewest = true) {
+            return goToCommand->read(command, onlyNewest);
         }
 
         /**
@@ -108,8 +128,8 @@ class ControlledRobot: public UpdateThread {
          * @param command the last received command
          */
 
-        bool getJointsCommand(JointCommand *command) {
-            return jointsCommand.read(command);
+        bool getJointsCommand(JointCommand *command, bool onlyNewest = true) {
+            return jointsCommand->read(command, onlyNewest);
         }
 
 
@@ -119,8 +139,8 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getSimpleActionCommand(SimpleAction *command) {
-            return simpleActionsCommand->read(command);
+        bool getSimpleActionCommand(SimpleAction *command, bool onlyNewest = false) {
+            return simpleActionsCommand->read(command, onlyNewest);
         }
 
         /**
@@ -129,12 +149,16 @@ class ControlledRobot: public UpdateThread {
          * @return true if the command was not read before
          * @param command the last received command
          */
-        bool getComplexActionCommand(ComplexAction *command) {
-            return complexActionCommandBuffer->read(command);
+        bool getComplexActionCommand(ComplexAction *command, bool onlyNewest = false) {
+            return complexActionCommandBuffer->read(command, onlyNewest);
         }
 
-        bool getRobotTrajectoryCommand(Poses *command) {
-            return robotTrajectoryCommand.read(command);
+        bool getRobotTrajectoryCommand(Poses *command, bool onlyNewest = true) {
+            return robotTrajectoryCommand->read(command, onlyNewest);
+        }
+
+        bool getCommandRaw(uint16_t type, std::string *dataSerialized, bool onlyNewest = true) {
+            return commandbuffers[type]->read(dataSerialized, onlyNewest);
         }
 
         /**
@@ -175,6 +199,21 @@ class ControlledRobot: public UpdateThread {
             return 0;
         }
 
+        int sendTelemetryRaw(const uint16_t& type, const std::string& serialized) {
+            if (telemetryTransport.get()) {
+                std::string buf;
+                buf.resize(sizeof(uint16_t));
+                uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+                *data = type;
+                buf.append(serialized);
+                uint32_t bytes = telemetryTransport->send(buf);
+                updateStatistics(bytes, type);
+                return bytes - sizeof(uint16_t);
+            }
+            printf("ERROR Transport invalid\n");
+            return 0;
+        }
+
         void updateStatistics(const uint32_t &bytesSent, const uint16_t &type);
 
     public:
@@ -185,7 +224,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initControllableJoints(const JointState& telemetry) {
-            return sendTelemetry(telemetry, CONTROLLABLE_JOINTS);
+            return sendTelemetry(telemetry, CONTROLLABLE_JOINTS, true);
         }
 
         /**
@@ -196,7 +235,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initSimpleActions(const SimpleActions& telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_ACTIONS);
+            return sendTelemetry(telemetry, SIMPLE_ACTIONS, true);
         }
 
         /**
@@ -206,7 +245,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initComplexActions(const ComplexActions& telemetry) {
-            return sendTelemetry(telemetry, COMPLEX_ACTIONS);
+            return sendTelemetry(telemetry, COMPLEX_ACTIONS, true);
         }
 
         /**
@@ -217,7 +256,7 @@ class ControlledRobot: public UpdateThread {
          * @return int  number of bytes sent
          */
         int initSimpleSensors(const SimpleSensors &telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION);
+            return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION, true);
         }
 
         /**
@@ -238,7 +277,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initRobotName(const RobotName& telemetry) {
-            return sendTelemetry(telemetry, ROBOT_NAME);
+            return sendTelemetry(telemetry, ROBOT_NAME, true);
         }
 
         /**
@@ -248,7 +287,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initVideoStreams(const VideoStreams& telemetry) {
-            return sendTelemetry(telemetry, VIDEO_STREAMS);
+            return sendTelemetry(telemetry, VIDEO_STREAMS, true);
         }
 
         /**
@@ -258,20 +297,58 @@ class ControlledRobot: public UpdateThread {
          * @return int 
          */
         int initCameraInformation(const CameraInformation& telemetry) {
-            return sendTelemetry(telemetry, CAMERA_INFORMATION);
+            return sendTelemetry(telemetry, CAMERA_INFORMATION, true);
         }
 
+        /**
+         * @brief When more than a single frame can be the target of a pose twist or goto command, this can be used to notify the RobotController
+         * which combinationa are possible.
+         * 
+         * @param telemetry List of frames that can be used to send twist, pose or goto (which target can be set in the header of the command)
+         * @return int 
+         */
+        int initControllableFrames(const ControllableFrames& telemetry) {
+            return sendTelemetry(telemetry, CONTROLLABLE_FRAMES, true);
+        }
+
+        /**
+         * @brief set of fialed that may be downloaded via the rrc lib
+         * 
+         * @param files name:path list of named files/foilders that can be downloaded
+         * @return int 
+         */
+        int initFiles(const FileDefinition& files) {
+            this->files.MergeFrom(files);
+            return sendTelemetry(files, FILE_DEFINITION, true);
+        }
+
+        int initRobotModel(const FileDefinition& filedef, const std::string& modelfilename = "") {
+            RobotModelInformation modelinfo;
+
+            if (modelfilename == "") {
+                // single file model
+                modelinfo.mutable_filedef()->CopyFrom(filedef);
+            } else {
+                // folder model
+                modelinfo.mutable_filedef()->CopyFrom(filedef);
+                modelinfo.set_modelfilename(modelfilename);
+            }
+            if (!initFiles(filedef)) {
+                return -1;
+            }
+            return sendTelemetry(modelinfo, ROBOT_MODEL_INFORMATION, true);
+        }
 
         std::shared_future<bool> requestPermission(const PermissionRequest &permissionrequest) {
             // get and init promise in map
             std::promise<bool> &promise = pendingPermissionRequests[permissionrequest.requestuid()];
             sendTelemetry(permissionrequest, PERMISSION_REQUEST);
-            try {
-                return promise.get_future().share();
-            }
-            catch (const std::future_error& e) {
-                // printf("%s\n", e.what());
-            }
+            // try {
+            return promise.get_future().share();
+            // }
+            // catch (const std::future_error& e) {
+            //     // printf("%s\n", e.what());
+            // }
         }
 
         /**
@@ -485,130 +562,34 @@ class ControlledRobot: public UpdateThread {
 
         virtual ControlMessageType evaluateRequest(const std::string& request);
 
+        bool loadFile(File* file, const std::string &path, bool compressed = false);
+
+        bool loadFolder(Folder* folder, const std::string &path, bool compressed = false);
+
         void notifyCommandCallbacks(const uint16_t &type);
 
-        struct CommandBufferBase{
-            CommandBufferBase() {}
-            virtual ~CommandBufferBase() {}
-            virtual bool write(const std::string &serializedMessage) = 0;
-            virtual bool read(std::string *receivedMessage) = 0;
-            void notify() {
-                auto callCb = [](const std::function<void()> &cb){cb();};
-                std::for_each(callbacks.begin(), callbacks.end(), callCb);
-            }
-            std::vector< std::function<void()> > callbacks;
-            void addCommandReceivedCallback(const std::function<void()> &cb) {
-                callbacks.push_back(cb);
-            }
-        };
 
-        template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
-            public:
-                CommandBuffer():isnew(false) {}
+        virtual ControlMessageType handleTelemetryRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handleMapRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handlePermissionRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handleFileRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
+        virtual ControlMessageType handleCommandRequest(const ControlMessageType &msgtype, const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport);
 
-                virtual ~CommandBuffer() {}
-
-                bool read(COMMAND *target) {
-                    bool oldval = isnew.load();
-                    *target = command.lockedAccess().get();
-                    isnew.store(false);
-                    return oldval;
-                }
-
-                void write(const COMMAND &src) {
-                    command.lockedAccess().set(src);
-                    isnew.store(true);
-                    notify();
-                }
-
-                virtual bool write(const std::string &serializedMessage) {
-                    // command.lock();
-                    if (!command.lockedAccess()->ParseFromString(serializedMessage)) {
-                        isnew.store(false);
-                        return false;
-                    }
-                    isnew.store(true);
-                    notify();
-                    return true;
-                }
-
-                virtual bool read(std::string *receivedMessage) {
-                    bool oldval = isnew.load();
-                    command.lockedAccess()->SerializeToString(receivedMessage);
-                    isnew.store(false);
-                    return oldval;
-                }
-
-            private:
-                LockableClass<COMMAND> command;
-                std::atomic<bool> isnew;
-        };
-
-        template<class COMMAND> struct CommandRingBuffer: public CommandBufferBase{
-            public:
-                CommandRingBuffer(const size_t & buffersize):isnew(false),buffer(RingBuffer<COMMAND>(buffersize)){}
-
-                virtual ~CommandRingBuffer() {}
-
-                bool read(COMMAND *target) {
-                    bool oldval = isnew.load();
-                    auto lockable = buffer.lockedAccess();
-                    if (!lockable->popData(target)) {
-                        auto protocommand = lastcommand.lockedAccess();
-                        target->CopyFrom(protocommand.get());
-                    }
-                    isnew.store(lockable->size());
-                    return oldval;
-                }
-
-                void write(const COMMAND &src) {
-                    auto lockable = buffer.lockedAccess();
-                    lockable->pushData(src, true);
-                    isnew.store(lockable->size());
-                    notify();
-                }
-
-                virtual bool write(const std::string &serializedMessage) {
-                    COMMAND protocommand;
-                    if (!protocommand.ParseFromString(serializedMessage)) {
-                        return false;
-                    }
-                    auto lockable = buffer.lockedAccess();
-                    lockable->pushData(protocommand, true);
-                    isnew.store(lockable->size());
-                    notify();
-                    return true;
-                }
-
-                virtual bool read(std::string *receivedMessage) {
-                    bool oldval = isnew.load();
-                    auto protocommand = lastcommand.lockedAccess();
-                    auto lockable = buffer.lockedAccess();
-                    lockable->popData(&(protocommand.get()));
-                    protocommand->SerializeToString(receivedMessage);
-                    isnew.store(lockable->size());
-                    return oldval;
-                }
-
-            private:
-                LockableClass<RingBuffer<COMMAND>> buffer;
-                LockableClass<COMMAND> lastcommand;
-                std::atomic<bool> isnew;
-        };
 
         // command buffers
-        CommandBuffer<Pose> poseCommand;
-        CommandBuffer<Twist> twistCommand;
-        CommandBuffer<GoTo> goToCommand;
-        std::unique_ptr<CommandRingBuffer<SimpleAction>> simpleActionsCommand;
-        std::unique_ptr<CommandRingBuffer<ComplexAction>> complexActionCommandBuffer;
-        CommandBuffer<JointCommand> jointsCommand;
-        CommandBuffer<HeartBeat> heartbeatCommand;
-        CommandBuffer<Permission> permissionCommand;
-        CommandBuffer<Poses> robotTrajectoryCommand;
+        std::unique_ptr<CommandBuffer<Pose>> poseCommand;
+        std::unique_ptr<CommandBuffer<Twist>> twistCommand;
+        std::unique_ptr<CommandBuffer<GoTo>> goToCommand;
+        std::unique_ptr<CommandBuffer<SimpleAction>> simpleActionsCommand;
+        std::unique_ptr<CommandBuffer<ComplexAction>> complexActionCommandBuffer;
+        std::unique_ptr<CommandBuffer<JointCommand>> jointsCommand;
+        std::unique_ptr<CommandBuffer<HeartBeat>> heartbeatCommand;
+        std::unique_ptr<CommandBuffer<Permission>> permissionCommand;
+        std::unique_ptr<CommandBuffer<Poses>> robotTrajectoryCommand;
 
         std::vector< std::function<void(const uint16_t &type)> > commandCallbacks;
 
+        FileDefinition files;
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;
@@ -617,7 +598,7 @@ class ControlledRobot: public UpdateThread {
 
         SimpleBuffer<std::string> mapBuffer;
 
-        std::map<uint32_t, CommandBufferBase*> commandbuffers;
+        std::array<CommandBufferBase*, CONTROL_MESSAGE_TYPE_NUMBER> commandbuffers;
         void registerCommandType(const uint32_t & ID, CommandBufferBase *bufptr) {
             commandbuffers[ID] = bufptr;
         }
@@ -646,6 +627,8 @@ class ControlledRobot: public UpdateThread {
         std::map<std::string, std::promise<bool> > pendingPermissionRequests;
 
         Statistics statistics;
+
+        Transport::Flags receiveflags;
 
 };
 

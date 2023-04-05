@@ -73,6 +73,44 @@ message ContactPoints {
     repeated ContactPoint contacts = 1;
 }
 
+enum ControllableFrameTypes {
+    TWIST_CONTROL = 0;
+    POSE_CONTROL = 1;
+    GOTO_CONTROL = 2;
+}
+
+message ControllableFrame {
+    string frame = 1;
+    ControllableFrameTypes type = 2;
+}
+
+message ControllableFrames {
+    repeated ControllableFrame controllable_frames = 1;
+}
+
+message File {
+    string identifier = 1;
+    string path = 2;
+    bytes data = 4;
+}
+
+message Folder {
+    string identifier = 1;
+    bool compressed = 2;
+    repeated File file = 3;
+    int32 uncompressed_size = 4;
+}
+
+message FileDefinition {
+    repeated File file = 1;
+    repeated bool isFolder = 2;
+}
+
+message FileRequest {
+    string identifier = 1;
+    bool compressed = 2;
+}
+
 message GridMap {
     Header header = 1;
     string frame = 2;
@@ -81,9 +119,10 @@ message GridMap {
 }
 
 message GoTo {
-    double max_forward_speed = 1;
-    Pose waypoint_pose = 2; 
-    double waypoint_max_forward_speed = 3;
+    Header header = 1;
+    double max_forward_speed = 2;
+    Pose waypoint_pose = 3;
+    double waypoint_max_forward_speed = 4;
 }
 
 message Header {
@@ -216,10 +255,20 @@ message PoseWithCovariance {
     repeated float covariance = 2;
 }
 
+enum PosesType {
+    POSES_UNDEFINED = 0;
+    POSES_PATH = 1; 
+    POSES_BOX = 2;
+    POSES_CIRCLE = 3;
+    POSES_SPHERE = 4;
+    POSES_CYLINDER = 5;
+}
+
 message Poses {
     Header header = 1;
     Pose origin  = 2;         // TODO: in converter, set transform from world if no frame is given
     repeated Pose poses = 3;
+    PosesType type = 4;
 }
 
 message Position {
@@ -234,6 +283,11 @@ message RegionOfInterest {
     uint32 height = 3;
     uint32 width = 4;
     bool do_rectify = 5;
+}
+
+message RobotModelInformation {
+    FileDefinition filedef = 1;
+    string modelfilename = 2;
 }
 
 message RobotName {
@@ -288,6 +342,7 @@ message SimpleSensor{
     Vector2 scale = 6;
     repeated string value_names = 7;
     Position local_offset = 8; //local offset of the data
+    Orientation local_orientation = 9; //local orientation of the data
 }
 
 message SimpleSensors{
@@ -353,7 +408,8 @@ message Wrench {
 }
 
 message WrenchState {
-    repeated Wrench wrenches = 1;
+    Header header = 1;
+    repeated Wrench wrenches = 2;
 }
 
 // message DepthMap {

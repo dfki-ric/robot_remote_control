@@ -5,6 +5,10 @@
 #include <memory>
 #include <mutex>
 #include <atomic>
+#include <experimental/filesystem>
+#include <fstream>
+#include <unistd.h>
+#include <google/protobuf/io/coded_stream.h>
 
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
@@ -30,6 +34,24 @@ class RobotController: public UpdateThread {
          * @brief in case there is a telemetry connection, receive all and fill the data fields
          */
         virtual void update();
+
+        /**
+         * @brief Set the overwrite mode of the buffers (default false)
+         * 
+         * @param type TelemetryMessageType enum
+         * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
+         */
+        bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true);
+
+        /**
+         * @brief Set the buffer size of a sinlgle telemetry type (default value set in RobotController() constructor)
+         * 
+         * @warning buffer will be emptied on resize
+         * 
+         * @param type TelemetryMessageType enum
+         * @param newsize the new size of the buffer 
+         */
+        bool setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize = 10);
 
         /**
          * @brief sets the expected next heartbeat time on the robot side
@@ -59,7 +81,7 @@ class RobotController: public UpdateThread {
 
         /**
          * @brief return then current state of the connection using the heartbeat.
-         * @return the current status of the connection, if a hearbeat duration iss set using setHeartBeatDuration()
+         * @return the current status of the connection, if a hearbeat duration is set using setHeartBeatDuration()
          * 
          */
         bool isConnected() {
@@ -67,13 +89,36 @@ class RobotController: public UpdateThread {
         }
 
         /**
-         * @brief Get the Heart Beat Round Trip Time
+         * @brief sleeps until isConnected is true. Only works if setHeartBeatDuration is set or the controlled robot is sending something 
+         */
+        void waitForConnection() {
+            while (! isConnected()){ usleep(100000);}
+        }
+
+        /**
+         * @brief Get the Heart Breat Round Trip Time
          * 
          * @return float time in seconds needed to send/receive the last heartbeat (if used)
          */
-        float getHeartBeatRoundTripTime() {
-            return heartBeatRoundTripTime.load();
+        float getHeartBreatRoundTripTime() {
+            return heartBreatRoundTripTime.load();
         }
+
+        /**
+         * @brief Get the number of objects in the buffer
+         * 
+         * @param type 
+         * @return uint32_t 
+         */
+        uint32_t getTelemetryBufferDataSize(const TelemetryMessageType &type);
+
+        /**
+         * @brief Get the messages dropped of a specific because of full buffer
+         * 
+         * @param type 
+         * @return uint32_t 
+         */
+        size_t getDroppedTelemetry(const TelemetryMessageType &type);
 
         /**
          * @brief Set the Target Pose of the ControlledRobot
@@ -144,8 +189,8 @@ class RobotController: public UpdateThread {
          * @param pose the pose to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentPose(Pose *pose) {
-            return getTelemetry(CURRENT_POSE, pose);
+        bool getCurrentPose(Pose *pose, bool onlyNewest = false) {
+            return getTelemetry(CURRENT_POSE, pose, onlyNewest);
         }
 
         /**
@@ -155,8 +200,8 @@ class RobotController: public UpdateThread {
          * @return true if new data was read
          * @return false otherwise
          */
-        bool getCurrentTwist(Twist *telemetry) {
-            return getTelemetry(CURRENT_TWIST, telemetry);
+        bool getCurrentTwist(Twist *telemetry, bool onlyNewest = false) {
+            return getTelemetry(CURRENT_TWIST, telemetry, onlyNewest);
         }
 
         /**
@@ -166,8 +211,8 @@ class RobotController: public UpdateThread {
          * @return true if new data was read
          * @return false otherwise
          */
-        bool getCurrentAcceleration(Acceleration *telemetry) {
-            return getTelemetry(CURRENT_ACCELERATION, telemetry);
+        bool getCurrentAcceleration(Acceleration *telemetry, bool onlyNewest = false) {
+            return getTelemetry(CURRENT_ACCELERATION, telemetry, onlyNewest);
         }
 
         /**
@@ -176,8 +221,8 @@ class RobotController: public UpdateThread {
          * @param repeated field of poses to write the data to
          * @return bool true if new data was read
          */
-        bool getPoses(Poses *poses) {
-            return getTelemetry(POSES, poses);
+        bool getPoses(Poses *poses, bool onlyNewest = false) {
+            return getTelemetry(POSES, poses, onlyNewest);
         }
 
         /**
@@ -186,8 +231,8 @@ class RobotController: public UpdateThread {
          * @param jointState the JointState to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentJointState(JointState *jointState) {
-            return getTelemetry(JOINT_STATE, jointState);
+        bool getCurrentJointState(JointState *jointState, bool onlyNewest = false) {
+            return getTelemetry(JOINT_STATE, jointState, onlyNewest);
         }
 
         /**
@@ -196,16 +241,16 @@ class RobotController: public UpdateThread {
          * @param wrenchState the WrenchState to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentWrenchState(WrenchState* wrenchState) {
-            return getTelemetry(WRENCH_STATE, wrenchState);
+        bool getCurrentWrenchState(WrenchState* wrenchState, bool onlyNewest = false) {
+            return getTelemetry(WRENCH_STATE, wrenchState, onlyNewest);
         }
 
-        int getCurrentIMUState(IMU* imu) {
-            return getTelemetry(IMU_VALUES, imu);
+        int getCurrentIMUState(IMU* imu, bool onlyNewest = false) {
+            return getTelemetry(IMU_VALUES, imu, onlyNewest);
         }
 
-        int getCurrentContactPoints(ContactPoints* points) {
-            return getTelemetry(CONTACT_POINTS, points);
+        int getCurrentContactPoints(ContactPoints* points, bool onlyNewest = false) {
+            return getTelemetry(CONTACT_POINTS, points, onlyNewest);
         }
 
 
@@ -270,8 +315,8 @@ class RobotController: public UpdateThread {
          * @param Transforms object to write the transforms to
          * @return bool true if new data was read
          */
-        bool getCurrentTransforms(Transforms *transforms) {
-            return getTelemetry(TRANSFORMS, transforms);
+        bool getCurrentTransforms(Transforms *transforms, bool onlyNewest = false) {
+            return getTelemetry(TRANSFORMS, transforms, onlyNewest);
         }
 
         /**
@@ -281,20 +326,20 @@ class RobotController: public UpdateThread {
          * @return true 
          * @return false 
          */
-        bool getPointCloud(PointCloud *pointcloud) {
-            return getTelemetry(POINTCLOUD, pointcloud);
+        bool getPointCloud(PointCloud *pointcloud, bool onlyNewest = false) {
+            return getTelemetry(POINTCLOUD, pointcloud, onlyNewest);
         }
 
-        bool getImage(Image *image) {
-            return getTelemetry(IMAGE, image);
+        bool getImage(Image *image, bool onlyNewest = false) {
+            return getTelemetry(IMAGE, image, onlyNewest);
         }
 
-        bool getImageLayers(ImageLayers *imagelayers) {
-            return getTelemetry(IMAGE_LAYERS, imagelayers);
+        bool getImageLayers(ImageLayers *imagelayers, bool onlyNewest = false) {
+            return getTelemetry(IMAGE_LAYERS, imagelayers, onlyNewest);
         }
 
-        bool getOdometry(Odometry* telemetry) {
-            return getTelemetry(ODOMETRY, telemetry);
+        bool getOdometry(Odometry* telemetry, bool onlyNewest = false) {
+            return getTelemetry(ODOMETRY, telemetry, onlyNewest);
         }
 
         /**
@@ -302,13 +347,18 @@ class RobotController: public UpdateThread {
          * 
          * @param state the string to write the state to
          */
-        void requestRobotState(std::vector<std::string> *state) {
+        bool requestRobotState(std::vector<std::string> *state) {
             RobotState protostate;
-            requestTelemetry(ROBOT_STATE, &protostate);
+            bool result = requestTelemetry(ROBOT_STATE, &protostate);
             state->clear();
             for (const std::string &line : protostate.state()) {
                 state->push_back(line);
             }
+            return result;
+        }
+
+        bool requestRobotState(RobotState *state) {
+            return requestTelemetry(ROBOT_STATE, state);
         }
 
         /**
@@ -317,8 +367,8 @@ class RobotController: public UpdateThread {
          * @param complexActions where to write the data to
          * @return void
          */
-        void requestComplexActions(ComplexActions *complexActions) {
-            requestTelemetry(COMPLEX_ACTIONS, complexActions);
+        bool requestComplexActions(ComplexActions *complexActions) {
+            return requestTelemetry(COMPLEX_ACTIONS, complexActions);
         }
 
         /**
@@ -327,8 +377,8 @@ class RobotController: public UpdateThread {
          * @param simpleActions where to write the data to
          * @return void
          */
-        void requestSimpleActions(SimpleActions *simpleActions) {
-            requestTelemetry(SIMPLE_ACTIONS, simpleActions);
+        bool requestSimpleActions(SimpleActions *simpleActions) {
+            return requestTelemetry(SIMPLE_ACTIONS, simpleActions);
         }
 
         /**
@@ -337,8 +387,8 @@ class RobotController: public UpdateThread {
          * @param jointState where to write the data to
          * @return void
          */
-        void requestControllableJoints(JointState *jointState) {
-            requestTelemetry(CONTROLLABLE_JOINTS, jointState);
+        bool requestControllableJoints(JointState *jointState) {
+            return requestTelemetry(CONTROLLABLE_JOINTS, jointState);
         }
 
         /**
@@ -346,8 +396,8 @@ class RobotController: public UpdateThread {
          * 
          * @param sensors sensord array to wtite the information to
          */
-        void requestSimpleSensors(SimpleSensors *sensors) {
-            requestTelemetry(SIMPLE_SENSOR_DEFINITION, sensors);
+        bool requestSimpleSensors(SimpleSensors *sensors) {
+            return requestTelemetry(SIMPLE_SENSOR_DEFINITION, sensors);
         }
 
         /**
@@ -356,8 +406,8 @@ class RobotController: public UpdateThread {
          * @param robotName where to write the data to
          * @return void
          */
-        void requestRobotName(RobotName *robotName) {
-            requestTelemetry(ROBOT_NAME, robotName);
+        bool requestRobotName(RobotName *robotName) {
+            return requestTelemetry(ROBOT_NAME, robotName);
         }
 
         /**
@@ -365,8 +415,8 @@ class RobotController: public UpdateThread {
          * 
          * @param streams where to write the data to
          */
-        void requestVideoStreams(VideoStreams *streams) {
-            requestTelemetry(VIDEO_STREAMS, streams);
+        bool requestVideoStreams(VideoStreams *streams) {
+            return requestTelemetry(VIDEO_STREAMS, streams);
         }
 
         /**
@@ -374,8 +424,8 @@ class RobotController: public UpdateThread {
          * 
          * @param camerainformation 
          */
-        void requestCameraInformation(CameraInformation *camerainformation) {
-            requestTelemetry(CAMERA_INFORMATION, camerainformation);
+        bool requestCameraInformation(CameraInformation *camerainformation) {
+            return requestTelemetry(CAMERA_INFORMATION, camerainformation);
         }
 
         /**
@@ -384,15 +434,52 @@ class RobotController: public UpdateThread {
          * @param Pose where to write the data to
          * @return void
          */
-        void requestCurrentPose(Pose *pose) {
-            requestTelemetry(CURRENT_POSE, pose);
+        bool requestCurrentPose(Pose *pose) {
+            return requestTelemetry(CURRENT_POSE, pose);
         }
 
-        void requestMap(Map *map, const uint16_t &mapId);
+        bool requestMap(Map *map, const uint16_t &mapId, const float &overrideMaxLatency = 120);
 
-        void requestMap(std::string *map, const uint16_t &mapId){
-            requestBinary(mapId, map, MAP_REQUEST);
+        bool requestMap(std::string *map, const uint16_t &mapId, const float &overrideMaxLatency = 120) {
+            return requestBinary(mapId, map, MAP_REQUEST, overrideMaxLatency);
         }
+
+        /**
+         * @brief Request which movement commands (in which frames) are supported by the robot
+         * 
+         * @param frames 
+         */
+        bool requestControllableFrames(ControllableFrames *frames) {
+            return requestTelemetry(CONTROLLABLE_FRAMES, frames);
+        }
+
+        /**
+         * @brief Request which files can be downloaded from the robot
+         * 
+         * @param files file definition for the result
+         */
+        bool requestAvailableFiles(FileDefinition *files) {
+            return requestTelemetry(FILE_DEFINITION, files);
+        }
+
+        /**
+         * @brief download one of the defined files od folders
+         * 
+         * @param identifier identifier string from FileDefinition received by requestAvailableFiles()
+         * @param compressed if true (and compiled with gzip) compredd filed before sending
+         * @param targetpath local path where to save files (path from robot is preserved)
+         */
+        bool requestFile(const std::string &identifier, const bool &compressed = false, const std::string targetpath = "./", const float &overrideMaxLatency = 0);
+
+
+        /**
+         * @brief requestt a model file/definition from the robot, most probably an urdf
+         * 
+         * @param targetfolder folder to save the model information to
+         * @return std::pair<std::string, std::string> robot model path and file to open
+         */
+        std::pair<std::string, std::string> requestRobotModel(const std::string &targetfolder = "./", const float &overrideMaxLatency = 120);
+
 
         /**
          * @brief Get the Number of pending messages for a specific Telemetry type
@@ -415,21 +502,22 @@ class RobotController: public UpdateThread {
          * @return unsigned int 
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data ) {
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data);
+        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data, bool onlyNewest = false) {
+            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data, onlyNewest);
             return result;
         }
 
-        template< class DATATYPE > unsigned int getTelemetryRaw(const uint16_t &type, DATATYPE *data, std::string *dataSerialized) {
+        unsigned int getTelemetryRaw(const uint16_t &type, std::string *dataSerialized, bool onlyNewest = false) {
             *dataSerialized = buffers->peekSerialized(type);
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data);
+            bool result = buffers->lockedAccess().get()[type]->pop(onlyNewest);
             return result;
         }
 
-        template< class DATATYPE > void requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+        template< class DATATYPE > bool requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
             std::string replybuf;
-            requestBinary(type, &replybuf, requestType);
+            bool received = requestBinary(type, &replybuf, requestType);
             result->ParseFromString(replybuf);
+            return received;
         }
 
         template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const DATATYPE & data)> &function) {
@@ -440,17 +528,21 @@ class RobotController: public UpdateThread {
             telemetryReceivedCallbacks.push_back(function);
         }
 
-        void requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
-            std::string buf;
-            buf.resize(sizeof(uint16_t)*2);
 
-            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
-            *data = requestType;
-            data++;
+        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
+        bool requestBinary(const std::string &request, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
-            // add the requested type
-            *data = type;
-            *result = sendRequest(buf);
+
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const uint16_t &requestType, const float &overrideMaxLatency = 0) {
+            std::string request, recvbuf;
+            requestdata.SerializeToString(&request);
+            requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
+
+            google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
+            cistream.SetTotalBytesLimit(recvbuf.size(), recvbuf.size());
+            reply->ParseFromCodedStream(&cistream);
+
+            return (recvbuf.size() > 0) ? true : false;
         }
 
        /**
@@ -465,8 +557,7 @@ class RobotController: public UpdateThread {
 
 
     protected:
-
-        virtual std::string sendRequest(const std::string& serializedMessage, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
+        virtual std::string sendRequest(const std::string& serializedMessage, const float &overrideMaxLatency = 0, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK);
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
@@ -477,7 +568,7 @@ class RobotController: public UpdateThread {
 
         float heartBeatDuration;
         Timer heartBeatTimer;
-        std::atomic<float> heartBeatRoundTripTime;
+        std::atomic<float> heartBreatRoundTripTime;
         Timer latencyTimer;
         Timer requestTimer;
         Timer lastConnectedTimer;
@@ -500,25 +591,31 @@ class RobotController: public UpdateThread {
             uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
             *data = type;
             protodata.AppendToString(&buf);
-            return sendRequest(buf, flags);
+            return sendRequest(buf, 0, flags);
         }
 
 
         class TelemetryAdderBase{
          public:
-            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers) {}
+            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
+            void setOverwrite(bool mode = true) {
+                overwrite = mode;
+            }
+
          protected:
+            bool overwrite;
             std::shared_ptr<TelemetryBuffer>  buffers;
         };
+
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
             virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
-                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], data);
+                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], data, overwrite);
             }
         };
 

@@ -47,3 +47,13 @@ float UpdateThread::getElapsedTimeInS() {
     float time = threadTimer->lockedAccess()->getElapsedTime();
     return time;
 }
+
+#ifdef USES_PTHREAD
+bool UpdateThread::setUpdateThreadPriority(const int &priority, const int &policy){
+    thread_params.sched_priority = priority;
+    if(pthread_setschedparam(updateThread.native_handle(), policy, &thread_params)) {
+        return false;
+    }
+    return true;
+}
+#endif

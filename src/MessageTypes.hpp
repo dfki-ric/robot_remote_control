@@ -21,6 +21,7 @@ namespace robot_remote_control {
                             HEARTBEAT,
                             PERMISSION,
                             ROBOT_TRAJECTORY_COMMAND,
+                            FILE_REQUEST,
                             CONTROL_MESSAGE_TYPE_NUMBER  // LAST element
                             };
 
@@ -51,6 +52,9 @@ namespace robot_remote_control {
                                 IMAGE,                      // raw images, in case video streasm are not an option (identified by frame in header)
                                 IMAGE_LAYERS,               // Collection of images with a single timestamp (e.g. stereo pairs)
                                 ODOMETRY,                   // Odometry message (similar to ROS nav_msgs/Odometry)
+                                CONTROLLABLE_FRAMES,        // List of frames that can be used to send twist, pose or goto (which target can be set in the header of the command)
+                                FILE_DEFINITION,            // List of downloadable files (by name)
+                                ROBOT_MODEL_INFORMATION,                // Robot Model Imformation
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 
