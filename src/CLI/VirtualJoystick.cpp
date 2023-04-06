@@ -17,24 +17,8 @@ using robot_remote_control::TransportZmq;
 template<typename T>
 using windowPtr = std::unique_ptr<T,std::function<void(T*)>>;
 
-//TODO name executable rrc_virtual_joystick
-//TODO split into several files
-//TODO round twist command to 0.2f
-//TODO clear Twist line properly 
-
-//TODO remap controls
-//     space or zero = 0
-//     ad = ty, ws=tx, qe=tz
-//     left/right = ay, up/down=ax, Bild=az
-//     +/- for increment
-//     use escape and Ctrl-C to stop => hint in UI
-
-// TODO use lower two windows for input visualization wasd and arrows including iteration step
-//      use top two windows for info:
-//          - Right hand side status: connection, heartbeat, sent Twist
-//          - Left hand side tab switchable getCurrentTwist, getCurrentPose, getCurrentIMU
-
-// TODO limit increment
+// TODO add more info:
+//  switchable getCurrentTwist, getCurrentPose, getCurrentIMU
 
 struct Connection
 {
@@ -46,28 +30,22 @@ struct Connection
     Connection(const Connection& a) : ip(a.ip), commandPort(a.commandPort), telemetryPort(a.telemetryPort) {}
 };
 
-class WindowManager
+class VirtualJoystick
 {
     public:
-        WindowManager(std::shared_ptr<robot_remote_control::RobotController> controller, const Connection & connectionInfo):
+        VirtualJoystick(std::shared_ptr<robot_remote_control::RobotController> controller, const Connection & connectionInfo):
           connectionInfo_(connectionInfo),
           controller_(controller)
         {
-            ipString_ = "IP: "+connectionInfo_.ip;
-            portString_ = "Port: "+connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort;
-
             initScreen();
             initWindows();
             initController();
             refreshAllWindows();
         }
 
-        ~WindowManager()
+        ~VirtualJoystick()
         {
-            if (controller_->isConnected())
-            {
-                controller_->stopUpdateThread();
-            }
+            controller_->stopUpdateThread();
             deleteAllWindows();
             resetScreen();
 	        endwin();
@@ -79,11 +57,21 @@ class WindowManager
             int ch;
 	        while(ch = getch())
 	        {	
+                // Exit if ESC is pressed
+                if (ch == 27) {
+                    //TODO should zero command be sent?!
+                    //sendStopCommand();
+                    break;
+                }
+
+                // resize if needed
                 if ( LINES != currHeight_ || COLS != currWidth_ )
                 {
                     regenerateAllWindows();
                     warned = false;
                 }
+
+                // warn if robot is not connected
                 if(not controller_->isConnected() && not warned)
                 {
                     deleteAllWindows();
@@ -96,8 +84,6 @@ class WindowManager
                     warned = false;
                 } else if (not controller_->isConnected() && warned) {
                     continue;
-                } else if (ch == 'q') {
-                    break;
                 } else {
                     printHeartBeat();
                     printIncrement();
@@ -106,24 +92,11 @@ class WindowManager
 	        }
         }
 
-        void refreshAllWindows()
-        {
-            for(auto&& entry : windowMap_)
-            {
-        	    box(entry.second.get(), 0 , 0);
-                wrefresh(entry.second.get());
-            }
-            printTwistCmd();
-            showStatusWindow();
-            updateArrowWindows();
-        }
-
     private:
         std::map<std::string, windowPtr<WINDOW >> windowMap_;
         std::map<std::string, windowPtr<WINDOW >> arrowMap_;
         windowPtr<WINDOW> warnWindow_;
         Connection connectionInfo_;
-        std::string ipString_, portString_;
         std::shared_ptr<robot_remote_control::RobotController> controller_;
         robot_remote_control::Twist twistCmd_;
         robot_remote_control::RobotName robotName_;
@@ -163,6 +136,14 @@ class WindowManager
             refresh();
         }
 
+        void initController()
+        {
+            controller_->startUpdateThread(0);
+            controller_->setHeartBeatDuration(1);
+            controller_->setupLostConnectionCallback([&](const float& time){});
+            controller_->requestRobotName(&robotName_);
+        }
+
         void initWindows()
         {
             windowMap_["helpWindow"]    = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
@@ -175,53 +156,89 @@ class WindowManager
             arrowMap_["arrowLeft"]      = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), COLS/10.0));
             arrowMap_["arrowRight"]     = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), 3*COLS/10.0));
 
-            
-            mvwprintw(windowMap_["helpWindow"].get(), 1, 2, "INFO:"); 
-            mvwprintw(windowMap_["helpWindow"].get(), 3, 4, "Use arrow keys to change twist command"); 
-            mvwprintw(windowMap_["helpWindow"].get(), 4, 4, "Use -/+ to change increment"); 
-            mvwprintw(windowMap_["helpWindow"].get(), 5, 4, "Press SPACE to send stop command"); 
+            drawHelpInfo();
         }
 
-        void initController()
+        void refreshAllWindows()
         {
-            controller_->startUpdateThread(0);
-            controller_->setHeartBeatDuration(1);
-            controller_->setupLostConnectionCallback([&](const float& time){});
-            controller_->requestRobotName(&robotName_);
+            for(auto&& entry : windowMap_)
+            {
+        	    box(entry.second.get(), 0 , 0);
+                wrefresh(entry.second.get());
+            }
+            printTwistCmd();
+            drawStatusWindow();
+            drawArrowWindows();
+        }
+
+        void regenerateAllWindows()
+        {
+            currHeight_ = LINES;
+            currWidth_ = COLS;
+            deleteAllWindows();
+            initWindows();
+            refreshAllWindows();
+        }
+
+        void deleteAllWindows()
+        {
+            windowMap_.clear();
+            arrowMap_.clear();
+            refresh();
+        }
+
+        void showWarning()
+        {
+            warnWindow_ = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/4.0, COLS/4.0));
+            wattron(warnWindow_.get(), A_BOLD);	
+            mvwprintw(warnWindow_.get(), 1, 2, "Connection to robot could not be established."); 
+            wattroff(warnWindow_.get(), A_BOLD);	
+            mvwprintw(warnWindow_.get(), 4, 4, "At"); 
+            wattron(warnWindow_.get(), A_UNDERLINE);	
+            mvwprintw(warnWindow_.get(), 4, 7, connectionInfo_.ip.c_str());
+            wattroff(warnWindow_.get(), A_UNDERLINE);	
+            mvwprintw(warnWindow_.get(), 4, 8 + connectionInfo_.ip.length(), "on ports");
+            wattron(warnWindow_.get(), A_UNDERLINE);	
+            mvwprintw(warnWindow_.get(), 4, 17 + connectionInfo_.ip.length(), (connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort).c_str());
+            wattroff(warnWindow_.get(), A_UNDERLINE);	
+        	wborder(warnWindow_.get(), '!', '!', '-','-','+','+','+','+');
+            wrefresh(warnWindow_.get());
+        }
+
+        void clearWarning()
+        {
+            warnWindow_.reset();
         }
 
         void evaluateKey(int key)
         {
             switch(key)
 	        {	case KEY_LEFT:
-                    twistCmd_.mutable_linear()->set_y(twistCmd_.linear().y()-increment_);
+                    twistCmd_.mutable_angular()->set_z(roundf((twistCmd_.angular().z()+increment_)*100)/100);
                     controller_->setTwistCommand(twistCmd_);
                     printTwistCmd();
                     highlightButton("arrowLeft");
                     break;
 	        	case KEY_RIGHT:
-                    twistCmd_.mutable_linear()->set_y(twistCmd_.linear().y()+increment_);
+                    twistCmd_.mutable_angular()->set_z(roundf((twistCmd_.angular().z()-increment_)*100)/100);
                     controller_->setTwistCommand(twistCmd_);
                     printTwistCmd();
                     highlightButton("arrowRight");
                     break;
 	        	case KEY_UP:
-                    twistCmd_.mutable_linear()->set_x(twistCmd_.linear().x()+increment_);
+                    twistCmd_.mutable_linear()->set_x(roundf((twistCmd_.linear().x()+increment_)*100)/100);
                     controller_->setTwistCommand(twistCmd_);
                     printTwistCmd();
                     highlightButton("arrowUp");
                     break;
 	        	case KEY_DOWN:
-                    twistCmd_.mutable_linear()->set_x(twistCmd_.linear().x()-increment_);
+                    twistCmd_.mutable_linear()->set_x(roundf((twistCmd_.linear().x()-increment_)*100)/100);
                     controller_->setTwistCommand(twistCmd_);
                     printTwistCmd();
                     highlightButton("arrowDown");
                     break;
-	        	case '0':
-                    twistCmd_.mutable_linear()->set_x(0);
-                    twistCmd_.mutable_linear()->set_y(0);
-                    twistCmd_.mutable_linear()->set_z(0);
-                    controller_->setTwistCommand(twistCmd_);
+                case ' ':
+                    sendStopCommand();
                     printTwistCmd();
                     break;
                 case '+':
@@ -239,6 +256,17 @@ class WindowManager
 	        }
         }
 
+        void sendStopCommand()
+        {
+            twistCmd_.mutable_linear()->set_x(0.0);
+            twistCmd_.mutable_linear()->set_y(0.0);
+            twistCmd_.mutable_linear()->set_z(0.0);
+            twistCmd_.mutable_angular()->set_x(0.0);
+            twistCmd_.mutable_angular()->set_y(0.0);
+            twistCmd_.mutable_angular()->set_z(0.0);
+            controller_->setTwistCommand(twistCmd_);
+        }
+
         void highlightButton(const std::string & windowKey, bool enable=true)
         {
             if (enable)
@@ -250,43 +278,7 @@ class WindowManager
             wrefresh(arrowMap_[windowKey].get());
         }
 
-        void showWarning()
-        {
-            warnWindow_ = std::move(create_newwin(LINES/2.0, COLS/2.0, LINES/4.0, COLS/4.0));
-            mvwprintw(warnWindow_.get() , 1, 2, "Connection to robot could not be established."); 
-            mvwprintw(warnWindow_.get() , 3, 4, ipString_.c_str()); 
-            mvwprintw(warnWindow_.get() , 4, 4, portString_.c_str()); 
-        	wborder(warnWindow_.get(), '!', '!', '-','-','+','+','+','+');
-            wrefresh(warnWindow_.get());
-        }
-
-        void clearWarning()
-        {
-            warnWindow_.reset();
-        }
-
-        void regenerateAllWindows()
-        {
-            currHeight_ = LINES;
-            currWidth_ = COLS;
-            deleteAllWindows();
-            initWindows();
-            refreshAllWindows();
-        }
-
-        void showStatusWindow()
-        {
-            std::string connected = "Connected to ";
-            mvwprintw(windowMap_["statusWindow"].get() , 1, 2, connected.c_str()); 
-            wattron(windowMap_["statusWindow"].get(), A_BOLD);	
-            mvwprintw(windowMap_["statusWindow"].get() , 1, 16, robotName_.value().c_str()); 
-            wattroff(windowMap_["statusWindow"].get(), A_BOLD);
-            mvwprintw(windowMap_["statusWindow"].get() , 2, 4, ipString_.c_str()); 
-            mvwprintw(windowMap_["statusWindow"].get() , 3, 4, portString_.c_str()); 
-            wrefresh(windowMap_["statusWindow"].get());
-        }
-
-        void updateArrowWindows()
+        void drawArrowWindows()
         {
             mvwprintw(arrowMap_["arrowUp"].get()    , 0, COLS/20.0-1, "UP");
             mvwprintw(arrowMap_["arrowDown"].get()  , 0, COLS/20.0-2, "DOWN");
@@ -300,39 +292,64 @@ class WindowManager
             }
         }
 
-        void deleteAllWindows()
-        {
-            windowMap_.clear();
-            arrowMap_.clear();
-            refresh();
+        void drawHelpInfo() {
+            wattron(windowMap_["helpWindow"].get(), A_BOLD);	
+            mvwprintw(windowMap_["helpWindow"].get(), 1, 2, "INFO:"); 
+            wattroff(windowMap_["helpWindow"].get(), A_BOLD);	
+            mvwprintw(windowMap_["helpWindow"].get(), 3, 4, "ARROW KEYS => TWIST COMMAND"); 
+            mvwprintw(windowMap_["helpWindow"].get(), 4, 4, "SPACE      => STOP COMMAND"); 
+            mvwprintw(windowMap_["helpWindow"].get(), 5, 4, "-/+        => CHANGE INCREMENT"); 
+            mvwprintw(windowMap_["helpWindow"].get(), 6, 4, "ESC        => QUIT"); 
         }
 
-        void printTwistCmd()
+        void drawStatusWindow()
         {
-            mvwprintw(windowMap_["cmdWindow"].get() , 1, 2, "Sending Twist command:");
-            mvwprintw(windowMap_["cmdWindow"].get(), 4, 4, twistCmd_.ShortDebugString().c_str());
-            wrefresh(windowMap_["cmdWindow"].get());
+            wattron(windowMap_["statusWindow"].get(), A_BOLD);	
+            std::string connected = "Connected to ";
+            mvwprintw(windowMap_["statusWindow"].get() , 1, 2, connected.c_str()); 
+            mvwprintw(windowMap_["statusWindow"].get() , 1, 15, robotName_.value().c_str()); 
+            wattroff(windowMap_["statusWindow"].get(), A_BOLD);	
+            mvwprintw(windowMap_["statusWindow"].get() , 3, 4, "At"); 
+            wattron(windowMap_["statusWindow"].get(), A_UNDERLINE);	
+            mvwprintw(windowMap_["statusWindow"].get() , 3, 7, connectionInfo_.ip.c_str());
+            wattroff(windowMap_["statusWindow"].get(), A_UNDERLINE);	
+            mvwprintw(windowMap_["statusWindow"].get() , 3, 8 + connectionInfo_.ip.length(), "on ports");
+            wattron(windowMap_["statusWindow"].get(), A_UNDERLINE);	
+            mvwprintw(windowMap_["statusWindow"].get() , 3, 17 + connectionInfo_.ip.length(), (connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort).c_str());
+            wattroff(windowMap_["statusWindow"].get(), A_UNDERLINE);	
+            wrefresh(windowMap_["statusWindow"].get());
         }
 
         void printHeartBeat()
         {
             std::string heartBeat = "HeartBeat RTT: " + std::to_string(controller_->getHeartBeatRoundTripTime());
-            mvwprintw(windowMap_["statusWindow"].get() , 5, 2, heartBeat.c_str()); 
+            mvwprintw(windowMap_["statusWindow"].get() , 5, 4, heartBeat.c_str()); 
             wrefresh(windowMap_["statusWindow"].get());
         }
 
         void printIncrement()
         {
+            wattron(windowMap_["arrowWindow"].get(), A_BOLD);	
             mvwprintw(windowMap_["arrowWindow"].get() , 1, 1, "Current Increment: "); 
             mvwprintw(windowMap_["arrowWindow"].get() , 1, 21, std::to_string(increment_).c_str()); 
             wrefresh(windowMap_["arrowWindow"].get());
+        }
+
+        void printTwistCmd()
+        {
+            wattron(windowMap_["cmdWindow"].get(), A_BOLD);	
+            mvwprintw(windowMap_["cmdWindow"].get(), 1, 2, "Sending Twist command:");
+            wattroff(windowMap_["cmdWindow"].get(), A_BOLD);	
+            wmove(windowMap_["cmdWindow"].get(), 4, 4);
+            wclrtoeol(windowMap_["cmdWindow"].get());
+            mvwprintw(windowMap_["cmdWindow"].get(), 4, 4, twistCmd_.ShortDebugString().c_str());
+            wrefresh(windowMap_["cmdWindow"].get());
         }
 };
 
 
 int main(int argc, char** argv)
 {
-    // store connection values
     Connection connectionInfo;
 
     // evaluate command line arguments
@@ -353,8 +370,19 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+connectionInfo.ip+":"+connectionInfo.telemetryPort, TransportZmq::SUB));
     std::shared_ptr<robot_remote_control::RobotController> controller_ = std::make_shared<robot_remote_control::RobotController>(commands, telemetry);
 
-    WindowManager wm(controller_, connectionInfo);
-    wm.run();
+    VirtualJoystick joy(controller_, connectionInfo);
+    joy.run();
+
+//TODO DEBUG not properly closing if no connection was ever made!
+//    VirtualJoystick * joy = new VirtualJoystick(controller_, connectionInfo);
+//    joy->run();
+//    delete joy;
+//    std::cout << "Finished deletion joystick" << std::endl;
+//    controller_.reset();
+//    std::cout << "Finished deletion of controller shared ptr" << std::endl;
+//    commands.reset();
+//    telemetry.reset();
+//    std::cout << "Finished reseting TransportSharedPtr" << std::endl;
 
 	return 0;
 }
