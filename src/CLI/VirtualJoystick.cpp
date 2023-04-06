@@ -17,27 +17,24 @@ using robot_remote_control::TransportZmq;
 template<typename T>
 using windowPtr = std::unique_ptr<T,std::function<void(T*)>>;
 
-//TODO integrate virtual joystick in robot_controller
 //TODO name executable rrc_virtual_joystick
 //TODO split into several files
+//TODO round twist command to 0.2f
+//TODO clear Twist line properly 
 
 //TODO remap controls
 //     space or zero = 0
 //     ad = ty, ws=tx, qe=tz
 //     left/right = ay, up/down=ax, Bild=az
 //     +/- for increment
-//     use escape and Ctrl-C to stop
+//     use escape and Ctrl-C to stop => hint in UI
 
 // TODO use lower two windows for input visualization wasd and arrows including iteration step
 //      use top two windows for info:
 //          - Right hand side status: connection, heartbeat, sent Twist
 //          - Left hand side tab switchable getCurrentTwist, getCurrentPose, getCurrentIMU
 
-
-//    mvwprintw(helpWindow , 1, 2, "INFO:"); 
-//    mvwprintw(helpWindow , 3, 4, "Use arrow keys to change twist command"); 
-//    mvwprintw(helpWindow , 4, 4, "Use -/+ to change increment_"); 
-//    mvwprintw(helpWindow , 5, 4, "Press 0 to send stop command"); 
+// TODO limit increment
 
 struct Connection
 {
@@ -72,8 +69,7 @@ class WindowManager
                 controller_->stopUpdateThread();
             }
             deleteAllWindows();
-            use_default_colors();
-            standend(); //turn off all attributes
+            resetScreen();
 	        endwin();
         }
 
@@ -81,7 +77,7 @@ class WindowManager
         {
             bool warned = false;
             int ch;
-	        while((ch = getch()) != 'q')
+	        while(ch = getch())
 	        {	
                 if ( LINES != currHeight_ || COLS != currWidth_ )
                 {
@@ -100,6 +96,8 @@ class WindowManager
                     warned = false;
                 } else if (not controller_->isConnected() && warned) {
                     continue;
+                } else if (ch == 'q') {
+                    break;
                 } else {
                     printHeartBeat();
                     printIncrement();
@@ -156,6 +154,15 @@ class WindowManager
             refresh();
         }
 
+        void resetScreen()
+        {
+            use_default_colors();
+            standend(); //turn off all attributes
+            curs_set(1);
+            echo();
+            refresh();
+        }
+
         void initWindows()
         {
             windowMap_["helpWindow"]    = std::move(create_newwin(LINES/2.0, COLS/2.0, 0, 0));
@@ -167,6 +174,12 @@ class WindowManager
             arrowMap_["arrowDown"]      = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)+(LINES/10.0)), 2*COLS/10.0));
             arrowMap_["arrowLeft"]      = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), COLS/10.0));
             arrowMap_["arrowRight"]     = std::move(create_newwin(ceil(LINES/10.0), floor(COLS/10.0), floor(3*(LINES/4.0)             ), 3*COLS/10.0));
+
+            
+            mvwprintw(windowMap_["helpWindow"].get(), 1, 2, "INFO:"); 
+            mvwprintw(windowMap_["helpWindow"].get(), 3, 4, "Use arrow keys to change twist command"); 
+            mvwprintw(windowMap_["helpWindow"].get(), 4, 4, "Use -/+ to change increment"); 
+            mvwprintw(windowMap_["helpWindow"].get(), 5, 4, "Press SPACE to send stop command"); 
         }
 
         void initController()
@@ -341,7 +354,6 @@ int main(int argc, char** argv)
     std::shared_ptr<robot_remote_control::RobotController> controller_ = std::make_shared<robot_remote_control::RobotController>(commands, telemetry);
 
     WindowManager wm(controller_, connectionInfo);
-    wm.refreshAllWindows();
     wm.run();
 
 	return 0;
