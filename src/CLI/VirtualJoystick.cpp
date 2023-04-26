@@ -102,7 +102,7 @@ class VirtualJoystick
         robot_remote_control::RobotName robotName_;
         int currWidth_;
         int currHeight_;
-        double increment_ = 0.1;
+        double increment_ = 0.01;
 
         windowPtr<WINDOW> create_newwin(int height, int width, int starty, int startx)
         {
@@ -242,10 +242,10 @@ class VirtualJoystick
                     printTwistCmd();
                     break;
                 case '+':
-                    increment_+=0.1;
+                    increment_+=increment_;
                     break;
                 case '-':
-                    increment_-=0.1;
+                    increment_-=increment_;
                     break;
                 default:
                     highlightButton("arrowRight", false);
