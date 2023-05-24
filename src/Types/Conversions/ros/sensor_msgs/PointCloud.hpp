@@ -1,7 +1,7 @@
 #pragma once
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <sensor_msgs/PointCloud.h>
 
 namespace robot_remote_control {
 namespace RosConversion {
