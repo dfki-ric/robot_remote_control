@@ -10,11 +10,9 @@ namespace RosConversion {
 
     static void convert(const nav_msgs::Path &from, robot_remote_control::Poses* to) {
 
-        convert(from.header, to->mutable_timestamp());
+        convert(from.header, to->mutable_header());
 
-        if(not from.header.frame_id.empty()) {
-            to->set_frame(from.header.frame_id);
-        } else {
+        if(from.header.frame_id.empty()) {
             to->set_frame("world");
         }
 

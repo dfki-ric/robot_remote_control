@@ -5,17 +5,20 @@
 
 #include "../geometry_msgs/Quaternion.hpp"
 #include "../geometry_msgs/Vector3.hpp"
+#include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
 
     static void convert(const robot_remote_control::IMU &from, sensor_msgs::Imu* to) {
+        convert(from.header(), &to->header);
         convert(from.orientation(), &to->orientation);
         convert(from.gyro(), &to->angular_velocity);
         convert(from.acceleration(), &to->linear_acceleration);
     }
 
     static void convert(const sensor_msgs::Imu &from, robot_remote_control::IMU* to) {
+        convert(from.header, to->mutable_header());
         convert(from.orientation, to->mutable_orientation());
         convert(from.angular_velocity, to->mutable_gyro());
         convert(from.linear_acceleration, to->mutable_acceleration());
