@@ -3,7 +3,6 @@
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 // deprecated as of ROS2 Foxy
 #include <sensor_msgs/msg/point_cloud.hpp>
-
 #include "../Header.hpp"
 
 namespace robot_remote_control {

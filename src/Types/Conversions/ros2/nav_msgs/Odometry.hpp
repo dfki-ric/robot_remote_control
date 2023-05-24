@@ -2,6 +2,7 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <nav_msgs/msg/odometry.hpp>
+#include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {

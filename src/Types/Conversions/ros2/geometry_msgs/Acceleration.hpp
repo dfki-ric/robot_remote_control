@@ -2,10 +2,13 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <geometry_msgs/msg/accel_stamped.hpp>
+#include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
-        inline static void convert(const robot_remote_control::Acceleration &from, geometry_msgs::msg::Accel *to ) {
+        inline static void convert(const robot_remote_control::Acceleration &from, geometry_msgs::msg::AccelStamped *to ) {
+             convert(from.header(), &to->header);
+             
              to->accel.angular.x = from.angular().x();
              to->accel.angular.y = from.angular().y();
              to->accel.angular.z = from.angular().z();

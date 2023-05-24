@@ -2,6 +2,7 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <geometry_msgs/msg/wrench_stamped.h>
+#include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {

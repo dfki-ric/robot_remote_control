@@ -3,7 +3,6 @@
 #include <string>
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <geometry_msgs/msg/twist_stamped.hpp>
-#include <geometry_msgs/msg/twist.hpp>
 #include "../Header.hpp"
 
 namespace robot_remote_control {

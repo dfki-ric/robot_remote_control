@@ -3,7 +3,6 @@
 #include <string>
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
-#include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "../Header.hpp"
