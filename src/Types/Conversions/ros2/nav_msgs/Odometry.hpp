@@ -1,15 +1,15 @@
 #pragma once
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
-#include <nav_msgs/Odometry.h>
+#include <nav_msgs/msg/odometry.hpp>
 #include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
 
-    static void convert(const nav_msgs::Odometry &from, robot_remote_control::Pose* to) {
+    static void convert(const nav_msgs::msg::Odometry &from, robot_remote_control::Pose* to) {
         convert(from.header, to->mutable_header());
-
+        
         to->mutable_position()->set_x(from.pose.pose.position.x);
         to->mutable_position()->set_y(from.pose.pose.position.y);
         to->mutable_position()->set_z(from.pose.pose.position.z);

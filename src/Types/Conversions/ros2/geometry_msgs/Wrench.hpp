@@ -1,13 +1,13 @@
 #pragma once
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
-#include <geometry_msgs/WrenchStamped.h>
+#include <geometry_msgs/msg/wrench_stamped.h>
 #include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
 
-    static void convert(const geometry_msgs::WrenchStamped &from, robot_remote_control::WrenchState* to) {
+    static void convert(const geometry_msgs::msg::WrenchStamped &from, robot_remote_control::WrenchState* to) {
         robot_remote_control::Wrench *pb_wrench = to->add_wrenches();
         convert(from.header, pb_wrench->mutable_header());
 

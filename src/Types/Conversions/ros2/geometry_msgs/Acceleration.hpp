@@ -1,12 +1,12 @@
 #pragma once
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
-#include <geometry_msgs/AccelStamped.h>
+#include <geometry_msgs/msg/accel_stamped.hpp>
 #include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
-        inline static void convert(const robot_remote_control::Acceleration &from, geometry_msgs::AccelStamped *to ) {
+        inline static void convert(const robot_remote_control::Acceleration &from, geometry_msgs::msg::AccelStamped *to ) {
              convert(from.header(), &to->header);
              
              to->accel.angular.x = from.angular().x();
@@ -18,7 +18,7 @@ namespace RosConversion {
              to->accel.linear.z = from.linear().z();
         }
 
-        inline static void convert(const robot_remote_control::Twist &from, geometry_msgs::Accel *to ) {
+        inline static void convert(const robot_remote_control::Twist &from, geometry_msgs::msg::Accel *to ) {
              to->angular.x = from.angular().x();
              to->angular.y = from.angular().y();
              to->angular.z = from.angular().z();

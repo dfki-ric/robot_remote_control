@@ -3,12 +3,12 @@
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include "../Header.hpp"
 #include "../geometry_msgs/Pose.hpp"
-#include <nav_msgs/Path.h>
+#include <nav_msgs/msg/path.hpp>
 
 namespace robot_remote_control {
 namespace RosConversion {
 
-    static void convert(const nav_msgs::Path &from, robot_remote_control::Poses* to) {
+    static void convert(const nav_msgs::msg::Path &from, robot_remote_control::Poses* to) {
 
         convert(from.header, to->mutable_header());
 
@@ -21,7 +21,7 @@ namespace RosConversion {
         }
     }
 
-    static void convert(const robot_remote_control::Poses &from, nav_msgs::Path* to) {
+    static void convert(const robot_remote_control::Poses &from, nav_msgs::msg::Path* to) {
         for (unsigned int i = 0; i < from.poses_size(); i++) {
             convert(from.poses(i), &to->poses[i]);
         }
