@@ -36,12 +36,19 @@ class RobotController: public UpdateThread {
         virtual void update();
 
         /**
-         * @brief Set the overwrite mode of the buffers (default false)
+         * @brief Set the overwrite mode of a specific buffers (default false)
          * 
          * @param type TelemetryMessageType enum
          * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
          */
         bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true);
+
+        /**
+         * @brief Set the overwrite mode of all buffers (default false)
+         * 
+         * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
+         */
+        void setTelemetryBufferOverwrite(bool overwrite = true);
 
         /**
          * @brief Set the buffer size of a sinlgle telemetry type (default value set in RobotController() constructor)

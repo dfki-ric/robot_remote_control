@@ -70,6 +70,8 @@ RobotController::~RobotController() {
     stopUpdateThread();
 }
 
+
+
 bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite) {
     std::shared_ptr<TelemetryAdderBase> adder =  telemetryAdders[type];
     if (adder.get()) {
@@ -77,6 +79,14 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
         return true;
     }
     return false;
+}
+
+void RobotController::setTelemetryBufferOverwrite(bool overwrite) {
+    for (auto &adder : telemetryAdders) {
+        if (adder.get()) {
+            adder->setOverwrite(overwrite);
+        }
+    }
 }
 
 bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize) {
