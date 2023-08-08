@@ -237,6 +237,9 @@ class ControlledRobot: public UpdateThread {
         int initSimpleActions(const SimpleActions& telemetry) {
             return sendTelemetry(telemetry, SIMPLE_ACTIONS, true);
         }
+        int updateSimpleActions(const SimpleActions& telemetry) {
+            return sendTelemetry(telemetry, SIMPLE_ACTIONS);
+        }
 
         /**
          * @brief The robot uses this method to provide information about its set of complex actions

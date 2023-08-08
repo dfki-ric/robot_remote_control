@@ -398,6 +398,9 @@ class RobotController: public UpdateThread {
         bool requestSimpleActions(SimpleActions *simpleActions) {
             return requestTelemetry(SIMPLE_ACTIONS, simpleActions);
         }
+        bool getSimpleActions(SimpleActions *simpleActions) {
+            return getTelemetry(SIMPLE_ACTIONS, simpleActions);
+        }
 
         /**
          * @brief Request information about the controllable joints of the robot.
