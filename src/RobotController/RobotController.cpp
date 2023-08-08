@@ -50,6 +50,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
         registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
+        registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
 
         #ifdef RRC_STATISTICS
             // add names to buffer, this types have aspecial treatment, the should not be registered

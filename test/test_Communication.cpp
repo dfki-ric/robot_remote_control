@@ -612,6 +612,8 @@ BOOST_AUTO_TEST_CASE(check_telemetry_simple_actions) {
   send = TypeGenerator::genSimpleActions();
   recv = testTelemetry(send, SIMPLE_ACTIONS);
   COMPARE_PROTOBUF(send, recv);
+  recv = testRequest(send, SIMPLE_ACTIONS);
+  COMPARE_PROTOBUF(send, recv);
 }
 
 BOOST_AUTO_TEST_CASE(check_telemetry_complex_actions) {

@@ -249,6 +249,16 @@ class ControlledRobot: public UpdateThread {
         }
 
         /**
+         * @brief sets option on how the interface is implemented e.g. id simpleactons are static ot can change
+         * 
+         * @param options 
+         * @return int 
+         */
+        int initInterfaceOptions(const InterfaceOptions& options) {
+            return sendTelemetry(options, INTERFACE_OPTIONS, true);
+        }
+
+        /**
          * @brief The robot uses this method to provide information about its sensors
          * The name is only mandatory here, setSimpleSnsor() may omit this value and identify by id
          * 

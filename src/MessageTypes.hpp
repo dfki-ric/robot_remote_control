@@ -55,6 +55,7 @@ namespace robot_remote_control {
                                 CONTROLLABLE_FRAMES,        // List of frames that can be used to send twist, pose or goto (which target can be set in the header of the command)
                                 FILE_DEFINITION,            // List of downloadable files (by name)
                                 ROBOT_MODEL_INFORMATION,                // Robot Model Imformation
+                                INTERFACE_OPTIONS,          // set options on how the connected controlled robots behaves (e.g. changing available simpleactions)
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

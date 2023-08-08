@@ -379,6 +379,17 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief request options on how the ControlledRobot has to be used
+         * 
+         * @param options 
+         * @return true 
+         * @return false 
+         */
+        bool requestInterfaceOptions(InterfaceOptions *options) {
+            return requestTelemetry(INTERFACE_OPTIONS, options);
+        }
+
+        /**
          * @brief Request information about the simple actions of the robot.
          * 
          * @param simpleActions where to write the data to

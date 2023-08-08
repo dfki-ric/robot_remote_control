@@ -158,6 +158,11 @@ message IMU {
     Orientation orientation = 5;
 }
 
+message InterfaceOptions {
+    bool dynamicSimpleActions = 1; // simpleactions can change during runtime, user needs to use getSimpleActions() to update current state
+    bool dynamicComplexActions = 2;
+}
+
 message JointCommand {
     Header header = 1;
     repeated string name = 2;

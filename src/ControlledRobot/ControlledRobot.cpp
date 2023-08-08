@@ -73,6 +73,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES);
     registerTelemetryType<FileDefinition>(FILE_DEFINITION);
     registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION);
+    registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS);
 }
 
 ControlledRobot::~ControlledRobot() {
