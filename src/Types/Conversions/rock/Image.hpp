@@ -1,12 +1,31 @@
 #pragma once
 
+#include "Time.hpp"
 #include <string>
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <base/samples/Frame.hpp>
-#include "Time.hpp"
+#include <boost/bimap.hpp>
+
 
 namespace robot_remote_control {
 namespace RockConversion {
+
+    static const boost::bimap<std::string, base::samples::frame::frame_mode_t> encodings = {
+            {"MODE_UNDEFINED", base::samples::frame::MODE_UNDEFINED},
+            {"MODE_BAYER", base::samples::frame::MODE_BAYER},
+            {"MODE_BAYER_RGGB", base::samples::frame::MODE_BAYER_RGGB},
+            {"MODE_BAYER_BGGR", base::samples::frame::MODE_BAYER_BGGR},
+            {"MODE_BAYER_GBRG", base::samples::frame::MODE_BAYER_GBRG},
+            {"MODE_BAYER_GRBG", base::samples::frame::MODE_BAYER_GRBG},
+            {"MODE_GRAYSCALE", base::samples::frame::MODE_GRAYSCALE},
+            {"MODE_UYVY", base::samples::frame::MODE_UYVY},
+            {"MODE_RGB", base::samples::frame::MODE_RGB},
+            {"MODE_BGR", base::samples::frame::MODE_BGR},
+            {"MODE_RGB32", base::samples::frame::MODE_RGB32},
+            {"MODE_PJPG", base::samples::frame::MODE_PJPG},
+            {"MODE_JPEG", base::samples::frame::MODE_JPEG},
+            {"MODE_PNG", base::samples::frame::MODE_PNG}
+    };
 
     // inline static void convert(const IMU &rrc_type, base::samples::IMUSensors* rock_type) {
     //     convert(rrc_type.acceleration(), &(rock_type->acc));
@@ -19,29 +38,30 @@ namespace RockConversion {
         rrc_type->set_height(rock_type.getHeight());
         rrc_type->set_width(rock_type.getWidth());
 
-        std::string encoding;
-        switch (rock_type.getFrameMode()) {
-            case base::samples::frame::MODE_UNDEFINED: encoding = "MODE_UNDEFINED"; break;
-            case base::samples::frame::MODE_BAYER: encoding = "MODE_BAYER"; break;
-            case base::samples::frame::MODE_BAYER_RGGB: encoding = "MODE_BAYER_RGGB"; break;
-            case base::samples::frame::MODE_BAYER_BGGR: encoding = "MODE_BAYER_BGGR"; break;
-            case base::samples::frame::MODE_BAYER_GBRG: encoding = "MODE_BAYER_GBRG"; break;
-            case base::samples::frame::MODE_BAYER_GRBG: encoding = "MODE_BAYER_GRBG"; break;
-            case base::samples::frame::MODE_GRAYSCALE: encoding = "MODE_GRAYSCALE"; break;
-            case base::samples::frame::MODE_UYVY: encoding = "MODE_UYVY"; break;
-            case base::samples::frame::MODE_RGB: encoding = "MODE_RGB"; break;
-            case base::samples::frame::MODE_BGR: encoding = "MODE_BGR"; break;
-            case base::samples::frame::MODE_RGB32: encoding = "MODE_RGB32"; break;
-            case base::samples::frame::MODE_PJPG: encoding = "MODE_PJPG"; break;
-            case base::samples::frame::MODE_JPEG: encoding = "MODE_JPEG"; break;
-            case base::samples::frame::MODE_PNG: encoding = "MODE_PNG"; break;
-        }
+        auto const encoding_mode = encodings.right.find(rock_type.getFrameMode());
+        std::string encoding = encoding_mode != encodings.right.end() ? encoding_mode->second : "MODE_UNDEFINED";
         rrc_type->set_encoding(encoding);
 
         rrc_type->set_step(rock_type.getRowSize());
         rrc_type->set_is_bigendian(true);
         rrc_type->set_data(std::string(reinterpret_cast<const char*>(rock_type.image.data()), rock_type.getNumberOfBytes()));
     }
+
+    inline static void convert(Image const &rrc_type, base::samples::frame::Frame *rock_type, ) {
+
+        convert(rrc_type.header().timestamp(), rock_type->time);
+        auto const encoding_mode = encodings.left.find(rrc_type.encoding());
+        base::samples::frame::frame_mode_t encoding = encoding_mode != encodings.left.end()
+                ? encoding_mode->second : base::samples::frame::MODE_UNDEFINED;
+
+        rock_type->init(rrc_type.width(), rrc_type.height(), 8, encoding, 0, rrc_type.data.size());
+
+//        rrc_type->set_step(rock_type.getRowSize());
+//        rrc_type->set_is_bigendian(true);
+        rock_type->setImage(rrc_type.data.data(), rrc_type.data().size());
+    }
+
+
 
 }  // namespace RockConversion
 }  // namespace robot_remote_control
