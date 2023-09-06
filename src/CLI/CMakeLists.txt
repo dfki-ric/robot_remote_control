@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.1.0)
 set(CURSES_NEED_NCURSES true)
 find_package(Curses)
 
-if (CURSES_FOUND)
+if (CURSES_HAVE_NCURSES_H)
     add_executable(virtual_joystick VirtualJoystick.cpp)
     target_link_libraries(virtual_joystick
         ncurses
