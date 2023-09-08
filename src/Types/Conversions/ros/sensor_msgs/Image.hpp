@@ -26,16 +26,15 @@ namespace RosConversion {
 
     static void convert(const sensor_msgs::Image &from, robot_remote_control::Image* to) {
         convert(from.header, to->mutable_header());
-        to->mutable_height() = from.height;
-        to->mutable_width() = from.width;
+        to->set_height(from.height);
+        to->set_width(from.width);
         // TODO: translate encodings (throw errors if selected one is not compatible, e.g., MODE_PNG?)
         // compressed images use other message type: sensor_msgs::CompressedImage 
-        to->mutable_encoding() = from.encoding;
-        to->mutable_is_bigendian() = from.is_bigendian;
-        to->mutable_step() = from.step;
-        auto const& data = from.data;
-        to->mutable_data().reserve(data.size());
-        std::copy(data.begin(), data.end(), to->mutable_data().begin());
+        to->set_encoding(from.encoding);
+        to->set_is_bigendian(from.is_bigendian);
+        to->set_step(from.step);
+        to->mutable_data()->resize(from.data.size());
+        std::copy(from.data.begin(), from.data.end(), to->mutable_data()->begin());
     }
 
 }  // namespace RosConversion
