@@ -110,7 +110,7 @@ int main(int argc, char** argv) {
         }
 
 
-        printf("latency %f seconds\n", controller.getHeartBreatRoundTripTime()/2.0);
+        printf("latency %f seconds\n", controller.getHeartBeatRoundTripTime()/2.0);
 
 
         usleep(10000);

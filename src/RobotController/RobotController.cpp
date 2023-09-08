@@ -16,7 +16,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     heartBeatDuration(0),
-    heartBreatRoundTripTime(0),
+    heartBeatRoundTripTime(0),
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
     simplesensorbuffer(std::make_shared< SimpleBuffer<SimpleSensor> >()),
@@ -179,7 +179,7 @@ void RobotController::update() {
                 latencyTimer.start();
                 std::string rep = sendProtobufData(hb, HEARTBEAT);
                 float time = latencyTimer.getElapsedTime();
-                heartBreatRoundTripTime.store(time);
+                heartBeatRoundTripTime.store(time);
             }
             heartBeatTimer.start(heartBeatDuration);
         }
