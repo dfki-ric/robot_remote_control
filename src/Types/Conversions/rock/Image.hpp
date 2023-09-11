@@ -43,5 +43,10 @@ namespace RockConversion {
         rrc_type->set_data(std::string(reinterpret_cast<const char*>(rock_type.image.data()), rock_type.getNumberOfBytes()));
     }
 
+    inline static void convert(Image const &rrc_type, base::samples::frame::Frame *rock_type) {
+        // non-functional implementation for CI until https://github.com/dfki-ric/robot_remote_control/pull/37 is merged
+    }
+        
+
 }  // namespace RockConversion
 }  // namespace robot_remote_control
