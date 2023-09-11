@@ -2,17 +2,15 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <geometry_msgs/WrenchStamped.h>
+#include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
 
     static void convert(const geometry_msgs::WrenchStamped &from, robot_remote_control::WrenchState* to) {
-        *(to->add_frame()) = from.header.frame_id;
-        robot_remote_control::TimeStamp *ts = to->mutable_timestamp();
-        ts->set_secs(from.header.stamp.sec);
-        ts->set_nsecs(from.header.stamp.nsec);
-
         robot_remote_control::Wrench *pb_wrench = to->add_wrenches();
+        convert(from.header, pb_wrench->mutable_header());
+
         pb_wrench->mutable_force()->set_x(from.wrench.force.x);
         pb_wrench->mutable_force()->set_y(from.wrench.force.y);
         pb_wrench->mutable_force()->set_z(from.wrench.force.z);

@@ -2,7 +2,7 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <base/commands/Motion2D.hpp>
-// #include "Eigen.hpp"
+#include "Eigen.hpp"
 // #include "Pose.hpp"
 // #include "Time.hpp"
 
@@ -26,13 +26,20 @@ namespace RockConversion {
         rock_type->translation = sqrt(pow(rrc_type.linear().x(), 2) + pow(rrc_type.linear().y(), 2));
         rock_type->rotation = rrc_type.angular().z();
         rock_type->heading.rad = angle;
-
-        // TODO Set limits from yaml and limit them here!
-        if (rock_type->translation > 1) {
-            printf("[INFO] Restricting translation to a maximum value of 1");
-            rock_type->translation = 1;
-        }
     }
+
+    inline static void convert(const base::commands::Motion2D &rock_type, Twist* rrc_type) {
+      base::Vector3d linear, angular;
+      angular.x() = 0.0;
+      angular.y() = 0.0;
+      angular.z() = rock_type.rotation;
+      linear.x() = cos(rock_type.heading.rad)*rock_type.translation;
+      linear.y() = sin(rock_type.heading.rad)*rock_type.translation;
+      linear.z() = 0.0;
+      convert(linear, rrc_type->mutable_linear());
+      convert(angular, rrc_type->mutable_angular());
+    }
+
 }  // namespace RockConversion
 }  // namespace robot_remote_control
 

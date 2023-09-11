@@ -10,7 +10,7 @@ namespace RockConversion {
 
     inline static void convert(const JointState &rrc_type, base::samples::Joints* rock_type) {
         rock_type->clear();
-        convert(rrc_type.timestamp(), &(rock_type->time));
+        convert(rrc_type.header(), &(rock_type->time));
         // init all states
         for (int i = 0; i < rrc_type.name().size(); i++) {
             try {
@@ -38,7 +38,7 @@ namespace RockConversion {
 
     inline static void convert(const JointCommand &rrc_type, base::samples::Joints* rock_type) {
         rock_type->clear();
-        convert(rrc_type.timestamp(), &(rock_type->time));
+        convert(rrc_type.header(), &(rock_type->time));
         // init all states
         for (int i = 0; i < rrc_type.name().size(); i++) {
             try {
@@ -65,7 +65,23 @@ namespace RockConversion {
     }
 
     inline static void convert(const base::samples::Joints &rock_type, JointState *rrc_type) {
-        convert(rock_type.time, rrc_type->mutable_timestamp());
+        convert(rock_type.time, rrc_type->mutable_header());
+        // Clear last state
+        rrc_type->clear_name();
+        rrc_type->clear_position();
+        rrc_type->clear_velocity();
+        rrc_type->clear_effort();
+
+        for (unsigned int i = 0; i < rock_type.size(); i++) {
+            rrc_type->add_name(rock_type.names[i]);
+            rrc_type->add_position(rock_type.elements[i].position);
+            rrc_type->add_velocity(rock_type.elements[i].speed);
+            rrc_type->add_effort(rock_type.elements[i].effort);
+        }
+    }
+
+    inline static void convert(const base::samples::Joints &rock_type, JointCommand *rrc_type) {
+        convert(rock_type.time, rrc_type->mutable_header());
         // Clear last state
         rrc_type->clear_name();
         rrc_type->clear_position();

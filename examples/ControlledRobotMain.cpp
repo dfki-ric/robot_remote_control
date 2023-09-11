@@ -21,6 +21,8 @@ int main(int argc, char** argv)
     // set a callback for connection losses, allow 100ms of later arrival
     // (due to differences in latency between heartbeat commands)
     // the elapsed time may be used to have different stages of escalation
+    // when there are multiple connections to this robots with different heartbeats
+    // in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
     robot.setupHeartbeatCallback(0.1, [](const float &elapsed){
         printf("no heartbeat since %.2f seconds\n", elapsed);
     });
@@ -81,7 +83,7 @@ int main(int argc, char** argv)
     *transform.mutable_transform() = tf_pose;
     transform.set_from("Source");
     transform.set_to("Target");
-    *transform.mutable_timestamp() = robot.getTime();
+    *transform.mutable_header()->mutable_timestamp() = robot.getTime();
     *transforms.add_transform() = transform;
 
     robot.initSimpleActions(simpleActions);
@@ -122,13 +124,38 @@ int main(int argc, char** argv)
     velocity.add_value(0);
     velocity.add_value(0);
 
+
+
+    robot_remote_control::FileDefinition files;
+    robot_remote_control::File* file;
+
+    file = files.add_file();
+    files.add_isfolder(true);
+    file->set_identifier("folder");
+    file->set_path("./test/testfiles/");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("topfolderfile");
+    file->set_path("./test/testfiles/topfolderfile");
+
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("subfolderfile");
+    file->set_path("./test/testfiles/subfolder/subfolderfile");
+
+    robot.initFiles(files);
+
+
+
+
     // commands
     robot_remote_control::Twist twistcommand;
     robot_remote_control::GoTo gotocommand;
     robot_remote_control::JointCommand jointscommand;
     robot_remote_control::SimpleAction simpleactionscommand;
     robot_remote_control::ComplexAction complexactionscommand;
-
+    robot_remote_control::Poses posescommand;
 
 
 
@@ -176,7 +203,7 @@ int main(int argc, char** argv)
             printf("\ngot target pose command:\n%s\n", targetpose.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "warping fake robot to target position\n");
             currentpose = targetpose;
-            *(currentpose.mutable_timestamp()) = robot.getTime();
+            *(currentpose.mutable_header()->mutable_timestamp()) = robot.getTime();
         }
 
         if (robot.getTwistCommand(&twistcommand)) {
@@ -210,16 +237,20 @@ int main(int argc, char** argv)
             }
         }
 
-        if (robot.getSimpleActionCommand(&simpleactionscommand)) {
+        while (robot.getSimpleActionCommand(&simpleactionscommand)) {
             printf("\ngot simple actions command:\n%s\n", simpleactionscommand.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "setting simple action state\n");
             // do it
         }
 
-        if (robot.getComplexActionCommand(&complexactionscommand)) {
+        while (robot.getComplexActionCommand(&complexactionscommand)) {
             printf("\ngot complex actions command:\n%s\n", complexactionscommand.ShortDebugString().c_str());
             robot.setLogMessage(robot_remote_control::INFO, "setting complex action state\n");
             // do it
+        }
+
+        if (robot.getRobotTrajectoryCommand(&posescommand)) {
+            printf("\ngot trajectory command:\n%s\n", posescommand.ShortDebugString().c_str());
         }
 
         // set state
@@ -241,10 +272,18 @@ int main(int argc, char** argv)
         velocity.set_value(2, 0.1);
         robot.setSimpleSensor(velocity);
 
+        
+        robot_remote_control::Twist twistState;
+        twistState.mutable_linear()->set_x(1);
+        twistState.mutable_linear()->set_y(2);
+        twistState.mutable_linear()->set_z(3);
+        twistState.mutable_header()->set_frame("Test for a framename");
+        robot.setCurrentTwist(twistState);
+
         // when the define RRC_STATISTICS was active during compilation you can calculate/print/use stats
         // if not, the sats stay empty
-        robot.getStatistics().calculate();
-        robot.getStatistics().print(true);
+        // robot.getStatistics().calculate();
+        // robot.getStatistics().print(true);
 
         usleep(100000);
     }

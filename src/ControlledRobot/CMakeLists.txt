@@ -3,7 +3,13 @@ add_library(robot_remote_control-controlled_robot
             ../TelemetryBuffer.cpp
             ../Statistics.cpp
 )
-target_link_libraries (robot_remote_control-controlled_robot robot_remote_control-types robot_remote_control-update_thread)
+target_link_libraries (robot_remote_control-controlled_robot stdc++fs robot_remote_control-types robot_remote_control-update_thread)
+
+if(ZLIB_FOUND)
+        target_link_libraries(robot_remote_control-controlled_robot robot_remote_control-compression)
+        target_compile_definitions(robot_remote_control-controlled_robot PUBLIC -DZLIB_FOUND)
+endif()
+
 target_include_directories(robot_remote_control-controlled_robot
 	PUBLIC
 		$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

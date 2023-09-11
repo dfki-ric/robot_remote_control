@@ -2,11 +2,14 @@
 
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <tf/transform_datatypes.h>
+#include "../Header.hpp"
 
 namespace robot_remote_control {
 namespace RosConversion {
 
     static void convert(const tf::StampedTransform &from, robot_remote_control::Pose *to) {
+        convert(from.header, to->mutable_header());
+
         tf::Vector3 pos = from.getOrigin();
         robot_remote_control::Position *rrc_pos = to->mutable_position();
         rrc_pos->set_x(pos.getX());

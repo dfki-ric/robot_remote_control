@@ -1,25 +1,46 @@
 #include "ControlledRobot.hpp"
 #include <iostream>
+#include <experimental/filesystem>
+#include <fstream>
+#include <sstream>
 
+#ifdef ZLIB_FOUND
+#include "../Tools/Compression.hpp"
+#endif
 
 namespace robot_remote_control {
 
 
-ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport):UpdateThread(),
+ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize):UpdateThread(),
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     heartbeatAllowedLatency(0.1),
+    connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
-    logLevel(CUSTOM-1) {
-    registerCommandType(TARGET_POSE_COMMAND, &poseCommand);
-    registerCommandType(TWIST_COMMAND, &twistCommand);
-    registerCommandType(GOTO_COMMAND, &goToCommand);
-    registerCommandType(SIMPLE_ACTIONS_COMMAND, &simpleActionsCommand);
-    registerCommandType(COMPLEX_ACTION_COMMAND, &complexActionCommandBuffer);
-    registerCommandType(JOINTS_COMMAND, &jointsCommand);
-    registerCommandType(HEARTBEAT, &heartbeatCommand);
-    registerCommandType(PERMISSION, &permissionCommand);
-    registerCommandType(ROBOT_TRAJECTORY_COMMAND, &robotTrajectoryCommand);
+    logLevel(CUSTOM-1),
+    receiveflags(Transport::NOBLOCK) {
+
+    // init buffers for non-cast access in getters
+    poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
+    twistCommand = std::make_unique<CommandBuffer<Twist>>(buffersize);
+    goToCommand = std::make_unique<CommandBuffer<GoTo>>(buffersize);
+    simpleActionsCommand = std::make_unique<CommandBuffer<SimpleAction>>(buffersize);
+    complexActionCommandBuffer = std::make_unique<CommandBuffer<ComplexAction>>(buffersize);
+    jointsCommand = std::make_unique<CommandBuffer<JointCommand>>(buffersize);
+    heartbeatCommand = std::make_unique<CommandBuffer<HeartBeat>>(1);
+    permissionCommand = std::make_unique<CommandBuffer<Permission>>(1);
+    robotTrajectoryCommand = std::make_unique<CommandBuffer<Poses>>(buffersize);
+
+    // register command buffers
+    registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
+    registerCommandType(TWIST_COMMAND, twistCommand.get());
+    registerCommandType(GOTO_COMMAND, goToCommand.get());
+    registerCommandType(SIMPLE_ACTIONS_COMMAND, simpleActionsCommand.get());
+    registerCommandType(COMPLEX_ACTION_COMMAND, complexActionCommandBuffer.get());
+    registerCommandType(JOINTS_COMMAND, jointsCommand.get());
+    registerCommandType(HEARTBEAT, heartbeatCommand.get());
+    registerCommandType(PERMISSION, permissionCommand.get());
+    registerCommandType(ROBOT_TRAJECTORY_COMMAND, robotTrajectoryCommand.get());
 
 
     registerTelemetryType<Pose>(CURRENT_POSE);
@@ -39,18 +60,37 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<Map>(MAP);
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
-    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST); //no need to buffer, fills future
+    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST);  // no need to buffer, fills future
     registerTelemetryType<PointCloud>(POINTCLOUD);
     registerTelemetryType<IMU>(IMU_VALUES);
     registerTelemetryType<ContactPoints>(CONTACT_POINTS);
     registerTelemetryType<Twist>(CURRENT_TWIST);
     registerTelemetryType<Acceleration>(CURRENT_ACCELERATION);
+    registerTelemetryType<CameraInformation>(CAMERA_INFORMATION);
+    registerTelemetryType<Image>(IMAGE);
+    registerTelemetryType<ImageLayers>(IMAGE_LAYERS);
+    registerTelemetryType<Odometry>(ODOMETRY);
+    registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES);
+    registerTelemetryType<FileDefinition>(FILE_DEFINITION);
+    registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION);
+    registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS);
+}
+
+ControlledRobot::~ControlledRobot() {
+    stopUpdateThread();
 }
 
 void ControlledRobot::update() {
-    while (receiveRequest() != NO_CONTROL_DATA) {}
+    bool received = false;
+    while (receiveRequest() != NO_CONTROL_DATA) {received = true;}
+    if (received == true) {
+        connected.store(true);
+    }
 
-    if (heartbeatCommand.read(&heartbeatValues)) {
+    // if there are multiple connections with different frequencies it can happen that if the high frequency conenction is lost
+    // and the last heartbeat message came from the low fewquency connection, the heartbeatExpiredCallback is called after
+    // the low frequency timer is expired
+    if (heartbeatCommand->hasNew() && heartbeatCommand->read(&heartbeatValues)) {
         connected.store(true);
         // printf("received new HB params %.2f, %.2f\n", heartbeatValues.heartbeatduration(), heartbeatValues.heartbeatlatency());
         heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);
@@ -73,11 +113,7 @@ void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const uint16_t
 
 ControlMessageType ControlledRobot::receiveRequest() {
     std::string msg;
-    Transport::Flags flags = Transport::NONE;
-    // if (!this->threaded()){
-        flags = Transport::NOBLOCK;
-    // }
-    int result = commandTransport->receive(&msg, flags);
+    int result = commandTransport->receive(&msg, receiveflags);
     if (result) {
         ControlMessageType requestType = evaluateRequest(msg);
         return requestType;
@@ -92,24 +128,10 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
 
     switch (msgtype) {
         case TELEMETRY_REQUEST: {
-            uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
-            TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
-            std::string reply = buffers->peekSerialized(type);
-            commandTransport->send(reply);
-            return TELEMETRY_REQUEST;
+            return handleTelemetryRequest(serializedMessage, commandTransport);
         }
         case MAP_REQUEST: {
-            uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
-            std::string map;
-            //get map
-            {
-                auto lockedAccess = mapBuffer.lockedAccess();
-                if (*requestedMap < lockedAccess.get().size()){
-                    RingBufferAccess::peekData(lockedAccess.get()[*requestedMap],&map);
-                }
-            }
-            commandTransport->send(map);
-            return MAP_REQUEST;
+            return handleMapRequest(serializedMessage, commandTransport);
         }
         case LOG_LEVEL_SELECT: {
             logLevel = *reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
@@ -117,30 +139,13 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             return LOG_LEVEL_SELECT;
         }
         case PERMISSION: {
-            Permission perm;
-            perm.ParseFromString(serializedMessage);
-            std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
-            try {
-                promise.set_value(perm.granted());
-            } catch (const std::future_error &e) {
-                printf("%s\n", e.what());
-            }
+            return handlePermissionRequest(serializedMessage, commandTransport);
+        }
+        case FILE_REQUEST: {
+            return handleFileRequest(serializedMessage, commandTransport);
         }
         default: {
-            CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
-            if (cmdbuffer) {
-                if (!cmdbuffer->write(serializedMessage)) {
-                    printf("unable to parse message of type %i in %s:%i\n", msgtype, __FILE__, __LINE__);
-                    commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
-                    return NO_CONTROL_DATA;
-                }
-                commandTransport->send(serializeControlMessageType(msgtype));
-                notifyCommandCallbacks(*type);
-                return msgtype;
-            } else {
-                commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
-                return msgtype;
-            }
+            return handleCommandRequest(msgtype, serializedMessage, commandTransport);
         }
     }
 }
@@ -214,6 +219,138 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
     addControlMessageType(&buf, type);
     return buf;
 }
+
+
+bool ControlledRobot::loadFile(File* file, const std::string &path, bool compressed) {
+    file->set_path(path);
+    // read file (if it is and directory, no data is set)
+    std::ifstream in(path, std::ios::in | std::ios::binary);
+    if (in) {
+        std::stringstream filestr;
+        filestr << in.rdbuf();
+        in.close();
+        #ifdef ZLIB_FOUND
+            if (compressed) {
+                std::string compressed;
+                Compression::compressString(filestr.str(), &compressed);
+                file->set_data(compressed);
+            } else {
+                file->set_data(filestr.str());
+            }
+        #else
+            file->set_data(filestr.str());
+        #endif
+        return true;
+    }
+    return false;
+}
+
+bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed) {
+    try {
+        for (const auto & entry : std::experimental::filesystem::recursive_directory_iterator(path)) {
+            File* file = folder->add_file();
+            loadFile(file, entry.path(), compressed);
+        }
+        folder->set_compressed(compressed);
+    } catch (const std::experimental::filesystem::v1::__cxx11::filesystem_error &e) {
+        printf("%s\n", e.what());
+        // set "someting non-default" to actially send values
+        folder->set_identifier(e.what());
+        return false;
+    }
+    return true;
+}
+
+
+ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
+    TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
+    std::string reply = buffers->peekSerialized(type);
+    commandTransport->send(reply);
+    return TELEMETRY_REQUEST;
+}
+
+ControlMessageType ControlledRobot::handleMapRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
+    std::string map;
+    // get map
+    {
+        auto lockedAccess = mapBuffer.lockedAccess();
+        if (*requestedMap < lockedAccess.get().size()) {
+            RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
+        }
+    }
+    commandTransport->send(map);
+    return MAP_REQUEST;
+}
+
+ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    Permission perm;
+    perm.ParseFromString(serializedMessage);
+    std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
+    try {
+        promise.set_value(perm.granted());
+    } catch (const std::future_error &e) {
+        printf("%s\n", e.what());
+    }
+    commandTransport->send(serializeControlMessageType(PERMISSION));
+    return PERMISSION;
+}
+
+ControlMessageType ControlledRobot::handleFileRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    FileRequest request;
+    request.ParseFromString(serializedMessage);
+    Folder folder;
+    std::string buf;
+    int index = -1;
+    for (int i = 0; i < files.file().size(); ++i) {
+        if (files.file(i).identifier() == request.identifier()) {
+            index = i;
+            break;
+        }
+    }
+
+    #ifndef ZLIB_FOUND
+        printf("zlib for compression not available, sending uncompressed files\n");
+        request.set_compressed(false);
+    #endif
+    if (index >= 0 && index < files.file().size()) {
+        bool isFolder = files.isfolder(index);
+        File filedef = files.file(index);
+        // todo: read folderfolder
+        if (isFolder) {
+            loadFolder(&folder, filedef.path(), request.compressed());
+        } else {
+            File* file = folder.add_file();
+            loadFile(file, filedef.path(), request.compressed());
+            folder.set_compressed(request.compressed());
+        }
+    } else {
+        printf("requested file '%s' undefined, sending empty folder\n", request.identifier().c_str());
+        folder.set_identifier("file/folder :" + request.identifier() + " undefined");
+    }
+    folder.SerializeToString(&buf);
+    commandTransport->send(buf);
+    return FILE_REQUEST;
+}
+
+ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageType &msgtype, const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+    CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
+    if (cmdbuffer) {
+        if (!cmdbuffer->write(serializedMessage)) {
+            printf("unable to parse message of type %i in %s:%i\n", msgtype, __FILE__, __LINE__);
+            commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
+            return NO_CONTROL_DATA;
+        }
+        commandTransport->send(serializeControlMessageType(msgtype));
+        notifyCommandCallbacks(msgtype);
+        return msgtype;
+    } else {
+        commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
+        return msgtype;
+    }
+}
+
 
 
 }  // namespace robot_remote_control

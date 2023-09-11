@@ -15,6 +15,24 @@ message ActionDependency {
     float depends_on_action_in_state = 2; //1    
 }
 
+message CameraInfo {
+    Header header = 1;
+    uint32 width = 2;
+    uint32 height = 3;
+    string distortion_model = 4;
+    repeated float D = 5;
+    repeated float K = 6;
+    repeated float R = 7;
+    repeated float P = 8;
+    uint32 binning_x  = 9;
+    uint32 binning_y = 10;
+    RegionOfInterest roi = 11;
+}
+
+message CameraInformation {
+    repeated CameraInfo camerainfo = 1;
+}
+
 message ChannelFloat {
     string name = 1;
     repeated float values = 2;
@@ -42,6 +60,7 @@ message ComplexActions {
 }
 
 message ContactPoint {
+    string name = 6;
     Vector3 position = 1;  // position in body frame
     float contact = 2;  // contact probability in the interval between 0 and 1.0, or NaN if unknown
     float slip = 3;  //  slip distance of contact point in a single control loop
@@ -50,57 +69,126 @@ message ContactPoint {
 }
 
 message ContactPoints {
-    repeated ContactPoint contacts= 1;
+    Header header = 2;
+    repeated ContactPoint contacts = 1;
+}
+
+enum ControllableFrameTypes {
+    TWIST_CONTROL = 0;
+    POSE_CONTROL = 1;
+    GOTO_CONTROL = 2;
+}
+
+message ControllableFrame {
+    string frame = 1;
+    ControllableFrameTypes type = 2;
+}
+
+message ControllableFrames {
+    repeated ControllableFrame controllable_frames = 1;
+}
+
+message File {
+    string identifier = 1;
+    string path = 2;
+    bytes data = 4;
+}
+
+message Folder {
+    string identifier = 1;
+    bool compressed = 2;
+    repeated File file = 3;
+    int32 uncompressed_size = 4;
+}
+
+message FileDefinition {
+    repeated File file = 1;
+    repeated bool isFolder = 2;
+}
+
+message FileRequest {
+    string identifier = 1;
+    bool compressed = 2;
 }
 
 message GridMap {
-    TimeStamp timestamp = 1;
+    Header header = 1;
     string frame = 2;
     Pose origin  = 3;
     repeated SimpleSensor layers = 4;
 }
 
 message GoTo {
-    double max_forward_speed = 1;
-    Pose waypoint_pose = 2; 
-    double waypoint_max_forward_speed = 3;
+    Header header = 1;
+    double max_forward_speed = 2;
+    Pose waypoint_pose = 3;
+    double waypoint_max_forward_speed = 4;
+}
+
+message Header {
+    TimeStamp timestamp = 1;
+    string frame = 2;
+    uint32 seq = 3;
 }
 
 message HeartBeat {
     float heartBeatDuration = 1;
 }
 
+message Image {
+    Header header = 1;
+    uint32 height = 2;
+    uint32 width = 3;
+    string encoding = 4;
+    uint32 is_bigendian = 5;
+    uint32 step = 6;
+    bytes data = 7;
+}
+
+message ImageLayers {
+    Header header = 1;
+    repeated Image layers = 2;
+}
+
 message IMU {
-    Vector3 acceleration = 1;
-    Vector3 gyro = 2;
-    Vector3 mag = 3;
-    Orientation orientation = 4;
+    Header header = 1;
+    Vector3 acceleration = 2;
+    Vector3 gyro = 3;
+    Vector3 mag = 4;
+    Orientation orientation = 5;
+}
+
+message InterfaceOptions {
+    bool dynamicSimpleActions = 1; // simpleactions can change during runtime, user needs to use getSimpleActions() to update current state
+    bool dynamicComplexActions = 2;
 }
 
 message JointCommand {
-    repeated string name = 1;
-    repeated double position = 2;
-    repeated double velocity = 3;
-    repeated double effort = 4;
+    Header header = 1;
+    repeated string name = 2;
+    repeated double position = 3;
+    repeated double velocity = 4;
+    repeated double effort = 5;
     repeated double acceleration = 6;
-    repeated double kp_gain = 7;
-    repeated double kd_gain = 8;
-    TimeStamp timestamp = 9;
+    repeated uint64 tics = 7;
+    repeated double kp_gain = 8;
+    repeated double kd_gain = 9;
 }
 
 message JointState {
-    repeated string name = 1;
-    repeated double position = 2;
-    repeated double velocity = 3;
-    repeated double effort = 4;
+    Header header = 1;
+    repeated string name = 2;
+    repeated double position = 3;
+    repeated double velocity = 4;
+    repeated double effort = 5;
     repeated double acceleration = 6;
-    TimeStamp timestamp = 5;
+    repeated uint64 tics = 7;
 }
 
 message LogMessage {
-    uint32 level = 1;
-    string message = 2;
-    TimeStamp timestamp = 3;
+    Header header = 1;
+    uint32 level = 2;
+    string message = 3;
 }
 
 message Map {
@@ -124,6 +212,13 @@ message NamedValue {
     float value = 2;
 }
 
+message Odometry {
+    Header header = 1;
+    string child_frame_id = 2;
+    PoseWithCovariance pose = 3;
+    TwistWithCovariance twist = 4;
+}
+
 message Orientation {
     double x = 1;
     double y = 2;
@@ -132,36 +227,53 @@ message Orientation {
 }
 
 message Permission {
-    string requestuid = 1;
-    bool granted = 2;
-}
-
-message PermissionRequest {
-    string description = 1;
-    string requestuid = 2; // you can use a simple string (number, description again) or a UUID here
+    Header header = 1;
+    string requestuid = 2;
     bool granted = 3;
 }
 
+message PermissionRequest {
+    Header header = 1;
+    string description = 2;
+    string requestuid = 3; // you can use a simple string (number, description again) or a UUID here
+    bool granted = 4;
+}
+
 message PointCloud {
-    TimeStamp timestamp = 1;
-    string frame = 2;
-    Pose origin  = 3;
-    repeated Position points = 4;
-    repeated ChannelFloat channels = 5;
+    Header header = 1;
+    Pose origin  = 2;
+    repeated Position points = 3;
+    repeated ChannelFloat channels = 4;
+
 }
 
 message Pose {
-    Position position = 1;
-    Orientation orientation = 2;
+    Header header = 1;
+    Position position = 2;
+    Orientation orientation = 3;
     float orientation2d = 4;  // only to be used in case position only consists of x and y
-    TimeStamp timestamp = 3;
+    repeated float covariance = 5;
+}
+
+message PoseWithCovariance {
+    Pose pose = 1;
+    repeated float covariance = 2;
+}
+
+enum PosesType {
+    POSES_UNDEFINED = 0;
+    POSES_PATH = 1; 
+    POSES_BOX = 2;
+    POSES_CIRCLE = 3;
+    POSES_SPHERE = 4;
+    POSES_CYLINDER = 5;
 }
 
 message Poses {
-    TimeStamp timestamp = 1;
-    string frame = 2;         // defaults to world
-    Pose origin  = 3;         // TODO: in converter, set transform from world if no frame is given
-    repeated Pose poses = 4;
+    Header header = 1;
+    Pose origin  = 2;         // TODO: in converter, set transform from world if no frame is given
+    repeated Pose poses = 3;
+    PosesType type = 4;
 }
 
 message Position {
@@ -170,21 +282,36 @@ message Position {
     double z = 3;
 }
 
+message RegionOfInterest {
+    uint32 x_offset = 1;
+    uint32 y_offset = 2;
+    uint32 height = 3;
+    uint32 width = 4;
+    bool do_rectify = 5;
+}
+
+message RobotModelInformation {
+    FileDefinition filedef = 1;
+    string modelfilename = 2;
+}
+
 message RobotName {
     string value = 1;
 }
 
 message RobotState {
-    repeated string state = 1;
+    Header header = 1;
+    repeated string state = 2;
     // the name may be uses in case you nees a description od the state array
     // e.g. "Current Task", it must match the index of the state
-    repeated string state_name = 2;
+    repeated string state_name = 3;
 }
 
 message SimpleAction {
-    string name = 1;
-    SimpleActionDef type = 2;
-    float state = 3;
+    Header header = 1;
+    string name = 2;
+    SimpleActionDef type = 3;
+    float state = 4;
 }
 
 message SimpleActionDef {
@@ -193,7 +320,7 @@ message SimpleActionDef {
     float max_state = 3;
     float step_size = 4;
     repeated NamedValue value_names = 5; // {name: barrel_found, value=0}, {name: barrel_close, value=1}
-    ActionDependency action_dependency = 6;
+    repeated ActionDependency action_dependency = 6;
 }
 
 message SimpleActions {
@@ -208,17 +335,19 @@ enum SimpleActionType {
 }
 
 message SimpleSensor{
-    string name = 1;
-    uint32 id = 2;
+    Header header = 1;
+    string name = 2;
+    uint32 id = 3;
     //size in x and y in order to send e.g. gridmaps, indexing: val = value[x+y*sizex]
     //if this is a single value, you omit this completely
-    Vector2 size = 3; 
-    repeated float value = 4;
-    TimeStamp timestamp = 5;
+    Vector2 size = 4; 
+    repeated float value = 5;
     //scale for discretized arrays of values of each data point in x and y in SI units (meters, seconds etc.)
     //omit if no scale is needed
     Vector2 scale = 6;
     repeated string value_names = 7;
+    Position local_offset = 8; //local offset of the data
+    Orientation local_orientation = 9; //local orientation of the data
 }
 
 message SimpleSensors{
@@ -231,10 +360,11 @@ message TimeStamp {
 }
 
 message Transform {
-    Pose transform = 1;
-    string from = 2;
-    string to = 3;
-    TimeStamp timestamp= 4;
+    Header header = 1;
+    Pose transform = 2;
+    string from = 3;
+    string to = 4;
+    repeated float covariance = 5;
 }
 
 message Transforms {
@@ -242,8 +372,14 @@ message Transforms {
 }
 
 message Twist {
-    Vector3 linear = 1;
-    Vector3 angular = 2;
+    Header header = 1;
+    Vector3 linear = 2;
+    Vector3 angular = 3;
+}
+
+message TwistWithCovariance {
+    Twist twist = 1;
+    repeated float covariance = 2;
 }
 
 message Vector2{
@@ -271,14 +407,14 @@ message VideoStreams{
 }
 
 message Wrench {
-    Vector3 force = 1;
-    Vector3 torque = 2;
+    Header header = 1;
+    Vector3 force = 2;
+    Vector3 torque = 3;
 }
 
 message WrenchState {
-    TimeStamp timestamp = 1;
-    repeated string frame = 2;
-    repeated Wrench wrenches = 3;
+    Header header = 1;
+    repeated Wrench wrenches = 2;
 }
 
 // message DepthMap {

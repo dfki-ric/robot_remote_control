@@ -13,5 +13,20 @@ namespace RosConversion {
     }
 
 
+    static void convert(const std_msgs::Header &from, robot_remote_control::Header *to) {
+        to->set_seq(from.seq);
+        to->set_frame(from.frame_id);
+        to->mutable_timestamp()->set_secs(from.stamp.sec);
+        to->mutable_timestamp()->set_nsecs(from.stamp.nsec);
+        
+    }
+
+    static void convert(const robot_remote_control::Header &from, std_msgs::Header *to) {
+        to->seq = from.seq();
+        to->frame_id = from.frame();
+        to->stamp.sec = from.timestamp().secs();
+        to->stamp.nsec = from.timestamp().nsecs();
+    }
+
 }  // namespace RosConversion
 }  // namespace robot_remote_control
