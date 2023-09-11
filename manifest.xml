@@ -13,6 +13,8 @@
   <depend package="protobuf-compiler" />
   <depend package="libreadline" />
   <depend package="zmq" />
+  <depend package="ncurses" optional="1"/>
+
   <keywords>
     <keyword>communication</keyword>
     <keyword>control</keyword>
