@@ -56,7 +56,6 @@ namespace RockConversion {
     }
 
     inline static void convert(Image const &rrc_type, base::samples::frame::Frame *rock_type) {
-
         convert(rrc_type.header().timestamp(), &rock_type->time);
         auto const encoding_mode = encodings.left.find(rrc_type.encoding());
         base::samples::frame::frame_mode_t encoding = encoding_mode != encodings.left.end()
@@ -68,8 +67,6 @@ namespace RockConversion {
 //        rrc_type->set_is_bigendian(true);
         rock_type->setImage(rrc_type.data().data(), rrc_type.data().size());
     }
-
-
 
 }  // namespace RockConversion
 }  // namespace robot_remote_control
