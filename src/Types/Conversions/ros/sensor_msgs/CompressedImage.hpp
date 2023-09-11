@@ -26,7 +26,7 @@ namespace RosConversion {
             to->format = encoding;
         }
         auto const& data = from.data();
-        to->data.reserve(data.size());
+        to->data.resize(data.size());
         std::copy(data.begin(), data.end(), to->data.begin());
     }
 
@@ -35,19 +35,19 @@ namespace RosConversion {
         // TODO: translate encodings (throw errors if selected one is not compatible, e.g., MODE_PNG?)
         // compressed images use other message type: sensor_msgs::CompressedImage 
         auto const& format = from.format;
-        if (format == "jpg") {
-            to->mutable_encoding() = "MODE_JPEG";
+        if (format.find("jpeg") != std::string::npos) {
+            to->set_encoding("MODE_JPEG");
         }
-        else if (format == "png") {
-            to->mutable_encoding() = "MODE_PNG";
+        else if (format.find("png") != std::string::npos) {
+            to->set_encoding("MODE_PNG");
         }
         else {
             // encoding unsupported, leave original value as hint, as to how to interpret the data
-            to->mutable_encoding() = format;
+            to->set_encoding(format);
         }
         auto const& data = from.data;
-        to->mutable_data().reserve(data.size());
-        std::copy(data.begin(), data.end(), to->mutable_data().begin());
+        to->mutable_data()->resize(data.size());
+        std::copy(data.begin(), data.end(), to->mutable_data()->begin());
     }
 
 }  // namespace RosConversion

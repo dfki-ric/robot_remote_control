@@ -20,7 +20,7 @@ namespace RosConversion {
         to->is_bigendian = from.is_bigendian();
         to->step = from.step();
         auto const& data = from.data();
-        to->data.reserve(data.size());
+        to->data.resize(data.size());
         std::copy(data.begin(), data.end(), to->data.begin());
     }
 
