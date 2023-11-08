@@ -33,6 +33,16 @@ message CameraInformation {
     repeated CameraInfo camerainfo = 1;
 }
 
+message ChannelDefinition {
+    string name = 1;
+    uint32 messagetype = 2;
+    uint32 channelno = 3;
+}
+
+message ChannelsDefinition {
+    repeated ChannelDefinition channel = 1;
+}
+
 message ChannelFloat {
     string name = 1;
     repeated float values = 2;

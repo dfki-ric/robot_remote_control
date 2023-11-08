@@ -51,6 +51,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
         registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
         registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
+        registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
 
         #ifdef RRC_STATISTICS
             // add names to buffer, this types have aspecial treatment, the should not be registered
@@ -265,6 +266,11 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         }
         default:
         {
+            if (*channel != 0) {
+                if (buffers->lockedAccess().get()[msgtype].size() < *channel) {
+                    return msgtype;
+                }
+            }
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {

@@ -56,6 +56,7 @@ namespace robot_remote_control {
                                 FILE_DEFINITION,            // List of downloadable files (by name)
                                 ROBOT_MODEL_INFORMATION,                // Robot Model Imformation
                                 INTERFACE_OPTIONS,          // set options on how the connected controlled robots behaves (e.g. changing available simpleactions)
+                                CHANNELS_DEFINITION,         // definition of sub-channesl added be the ControlledRobot
                                 TELEMETRY_MESSAGE_TYPES_NUMBER  // LAST element
                             };
 

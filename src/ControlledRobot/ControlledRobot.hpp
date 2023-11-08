@@ -52,6 +52,22 @@ class ControlledRobot: public UpdateThread {
             while (!isConnected()){ usleep(100000);}
         }
 
+        /**
+         * @brief add a channel to a telemetry type
+         * 
+         * @param type 
+         * @return uint16_t 
+         */
+
+        template <class PROTO> uint8_t addChannel(const TelemetryMessageType& type, const std::string name = "") {
+            uint8_t channelno = buffers->registerType<PROTO>(type, 1);
+            ChannelDefinition* channel = channels.add_channel();
+            channel->set_name(name);
+            channel->set_messagetype(type);
+            channel->set_channelno(channelno);
+            sendTelemetry(channels, CHANNELS_DEFINITION, true);
+            return channelno;
+        }
 
         // Command Callbacks
 
@@ -421,8 +437,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry current pose
          * @return int number of bytes sent
          */
-        int setCurrentPose(const Pose& telemetry) {
-            return sendTelemetry(telemetry, CURRENT_POSE);
+        int setCurrentPose(const Pose& telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, CURRENT_POSE, false, channel);
         }
 
         int setCurrentTwist(const Twist& telemetry) {
@@ -590,7 +606,6 @@ class ControlledRobot: public UpdateThread {
 
         void notifyCommandCallbacks(const uint16_t &type);
 
-
         virtual ControlMessageType handleTelemetryRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
         virtual ControlMessageType handleMapRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
         virtual ControlMessageType handlePermissionRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
@@ -649,6 +664,7 @@ class ControlledRobot: public UpdateThread {
         std::map<std::string, std::promise<bool> > pendingPermissionRequests;
 
         Statistics statistics;
+        ChannelsDefinition channels;
 
         Transport::Flags receiveflags;
 

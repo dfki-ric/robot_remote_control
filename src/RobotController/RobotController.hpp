@@ -60,6 +60,11 @@ class RobotController: public UpdateThread {
          */
         bool setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize = 10, const uint8_t &channel = 0);
 
+        template <class PROTO> uint8_t addChannelBuffer(const TelemetryMessageType& type, const size_t &buffersize = 10) {
+            uint8_t channelno = buffers->registerType<PROTO>(type, buffersize);
+            return channelno;
+        }
+
         /**
          * @brief sets the expected next heartbeat time on the robot side
          * The value is trasmitted with the heartbeat message and is evaluated on the robot side, (stable) latency
@@ -196,8 +201,8 @@ class RobotController: public UpdateThread {
          * @param pose the pose to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentPose(Pose *pose, bool onlyNewest = false) {
-            return getTelemetry(CURRENT_POSE, pose, onlyNewest);
+        bool getCurrentPose(Pose *pose, bool onlyNewest = false, const uint8_t &channel = 0) {
+            return getTelemetry(CURRENT_POSE, pose, onlyNewest, channel);
         }
 
         /**
@@ -620,7 +625,7 @@ class RobotController: public UpdateThread {
          public:
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
-            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel = 0) = 0;
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel) = 0;
             void setOverwrite(bool mode = true) {
                 overwrite = mode;
             }
@@ -633,7 +638,7 @@ class RobotController: public UpdateThread {
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
-            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel = 0) {
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);

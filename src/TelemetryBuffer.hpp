@@ -85,7 +85,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         TelemetryBuffer* telemetrybuffer;
     };
 
-    template<class PBTYPE> void registerType(const uint16_t &type, const size_t &buffersize) {
+    template<class PBTYPE> uint8_t registerType(const uint16_t &type, const size_t &buffersize) {
         auto lockedAccessObject = lockedAccess();
 
         // add buffer type
@@ -110,6 +110,9 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         }
         std::shared_ptr<StringToProtobufBase> conv = std::make_shared< StringToProtobuf<PBTYPE> >(type, this);
         convertersToProto[type] = conv;
+
+        uint8_t channelno = lockedAccessObject.get()[type].size()-1;
+        return channelno;
     }
 
 

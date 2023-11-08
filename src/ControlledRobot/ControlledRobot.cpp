@@ -74,6 +74,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<FileDefinition>(FILE_DEFINITION);
     registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION);
     registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS);
+    registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION);
 }
 
 ControlledRobot::~ControlledRobot() {
@@ -264,6 +265,7 @@ bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool c
 
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
+    //TODO channel
     TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
     std::string reply = buffers->peekSerialized(type);
     commandTransport->send(reply);

@@ -1180,7 +1180,49 @@ BOOST_AUTO_TEST_CASE(robot_model) {
 }
 
 
+BOOST_AUTO_TEST_CASE(telemetry_channels) {
+    initComms();
 
+    RobotController controller(commands, telemetry);
+    ControlledRobot robot(command, telemetri);
+
+    uint8_t channelno = robot.addChannel<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
+    controller.addChannelBuffer<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
+
+    robot_remote_control::Pose pos1 = TypeGenerator::genPose();
+    robot_remote_control::Pose pos2 = TypeGenerator::genPose();
+    robot_remote_control::Pose pos3 = TypeGenerator::genPose();
+
+    robot_remote_control::Pose receivedPose;
+
+    // send telemetry data
+    robot.setCurrentPose(pos1);
+    robot.setCurrentPose(pos2, channelno);
+    // robot.setCurrentPose(pos3, 42);  // invalid channel
+
+    // wait a little for data transfer
+    // the Telemetry send is non-blocking in opposite to commands
+    usleep(100 * 1000);
+    while (!controller.getCurrentPose(&receivedPose)) {
+      // receive pending data
+      controller.update();
+      usleep(10000);
+    }
+    while (!controller.getCurrentPose(&receivedPose, false, channelno)) {
+      // receive pending data
+      controller.update();
+      usleep(10000);
+    }
+
+    // // data was sent completely
+    // 
+    // // and is the same
+    // COMPARE_PROTOBUF(pose, currentpose);
+
+    // controller.getCurrentPose(&receivedPose, 42);
+
+
+}
 
 // BOOST_AUTO_TEST_CASE(check_permissions) {
 //   // not using the set/get functions
