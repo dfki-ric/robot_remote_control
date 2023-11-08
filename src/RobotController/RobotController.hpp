@@ -41,14 +41,14 @@ class RobotController: public UpdateThread {
          * @param type TelemetryMessageType enum
          * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
          */
-        bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true);
+        bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true, const uint8_t &channel = 0);
 
         /**
          * @brief Set the overwrite mode of all buffers (default false)
          * 
          * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
          */
-        void setTelemetryBufferOverwrite(bool overwrite = true);
+        void setTelemetryBufferOverwrite(bool overwrite = true, const uint8_t &channel = 0);
 
         /**
          * @brief Set the buffer size of a sinlgle telemetry type (default value set in RobotController() constructor)
@@ -58,7 +58,7 @@ class RobotController: public UpdateThread {
          * @param type TelemetryMessageType enum
          * @param newsize the new size of the buffer 
          */
-        bool setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize = 10);
+        bool setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize = 10, const uint8_t &channel = 0);
 
         /**
          * @brief sets the expected next heartbeat time on the robot side
@@ -117,7 +117,7 @@ class RobotController: public UpdateThread {
          * @param type 
          * @return uint32_t 
          */
-        uint32_t getTelemetryBufferDataSize(const TelemetryMessageType &type);
+        uint32_t getTelemetryBufferDataSize(const TelemetryMessageType &type, const uint8_t &channel = 0);
 
         /**
          * @brief Get the messages dropped of a specific because of full buffer
@@ -125,7 +125,7 @@ class RobotController: public UpdateThread {
          * @param type 
          * @return uint32_t 
          */
-        size_t getDroppedTelemetry(const TelemetryMessageType &type);
+        size_t getDroppedTelemetry(const TelemetryMessageType &type, const uint8_t &channel = 0);
 
         /**
          * @brief Set the Target Pose of the ControlledRobot
@@ -508,8 +508,8 @@ class RobotController: public UpdateThread {
          * @param TelemetryMessageType  
          * @return unsigned int number of messages in the buffer
          */
-        unsigned int getBufferSize(const TelemetryMessageType &type) {
-            int size = buffers->lockedAccess().get()[type]->size();
+        unsigned int getBufferSize(const TelemetryMessageType &type, const uint8_t &channel = 0) {
+            int size = buffers->lockedAccess().get()[type][channel]->size();
             return size;
         }
 
@@ -523,14 +523,14 @@ class RobotController: public UpdateThread {
          * @return unsigned int 
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data, bool onlyNewest = false) {
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type], data, onlyNewest);
+        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data, bool onlyNewest = false, const uint8_t &channel = 0) {
+            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type][channel], data, onlyNewest);
             return result;
         }
 
-        unsigned int getTelemetryRaw(const uint16_t &type, std::string *dataSerialized, bool onlyNewest = false) {
-            *dataSerialized = buffers->peekSerialized(type);
-            bool result = buffers->lockedAccess().get()[type]->pop(onlyNewest);
+        unsigned int getTelemetryRaw(const uint16_t &type, std::string *dataSerialized, bool onlyNewest = false, const uint8_t &channel = 0) {
+            *dataSerialized = buffers->peekSerialized(type, channel);
+            bool result = buffers->lockedAccess().get()[type][channel]->pop(onlyNewest);
             return result;
         }
 
@@ -541,8 +541,8 @@ class RobotController: public UpdateThread {
             return received;
         }
 
-        template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const DATATYPE & data)> &function) {
-            RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type], function);
+        template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const DATATYPE & data)> &function, const uint8_t &channel = 0) {
+            RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type][channel], function);
         }
 
         void addTelemetryReceivedCallback(const std::function<void(const uint16_t &type)> &function) {
@@ -620,7 +620,7 @@ class RobotController: public UpdateThread {
          public:
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
-            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) = 0;
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel = 0) = 0;
             void setOverwrite(bool mode = true) {
                 overwrite = mode;
             }
@@ -633,10 +633,10 @@ class RobotController: public UpdateThread {
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
-            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage) {
+            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel = 0) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
-                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], data, overwrite);
+                RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);
             }
         };
 

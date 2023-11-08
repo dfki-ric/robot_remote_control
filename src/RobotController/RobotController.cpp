@@ -73,7 +73,7 @@ RobotController::~RobotController() {
 
 
 
-bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite) {
+bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite, const uint8_t &channel) {
     std::shared_ptr<TelemetryAdderBase> adder =  telemetryAdders[type];
     if (adder.get()) {
         adder->setOverwrite(overwrite);
@@ -82,7 +82,7 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
     return false;
 }
 
-void RobotController::setTelemetryBufferOverwrite(bool overwrite) {
+void RobotController::setTelemetryBufferOverwrite(bool overwrite, const uint8_t &channel) {
     for (auto &adder : telemetryAdders) {
         if (adder.get()) {
             adder->setOverwrite(overwrite);
@@ -90,9 +90,9 @@ void RobotController::setTelemetryBufferOverwrite(bool overwrite) {
     }
 }
 
-bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize) {
+bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize, const uint8_t &channel) {
     auto lockedTelemetryBuffers = buffers->lockedAccess();
-    std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type];
+    std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type][channel];
     if (buffer.get()) {
         buffer->resize(newsize);
         return true;
@@ -100,12 +100,12 @@ bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, ui
     return false;
 }
 
-uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type) {
-    return buffers->lockedAccess().get()[type]->size();
+uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type, const uint8_t &channel) {
+    return buffers->lockedAccess().get()[type][channel]->size();
 }
 
-size_t RobotController::getDroppedTelemetry(const TelemetryMessageType &type) {
-    return buffers->lockedAccess().get()[type]->dropped();
+size_t RobotController::getDroppedTelemetry(const TelemetryMessageType &type, const uint8_t &channel) {
+    return buffers->lockedAccess().get()[type][channel]->dropped();
 }
 
 void RobotController::setTargetPose(const Pose & pose) {

@@ -12,12 +12,16 @@
 
 namespace robot_remote_control {
 
-class TelemetryBuffer: public LockableClass< std::vector < std::shared_ptr <RingBufferBase> > > {
+/**
+ * @brief Buffer implementation for all types and channels
+ * e.g.: telemetryBuffer[MESSGAETYLE][CHANNEL]->push()
+ * 
+ */
+class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::shared_ptr <RingBufferBase> > > >{
  public:
-    explicit TelemetryBuffer();
+    TelemetryBuffer();
 
     ~TelemetryBuffer();
-
 
     /**
      * @brief get the serializes buffer value, so the calling function does not need to know the datatype.
@@ -25,15 +29,15 @@ class TelemetryBuffer: public LockableClass< std::vector < std::shared_ptr <Ring
      * @param type The TelemetryMessageType, using a size_t to be able to extent the function
      * @return std::string 
      */
-    std::string peekSerialized(const uint16_t &type);
+    std::string peekSerialized(const uint16_t &type, const uint8_t &channel = 0);
 
-    bool pushSerialized(const uint16_t &type, const std::string& data);
+    bool pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel = 0);
 
 
     class ProtobufToStringBase {
      public:
         virtual ~ProtobufToStringBase() {}
-        virtual std::string get() = 0;
+        virtual std::string get(const uint8_t &channel = 0) = 0;
     };
 
     template <class PBTYPE> class ProtobufToString : public ProtobufToStringBase {
@@ -41,12 +45,12 @@ class TelemetryBuffer: public LockableClass< std::vector < std::shared_ptr <Ring
         explicit ProtobufToString(const uint16_t& type, TelemetryBuffer *telemetrybuffer) : type(type), telemetrybuffer(telemetrybuffer) {}
         virtual ~ProtobufToString() {}
 
-        virtual std::string get() {
+        virtual std::string get(const uint8_t &channel = 0) {
             std::string buf("");
             PBTYPE data;
             // expects the buffer to be locked!
             auto lockObj = telemetrybuffer->lockedAccess();
-            if (RingBufferAccess::peekData(lockObj.get()[type], &data)) {
+            if (RingBufferAccess::peekData(lockObj.get()[type][channel], &data)) {
                 data.SerializeToString(&buf);
             }
             return buf;
@@ -60,7 +64,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::shared_ptr <Ring
     class StringToProtobufBase {
      public:
         virtual ~StringToProtobufBase() {}
-        virtual bool set(const std::string& buf) = 0;
+        virtual bool set(const std::string& buf, const uint8_t &channel = 0) = 0;
     };
 
     template <class PBTYPE> class StringToProtobuf : public StringToProtobufBase {
@@ -68,12 +72,12 @@ class TelemetryBuffer: public LockableClass< std::vector < std::shared_ptr <Ring
         explicit StringToProtobuf(const uint16_t& type, TelemetryBuffer *telemetrybuffer) : type(type), telemetrybuffer(telemetrybuffer) {}
         virtual ~StringToProtobuf() {}
 
-        virtual bool set(const std::string& buf) {
+        virtual bool set(const std::string& buf, const uint8_t &channel = 0) {
             PBTYPE data;
             data.ParseFromString(buf);
             // expects the buffer to be locked!
             auto lockObj = telemetrybuffer->lockedAccess();
-            return RingBufferAccess::pushData(lockObj.get()[type], data);
+            return RingBufferAccess::pushData(lockObj.get()[type][channel], data);
         }
 
      private:
@@ -90,7 +94,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::shared_ptr <Ring
         }
 
         std::shared_ptr<RingBufferBase> newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<PBTYPE>(buffersize));
-        lockedAccessObject.get()[type] = newbuf;
+        lockedAccessObject.get()[type].push_back(newbuf);
 
         // add toString converter
         if (converters.size() <= type) {
