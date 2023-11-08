@@ -243,17 +243,16 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
     uint16_t* type = reinterpret_cast<uint16_t*>(const_cast<char*>(reply.data()));
-
-    std::string serializedMessage(reply.data()+sizeof(uint16_t), reply.size()-sizeof(uint16_t));
+    uint8_t* channel = reinterpret_cast<uint8_t*>(const_cast<char*>(reply.data()+sizeof(uint16_t)));
+    size_t headersize = sizeof(uint16_t) + sizeof(uint8_t);
+    // size_t headersize = sizeof(uint16_t);
+    std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
 
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
 
     updateStatistics(serializedMessage.size(), *type);
 
-
-
     // handle special types
-
     switch (msgtype) {
         // multi values in single stream
         case SIMPLE_SENSOR_VALUE:       addToSimpleSensorBuffer(serializedMessage);
@@ -269,7 +268,7 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {
-                adder->addToTelemetryBuffer(msgtype, serializedMessage);
+                adder->addToTelemetryBuffer(msgtype, serializedMessage, *channel);
                 return msgtype;
             } else {
                 throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
@@ -294,7 +293,7 @@ void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessa
 
     RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
     // also push the data to the "traditional" buffer
-    RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE], data, true);
+    RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE][0], data, true);
 }
 
 

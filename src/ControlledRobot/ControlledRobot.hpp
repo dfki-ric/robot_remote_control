@@ -179,19 +179,25 @@ class ControlledRobot: public UpdateThread {
          * @param type 
          * @return int size sent
          */
-        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type, bool requestOnly = false) {
+        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type, bool requestOnly = false, const uint8_t &channel = 0) {
             if (telemetryTransport.get()) {
+                size_t headersize = sizeof(uint16_t)+sizeof(uint8_t);
                 std::string buf;
-                buf.resize(sizeof(uint16_t));
+                buf.resize(headersize);
                 uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
                 *data = type;
+                uint8_t* chan = reinterpret_cast<uint8_t*>(const_cast<char*>(buf.data() + sizeof(uint16_t)));
+                *chan = channel;
+
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                RingBufferAccess::pushData(buffers->lockedAccess().get()[type], protodata, true);
+                {
+                    RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], protodata, true);
+                }
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
-                    return bytes - sizeof(uint16_t);
+                    return bytes - headersize;
                 }
                 return buf.size();
             }
@@ -199,16 +205,19 @@ class ControlledRobot: public UpdateThread {
             return 0;
         }
 
-        int sendTelemetryRaw(const uint16_t& type, const std::string& serialized) {
+        int sendTelemetryRaw(const uint16_t& type, const std::string& serialized, const uint8_t &channel = 0) {
             if (telemetryTransport.get()) {
+                size_t headersize = sizeof(uint16_t)+sizeof(uint8_t);
                 std::string buf;
-                buf.resize(sizeof(uint16_t));
+                buf.resize(headersize);
                 uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
                 *data = type;
+                uint8_t* chan = reinterpret_cast<uint8_t*>(const_cast<char*>(buf.data() + sizeof(uint16_t)));
+                *chan = channel;
                 buf.append(serialized);
                 uint32_t bytes = telemetryTransport->send(buf);
                 updateStatistics(bytes, type);
-                return bytes - sizeof(uint16_t);
+                return bytes - headersize;
             }
             printf("ERROR Transport invalid\n");
             return 0;
