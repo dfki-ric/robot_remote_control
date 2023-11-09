@@ -168,19 +168,24 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
      * @return false 
      */
     bool addChannelBufferInternal(const uint16_t &type, const uint8_t &channel, const size_t &buffersize, std::vector <std::shared_ptr <RingBufferBase> > &channels) {
-        if (existingBuffers[type][channel]) {
-            return false;
-        }
-        if (channels.size() <= channel) {
-            channels.resize(channel + 1); // size != channelno (channel 0 == size 1)
-        }
-        channels[channel] = bufferFactroies[type]->create(buffersize);
+        // make sure existingBuffers have the correct size
         if (existingBuffers.size() <= type) {
             existingBuffers.resize(type +1);
         }
         if (existingBuffers[type].size() <= channel){
             existingBuffers[type].resize(channel + 1);
         }
+        // if just resized, new entries are initilaized with false
+        if (existingBuffers[type][channel]) {
+            return false;
+        }
+
+        if (channels.size() <= channel) {
+            channels.resize(channel + 1); // size != channelno (channel 0 == size 1)
+        }
+        channels[channel] = bufferFactroies[type]->create(buffersize);
+
+        // save that this new buffer exists
         existingBuffers[type][channel] = true;
         return true;
     }
