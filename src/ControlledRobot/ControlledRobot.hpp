@@ -204,18 +204,15 @@ class ControlledRobot: public UpdateThread {
                 *data = type;
                 uint8_t* chan = reinterpret_cast<uint8_t*>(const_cast<char*>(buf.data() + sizeof(uint16_t)));
                 *chan = channel;
-
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                {
-                    RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], protodata, true);
-                }
+                RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], protodata, true);
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
                     return bytes - headersize;
                 }
-                return buf.size();
+                return buf.size() - headersize;
             }
             printf("ERROR Transport invalid\n");
             return 0;

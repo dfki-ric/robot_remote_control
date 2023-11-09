@@ -60,9 +60,8 @@ class RobotController: public UpdateThread {
          */
         bool setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize = 10, const uint8_t &channel = 0);
 
-        template <class PROTO> uint8_t addChannelBuffer(const TelemetryMessageType& type, const size_t &buffersize = 10) {
-            uint8_t channelno = buffers->registerType<PROTO>(type, buffersize);
-            return channelno;
+        bool addChannelBuffer(const TelemetryMessageType& type, const uint8_t &channel, const size_t &buffersize = 10) {
+            return buffers->addChannelBuffer(type, channel, buffersize);
         }
 
         /**

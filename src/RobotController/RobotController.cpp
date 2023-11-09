@@ -267,8 +267,9 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         default:
         {
             if (*channel != 0) {
-                if (buffers->lockedAccess().get()[msgtype].size() < *channel) {
-                    return msgtype;
+                if (!buffers->hasChannelBuffer(msgtype,*channel)) {
+                    //TODO: let user pre-define buffers for channels and also defiene buffersize after creation
+                    buffers->addChannelBuffer(msgtype,*channel, 10);
                 }
             }
             // try to resolve through registered types

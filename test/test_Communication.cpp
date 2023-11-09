@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   robot.startUpdateThread(10);
 
   std::vector<std::string> requested_robot_state;
-  std::vector<std::string> gotten_robot_state;
+  std::vector<std::string> received_robot_state;
   std::vector<std::string> second_requested_robot_state;
 
 
@@ -462,34 +462,32 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   // test basic getRobotState and requestRobotState
   robot.setRobotState("ROBOT_DEMO_RUNNING");
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&received_robot_state)) {
     usleep(10000);
   }
   controller.requestRobotState(&requested_robot_state);
 
-  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
+  BOOST_TEST(requested_robot_state.front() == received_robot_state.front());
 
 
-  bool result = controller.getRobotState(&gotten_robot_state);
+  bool result = controller.getRobotState(&received_robot_state);
 
   // should be empty because state was already recieved
   BOOST_CHECK_EQUAL(result, false);
-  BOOST_TEST(gotten_robot_state.size() == 0);
-
-
+  BOOST_TEST(received_robot_state.size() == 0);
 
   // test multiple requestRobotState calls
   robot.setRobotState("ROBOT_DEMO_FINISHED");
   usleep(100 * 1000);
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&received_robot_state)) {
     usleep(10000);
   }
   controller.requestRobotState(&requested_robot_state);
   controller.requestRobotState(&second_requested_robot_state);
 
-  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_FINISHED");
-  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
+  BOOST_TEST(received_robot_state.front() == "ROBOT_DEMO_FINISHED");
+  BOOST_TEST(requested_robot_state.front() == received_robot_state.front());
   BOOST_TEST(requested_robot_state.front() == second_requested_robot_state.front());
 
 
@@ -502,19 +500,19 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
 
   controller.requestRobotState(&requested_robot_state);
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&received_robot_state)) {
     usleep(10000);
   }
   // request should return most recent state, get should return the oldest not retrieved one
   BOOST_TEST(requested_robot_state.front() == "ROBOT_DEMO_STOPPED");
-  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_RUNNING_AGAIN");
+  BOOST_TEST(received_robot_state.front() == "ROBOT_DEMO_RUNNING_AGAIN");
 
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&requested_robot_state)) {
     usleep(10000);
   }
   // now they should be equal
-  BOOST_TEST(gotten_robot_state.front() == requested_robot_state.front());
+  BOOST_TEST(requested_robot_state.front() == requested_robot_state.front());
 
 
   robot.stopUpdateThread();
@@ -1187,7 +1185,7 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
     ControlledRobot robot(command, telemetri);
 
     uint8_t channelno = robot.addChannel<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
-    controller.addChannelBuffer<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
+    // controller.addChannelBuffer<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
 
     robot_remote_control::Pose pos1 = TypeGenerator::genPose();
     robot_remote_control::Pose pos2 = TypeGenerator::genPose();
@@ -1208,6 +1206,10 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
       controller.update();
       usleep(10000);
     }
+    // channel 0 should be empty now
+    BOOST_CHECK_EQUAL(controller.getCurrentPose(&receivedPose), false);
+
+    // but channel 1 not
     while (!controller.getCurrentPose(&receivedPose, false, channelno)) {
       // receive pending data
       controller.update();

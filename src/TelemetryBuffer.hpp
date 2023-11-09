@@ -33,6 +33,25 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
 
     bool pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel = 0);
 
+    bool hasChannelBuffer(const uint16_t &type, const uint8_t &channel) {
+        auto lockedAccessObject = lockedAccess();
+        return existingBuffers[type][channel];
+    }
+
+    /**
+     * @brief 
+     * 
+     * @param type 
+     * @param channel 
+     * @param buffersize 
+     * @return true 
+     * @return false 
+     */
+    bool addChannelBuffer(const uint16_t &type, const uint8_t &channel, const size_t &buffersize) {
+        auto lockedAccessObject = lockedAccess();
+        return addChannelBufferInternal(type, channel, buffersize, lockedAccessObject.get()[type]);
+    }
+
 
     class ProtobufToStringBase {
      public:
@@ -85,16 +104,40 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         TelemetryBuffer* telemetrybuffer;
     };
 
+    class BufferFactroyBase {
+     public:
+        virtual ~BufferFactroyBase() {}
+        virtual std::shared_ptr<RingBufferBase> create(const size_t &buffersize = 10) = 0;
+    };
+    template <class PBTYPE> class BufferFactroy : public BufferFactroyBase {
+     public:
+        BufferFactroy(){}
+        virtual ~BufferFactroy() {}
+        virtual std::shared_ptr<RingBufferBase> create(const size_t &buffersize = 10) {
+            return std::shared_ptr<RingBufferBase>(new RingBuffer<PBTYPE>(buffersize));
+        }
+    };
+
+
     template<class PBTYPE> uint8_t registerType(const uint16_t &type, const size_t &buffersize) {
         auto lockedAccessObject = lockedAccess();
 
-        // add buffer type
+        // create a bufferfactory
+        if (bufferFactroies.size() <= type) {
+            bufferFactroies.resize(type + 1);  // size != index
+        }
+        std::shared_ptr<BufferFactroyBase> bufferfactory = std::make_shared< BufferFactroy<PBTYPE> >();
+        bufferFactroies[type] = bufferfactory;
+
+        // add actual buffer type
         if (lockedAccessObject.get().size() <= type) {  // if size == type, index of type is not available
             lockedAccessObject.get().resize(type + 1);  // size != index
         }
-
-        std::shared_ptr<RingBufferBase> newbuf = std::shared_ptr<RingBufferBase>(new RingBuffer<PBTYPE>(buffersize));
-        lockedAccessObject.get()[type].push_back(newbuf);
+        // init the default channel (0) buffer
+        int nextchannelno = lockedAccessObject.get()[type].size(); // the controlled_robot may call registerType in add_channel
+        addChannelBufferInternal(type, nextchannelno, buffersize, lockedAccessObject.get()[type]);
+        // lockedAccessObject.get()[type].push_back(bufferfactory->create());
+        
 
         // add toString converter
         if (converters.size() <= type) {
@@ -115,11 +158,37 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         return channelno;
     }
 
-
-
  private:
+    /**
+     * @brief non-locked version
+     * 
+     * @param type 
+     * @param channel 
+     * @return true 
+     * @return false 
+     */
+    bool addChannelBufferInternal(const uint16_t &type, const uint8_t &channel, const size_t &buffersize, std::vector <std::shared_ptr <RingBufferBase> > &channels) {
+        if (existingBuffers[type][channel]) {
+            return false;
+        }
+        if (channels.size() <= channel) {
+            channels.resize(channel + 1); // size != channelno (channel 0 == size 1)
+        }
+        channels[channel] = bufferFactroies[type]->create(buffersize);
+        if (existingBuffers.size() <= type) {
+            existingBuffers.resize(type +1);
+        }
+        if (existingBuffers[type].size() <= channel){
+            existingBuffers[type].resize(channel + 1);
+        }
+        existingBuffers[type][channel] = true;
+        return true;
+    }
+
     std::vector< std::shared_ptr<ProtobufToStringBase> > converters;
     std::vector< std::shared_ptr<StringToProtobufBase> > convertersToProto;
+    std::vector< std::shared_ptr<BufferFactroyBase> > bufferFactroies;
+    std::vector< std::vector<bool> > existingBuffers;
 };
 
 }  // namespace robot_remote_control
