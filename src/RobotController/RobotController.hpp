@@ -550,9 +550,17 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > bool requestTelemetry(const uint16_t &type, DATATYPE *result, const uint16_t &requestType = TELEMETRY_REQUEST) {
+        template< class DATATYPE > bool requestTelemetry(const uint16_t &type, DATATYPE *result, const uint8_t &channel = 0) {
+            const uint16_t requestType = TELEMETRY_REQUEST;
             std::string replybuf;
-            bool received = requestBinary(type, &replybuf, requestType);
+            std::string request;
+            request.resize(sizeof(uint16_t) + sizeof(uint8_t));
+            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
+            uint8_t* chan = reinterpret_cast<uint8_t*>(const_cast<char*>(request.data()+sizeof(uint16_t)));
+            *data = type;
+            *chan = channel;
+            bool received = requestBinary(request, &replybuf, requestType);
+
             result->ParseFromString(replybuf);
             return received;
         }

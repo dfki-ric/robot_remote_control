@@ -265,9 +265,10 @@ bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool c
 
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
+    uint8_t* requestedchannel = reinterpret_cast<uint8_t*>(const_cast<char*>(serializedMessage.data()+sizeof(uint16_t)));
     //TODO channel
     TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
-    std::string reply = buffers->peekSerialized(type);
+    std::string reply = buffers->peekSerialized(type, *requestedchannel);
     commandTransport->send(reply);
     return TELEMETRY_REQUEST;
 }

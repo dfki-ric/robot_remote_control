@@ -1236,6 +1236,23 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
       usleep(10000);
     }
 
+    // now tere are two messages in two channles
+    // try to request
+    robot_remote_control::Pose rpos1 = TypeGenerator::genPose();
+    robot_remote_control::Pose rpos2 = TypeGenerator::genPose();
+    robot_remote_control::Pose req_rpos1;
+    robot_remote_control::Pose req_rpos2;
+
+    robot.setCurrentPose(rpos1);
+    robot.setCurrentPose(rpos2, channelno);
+    controller.requestTelemetry(robot_remote_control::CURRENT_POSE, &req_rpos1);
+    controller.requestTelemetry(robot_remote_control::CURRENT_POSE, &req_rpos2, 1);
+
+    COMPARE_PROTOBUF(req_rpos1, rpos1);
+    COMPARE_PROTOBUF(req_rpos2, rpos2);
+
+
+
     // // data was sent completely
     // 
     // // and is the same
