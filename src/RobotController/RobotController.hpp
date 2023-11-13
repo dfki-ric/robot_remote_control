@@ -354,6 +354,18 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Some ControlledRobot instaces are using Channels on a single Message Types
+         *  e.g. having multiple Point clouds, whiel normally it should be ok to identify those by
+         * setting the originating frame, in some applications, you'll need seperate receive buffers,
+         * Especially on high cpu load with a mix of high and low frequency of the data.
+         * 
+         * @param channels 
+         */
+        bool requestTelemetryChannels(ChannelsDefinition *channels) {
+            return requestTelemetry(CHANNELS_DEFINITION, channels);
+        }
+
+        /**
          * @brief request the curretn state instead of waiting for the first telemetry message
          * 
          * @param state the string to write the state to

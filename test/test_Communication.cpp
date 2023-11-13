@@ -1184,8 +1184,28 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
     RobotController controller(commands, telemetry);
     ControlledRobot robot(command, telemetri);
 
-    uint8_t channelno = robot.addChannel<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
+    robot.startUpdateThread(0);
+
+    uint8_t channelno = robot.addChannel<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE, "ManipulatorPose");
     // controller.addChannelBuffer<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
+
+    // after creating the channel, it should be requestable
+    robot_remote_control::ChannelsDefinition channels;
+    controller.requestTelemetryChannels(&channels);
+
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).messagetype(), robot_remote_control::CURRENT_POSE);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "ManipulatorPose");
+
+    uint8_t channelno2 = robot.addChannel<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE, "ManipulatorPose2");
+
+    controller.requestTelemetryChannels(&channels);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).messagetype(), robot_remote_control::CURRENT_POSE);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "ManipulatorPose");
+    BOOST_CHECK_EQUAL(channels.channel().Get(1).channelno(), 2);
+    BOOST_CHECK_EQUAL(channels.channel().Get(1).messagetype(), robot_remote_control::CURRENT_POSE);
+    BOOST_CHECK_EQUAL(channels.channel().Get(1).name(), "ManipulatorPose2");
 
     robot_remote_control::Pose pos1 = TypeGenerator::genPose();
     robot_remote_control::Pose pos2 = TypeGenerator::genPose();
