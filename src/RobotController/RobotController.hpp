@@ -540,11 +540,19 @@ class RobotController: public UpdateThread {
          */
 
         template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data, bool onlyNewest = false, const uint8_t &channel = 0) {
-            bool result = RingBufferAccess::popData(buffers->lockedAccess().get()[type][channel], data, onlyNewest);
-            return result;
+            auto lockedbuffer = buffers->lockedAccess();
+            if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
+                // channel nonexistent, retrun 0, as the buffer might be created later on the first message
+                return 0;
+            }
+            return RingBufferAccess::popData(lockedbuffer.get()[type][channel], data, onlyNewest);;
         }
 
         unsigned int getTelemetryRaw(const uint16_t &type, std::string *dataSerialized, bool onlyNewest = false, const uint8_t &channel = 0) {
+            if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
+                // channel nonexistent, retrun 0, as the buffer might be created later on the first message
+                return 0;
+            }
             *dataSerialized = buffers->peekSerialized(type, channel);
             bool result = buffers->lockedAccess().get()[type][channel]->pop(onlyNewest);
             return result;

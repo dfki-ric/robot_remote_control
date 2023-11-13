@@ -15,6 +15,7 @@
 #include <atomic>
 #include <algorithm>
 #include <unistd.h>
+#include <stdexcept>
 
 namespace robot_remote_control {
 
@@ -206,7 +207,14 @@ class ControlledRobot: public UpdateThread {
                 *chan = channel;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
-                RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], protodata, true);
+                {
+                    auto lockedbuffer = buffers->lockedAccess();
+                    // check existence only if channel is actially set
+                    if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
+                        throw std::out_of_range ("Channel does not exist");
+                    }
+                    RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
+                }
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
@@ -228,6 +236,14 @@ class ControlledRobot: public UpdateThread {
                 uint8_t* chan = reinterpret_cast<uint8_t*>(const_cast<char*>(buf.data() + sizeof(uint16_t)));
                 *chan = channel;
                 buf.append(serialized);
+                {
+                    // check existence only if channel is actially set
+                    if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
+                        throw std::out_of_range ("Channel does not exist");
+                    }
+                    buffers->pushSerialized(type, buf, channel);
+                    // RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
+                }
                 uint32_t bytes = telemetryTransport->send(buf);
                 updateStatistics(bytes, type);
                 return bytes - headersize;

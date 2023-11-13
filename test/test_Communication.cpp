@@ -1252,23 +1252,11 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
     COMPARE_PROTOBUF(req_rpos2, rpos2);
 
 
+    // receiving non-existing channel retruns false
+    // get is not thowing, as a channel buffer can could requeted before data was received
+    BOOST_CHECK_EQUAL(controller.getCurrentPose(&receivedPose, false, 42), false);
 
-    // // data was sent completely
-    // 
-    // // and is the same
-    // COMPARE_PROTOBUF(pose, currentpose);
-
-    // controller.getCurrentPose(&receivedPose, 42);
-
+    // try to send via non-existing channel thows, as the setup on the robot side must be valid
+    BOOST_CHECK_THROW(robot.setCurrentPose(pos1, 42), std::out_of_range);
 
 }
-
-// BOOST_AUTO_TEST_CASE(check_permissions) {
-//   // not using the set/get functions
-
-
-//   WrenchState send, recv;
-//   send = TypeGenerator::genWrenchState();
-//   recv = testTelemetry(send, WRENCH_STATE);
-//   COMPARE_PROTOBUF(send, recv);
-// }
