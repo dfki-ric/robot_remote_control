@@ -160,7 +160,7 @@ void ControlledRobot::notifyCommandCallbacks(const uint16_t &type) {
 int ControlledRobot::setRobotState(const std::string& state) {
     RobotState protostate;
     *protostate.add_state() = state;
-    return sendTelemetry(protostate, ROBOT_STATE);
+    return sendTelemetry(protostate, ROBOT_STATE, false, 0);
 }
 
 int ControlledRobot::setRobotState(const std::vector<std::string> state) {
@@ -168,11 +168,11 @@ int ControlledRobot::setRobotState(const std::vector<std::string> state) {
     for (const std::string &line : state) {
         *protostate.add_state() = line;
     }
-    return sendTelemetry(protostate, ROBOT_STATE);
+    return sendTelemetry(protostate, ROBOT_STATE, false, 0);
 }
 
 int ControlledRobot::setRobotState(const RobotState& state) {
-    return sendTelemetry(state, ROBOT_STATE);
+    return sendTelemetry(state, ROBOT_STATE, false, 0);
 }
 
 int ControlledRobot::setLogMessage(enum LogLevel lvl, const std::string& message) {
@@ -180,14 +180,14 @@ int ControlledRobot::setLogMessage(enum LogLevel lvl, const std::string& message
         LogMessage msg;
         msg.set_level(lvl);
         msg.set_message(message);
-        return sendTelemetry(msg, LOG_MESSAGE);
+        return sendTelemetry(msg, LOG_MESSAGE, false, 0);
     }
     return -1;
 }
 
 int ControlledRobot::setLogMessage(const LogMessage& log_message) {
     if (log_message.level() <= logLevel || log_message.level() >= CUSTOM) {
-        return sendTelemetry(log_message, LOG_MESSAGE);
+        return sendTelemetry(log_message, LOG_MESSAGE, false, 0);
     }
     return -1;
 }

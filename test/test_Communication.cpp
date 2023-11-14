@@ -352,12 +352,12 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data) {
 
   // test single request
   Pose requestedpose;
-  controller.requestTelemetry(CURRENT_POSE, &requestedpose);
+  controller.requestTelemetry(CURRENT_POSE, &requestedpose, 0);
   COMPARE_PROTOBUF(pose, requestedpose);
 
 
   JointState requestedJointState;
-  controller.requestTelemetry(JOINT_STATE, &requestedJointState);
+  controller.requestTelemetry(JOINT_STATE, &requestedJointState, 0);
   COMPARE_PROTOBUF(jointstate, requestedJointState);
 
 
@@ -528,11 +528,11 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
 
   controller.startUpdateThread(10);
 
-  robot.sendTelemetry(protodata, type);
+  robot.sendTelemetry(protodata, type, false, 0);
 
   // wait for telemetry
   PROTOBUFDATA received;
-  while (!controller.getTelemetry(type, &received)) {
+  while (!controller.getTelemetry(type, &received, false, 0)) {
     usleep(10000);
   }
 
@@ -541,7 +541,7 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   PROTOBUFDATA receivedraw;
   protodata.SerializeToString(&binarydata);
   robot.sendTelemetryRaw(type, binarydata);
-  while (!controller.getTelemetry(type, &receivedraw)) {
+  while (!controller.getTelemetry(type, &receivedraw, false, 0)) {
     usleep(10000);
   }
 
@@ -560,11 +560,11 @@ template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, c
 
   robot.startUpdateThread(10);
 
-  robot.sendTelemetry(protodata, type);
+  robot.sendTelemetry(protodata, type, false, 0);
 
   // check request
   PROTOBUFDATA received;
-  controller.requestTelemetry(type, &received);
+  controller.requestTelemetry(type, &received, 0);
 
   robot.stopUpdateThread();
 
@@ -1245,7 +1245,7 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
 
     robot.setCurrentPose(rpos1);
     robot.setCurrentPose(rpos2, channelno);
-    controller.requestTelemetry(robot_remote_control::CURRENT_POSE, &req_rpos1);
+    controller.requestTelemetry(robot_remote_control::CURRENT_POSE, &req_rpos1, 0);
     controller.requestTelemetry(robot_remote_control::CURRENT_POSE, &req_rpos2, 1);
 
     COMPARE_PROTOBUF(req_rpos1, rpos1);

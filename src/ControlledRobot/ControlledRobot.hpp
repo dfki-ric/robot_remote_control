@@ -66,7 +66,7 @@ class ControlledRobot: public UpdateThread {
             channel->set_name(name);
             channel->set_messagetype(type);
             channel->set_channelno(channelno);
-            sendTelemetry(channels, CHANNELS_DEFINITION, true);
+            sendTelemetry(channels, CHANNELS_DEFINITION, true, 0);
             return channelno;
         }
 
@@ -196,7 +196,7 @@ class ControlledRobot: public UpdateThread {
          * @param type 
          * @return int size sent
          */
-        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type, bool requestOnly = false, const uint8_t &channel = 0) {
+        template<class CLASS> int sendTelemetry(const CLASS &protodata, const uint16_t& type, bool requestOnly, const uint8_t &channel) {
             if (telemetryTransport.get()) {
                 size_t headersize = sizeof(uint16_t)+sizeof(uint8_t);
                 std::string buf;
@@ -262,7 +262,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initControllableJoints(const JointState& telemetry) {
-            return sendTelemetry(telemetry, CONTROLLABLE_JOINTS, true);
+            return sendTelemetry(telemetry, CONTROLLABLE_JOINTS, true, 0);
         }
 
         /**
@@ -273,10 +273,10 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initSimpleActions(const SimpleActions& telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_ACTIONS, true);
+            return sendTelemetry(telemetry, SIMPLE_ACTIONS, true, 0);
         }
         int updateSimpleActions(const SimpleActions& telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_ACTIONS);
+            return sendTelemetry(telemetry, SIMPLE_ACTIONS, false, 0);
         }
 
         /**
@@ -286,7 +286,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initComplexActions(const ComplexActions& telemetry) {
-            return sendTelemetry(telemetry, COMPLEX_ACTIONS, true);
+            return sendTelemetry(telemetry, COMPLEX_ACTIONS, true, 0);
         }
 
         /**
@@ -296,7 +296,7 @@ class ControlledRobot: public UpdateThread {
          * @return int 
          */
         int initInterfaceOptions(const InterfaceOptions& options) {
-            return sendTelemetry(options, INTERFACE_OPTIONS, true);
+            return sendTelemetry(options, INTERFACE_OPTIONS, true , 0);
         }
 
         /**
@@ -307,7 +307,7 @@ class ControlledRobot: public UpdateThread {
          * @return int  number of bytes sent
          */
         int initSimpleSensors(const SimpleSensors &telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION, true);
+            return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION, true, 0);
         }
 
         /**
@@ -318,7 +318,7 @@ class ControlledRobot: public UpdateThread {
          * @return int  number of bytes sent
          */
         int initMapsDefinition(const MapsDefinition &telemetry) {
-            return sendTelemetry(telemetry, MAPS_DEFINITION, true);
+            return sendTelemetry(telemetry, MAPS_DEFINITION, true, 0);
         }
 
         /**
@@ -328,7 +328,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initRobotName(const RobotName& telemetry) {
-            return sendTelemetry(telemetry, ROBOT_NAME, true);
+            return sendTelemetry(telemetry, ROBOT_NAME, true, 0);
         }
 
         /**
@@ -338,7 +338,7 @@ class ControlledRobot: public UpdateThread {
          * @return int number of bytes sent
          */
         int initVideoStreams(const VideoStreams& telemetry) {
-            return sendTelemetry(telemetry, VIDEO_STREAMS, true);
+            return sendTelemetry(telemetry, VIDEO_STREAMS, true, 0);
         }
 
         /**
@@ -348,7 +348,7 @@ class ControlledRobot: public UpdateThread {
          * @return int 
          */
         int initCameraInformation(const CameraInformation& telemetry) {
-            return sendTelemetry(telemetry, CAMERA_INFORMATION, true);
+            return sendTelemetry(telemetry, CAMERA_INFORMATION, true, 0);
         }
 
         /**
@@ -359,7 +359,7 @@ class ControlledRobot: public UpdateThread {
          * @return int 
          */
         int initControllableFrames(const ControllableFrames& telemetry) {
-            return sendTelemetry(telemetry, CONTROLLABLE_FRAMES, true);
+            return sendTelemetry(telemetry, CONTROLLABLE_FRAMES, true, 0);
         }
 
         /**
@@ -370,7 +370,7 @@ class ControlledRobot: public UpdateThread {
          */
         int initFiles(const FileDefinition& files) {
             this->files.MergeFrom(files);
-            return sendTelemetry(files, FILE_DEFINITION, true);
+            return sendTelemetry(files, FILE_DEFINITION, true, 0);
         }
 
         int initRobotModel(const FileDefinition& filedef, const std::string& modelfilename = "") {
@@ -387,13 +387,13 @@ class ControlledRobot: public UpdateThread {
             if (!initFiles(filedef)) {
                 return -1;
             }
-            return sendTelemetry(modelinfo, ROBOT_MODEL_INFORMATION, true);
+            return sendTelemetry(modelinfo, ROBOT_MODEL_INFORMATION, true, 0);
         }
 
         std::shared_future<bool> requestPermission(const PermissionRequest &permissionrequest) {
             // get and init promise in map
             std::promise<bool> &promise = pendingPermissionRequests[permissionrequest.requestuid()];
-            sendTelemetry(permissionrequest, PERMISSION_REQUEST);
+            sendTelemetry(permissionrequest, PERMISSION_REQUEST, false, 0);
             // try {
             return promise.get_future().share();
             // }
@@ -454,20 +454,20 @@ class ControlledRobot: public UpdateThread {
             return sendTelemetry(telemetry, CURRENT_POSE, false, channel);
         }
 
-        int setCurrentTwist(const Twist& telemetry) {
-            return sendTelemetry(telemetry, CURRENT_TWIST);
+        int setCurrentTwist(const Twist& telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, CURRENT_TWIST, false, channel);
         }
 
-        int setCurrentAcceleration(const Acceleration& telemetry) {
-            return sendTelemetry(telemetry, CURRENT_ACCELERATION);
+        int setCurrentAcceleration(const Acceleration& telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, CURRENT_ACCELERATION, false, channel);
         }
 
-        int setCurrentIMUValues(const IMU &imu) {
-            return sendTelemetry(imu, IMU_VALUES);
+        int setCurrentIMUValues(const IMU &imu, const uint8_t &channel = 0) {
+            return sendTelemetry(imu, IMU_VALUES, false, channel);
         }
 
-        int setCurrentContactPoints(const ContactPoints &points) {
-            return sendTelemetry(points, CONTACT_POINTS);
+        int setCurrentContactPoints(const ContactPoints &points, const uint8_t &channel = 0) {
+            return sendTelemetry(points, CONTACT_POINTS, false, channel);
         }
 
         /**
@@ -476,8 +476,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry several pose
          * @return int number of bytes sent
          */
-        int setPoses(const Poses& telemetry) {
-            return sendTelemetry(telemetry, POSES);
+        int setPoses(const Poses& telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, POSES, false, channel);
         }
 
         /**
@@ -486,8 +486,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry current JointState
          * @return int number of bytes sent
          */
-        int setJointState(const JointState& telemetry) {
-            return sendTelemetry(telemetry, JOINT_STATE);
+        int setJointState(const JointState& telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, JOINT_STATE, false, channel);
         }
 
         /**
@@ -496,8 +496,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry current WrenchState
          * @return int number of bytes sent
          */
-        int setWrenchState(const WrenchState& telemetry) {
-            return sendTelemetry(telemetry, WRENCH_STATE);
+        int setWrenchState(const WrenchState& telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, WRENCH_STATE, false, channel);
         }
 
         /**
@@ -507,8 +507,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry a single sensor value
          * @return int number of bytes sent
          */
-        int setSimpleSensor(const SimpleSensor &telemetry ) {
-            return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE);
+        int setSimpleSensor(const SimpleSensor &telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE, false, channel);
         }
 
         /**
@@ -546,8 +546,8 @@ class ControlledRobot: public UpdateThread {
          * @param pointcloud 
          * @return int 
          */
-        int setPointCloud(const robot_remote_control::PointCloud &pointcloud) {
-            return sendTelemetry(pointcloud, POINTCLOUD);
+        int setPointCloud(const robot_remote_control::PointCloud &pointcloud, const uint8_t &channel = 0) {
+            return sendTelemetry(pointcloud, POINTCLOUD, false, channel);
         }
 
 
@@ -573,8 +573,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry a repeated field of transforms
          * @return int number of bytes sent
          */
-        int setCurrentTransforms(const Transforms &telemetry ) {
-            return sendTelemetry(telemetry, TRANSFORMS);
+        int setCurrentTransforms(const Transforms &telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, TRANSFORMS, false, channel);
         }
 
         /**
@@ -583,8 +583,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry 
          * @return int 
          */
-        int setImage(const Image &telemetry) {
-            return sendTelemetry(telemetry, IMAGE);
+        int setImage(const Image &telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, IMAGE, false, channel);
         }
 
         /**
@@ -593,8 +593,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry 
          * @return int 
          */
-        int setImageLayers(const ImageLayers &telemetry ) {
-            return sendTelemetry(telemetry, IMAGE_LAYERS);
+        int setImageLayers(const ImageLayers &telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, IMAGE_LAYERS, false, channel);
         }
 
         /**
@@ -603,8 +603,8 @@ class ControlledRobot: public UpdateThread {
          * @param telemetry 
          * @return int 
          */
-        int setOdometry(const Odometry &telemetry) {
-            return sendTelemetry(telemetry, ODOMETRY);
+        int setOdometry(const Odometry &telemetry, const uint8_t &channel = 0) {
+            return sendTelemetry(telemetry, ODOMETRY, false, channel);
         }
 
 
