@@ -1191,7 +1191,7 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
 
     // after creating the channel, it should be requestable
     robot_remote_control::ChannelsDefinition channels;
-    controller.requestTelemetryChannels(&channels);
+    controller.requestChannelsDefinition(&channels);
 
     BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
     BOOST_CHECK_EQUAL(channels.channel().Get(0).messagetype(), robot_remote_control::CURRENT_POSE);
@@ -1199,7 +1199,7 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
 
     uint8_t channelno2 = robot.addChannel(robot_remote_control::CURRENT_POSE, "ManipulatorPose2");
 
-    controller.requestTelemetryChannels(&channels);
+    controller.requestChannelsDefinition(&channels);
     BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
     BOOST_CHECK_EQUAL(channels.channel().Get(0).messagetype(), robot_remote_control::CURRENT_POSE);
     BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "ManipulatorPose");
