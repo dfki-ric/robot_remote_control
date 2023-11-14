@@ -52,6 +52,15 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         return addChannelBufferInternal(type, channel, buffersize, lockedAccessObject.get()[type]);
     }
 
+    int16_t addChannelBuffer(const uint16_t &type, const size_t &buffersize) {
+        auto lockedAccessObject = lockedAccess();
+        uint8_t nextchannelno = lockedAccessObject.get()[type].size();
+        if (addChannelBufferInternal(type, nextchannelno, buffersize, lockedAccessObject.get()[type])) {
+            return nextchannelno;
+        }
+        return -1;
+    }
+
 
     class ProtobufToStringBase {
      public:
@@ -126,34 +135,41 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         if (bufferFactroies.size() <= type) {
             bufferFactroies.resize(type + 1);  // size != index
         }
-        std::shared_ptr<BufferFactroyBase> bufferfactory = std::make_shared< BufferFactroy<PBTYPE> >();
-        bufferFactroies[type] = bufferfactory;
+
+        // the bufferfactory is only created on fitst call, it in impossible to create a wrongly typed buffer afterwards
+        std::shared_ptr<BufferFactroyBase> bufferfactory = bufferFactroies[type];
+        if (!bufferfactory) {
+            bufferfactory = std::make_shared< BufferFactroy<PBTYPE> >();
+            bufferFactroies[type] = bufferfactory;
+        }
 
         // add actual buffer type
         if (lockedAccessObject.get().size() <= type) {  // if size == type, index of type is not available
             lockedAccessObject.get().resize(type + 1);  // size != index
         }
         // init the default channel (0) buffer
-        int nextchannelno = lockedAccessObject.get()[type].size(); // the controlled_robot may call registerType in add_channel
+        int nextchannelno = lockedAccessObject.get()[type].size();  // the controlled_robot may call registerType in add_channel
         addChannelBufferInternal(type, nextchannelno, buffersize, lockedAccessObject.get()[type]);
-        // lockedAccessObject.get()[type].push_back(bufferfactory->create());
-        
 
         // add toString converter
         if (converters.size() <= type) {
             converters.resize(type + 1);  // size != index
         }
-        std::shared_ptr<ProtobufToStringBase> conf = std::make_shared< ProtobufToString<PBTYPE> >(type, this);
-        converters[type] = conf;
-
+        std::shared_ptr<ProtobufToStringBase> conf = converters[type];
+        if (!conf) {
+            conf = std::make_shared< ProtobufToString<PBTYPE> >(type, this);
+            converters[type] = conf;
+        }
 
         // add toProtobuf converter
         if (convertersToProto.size() <= type) {
             convertersToProto.resize(type + 1);  // size != index
         }
-        std::shared_ptr<StringToProtobufBase> conv = std::make_shared< StringToProtobuf<PBTYPE> >(type, this);
-        convertersToProto[type] = conv;
-
+        std::shared_ptr<StringToProtobufBase> conv = convertersToProto[type];
+        if (!conv) {
+            conv = std::make_shared< StringToProtobuf<PBTYPE> >(type, this);
+            convertersToProto[type] = conv;
+        }
         uint8_t channelno = lockedAccessObject.get()[type].size()-1;
         return channelno;
     }
@@ -172,17 +188,20 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         if (existingBuffers.size() <= type) {
             existingBuffers.resize(type +1);
         }
-        if (existingBuffers[type].size() <= channel){
+        if (existingBuffers[type].size() <= channel) {
             existingBuffers[type].resize(channel + 1);
         }
         // if just resized, new entries are initilaized with false
+        // if there is already a channelbuffer, return
         if (existingBuffers[type][channel]) {
             return false;
         }
 
         if (channels.size() <= channel) {
-            channels.resize(channel + 1); // size != channelno (channel 0 == size 1)
+            channels.resize(channel + 1);  // size != channelno (channel 0 == size 1)
         }
+        std::shared_ptr<robot_remote_control::RingBufferBase> newbuffer = bufferFactroies[type]->create(buffersize);
+
         channels[channel] = bufferFactroies[type]->create(buffersize);
 
         // save that this new buffer exists

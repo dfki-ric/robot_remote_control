@@ -1186,7 +1186,7 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
 
     robot.startUpdateThread(0);
 
-    uint8_t channelno = robot.addChannel<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE, "ManipulatorPose");
+    uint8_t channelno = robot.addChannel(robot_remote_control::CURRENT_POSE, "ManipulatorPose");
     // controller.addChannelBuffer<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
 
     // after creating the channel, it should be requestable
@@ -1197,7 +1197,7 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
     BOOST_CHECK_EQUAL(channels.channel().Get(0).messagetype(), robot_remote_control::CURRENT_POSE);
     BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "ManipulatorPose");
 
-    uint8_t channelno2 = robot.addChannel<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE, "ManipulatorPose2");
+    uint8_t channelno2 = robot.addChannel(robot_remote_control::CURRENT_POSE, "ManipulatorPose2");
 
     controller.requestTelemetryChannels(&channels);
     BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
@@ -1258,5 +1258,9 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
 
     // try to send via non-existing channel thows, as the setup on the robot side must be valid
     BOOST_CHECK_THROW(robot.setCurrentPose(pos1, 42), std::out_of_range);
+
+
+
+    // robot.addChannel<robot_remote_control::JointState>(robot_remote_control::CURRENT_POSE, "Invalid type");
 
 }

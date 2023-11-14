@@ -50,7 +50,7 @@ class ControlledRobot: public UpdateThread {
          * @brief sleeps until isConnected is true. Only works if setHeartBeatDuration is set or the controlled robot is sending something 
          */
         void waitForConnection() {
-            while (!isConnected()){ usleep(100000);}
+            while (!isConnected()) {usleep(100000);}
         }
 
         /**
@@ -59,9 +59,8 @@ class ControlledRobot: public UpdateThread {
          * @param type 
          * @return uint16_t 
          */
-
-        template <class PROTO> uint8_t addChannel(const TelemetryMessageType& type, const std::string name = "") {
-            uint8_t channelno = buffers->registerType<PROTO>(type, 1);
+        uint8_t addChannel(const TelemetryMessageType& type, const std::string name = "") {
+            uint8_t channelno = buffers->addChannelBuffer(type, 1);  // add a single size buffer for requests
             ChannelDefinition* channel = channels.add_channel();
             channel->set_name(name);
             channel->set_messagetype(type);
