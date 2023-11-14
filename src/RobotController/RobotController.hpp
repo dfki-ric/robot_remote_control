@@ -264,7 +264,6 @@ class RobotController: public UpdateThread {
             return getTelemetry(CONTACT_POINTS, points, onlyNewest, channel);
         }
 
-
         /**
          * @brief Get a Simple Sensor object
          * 
@@ -272,16 +271,8 @@ class RobotController: public UpdateThread {
          * @return true 
          * @return false 
          */
-        bool getSimpleSensor(const uint16_t &id, SimpleSensor *simplesensor) {
-            auto lockedAccess = simplesensorbuffer->lockedAccess();
-            bool result = false;
-            if (lockedAccess.get().size() > id) {
-                std::shared_ptr<RingBufferBase> bufferptr = lockedAccess.get()[id];
-                if (bufferptr.get()) {
-                    result = RingBufferAccess::popData(bufferptr, simplesensor);
-                }
-            }
-            return result;
+        int getSimpleSensor(SimpleSensor* telemetry, bool onlyNewest = false, const uint8_t &channel = 0) {
+            return getTelemetry(SIMPLE_SENSOR, telemetry, onlyNewest, channel);
         }
 
         bool getPermissionRequest(PermissionRequest* request) {
@@ -426,15 +417,6 @@ class RobotController: public UpdateThread {
          */
         bool requestControllableJoints(JointState *jointState) {
             return requestTelemetry(CONTROLLABLE_JOINTS, jointState, 0);
-        }
-
-        /**
-         * @brief Request information about the simple sensors of the robot.
-         * 
-         * @param sensors sensord array to wtite the information to
-         */
-        bool requestSimpleSensors(SimpleSensors *sensors) {
-            return requestTelemetry(SIMPLE_SENSOR_DEFINITION, sensors, 0);
         }
 
         /**
@@ -619,9 +601,6 @@ class RobotController: public UpdateThread {
         float maxLatency;
 
         std::shared_ptr<TelemetryBuffer>  buffers;
-        std::shared_ptr<SimpleBuffer <SimpleSensor> >  simplesensorbuffer;
-        // void initBuffers(const unsigned int &defaultSize);
-
         std::function<void(const float&)> lostConnectionCallback;
         std::vector< std::function<void(const uint16_t &type)> > telemetryReceivedCallbacks;
         std::atomic<bool> connected;
@@ -663,8 +642,6 @@ class RobotController: public UpdateThread {
         };
 
         std::vector< std::shared_ptr<TelemetryAdderBase> > telemetryAdders;
-
-        void addToSimpleSensorBuffer(const std::string &serializedMessage);
 
         template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize = 10) {
             buffers->registerType<PROTO>(type, buffersize);

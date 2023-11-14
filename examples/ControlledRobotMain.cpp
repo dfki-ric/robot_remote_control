@@ -91,20 +91,6 @@ int main(int argc, char** argv)
     robot_remote_control::ComplexActions complexActions;
     robot.initComplexActions(complexActions);
 
-    robot_remote_control::SimpleSensors sensors;
-    robot_remote_control::SimpleSensor* sens;
-    sens = sensors.add_sensors();
-    sens->set_name("temperature");
-    sens->set_id(1);
-    sens->mutable_size()->set_x(1);  // only single value
-
-    sens = sensors.add_sensors();
-    sens->set_name("velocity");
-    sens->set_id(2);
-    sens->mutable_size()->set_x(3);  // 3 value vector
-
-    robot.initSimpleSensors(sensors);
-
     // init done, now fake a robot
 
     // robot state
@@ -114,11 +100,13 @@ int main(int argc, char** argv)
     robot_remote_control::Pose currentpose, targetpose;
 
     robot_remote_control::SimpleSensor temperature, velocity;
-    temperature.set_id(1);
     // init value
     temperature.add_value(42);
 
-    velocity.set_id(2);
+    // send velocity in a "channel" (seperate buffers in the RobotController)
+    // channels are numbered uint8_t, default channel is 0, first channel added is 1, etc.)
+    int velocity_channel_no = robot.addChannel(robot_remote_control::SIMPLE_SENSOR, "velocity");
+
     // init value
     velocity.add_value(0);
     velocity.add_value(0);
@@ -156,8 +144,6 @@ int main(int argc, char** argv)
     robot_remote_control::SimpleAction simpleactionscommand;
     robot_remote_control::ComplexAction complexactionscommand;
     robot_remote_control::Poses posescommand;
-
-
 
 
     // fill inital robot state
@@ -259,21 +245,19 @@ int main(int argc, char** argv)
 
         // set/send and send fake telemetry
         robot.setCurrentPose(currentpose);
-        // also send via 2nd channel
-        robot.setCurrentPose(currentpose, pose2channelno);
 
         // fake some joint movement
         robot.setJointState(jointsstate);
 
+        robot.setCurrentTransforms(transforms);
+
         temperature.set_value(0, 42);
         robot.setSimpleSensor(temperature);
-
-        robot.setCurrentTransforms(transforms);
 
         velocity.set_value(0, 0.1);
         velocity.set_value(1, 0.1);
         velocity.set_value(2, 0.1);
-        robot.setSimpleSensor(velocity);
+        robot.setSimpleSensor(velocity, velocity_channel_no);  // 2nd param is the channelno.
 
 
         robot_remote_control::Twist twistState;

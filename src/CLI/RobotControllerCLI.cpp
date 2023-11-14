@@ -147,6 +147,9 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
     DEFINE_PRINT_COMMAND(Odometry, getOdometry, "print current Odometry");
     DEFINE_PRINT_COMMAND(Transforms, getCurrentTransforms, "print current Transforms");
+    DEFINE_PRINT_COMMAND(SimpleSensor, getSimpleSensor, "print simple sensor content");
+
+
 
 
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
@@ -506,28 +509,6 @@ int main(int argc, char** argv) {
     });
     params.push_back(ConsoleCommands::ParamDef("target folder (string)", "./model"));
     console.registerParamsForCommand("requestRobotModel", params);
-    params.clear();
-
-    /**
-     * Simeplesensors
-     */
-    console.registerCommand("getSimpleSensor", "get simple sensor", [&](const std::vector<std::string> &params){
-        robot_remote_control::SimpleSensor simplesensor;
-        // simplesensores have a buffer of size 1
-        if (controller.getSimpleSensor(std::stoi(params[0]), &simplesensor)) {
-            if (simplesensor.value().size() > 25) {
-                // delete data (so it is not printed)
-                simplesensor.mutable_value()->Clear();
-            }
-            simplesensor.PrintDebugString();
-            return true;
-        } else {
-            printf("no files received\n");
-            return false;
-        }
-    });
-    params.push_back(ConsoleCommands::ParamDef("id (int)", ""));
-    console.registerParamsForCommand("getSimpleSensor", params);
     params.clear();
 
 

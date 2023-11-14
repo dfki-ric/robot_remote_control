@@ -837,52 +837,40 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   SimpleSensor temp_recv;
 
   // getting an unavaile sensor should return false
-  bool result = controller.getSimpleSensor(1, &temp_recv);
+  bool result = controller.getSimpleSensor(&temp_recv);
   BOOST_TEST(result == false);
 
 
   // send unregistered sensor
   SimpleSensor temp;
-  temp.set_id(1);
   robot.setSimpleSensor(temp);
 
 
-  while (!controller.getSimpleSensor(1, &temp_recv)) {
-    // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+  while (!controller.getSimpleSensor(&temp_recv)) {
     usleep(10000);
-    // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
   }
   COMPARE_PROTOBUF(temp, temp_recv);
 
 
-  robot_remote_control::SimpleSensors sensors;
-  robot_remote_control::SimpleSensor* sens;
-  sens = sensors.add_sensors();
-  sens->set_name("temperature");
-  sens->set_id(1);
-  sens->mutable_size()->set_x(1);  // only single value
+  // init channels for sensors
+  int c1 = robot.addChannel(robot_remote_control::SIMPLE_SENSOR, "temperature");  // channel 1
+  int c2 = robot.addChannel(robot_remote_control::SIMPLE_SENSOR, "velocity");  // channel 2
 
-  sens = sensors.add_sensors();
-  sens->set_name("velocity");
-  sens->set_id(2);
-  sens->mutable_size()->set_x(3);  // 3 value vector
-
-  robot.initSimpleSensors(sensors);
+  BOOST_CHECK_EQUAL(c1, 1);
+  BOOST_CHECK_EQUAL(c2, 2);
 
   // send unregistered sensor
   SimpleSensor velocity, velocity_recv;
-  velocity.set_id(2);
   velocity.add_value(std::rand());
-  robot.setSimpleSensor(velocity);
+  robot.setSimpleSensor(velocity, 2);
 
-  while (!controller.getSimpleSensor(2, &velocity_recv)) {
+  while (!controller.getSimpleSensor(&velocity_recv, false, 2)) {
+    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
     usleep(10000);
   }
   COMPARE_PROTOBUF(velocity, velocity_recv);
 
   controller.stopUpdateThread();
-
-
 }
 
 BOOST_AUTO_TEST_CASE(check_callbacks) {

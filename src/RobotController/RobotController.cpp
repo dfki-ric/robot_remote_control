@@ -19,7 +19,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     heartBeatRoundTripTime(0),
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
-    simplesensorbuffer(std::make_shared< SimpleBuffer<SimpleSensor> >()),
     connected(false) {
         registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
         registerTelemetryType<JointState>(JOINT_STATE, buffersize);
@@ -30,8 +29,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
         registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
         registerTelemetryType<MapsDefinition>(MAPS_DEFINITION, 1);
         registerTelemetryType<Map>(MAP, 1);
@@ -55,8 +53,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
 
         #ifdef RRC_STATISTICS
             // add names to buffer, this types have aspecial treatment, the should not be registered
-            SimpleSensor simpleSensor;
-            statistics.names[SIMPLE_SENSOR_VALUE] = simpleSensor.GetTypeName();
             MapsDefinition mapsDefinition;
             statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
             Map map;
@@ -255,10 +251,6 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     // handle special types
     switch (msgtype) {
-        // multi values in single stream
-        case SIMPLE_SENSOR_VALUE:       addToSimpleSensorBuffer(serializedMessage);
-                                        return msgtype;
-
         case TELEMETRY_MESSAGE_TYPES_NUMBER:
         case NO_TELEMETRY_DATA:
         {
@@ -287,22 +279,6 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     // should never reach this
     return NO_TELEMETRY_DATA;
 }
-
-void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessage) {
-    SimpleSensor data;
-    data.ParseFromString(serializedMessage);
-    // check if buffer number is big enough
-    // size must be id+1 (id 0 needs size 1)
-    simplesensorbuffer->initBufferID(data.id());
-    // if (simplesensorbuffer->size() <= data.id()){
-    //     simplesensorbuffer->resize(data.id());
-    // }
-
-    RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
-    // also push the data to the "traditional" buffer
-    RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE][0], data, true);
-}
-
 
 bool RobotController::requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
     std::string request;

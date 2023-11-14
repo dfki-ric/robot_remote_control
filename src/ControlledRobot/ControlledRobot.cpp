@@ -52,9 +52,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<RobotState>(ROBOT_STATE);
     registerTelemetryType<LogMessage>(LOG_MESSAGE);
     registerTelemetryType<VideoStreams>(VIDEO_STREAMS);
-    registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION);
-    // simple sensors are stored in separate buffer when receiving, but sending requires this for requests
-    registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE);
+    registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR);
     registerTelemetryType<WrenchState>(WRENCH_STATE);
     registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
     registerTelemetryType<Map>(MAP);

@@ -299,17 +299,6 @@ class ControlledRobot: public UpdateThread {
         }
 
         /**
-         * @brief The robot uses this method to provide information about its sensors
-         * The name is only mandatory here, setSimpleSnsor() may omit this value and identify by id
-         * 
-         * @param telemetry a list of simple sensors and their names/ids, other firelds not nessecary
-         * @return int  number of bytes sent
-         */
-        int initSimpleSensors(const SimpleSensors &telemetry) {
-            return sendTelemetry(telemetry, SIMPLE_SENSOR_DEFINITION, true, 0);
-        }
-
-        /**
          * @brief The robot uses this method to provide information about its maps
          * The name is only mandatory here, requestMaps() may omit this value and identify by id
          * 
@@ -501,13 +490,13 @@ class ControlledRobot: public UpdateThread {
 
         /**
          * @brief Set a single Simple Sensor value
-         * the name strin can be omitted, if it was provided using initSimpleSensors()
+         * The name strin may be omitted, it can be provided when creating a channel
          * 
          * @param telemetry a single sensor value
          * @return int number of bytes sent
          */
         int setSimpleSensor(const SimpleSensor &telemetry, const uint8_t &channel = 0) {
-            return sendTelemetry(telemetry, SIMPLE_SENSOR_VALUE, false, channel);
+            return sendTelemetry(telemetry, SIMPLE_SENSOR, false, channel);
         }
 
         /**

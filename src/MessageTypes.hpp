@@ -35,8 +35,8 @@ namespace robot_remote_control {
                                 ROBOT_STATE,                // robot state description (string)
                                 LOG_MESSAGE,                // log messages
                                 VIDEO_STREAMS,              // definition of video streams
-                                SIMPLE_SENSOR_DEFINITION,   // definition of available simple sensors
-                                SIMPLE_SENSOR_VALUE,        // actual simple sensor values
+                                SIMPLE_SENSOR_DEFINITION_DEPRECATED,   // definition of available simple sensors, removed with channel support, keps to keep compatible numbering
+                                SIMPLE_SENSOR,              // actual simple sensor values
                                 WRENCH_STATE,               // current Wrench values
                                 MAPS_DEFINITION,
                                 MAP,

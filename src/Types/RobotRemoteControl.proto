@@ -347,7 +347,6 @@ enum SimpleActionType {
 message SimpleSensor{
     Header header = 1;
     string name = 2;
-    uint32 id = 3;
     //size in x and y in order to send e.g. gridmaps, indexing: val = value[x+y*sizex]
     //if this is a single value, you omit this completely
     Vector2 size = 4; 
@@ -358,10 +357,6 @@ message SimpleSensor{
     repeated string value_names = 7;
     Position local_offset = 8; //local offset of the data
     Orientation local_orientation = 9; //local orientation of the data
-}
-
-message SimpleSensors{
-    repeated SimpleSensor sensors = 1;
 }
 
 message TimeStamp {
