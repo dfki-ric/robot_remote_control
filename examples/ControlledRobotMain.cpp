@@ -165,7 +165,9 @@ int main(int argc, char** argv)
     currentpose.mutable_orientation()->set_w(1);
     robot.setCurrentPose(currentpose);
 
-
+    // define an extra channel to send two poses (only needed when you need extra receive buffers on the RobotController)
+    // otherwise use the header.frame field instead of headers to differentiate poses
+    uint8_t pose2channelno = robot.addChannel(robot_remote_control::CURRENT_POSE, "2nd pose via channel");
 
     // for requests to work, you need a valid connection:
     // only works when heartbeats are set up
@@ -176,7 +178,7 @@ int main(int argc, char** argv)
 
     robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
         // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads
-        //printf("Pose Command Callback\n");
+        // printf("Pose Command Callback\n");
     });
 
 
@@ -189,11 +191,10 @@ int main(int argc, char** argv)
     permreq.set_requestuid("testuid2");
     std::shared_future<bool> perm2 = robot.requestPermission(permreq);
 
-    //perm1.wait();
-    //printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
+    // perm1.wait();
+    // printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
 
     while (true) {
-
         // if (perm2.valid()) {
         //     printf("result of permission request 2: %s\n", perm2.get() ? "true" : "false");
         // }
@@ -258,6 +259,8 @@ int main(int argc, char** argv)
 
         // set/send and send fake telemetry
         robot.setCurrentPose(currentpose);
+        // also send via 2nd channel
+        robot.setCurrentPose(currentpose, pose2channelno);
 
         // fake some joint movement
         robot.setJointState(jointsstate);
@@ -272,7 +275,7 @@ int main(int argc, char** argv)
         velocity.set_value(2, 0.1);
         robot.setSimpleSensor(velocity);
 
-        
+
         robot_remote_control::Twist twistState;
         twistState.mutable_linear()->set_x(1);
         twistState.mutable_linear()->set_y(2);
