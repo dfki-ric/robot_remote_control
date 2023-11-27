@@ -75,6 +75,7 @@ namespace RockConversion {
             throw std::runtime_error("Only MODE_JPEG or uncompressed frames are supported at the moment");
         }
         convert(rrc_type.header(), &(rock_type->time));
+        rock_type->setAttribute("frame_id", rrc_type.header().frame());
         rock_type->received_time = base::Time::now();
         rock_type->frame_status = base::samples::frame::STATUS_VALID;
     }
