@@ -13,6 +13,7 @@
   <depend package="protobuf-compiler" />
   <depend package="libreadline" />
   <depend package="zmq" />
+  <depend package="perception/frame_helper" />
   <depend package="ncurses" optional="1"/>
 
   <keywords>

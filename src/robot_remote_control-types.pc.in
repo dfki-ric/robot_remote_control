@@ -6,7 +6,7 @@ includedir=${prefix}/include
 Name: robot_remote_control-types
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
-Requires: @PKGCONFIG_REQUIRES@
-Libs: -L${libdir} -lrobot_remote_control-types @PKGCONFIG_LIBS@
-Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
+Requires: frame_helper
+Libs: -L${libdir} -lrobot_remote_control-types 
+Cflags: -I${includedir}
 
