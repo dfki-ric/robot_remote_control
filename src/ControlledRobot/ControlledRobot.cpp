@@ -54,7 +54,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<VideoStreams>(VIDEO_STREAMS);
     registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR);
     registerTelemetryType<WrenchState>(WRENCH_STATE);
-    registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
+    //registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
     registerTelemetryType<Map>(MAP);
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
@@ -103,7 +103,7 @@ void ControlledRobot::update() {
     }
 }
 
-void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const uint16_t &type) {
+void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const MesssageId &type) {
     #ifdef RRC_STATISTICS
         statistics.global.addBytesSent(bytesSent);
         statistics.stat_per_type[type].addBytesSent(bytesSent);
@@ -121,17 +121,17 @@ ControlMessageType ControlledRobot::receiveRequest() {
 }
 
 ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) {
-    uint16_t* type = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
+    MesssageId* type = reinterpret_cast<MesssageId*>(const_cast<char*>(request.data()));
     ControlMessageType msgtype = (ControlMessageType)*type;
-    std::string serializedMessage(request.data()+sizeof(uint16_t), request.size()-sizeof(uint16_t));
+    std::string serializedMessage(request.data()+sizeof(MesssageId), request.size()-sizeof(MesssageId));
 
     switch (msgtype) {
         case TELEMETRY_REQUEST: {
             return handleTelemetryRequest(serializedMessage, commandTransport);
         }
-        case MAP_REQUEST: {
-            return handleMapRequest(serializedMessage, commandTransport);
-        }
+        // case MAP_REQUEST: {
+        //     return handleMapRequest(serializedMessage, commandTransport);
+        // }
         case LOG_LEVEL_SELECT: {
             logLevel = *reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
@@ -149,8 +149,8 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
     }
 }
 
-void ControlledRobot::notifyCommandCallbacks(const uint16_t &type) {
-    auto callCb = [&](const std::function<void(const uint16_t &type)> &cb){cb(type);};
+void ControlledRobot::notifyCommandCallbacks(const MesssageId &type) {
+    auto callCb = [&](const std::function<void(const MesssageId &type)> &cb){cb(type);};
     std::for_each(commandCallbacks.begin(), commandCallbacks.end(), callCb);
 }
 
@@ -201,15 +201,15 @@ robot_remote_control::TimeStamp ControlledRobot::getTime() {
 
 void ControlledRobot::addTelemetryMessageType(std::string *buf, const TelemetryMessageType& type) {
     int currsize = buf->size();
-    buf->resize(currsize + sizeof(uint16_t));
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf->data()+currsize));
+    buf->resize(currsize + sizeof(MesssageId));
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf->data()+currsize));
     *data = type;
 }
 
 void ControlledRobot::addControlMessageType(std::string *buf, const ControlMessageType& type) {
     int currsize = buf->size();
-    buf->resize(currsize + sizeof(uint16_t));
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf->data()+currsize));
+    buf->resize(currsize + sizeof(MesssageId));
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf->data()+currsize));
     *data = type;
 }
 
@@ -262,8 +262,8 @@ bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool c
 
 
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
-    uint16_t* requestedtype = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
-    uint8_t* requestedchannel = reinterpret_cast<uint8_t*>(const_cast<char*>(serializedMessage.data()+sizeof(uint16_t)));
+    MesssageId* requestedtype = reinterpret_cast<MesssageId*>(const_cast<char*>(serializedMessage.data()));
+    ChannelId* requestedchannel = reinterpret_cast<ChannelId*>(const_cast<char*>(serializedMessage.data()+sizeof(MesssageId)));
     //TODO channel
     TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
     std::string reply = buffers->peekSerialized(type, *requestedchannel);
@@ -271,19 +271,19 @@ ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& se
     return TELEMETRY_REQUEST;
 }
 
-ControlMessageType ControlledRobot::handleMapRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
-    uint16_t* requestedMap = reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
-    std::string map;
-    // get map
-    {
-        auto lockedAccess = mapBuffer.lockedAccess();
-        if (*requestedMap < lockedAccess.get().size()) {
-            RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
-        }
-    }
-    commandTransport->send(map);
-    return MAP_REQUEST;
-}
+// ControlMessageType ControlledRobot::handleMapRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
+//     MesssageId* requestedMap = reinterpret_cast<MesssageId*>(const_cast<char*>(serializedMessage.data()));
+//     std::string map;
+//     // get map
+//     {
+//         auto lockedAccess = mapBuffer.lockedAccess();
+//         if (*requestedMap < lockedAccess.get().size()) {
+//             RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
+//         }
+//     }
+//     commandTransport->send(map);
+//     return MAP_REQUEST;
+// }
 
 ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     Permission perm;

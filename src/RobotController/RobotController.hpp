@@ -13,7 +13,6 @@
 #include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
-#include "SimpleBuffer.hpp"
 #include "Statistics.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
@@ -41,14 +40,14 @@ class RobotController: public UpdateThread {
          * @param type TelemetryMessageType enum
          * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
          */
-        bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true, const uint8_t &channel = 0);
+        bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true, const ChannelId &channel = 0);
 
         /**
          * @brief Set the overwrite mode of all buffers (default false)
          * 
          * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
          */
-        void setTelemetryBufferOverwrite(bool overwrite = true, const uint8_t &channel = 0);
+        void setTelemetryBufferOverwrite(bool overwrite = true, const ChannelId &channel = 0);
 
         /**
          * @brief Set the buffer size of a sinlgle telemetry type (default value set in RobotController() constructor)
@@ -58,9 +57,9 @@ class RobotController: public UpdateThread {
          * @param type TelemetryMessageType enum
          * @param newsize the new size of the buffer 
          */
-        bool setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize = 10, const uint8_t &channel = 0);
+        bool setSingleTelemetryBufferSize(TelemetryMessageType type, size_t newsize = 10, const ChannelId &channel = 0);
 
-        bool addChannelBuffer(const TelemetryMessageType& type, const uint8_t &channel, const size_t &buffersize = 10) {
+        bool addChannelBuffer(const TelemetryMessageType& type, const ChannelId &channel, const size_t &buffersize = 10) {
             return buffers->addChannelBuffer(type, channel, buffersize);
         }
 
@@ -121,7 +120,7 @@ class RobotController: public UpdateThread {
          * @param type 
          * @return uint32_t 
          */
-        uint32_t getTelemetryBufferDataSize(const TelemetryMessageType &type, const uint8_t &channel = 0);
+        uint32_t getTelemetryBufferDataSize(const TelemetryMessageType &type, const ChannelId &channel = 0);
 
         /**
          * @brief Get the messages dropped of a specific because of full buffer
@@ -129,7 +128,7 @@ class RobotController: public UpdateThread {
          * @param type 
          * @return uint32_t 
          */
-        size_t getDroppedTelemetry(const TelemetryMessageType &type, const uint8_t &channel = 0);
+        size_t getDroppedTelemetry(const TelemetryMessageType &type, const ChannelId &channel = 0);
 
         /**
          * @brief Set the Target Pose of the ControlledRobot
@@ -182,7 +181,7 @@ class RobotController: public UpdateThread {
          * 
          * @param level the desired log level
          */
-        void setLogLevel(const uint16_t &level);
+        void setLogLevel(const LogLevelId &level);
 
         /**
          * @brief Set the Permission object
@@ -200,7 +199,7 @@ class RobotController: public UpdateThread {
          * @param pose the pose to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentPose(Pose *pose, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getCurrentPose(Pose *pose, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(CURRENT_POSE, pose, onlyNewest, channel);
         }
 
@@ -211,7 +210,7 @@ class RobotController: public UpdateThread {
          * @return true if new data was read
          * @return false otherwise
          */
-        bool getCurrentTwist(Twist *telemetry, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getCurrentTwist(Twist *telemetry, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(CURRENT_TWIST, telemetry, onlyNewest, channel);
         }
 
@@ -222,7 +221,7 @@ class RobotController: public UpdateThread {
          * @return true if new data was read
          * @return false otherwise
          */
-        bool getCurrentAcceleration(Acceleration *telemetry, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getCurrentAcceleration(Acceleration *telemetry, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(CURRENT_ACCELERATION, telemetry, onlyNewest, channel);
         }
 
@@ -232,7 +231,7 @@ class RobotController: public UpdateThread {
          * @param repeated field of poses to write the data to
          * @return bool true if new data was read
          */
-        bool getPoses(Poses *poses, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getPoses(Poses *poses, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(POSES, poses, onlyNewest, channel);
         }
 
@@ -242,7 +241,7 @@ class RobotController: public UpdateThread {
          * @param jointState the JointState to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentJointState(JointState *jointState, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getCurrentJointState(JointState *jointState, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(JOINT_STATE, jointState, onlyNewest, channel);
         }
 
@@ -252,15 +251,15 @@ class RobotController: public UpdateThread {
          * @param wrenchState the WrenchState to write the data to
          * @return bool true if new data was read
          */
-        bool getCurrentWrenchState(WrenchState* wrenchState, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getCurrentWrenchState(WrenchState* wrenchState, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(WRENCH_STATE, wrenchState, onlyNewest, channel);
         }
 
-        int getCurrentIMUState(IMU* imu, bool onlyNewest = false, const uint8_t &channel = 0) {
+        int getCurrentIMUState(IMU* imu, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(IMU_VALUES, imu, onlyNewest, channel);
         }
 
-        int getCurrentContactPoints(ContactPoints* points, bool onlyNewest = false, const uint8_t &channel = 0) {
+        int getCurrentContactPoints(ContactPoints* points, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(CONTACT_POINTS, points, onlyNewest, channel);
         }
 
@@ -271,7 +270,7 @@ class RobotController: public UpdateThread {
          * @return true 
          * @return false 
          */
-        int getSimpleSensor(SimpleSensor* telemetry, bool onlyNewest = false, const uint8_t &channel = 0) {
+        int getSimpleSensor(SimpleSensor* telemetry, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(SIMPLE_SENSOR, telemetry, onlyNewest, channel);
         }
 
@@ -317,7 +316,7 @@ class RobotController: public UpdateThread {
          * @param Transforms object to write the transforms to
          * @return bool true if new data was read
          */
-        bool getCurrentTransforms(Transforms *transforms, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getCurrentTransforms(Transforms *transforms, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(TRANSFORMS, transforms, onlyNewest, channel);
         }
 
@@ -328,19 +327,19 @@ class RobotController: public UpdateThread {
          * @return true 
          * @return false 
          */
-        bool getPointCloud(PointCloud *pointcloud, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getPointCloud(PointCloud *pointcloud, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(POINTCLOUD, pointcloud, onlyNewest, channel);
         }
 
-        bool getImage(Image *image, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getImage(Image *image, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(IMAGE, image, onlyNewest, channel);
         }
 
-        bool getImageLayers(ImageLayers *imagelayers, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getImageLayers(ImageLayers *imagelayers, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(IMAGE_LAYERS, imagelayers, onlyNewest, channel);
         }
 
-        bool getOdometry(Odometry* telemetry, bool onlyNewest = false, const uint8_t &channel = 0) {
+        bool getOdometry(Odometry* telemetry, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(ODOMETRY, telemetry, onlyNewest, channel);
         }
 
@@ -447,11 +446,11 @@ class RobotController: public UpdateThread {
             return requestTelemetry(CAMERA_INFORMATION, camerainformation, 0);
         }
 
-        bool requestMap(Map *map, const uint16_t &mapId, const float &overrideMaxLatency = 120);
+        bool requestMap(Map *map, const ChannelId &channel = 0, const float &overrideMaxLatency = 120);
 
-        bool requestMap(std::string *map, const uint16_t &mapId, const float &overrideMaxLatency = 120) {
-            return requestBinary(mapId, map, MAP_REQUEST, overrideMaxLatency);
-        }
+        // bool requestMap(std::string *map, const ChannelId &channel = 0, const float &overrideMaxLatency = 120) {
+        //     return requestBinary(MAP, map, TELEMETRY_REQUEST, channel, overrideMaxLatency);
+        // }
 
         /**
          * @brief Request which movement commands (in which frames) are supported by the robot
@@ -496,7 +495,7 @@ class RobotController: public UpdateThread {
          * @param TelemetryMessageType  
          * @return unsigned int number of messages in the buffer
          */
-        unsigned int getBufferSize(const TelemetryMessageType &type, const uint8_t &channel = 0) {
+        unsigned int getBufferSize(const TelemetryMessageType &type, const ChannelId &channel = 0) {
             int size = buffers->lockedAccess().get()[type][channel]->size();
             return size;
         }
@@ -511,7 +510,7 @@ class RobotController: public UpdateThread {
          * @return unsigned int 
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const uint16_t &type, DATATYPE *data, bool onlyNewest, const uint8_t &channel) {
+        template< class DATATYPE > unsigned int getTelemetry(const MesssageId &type, DATATYPE *data, bool onlyNewest, const ChannelId &channel) {
             auto lockedbuffer = buffers->lockedAccess();
             if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
@@ -520,7 +519,7 @@ class RobotController: public UpdateThread {
             return RingBufferAccess::popData(lockedbuffer.get()[type][channel], data, onlyNewest);
         }
 
-        unsigned int getTelemetryRaw(const uint16_t &type, std::string *dataSerialized, bool onlyNewest, const uint8_t &channel) {
+        unsigned int getTelemetryRaw(const MesssageId &type, std::string *dataSerialized, bool onlyNewest, const ChannelId &channel) {
             if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
@@ -530,13 +529,13 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > bool requestTelemetry(const uint16_t &type, DATATYPE *result, const uint8_t &channel) {
-            const uint16_t requestType = TELEMETRY_REQUEST;
+        template< class DATATYPE > bool requestTelemetry(const MesssageId &type, DATATYPE *result, const ChannelId &channel) {
+            const MesssageId requestType = TELEMETRY_REQUEST;
             std::string replybuf;
             std::string request;
-            request.resize(sizeof(uint16_t) + sizeof(uint8_t));
-            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
-            uint8_t* chan = reinterpret_cast<uint8_t*>(const_cast<char*>(request.data()+sizeof(uint16_t)));
+            request.resize(sizeof(MesssageId) + sizeof(ChannelId));
+            MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(request.data()));
+            ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MesssageId)));
             *data = type;
             *chan = channel;
             bool received = requestBinary(request, &replybuf, requestType);
@@ -545,20 +544,20 @@ class RobotController: public UpdateThread {
             return received;
         }
 
-        template< class DATATYPE > void addTelemetryReceivedCallback(const uint16_t &type, const std::function<void(const DATATYPE & data)> &function, const uint8_t &channel = 0) {
+        template< class DATATYPE > void addTelemetryReceivedCallback(const MesssageId &type, const std::function<void(const DATATYPE & data)> &function, const ChannelId &channel = 0) {
             RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type][channel], function);
         }
 
-        void addTelemetryReceivedCallback(const std::function<void(const uint16_t &type)> &function) {
+        void addTelemetryReceivedCallback(const std::function<void(const MesssageId &type)> &function) {
             telemetryReceivedCallbacks.push_back(function);
         }
 
 
-        bool requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
-        bool requestBinary(const std::string &request, std::string *result, const uint16_t &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
+        bool requestBinary(const MesssageId &type, std::string *result, const MesssageId &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
+        bool requestBinary(const std::string &request, std::string *result, const MesssageId &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
 
-        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const uint16_t &requestType, const float &overrideMaxLatency = 0) {
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const MesssageId &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
             requestdata.SerializeToString(&request);
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
@@ -586,7 +585,7 @@ class RobotController: public UpdateThread {
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
-        void updateStatistics(const uint32_t &bytesSent, const uint16_t &type);
+        void updateStatistics(const uint32_t &bytesSent, const MesssageId &type);
 
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
@@ -602,15 +601,15 @@ class RobotController: public UpdateThread {
 
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::function<void(const float&)> lostConnectionCallback;
-        std::vector< std::function<void(const uint16_t &type)> > telemetryReceivedCallbacks;
+        std::vector< std::function<void(const MesssageId &type)> > telemetryReceivedCallbacks;
         std::atomic<bool> connected;
 
         Statistics statistics;
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const uint16_t &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MesssageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
-            buf.resize(sizeof(uint16_t));
-            uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+            buf.resize(sizeof(MesssageId));
+            MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
             *data = type;
             protodata.AppendToString(&buf);
             return sendRequest(buf, 0, flags);
@@ -621,7 +620,7 @@ class RobotController: public UpdateThread {
          public:
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
-            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel) = 0;
+            virtual void addToTelemetryBuffer(const MesssageId &type, const std::string &serializedMessage, const ChannelId &channel) = 0;
             void setOverwrite(bool mode = true) {
                 overwrite = mode;
             }
@@ -634,7 +633,7 @@ class RobotController: public UpdateThread {
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
-            virtual void addToTelemetryBuffer(const uint16_t &type, const std::string &serializedMessage, const uint8_t &channel) {
+            virtual void addToTelemetryBuffer(const MesssageId &type, const std::string &serializedMessage, const ChannelId &channel) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);
@@ -643,7 +642,7 @@ class RobotController: public UpdateThread {
 
         std::vector< std::shared_ptr<TelemetryAdderBase> > telemetryAdders;
 
-        template <class PROTO> void registerTelemetryType(const uint16_t &type, const size_t &buffersize = 10) {
+        template <class PROTO> void registerTelemetryType(const MesssageId &type, const size_t &buffersize = 10) {
             buffers->registerType<PROTO>(type, buffersize);
             if (type >= telemetryAdders.size()) {  // e.g. type == 42, for index 42, size must be 43
                 telemetryAdders.resize(type+1);

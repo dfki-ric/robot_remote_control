@@ -4,11 +4,11 @@
 
 namespace robot_remote_control {
 
-    /**
-     * @brief The data channel type
-     * 
-     */
-    enum ControlMessageType : uint16_t { NO_CONTROL_DATA = 0,
+    typedef uint8_t MesssageId;  // defines the size of MesssageIds in the protocol (max number of message types)
+    typedef uint8_t ChannelId;   // defines the size of the channel part of the protocol (and the max number of channels)
+    typedef uint8_t LogLevelId;  // defines the size of the LogLevel part of the protocol (and the max number of supported log levels)
+
+    enum ControlMessageType : MesssageId { NO_CONTROL_DATA = 0,
                             TARGET_POSE_COMMAND,     // target Pose the robot should move to
                             TWIST_COMMAND,           // directly move the robot Base
                             JOINTS_COMMAND,
@@ -25,7 +25,7 @@ namespace robot_remote_control {
                             CONTROL_MESSAGE_TYPE_NUMBER  // LAST element
                             };
 
-    enum TelemetryMessageType : uint16_t { NO_TELEMETRY_DATA = 0,
+    enum TelemetryMessageType : MesssageId { NO_TELEMETRY_DATA = 0,
                                 CURRENT_POSE,               // the current Pose of the robot base
                                 JOINT_STATE,                // current Joint values
                                 CONTROLLABLE_JOINTS,        // info about the controllable joints of the robot
@@ -38,7 +38,7 @@ namespace robot_remote_control {
                                 SIMPLE_SENSOR_DEFINITION_DEPRECATED,   // definition of available simple sensors, removed with channel support, keps to keep compatible numbering
                                 SIMPLE_SENSOR,              // actual simple sensor values
                                 WRENCH_STATE,               // current Wrench values
-                                MAPS_DEFINITION,
+                                MAPS_DEFINITION_DEPRECATED,
                                 MAP,
                                 POSES,                      // number of poses
                                 TRANSFORMS,                 // number of transforms
@@ -72,7 +72,7 @@ namespace robot_remote_control {
      * 
      * use Custom+x for custom messages
      */
-    enum LogLevel : uint16_t {NONE = 0, FATAL, ERROR, WARN, INFO, DEBUG, CUSTOM = 20};
+    enum LogLevel : LogLevelId {NONE = 0, FATAL, ERROR, WARN, INFO, DEBUG, CUSTOM = 20};
 
 }  // end namespace robot_remote_control
 

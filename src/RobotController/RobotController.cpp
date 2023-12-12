@@ -31,7 +31,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
-        registerTelemetryType<MapsDefinition>(MAPS_DEFINITION, 1);
+        //registerTelemetryType<MapsDefinition>(MAPS_DEFINITION, 1);
         registerTelemetryType<Map>(MAP, 1);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
@@ -51,13 +51,13 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
         registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
 
-        #ifdef RRC_STATISTICS
-            // add names to buffer, this types have aspecial treatment, the should not be registered
-            MapsDefinition mapsDefinition;
-            statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
-            Map map;
-            statistics.names[MAP] = map.GetTypeName();
-        #endif
+        // #ifdef RRC_STATISTICS
+        //     // add names to buffer, this types have aspecial treatment, the should not be registered
+        //     MapsDefinition mapsDefinition;
+        //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
+        //     Map map;
+        //     statistics.names[MAP] = map.GetTypeName();
+        // #endif
 
         lostConnectionCallback = [&](const float& time){
             printf("lost connection to robot, no reply for %f seconds\n", time);
@@ -70,7 +70,7 @@ RobotController::~RobotController() {
 
 
 
-bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite, const uint8_t &channel) {
+bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite, const ChannelId &channel) {
     std::shared_ptr<TelemetryAdderBase> adder =  telemetryAdders[type];
     if (adder.get()) {
         adder->setOverwrite(overwrite);
@@ -79,7 +79,7 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
     return false;
 }
 
-void RobotController::setTelemetryBufferOverwrite(bool overwrite, const uint8_t &channel) {
+void RobotController::setTelemetryBufferOverwrite(bool overwrite, const ChannelId &channel) {
     for (auto &adder : telemetryAdders) {
         if (adder.get()) {
             adder->setOverwrite(overwrite);
@@ -87,7 +87,7 @@ void RobotController::setTelemetryBufferOverwrite(bool overwrite, const uint8_t 
     }
 }
 
-bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize, const uint8_t &channel) {
+bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, size_t newsize, const ChannelId &channel) {
     auto lockedTelemetryBuffers = buffers->lockedAccess();
     std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type][channel];
     if (buffer.get()) {
@@ -97,11 +97,11 @@ bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, ui
     return false;
 }
 
-uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type, const uint8_t &channel) {
+uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type, const ChannelId &channel) {
     return buffers->lockedAccess().get()[type][channel]->size();
 }
 
-size_t RobotController::getDroppedTelemetry(const TelemetryMessageType &type, const uint8_t &channel) {
+size_t RobotController::getDroppedTelemetry(const TelemetryMessageType &type, const ChannelId &channel) {
     return buffers->lockedAccess().get()[type][channel]->dropped();
 }
 
@@ -133,13 +133,13 @@ void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryComm
     sendProtobufData(robotTrajectoryCommand, ROBOT_TRAJECTORY_COMMAND);
 }
 
-void RobotController::setLogLevel(const uint16_t &level) {
+void RobotController::setLogLevel(const LogLevelId &level) {
     std::string buf;
-    buf.resize(sizeof(uint16_t) + sizeof(uint16_t));
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+    buf.resize(sizeof(MesssageId) + sizeof(LogLevelId));
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
     *data = LOG_LEVEL_SELECT;
 
-    uint16_t *levelptr = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()+sizeof(uint16_t)));
+    LogLevelId *levelptr = reinterpret_cast<LogLevelId*>(const_cast<char*>(buf.data()+sizeof(MesssageId)));
     *levelptr = level;
     sendRequest(buf);
 }
@@ -157,9 +157,9 @@ void RobotController::update() {
             flags = Transport::NOBLOCK;
         // }
         while (telemetryTransport->receive(&buf, flags)) {
-            uint16_t type = evaluateTelemetry(buf);
+            MesssageId type = evaluateTelemetry(buf);
             if (type != NO_TELEMETRY_DATA) {
-                auto callCb = [&](const std::function<void(const uint16_t & type)> &cb){cb(type);};
+                auto callCb = [&](const std::function<void(const MesssageId & type)> &cb){cb(type);};
                 std::for_each(telemetryReceivedCallbacks.begin(), telemetryReceivedCallbacks.end(), callCb);
             }
         }
@@ -183,16 +183,17 @@ void RobotController::update() {
     }
 }
 
-bool RobotController::requestMap(Map *map, const uint16_t &mapId, const float &overrideMaxLatency){
+bool RobotController::requestMap(Map *map, const ChannelId &channel, const float &overrideMaxLatency){
     std::string replybuf;
-    bool result = requestBinary(mapId, &replybuf, MAP_REQUEST, overrideMaxLatency);
+    bool result = requestBinary(MAP, &replybuf, TELEMETRY_REQUEST, channel, overrideMaxLatency);
+
     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
     cistream.SetTotalBytesLimit(replybuf.size(), replybuf.size());
     map->ParseFromCodedStream(&cistream);
     return result;
 }
 
-void RobotController::updateStatistics(const uint32_t &bytesSent, const uint16_t &type) {
+void RobotController::updateStatistics(const uint32_t &bytesSent, const MesssageId &type) {
     #ifdef RRC_STATISTICS
         statistics.global.addBytesSent(bytesSent);
         statistics.stat_per_type[type].addBytesSent(bytesSent);
@@ -239,10 +240,10 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 }
 
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
-    uint16_t* type = reinterpret_cast<uint16_t*>(const_cast<char*>(reply.data()));
-    uint8_t* channel = reinterpret_cast<uint8_t*>(const_cast<char*>(reply.data()+sizeof(uint16_t)));
-    size_t headersize = sizeof(uint16_t) + sizeof(uint8_t);
-    // size_t headersize = sizeof(uint16_t);
+    MesssageId* type = reinterpret_cast<MesssageId*>(const_cast<char*>(reply.data()));
+    ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MesssageId)));
+    size_t headersize = sizeof(MesssageId) + sizeof(ChannelId);
+    // size_t headersize = sizeof(MesssageId);
     std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
 
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
@@ -280,19 +281,23 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     return NO_TELEMETRY_DATA;
 }
 
-bool RobotController::requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const MesssageId &type, std::string *result, const MesssageId &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
     std::string request;
-    request.resize(sizeof(uint16_t));
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
+    request.resize(sizeof(MesssageId) + sizeof(ChannelId));
+
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(request.data()));
+    ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MesssageId)));
     *data = type;
+    *chan = channel;
+
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
-bool RobotController::requestBinary(const std::string &request, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const std::string &request, std::string *result, const MesssageId &requestType, const float &overrideMaxLatency) {
     std::string buf;
-    buf.resize(sizeof(uint16_t)+request.size());
+    buf.resize(sizeof(MesssageId)+request.size());
 
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
     *data = requestType;
     data++;
 

@@ -552,7 +552,7 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   return received;
 }
 
-template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, const TelemetryMessageType &type) {
+template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, const TelemetryMessageType &type, const ChannelId channel = 0)  {
   initComms();
 
   RobotController controller(commands, telemetry);
@@ -560,11 +560,11 @@ template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, c
 
   robot.startUpdateThread(10);
 
-  robot.sendTelemetry(protodata, type, false, 0);
+  robot.sendTelemetry(protodata, type, false, channel);
 
   // check request
   PROTOBUFDATA received;
-  controller.requestTelemetry(type, &received, 0);
+  controller.requestTelemetry(type, &received, channel);
 
   robot.stopUpdateThread();
 
@@ -685,6 +685,57 @@ BOOST_AUTO_TEST_CASE(check_request_controllableframes) {
   recv = testRequest(send, CONTROLLABLE_FRAMES);
   COMPARE_PROTOBUF(send, recv);
 }
+
+BOOST_AUTO_TEST_CASE(check_request_map) {
+
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  GridMap grid;
+  PointCloud cloud;
+
+  Map map1, map2;
+
+  ChannelId cloudchannel = robot.addChannel(MAP, "PointCloudMap");
+  ChannelId gridchannel = robot.addChannel(MAP, "GridMap");
+
+  robot.startUpdateThread(10);
+
+  robot.setPointCloudMap(cloud, cloudchannel);
+  robot.setGridMap(grid, gridchannel);
+  
+  // check request
+
+  // request channel
+  robot_remote_control::ChannelsDefinition channels;
+  controller.requestChannelsDefinition(&channels);
+
+  BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "PointCloudMap");
+  BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
+  BOOST_CHECK_EQUAL(channels.channel().Get(1).name(), "GridMap");
+  BOOST_CHECK_EQUAL(channels.channel().Get(1).channelno(), 2);
+
+  Map received_grid_map;
+  Map received_cloud_map;
+
+  controller.requestTelemetry(MAP, &received_cloud_map, 1);
+  controller.requestTelemetry(MAP, &received_grid_map, 2);
+
+  robot.stopUpdateThread();
+
+  //unpack map
+  GridMap received_grid;
+  PointCloud received_cloud;
+
+  received_cloud_map.map().UnpackTo(&received_cloud);
+  received_grid_map.map().UnpackTo(&received_grid);
+
+  COMPARE_PROTOBUF(grid, received_grid);
+  COMPARE_PROTOBUF(cloud, received_cloud);
+}
+
 
 BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
   initComms();
@@ -865,7 +916,6 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   robot.setSimpleSensor(velocity, 2);
 
   while (!controller.getSimpleSensor(&velocity_recv, false, 2)) {
-    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
     usleep(10000);
   }
   COMPARE_PROTOBUF(velocity, velocity_recv);
@@ -886,7 +936,7 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
   robot.startUpdateThread(10);
 
   // add generic callback
-  robot.addCommandReceivedCallback([](const uint16_t &type){
+  robot.addCommandReceivedCallback([](const MesssageId &type){
       // not getting the pose here, isnew will fail for other callback
       BOOST_TEST(type == TARGET_POSE_COMMAND); //we are sending a pose below
   });

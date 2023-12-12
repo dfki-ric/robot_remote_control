@@ -202,20 +202,20 @@ message LogMessage {
 }
 
 message Map {
-    google.protobuf.Any map = 3;
+    google.protobuf.Any map = 1;
 }
 
-enum MapMessageType {  
-    NO_MAP_DATA = 0;
-    POINTCLOUD_MAP = 1; // the pointcloud proto type
-    GRID_MAP = 2;  // transmitted as SimpleSensor
-    MAP_MESSAGE_TYPES_NUMBER = 3; // LAST element
-}
+// enum MapMessageType {  
+//     NO_MAP_DATA = 0;
+//     POINTCLOUD_MAP = 1; // the pointcloud proto type
+//     GRID_MAP = 2;  // transmitted as SimpleSensor
+//     MAP_MESSAGE_TYPES_NUMBER = 3; // LAST element
+// }
 
-message MapsDefinition {
-    repeated string name = 1;
-    repeated uint32 id = 2;
-}
+// message MapsDefinition {
+//     repeated string name = 1;
+//     repeated uint32 id = 2;
+// }
 
 message NamedValue {
     string name = 1;
