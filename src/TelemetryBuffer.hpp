@@ -35,6 +35,9 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
 
     bool hasChannelBuffer(const uint16_t &type, const uint8_t &channel) {
         auto lockedAccessObject = lockedAccess();
+        if (existingBuffers[type].size() <= channel) {
+            return false;
+        }
         return existingBuffers[type][channel];
     }
 
