@@ -11,6 +11,7 @@ class Statistics {
     struct StatData{
         timeval lastCalc;
         timeval initTime;
+        int messagesSinceLast;
         double bytesSinceLast;
         double lastBytesSize;
         double bytesTotal;

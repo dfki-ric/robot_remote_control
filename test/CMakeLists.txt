@@ -1,6 +1,10 @@
 find_package (Threads)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework system)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework system filesystem)
+
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
+add_subdirectory(performance)
 
 add_definitions(-DBOOST_TEST_DYN_LINK)
 
@@ -8,13 +12,15 @@ set (COMMON_SOURCE suite.cpp
             test_Communication.cpp
             test_RingBuffer.cpp
             test_Thread.cpp
+            test_SendTimers.cpp
 )
 set (COMMON_LIBS
    ${CMAKE_THREAD_LIBS_INIT}
    robot_remote_control-transport_zmq
    robot_remote_control-controlled_robot
    robot_remote_control-robot_controller
-   ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+   robot_remote_control-send_timers
+   ${Boost_LIBRARIES}
 )
 
 add_executable(test_suite ${COMMON_SOURCE} )

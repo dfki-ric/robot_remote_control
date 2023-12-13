@@ -1,10 +1,18 @@
 
-find_package (Threads)
+find_package (Threads REQUIRED)
 
 add_library(robot_remote_control-update_thread
             UpdateThread.cpp
             Timer.cpp
             )
+            
+if(CMAKE_USE_PTHREADS_INIT)
+    target_compile_options(robot_remote_control-update_thread 
+        PUBLIC -DUSES_PTHREAD
+        INTERFACE -DUSES_PTHREAD
+        )
+endif()
+    
 
 target_include_directories(robot_remote_control-update_thread
 	PUBLIC

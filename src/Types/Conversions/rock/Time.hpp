@@ -16,6 +16,14 @@ namespace RockConversion {
         *rock_type = base::Time::fromSeconds(rrc_type.secs(), rrc_type.nsecs() / 1000);
     }
 
+    inline static void convert(const Header &rrc_type, base::Time *rock_type) {
+        *rock_type = base::Time::fromSeconds(rrc_type.timestamp().secs(), rrc_type.timestamp().nsecs() / 1000);
+    }
+
+    inline static void convert(const base::Time &rock_type, Header *rrc_type) {
+        convert(rock_type, rrc_type->mutable_timestamp());
+        
+    }
 
 }  // namespace RockConversion
 }  // namespace robot_remote_control
