@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout
       - run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
-      - run: make -j -C build/
+      - run: make -C build/
       - run: ./build/test/test_suite
       - run: ./build/test/test_suite_ipc
       - run: ./build/test/test_suite_udt
