@@ -16,9 +16,9 @@ namespace RockConversion {
     // http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/ChannelFloat32.html
     struct rgb_converter {
         uint8_t b, g, r, a;
-        rgb_type(uint8_t r, uint8_t g, uint8_t b) : b(b), g(g), r(r), a(1.0) {}
-        rgb_type(float const x) {
-            static_assert(sizeof(rgb_type)==sizeof x, "type sizes don't match");
+        rgb_converter(uint8_t r, uint8_t g, uint8_t b) : b(b), g(g), r(r), a(0.0) {}
+        rgb_converter(float const x) {
+            static_assert(sizeof(rgb_converter)==sizeof x, "type sizes don't match");
             std::memcpy(this, &x, sizeof x);
         }
         float to_float() const {
