@@ -355,8 +355,8 @@ message SimpleSensors{
 }
 
 message TimeStamp {
-    int32 secs = 1;
-    int32 nsecs = 2;
+    uint32 secs = 1;
+    uint32 nsecs = 2;
 }
 
 message Transform {
