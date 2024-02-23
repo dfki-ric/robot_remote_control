@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MessageTypes.hpp"
+#include "Types/RobotRemoteControl.pb.h"
 #include <string>
 #include <sys/time.h>
 

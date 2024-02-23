@@ -4,6 +4,72 @@ import "google/protobuf/any.proto";
 
 package robot_remote_control;
 
+// this enum definition is not used within other types here, it is defiend here to be able to print the name using
+// std::string robot_remote_control::ControlMessageType_Name(robot_remote_control::TARGET_POSE_COMMAND)
+enum ControlMessageType {
+    NO_CONTROL_DATA = 0;
+    TARGET_POSE_COMMAND = 1;     // target Pose the robot should move to
+    TWIST_COMMAND = 2;           // directly move the robot Base
+    JOINTS_COMMAND = 3;
+    SIMPLE_ACTIONS_COMMAND = 4;
+    COMPLEX_ACTION_COMMAND = 5;
+    GOTO_COMMAND = 6;
+    TELEMETRY_REQUEST = 7;
+    LOG_LEVEL_SELECT = 8;
+    MAP_REQUEST = 9;
+    HEARTBEAT = 10;
+    PERMISSION = 11;
+    ROBOT_TRAJECTORY_COMMAND = 12;
+    FILE_REQUEST = 13;
+    CONTROL_MESSAGE_TYPE_NUMBER = 14;  // LAST element
+}
+
+enum TelemetryMessageType {
+    NO_TELEMETRY_DATA = 0;
+    CURRENT_POSE = 1;               // the current Pose of the robot base
+    JOINT_STATE = 2;                // current Joint values
+    CONTROLLABLE_JOINTS = 3;        // info about the controllable joints of the robot
+    SIMPLE_ACTIONS = 4;             // info about the simple actions of the robot
+    COMPLEX_ACTIONS = 5;            // info about the complex actions of the robot
+    ROBOT_NAME = 6;                 // the name of the robot
+    ROBOT_STATE = 7;               // robot state description (string)
+    LOG_MESSAGE = 8;                // log messages
+    VIDEO_STREAMS = 9;              // definition of video streams
+    SIMPLE_SENSOR_DEFINITION = 10;   // definition of available simple sensors
+    SIMPLE_SENSOR_VALUE = 11;        // actual simple sensor values
+    WRENCH_STATE = 12;               // current Wrench values
+    MAPS_DEFINITION = 13;
+    MAP = 14;
+    POSES = 15;                      // number of poses
+    TRANSFORMS = 16;                 // number of transforms
+    PERMISSION_REQUEST = 17;         // a request for a permission
+    POINTCLOUD = 18;                 // Pointcloud as telemetry
+    IMU_VALUES = 19;                 // raw IMU
+    CONTACT_POINTS = 20;             // contact points
+    CURRENT_TWIST = 21;              // the current movement speeds of the robot
+    CURRENT_ACCELERATION = 22;       // the current movement accelerations of the robot
+    CAMERA_INFORMATION =      23;    // information on cameras (identified by frame in header)
+    IMAGE =    24;                   // raw images, in case video streasm are not an option (identified by frame in header)
+    IMAGE_LAYERS = 25;               // Collection of images with a single timestamp (e.g. stereo pairs)
+    ODOMETRY =        26;            // Odometry message (similar to ROS nav_msgs/Odometry)
+    CONTROLLABLE_FRAMES = 27;        // List of frames that can be used to send twist, pose or goto (which target can be set in the header of the command)
+    FILE_DEFINITION =  28;           // List of downloadable files (by name)
+    ROBOT_MODEL_INFORMATION = 29;                // Robot Model Imformation
+    INTERFACE_OPTIONS =  30;         // set options on how the connected controlled robots behaves (e.g. changing available simpleactions)
+    TELEMETRY_MESSAGE_TYPES_NUMBER = 31;  // LAST element
+};
+
+enum LogLevel {
+    NONE = 0;
+    FATAL = 1;
+    ERROR = 2;
+    WARN = 3;
+    INFO = 4;
+    DEBUG = 5;
+    CUSTOM = 20;
+}
+
+
 message Acceleration {
     Vector3 linear = 1;
     Vector3 angular = 2;

@@ -10,7 +10,6 @@
 #include <unistd.h>
 #include <google/protobuf/io/coded_stream.h>
 
-#include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "TelemetryBuffer.hpp"
 #include "SimpleBuffer.hpp"

@@ -2,7 +2,6 @@
 
 #include "UpdateThread/LockableClass.hpp"
 #include "RingBuffer.hpp"
-#include "MessageTypes.hpp"
 
 #include <memory>
 #include <vector>
