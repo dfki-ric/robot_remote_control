@@ -351,7 +351,28 @@ class RobotController: public UpdateThread {
          * @param channels 
          */
         bool requestChannelsDefinition(ChannelsDefinition *channels) {
-            return requestTelemetry(CHANNELS_DEFINITION, channels, 0);
+            bool result = requestTelemetry(CHANNELS_DEFINITION, channels, 0);
+            for (auto& channeldef : channels->channel()) {
+                // save max channel no
+                if (channeldef.channelno() > messageChannels[channeldef.messagetype()]) {
+                    messageChannels[channeldef.messagetype()] = channeldef.channelno();
+                    messageChannelNames[channeldef.messagetype()].resize(channeldef.channelno()+1);
+                }
+                // save name
+                messageChannelNames[channeldef.messagetype()][channeldef.channelno()] = channeldef.name();
+            }
+            return result;
+        }
+
+        ChannelId getMaxChannelNo(const MesssageId& messsageId) {
+            return messageChannels[messsageId];
+        }
+
+        std::string getChannelName(const MesssageId& messsageId, const ChannelId &channel) {
+            if (messageChannelNames[messsageId].size() < channel) {
+                return messageChannelNames[messsageId][channel];
+            }
+            return "";
         }
 
         /**
@@ -604,6 +625,10 @@ class RobotController: public UpdateThread {
         std::atomic<bool> connected;
 
         Statistics statistics;
+
+        std::array<ChannelId, TELEMETRY_MESSAGE_TYPES_NUMBER> messageChannels;
+
+        std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MesssageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;

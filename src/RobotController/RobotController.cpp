@@ -58,6 +58,10 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         //     statistics.names[MAP] = map.GetTypeName();
         // #endif
 
+        for (auto& chan : messageChannels) {
+            chan = 0;
+        }
+
         lostConnectionCallback = [&](const float& time){
             printf("lost connection to robot, no reply for %f seconds\n", time);
         };
