@@ -54,7 +54,6 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<VideoStreams>(VIDEO_STREAMS);
     registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR);
     registerTelemetryType<WrenchState>(WRENCH_STATE);
-    //registerTelemetryType<MapsDefinition>(MAPS_DEFINITION);
     registerTelemetryType<Map>(MAP);
     registerTelemetryType<Poses>(POSES);
     registerTelemetryType<Transforms>(TRANSFORMS);
@@ -129,9 +128,6 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case TELEMETRY_REQUEST: {
             return handleTelemetryRequest(serializedMessage, commandTransport);
         }
-        // case MAP_REQUEST: {
-        //     return handleMapRequest(serializedMessage, commandTransport);
-        // }
         case LOG_LEVEL_SELECT: {
             logLevel = *reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
@@ -270,20 +266,6 @@ ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& se
     commandTransport->send(reply);
     return TELEMETRY_REQUEST;
 }
-
-// ControlMessageType ControlledRobot::handleMapRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
-//     MesssageId* requestedMap = reinterpret_cast<MesssageId*>(const_cast<char*>(serializedMessage.data()));
-//     std::string map;
-//     // get map
-//     {
-//         auto lockedAccess = mapBuffer.lockedAccess();
-//         if (*requestedMap < lockedAccess.get().size()) {
-//             RingBufferAccess::peekData(lockedAccess.get()[*requestedMap], &map);
-//         }
-//     }
-//     commandTransport->send(map);
-//     return MAP_REQUEST;
-// }
 
 ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     Permission perm;

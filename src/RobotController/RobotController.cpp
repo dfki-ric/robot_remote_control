@@ -31,7 +31,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
-        //registerTelemetryType<MapsDefinition>(MAPS_DEFINITION, 1);
         registerTelemetryType<Map>(MAP, 1);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
