@@ -21,7 +21,10 @@ enum ControlMessageType {
     PERMISSION = 11;
     ROBOT_TRAJECTORY_COMMAND = 12;
     FILE_REQUEST = 13;
-    CONTROL_MESSAGE_TYPE_NUMBER = 14;  // LAST element
+    PROTOCOL_VERSION = 14;
+    LIBRARY_VERSION = 15;
+    GIT_VERSION = 16;
+    CONTROL_MESSAGE_TYPE_NUMBER = 17;  // LAST element
 }
 
 enum TelemetryMessageType {

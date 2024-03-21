@@ -8,6 +8,10 @@
 #include "../Tools/Compression.hpp"
 #endif
 
+#include "ProtocolVersion.hpp"
+#include "LibraryVersion.hpp"
+#include "GitVersion.hpp"
+
 namespace robot_remote_control {
 
 
@@ -139,6 +143,20 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case FILE_REQUEST: {
             return handleFileRequest(serializedMessage, commandTransport);
         }
+        case PROTOCOL_VERSION: {
+            commandTransport->send(PROTOCOL_VERSION_CHECKSUM);
+            return PROTOCOL_VERSION;
+        }
+        case LIBRARY_VERSION: {
+            commandTransport->send(LIBRARY_VERSION_STRING);
+            return LIBRARY_VERSION;
+        }
+        case GIT_VERSION: {
+            commandTransport->send(GIT_COMMIT_ID);
+            return GIT_VERSION;
+        }
+
+
         default: {
             return handleCommandRequest(msgtype, serializedMessage, commandTransport);
         }

@@ -94,9 +94,6 @@ int main(int argc, char** argv) {
     ConsoleCommands console;
     std::vector<ConsoleCommands::ParamDef> params;
 
-    // set Heartbeat to one second
-    controller.setHeartBeatDuration(1);
-
     bool run = true;
 
     console.registerCommand("help", "display this help" , [&](const std::vector<std::string> &params){
@@ -308,7 +305,6 @@ int main(int argc, char** argv) {
             } else if (params[0] == "effort") {
                 cmd.add_effort(std::stof(params[2]));
             }
-            
         } catch (const std::invalid_argument &e) {
             std::cout << "second value must be a number, was '" << params[1] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
@@ -512,12 +508,35 @@ int main(int argc, char** argv) {
     params.clear();
 
 
+    console.registerCommand("requestProtocolVersion", "print the protocol sha256sum",  [&](const std::vector<std::string> &params) {
+        std::cout << "remote : " << controller.requestProtocolVersion() << std::endl;
+        std::cout << "local  : " << controller.protocolVersion() << std::endl;
+        return true;
+    });
+
+    console.registerCommand("requestLibraryVersion", "print the library version of the remote",  [&](const std::vector<std::string> &params) {
+        std::cout << "remote : " << controller.requestLibraryVersion() << std::endl;
+        std::cout << "local  : " << controller.libraryVersion() << std::endl;
+        return true;
+    });
+
+    console.registerCommand("requestGitVersion", "print the git version of the remote",  [&](const std::vector<std::string> &params) {
+        std::cout << "remote : " << controller.requestGitVersion() << std::endl;
+        std::cout << "local  : " << controller.gitVersion() << std::endl;
+        return true;
+    });
+
     /**
      * Main loop
      */
-    controller.waitForConnection();
 
+    // set Heartbeat to one second, needed tp detect the connection
+    controller.setHeartBeatDuration(1);
+
+    printf("waiting for connection\n");
+    controller.waitForConnection();
     printf("connected\n");
+
 
     // call request lamda (output off)
     requestControllableJoints(std::vector<std::string>());
@@ -525,6 +544,9 @@ int main(int argc, char** argv) {
 
     requestSimpleActions(std::vector<std::string>());
     printRequestSimpleActions = true;
+
+    controller.checkProtocolVersion();
+    controller.checkLibraryVersion();
 
     while (run)  {
         SUCCESS = console.readline("rrc@" + ip + " $ ", EXIT_ON_FAILURE);

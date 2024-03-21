@@ -105,6 +105,59 @@ class RobotController: public UpdateThread {
         }
 
         /**
+         * @brief Check if the Robot has exactly! the same protocol version. Even if not, this library has a high probability to work as intended
+         * due to protobufs forward/backward compatibility features, as long the mayor version is the same
+         * 
+         * @return true the MessageTypes.hpp and Types/RobotRemoteControl.proto files of the Robos match exacly the local ones
+         * @return false there are diffences, but as long the requestLibraryVersion() has the same value everythin should still work
+         */
+        bool checkProtocolVersion();
+
+        /**
+         * @brief 
+         * 
+         * @return std::string 
+         */
+        std::string requestProtocolVersion();
+
+        std::string protocolVersion();
+
+        /**
+         * @brief 
+         * 
+         * @return true 
+         * @return false 
+         */
+        bool checkLibraryVersion();
+
+        /**
+         * @brief Get the Library Version 
+         * 
+         * @return std::string 
+         */
+        std::string requestLibraryVersion();
+
+        std::string libraryVersion();
+
+        /**
+         * @brief 
+         * 
+         * @return true 
+         * @return false 
+         */
+        bool checkGitVersion();
+
+        /**
+         * @brief Get the Library Version 
+         * 
+         * @return std::string 
+         */
+        std::string requestGitVersion();
+
+        std::string gitVersion();
+
+
+        /**
          * @brief Get the Heart Beat Round Trip Time
          * 
          * @return float time in seconds needed to send/receive the last heartbeat (if used)

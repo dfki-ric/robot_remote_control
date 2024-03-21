@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <stdexcept>
 
+#include "ProtocolVersion.hpp"
+#include "LibraryVersion.hpp"
+#include "GitVersion.hpp"
+
 #ifdef ZLIB_FOUND
 #include "../Tools/Compression.hpp"
 #endif
@@ -69,6 +73,69 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
 
 RobotController::~RobotController() {
     stopUpdateThread();
+}
+
+bool RobotController::checkProtocolVersion() {
+    std::string remote_ver = requestProtocolVersion();
+    if (remote_ver != PROTOCOL_VERSION_CHECKSUM) {
+        printf("protocol version mismatch, consider using the same version on both sides if your calls do not work\n");
+        return false;
+    }
+    return true;
+}
+
+std::string RobotController::requestProtocolVersion() {
+    std::string buf;
+    buf.resize(sizeof(MesssageId));
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    *data = PROTOCOL_VERSION;
+    return sendRequest(buf);
+}
+
+std::string RobotController::protocolVersion() {
+    return PROTOCOL_VERSION_CHECKSUM;
+}
+
+bool RobotController::checkLibraryVersion() {
+    std::string remote_ver = requestLibraryVersion();
+    if (remote_ver != LIBRARY_VERSION_STRING) {
+        printf("library version mismatch (%s : %s), consider using the same version on both sides if your calls do not work\n", remote_ver.c_str(), LIBRARY_VERSION_STRING);
+        return false;
+    }
+    return true;
+}
+
+std::string RobotController::requestLibraryVersion() {
+    std::string buf;
+    buf.resize(sizeof(MesssageId));
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    *data = LIBRARY_VERSION;
+    return sendRequest(buf);
+}
+
+std::string RobotController::libraryVersion() {
+    return LIBRARY_VERSION_STRING;
+}
+
+bool RobotController::checkGitVersion() {
+    std::string remote_ver = requestGitVersion();
+    if (remote_ver != GIT_COMMIT_ID) {
+        printf("git version mismatch, consider using the same version on both sides if your calls do not work\n");
+        return false;
+    }
+    return true;
+}
+
+std::string RobotController::requestGitVersion() {
+    std::string buf;
+    buf.resize(sizeof(MesssageId));
+    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    *data = GIT_VERSION;
+    return sendRequest(buf);
+}
+
+std::string RobotController::gitVersion() {
+    return GIT_COMMIT_ID;
 }
 
 
