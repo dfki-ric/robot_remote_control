@@ -8,22 +8,23 @@ package robot_remote_control;
 // std::string robot_remote_control::ControlMessageType_Name(robot_remote_control::TARGET_POSE_COMMAND)
 enum ControlMessageType {
     NO_CONTROL_DATA = 0;
-    TARGET_POSE_COMMAND = 1;     // target Pose the robot should move to
-    TWIST_COMMAND = 2;           // directly move the robot Base
-    JOINTS_COMMAND = 3;
-    SIMPLE_ACTIONS_COMMAND = 4;
-    COMPLEX_ACTION_COMMAND = 5;
-    GOTO_COMMAND = 6;
-    TELEMETRY_REQUEST = 7;
+    PROTOCOL_VERSION = 1;
+    LIBRARY_VERSION = 2;
+    GIT_VERSION = 3;
+    HEARTBEAT = 4;
+    TELEMETRY_REQUEST = 5;
+    MAP_REQUEST = 6;
+    FILE_REQUEST = 7;
     LOG_LEVEL_SELECT = 8;
-    MAP_REQUEST = 9;
-    HEARTBEAT = 10;
-    PERMISSION = 11;
-    ROBOT_TRAJECTORY_COMMAND = 12;
-    FILE_REQUEST = 13;
-    PROTOCOL_VERSION = 14;
-    LIBRARY_VERSION = 15;
-    GIT_VERSION = 16;
+    PERMISSION = 9;
+
+    TARGET_POSE_COMMAND = 10;     // target Pose the robot should move to
+    TWIST_COMMAND = 11;           // directly move the robot Base
+    JOINTS_COMMAND = 12;
+    SIMPLE_ACTIONS_COMMAND = 13;
+    COMPLEX_ACTION_COMMAND = 14;
+    GOTO_COMMAND = 15;
+    ROBOT_TRAJECTORY_COMMAND = 16;
     CONTROL_MESSAGE_TYPE_NUMBER = 17;  // LAST element
 }
 
