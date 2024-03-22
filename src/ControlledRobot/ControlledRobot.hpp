@@ -68,6 +68,29 @@ class ControlledRobot: public UpdateThread {
             return channelno;
         }
 
+        bool setDefaultChannelName(const TelemetryMessageType& type, const std::string& name) {
+            ChannelDefinition* channel = nullptr;
+            for (int i = 0; i < channels.channel().size(); ++i) {
+                ChannelDefinition* chan = channels.mutable_channel()->Mutable(i);
+                if (chan->channelno() == 0) {
+                    channel = chan;
+                }
+            }
+            // if channel is 0 and not already found, create decription
+            if (channel == 0 && channel == nullptr) {
+                channel = channels.add_channel();
+                channel->set_name(name);
+                channel->set_messagetype(type);
+                channel->set_channelno(0);
+                return true;
+            }
+            // if (channel) {
+            //     channel->set_name(name);
+            //     return true;
+            // }
+            return false;
+        }
+
         // Command Callbacks
 
         /**
