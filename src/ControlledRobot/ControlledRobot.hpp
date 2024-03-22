@@ -521,12 +521,23 @@ class ControlledRobot: public UpdateThread {
             return sendTelemetry(telemetry, SIMPLE_SENSOR, false, channel);
         }
 
+
+        /**
+         * @brief Set the Point Cloud object to be send as telemetry
+         *
+         * @param pointcloud
+         * @return int
+         */
+        int setPointCloud(const robot_remote_control::PointCloud &pointcloud, const ChannelId &channel = 0) {
+            return sendTelemetry(pointcloud, POINTCLOUD, false, channel);
+        }
+
         /**
          * @brief Set the Map object, maps are not sent via telemetry, they have to be requsted 
          *  to be sent via the command channel
          * 
          * @param map 
-         * @param mapId defined the map type defiend in MapMessageType
+         * @warning use channels if you are sending multiple types, only the last rrc type per channel can be requested see addChannel()
          * @return int 
          */
 
@@ -535,29 +546,16 @@ class ControlledRobot: public UpdateThread {
         }
 
         /**
-         * @brief Set the Point Cloud object to be requestes as a map
+         * @brief convinience function to set a rrc type as Map (sent on request)
          * 
-         * @param pointcloud 
+         * @param rrc_type some protobuf type with a big size that should be able to requetes
+         * @warning use channels if you are sending multiple types, only the last rrc type per channel can be requested see addChannel()
+         * @param channel
          * @return int 
          */
-        int setPointCloud(const robot_remote_control::PointCloud &pointcloud, const ChannelId &channel = 0) {
-            return sendTelemetry(pointcloud, POINTCLOUD, false, channel);
-        }
-
-
-        int setPointCloudMap(const robot_remote_control::PointCloud &pointcloud, const ChannelId &channel = 0) {
+        template <class RRC_TYPE> int setMap(const RRC_TYPE &rrc_type, const ChannelId &channel = 0) {
             robot_remote_control::Map map;
-            map.mutable_map()->PackFrom(pointcloud);
-            return setMap(map, channel);
-        }
-
-        /**
-         * @brief Grid map transferredas simplesensor Maps are sent on request, 
-         * 
-         */
-        int setGridMap(const GridMap &gridmap, const ChannelId &channel = 0) {
-            robot_remote_control::Map map;
-            map.mutable_map()->PackFrom(gridmap);
+            map.mutable_map()->PackFrom(rrc_type);
             return setMap(map, channel);
         }
 

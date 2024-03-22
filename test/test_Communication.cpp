@@ -703,9 +703,9 @@ BOOST_AUTO_TEST_CASE(check_request_map) {
 
   robot.startUpdateThread(10);
 
-  robot.setPointCloudMap(cloud, cloudchannel);
-  robot.setGridMap(grid, gridchannel);
-  
+  robot.setMap(cloud, cloudchannel);
+  robot.setMap(grid, gridchannel);
+
   // check request
 
   // request channel
