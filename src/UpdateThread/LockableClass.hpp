@@ -70,9 +70,4 @@ template <class C, typename... ARGS> class LockableClass{
         std::mutex mutex;
 };
 
-/**
- * @brief alias for backward compatibility
- */
-//template <class C> using ThreadProtectedVar = LockableClass<C>;
-
 }  // namespace robot_remote_control
