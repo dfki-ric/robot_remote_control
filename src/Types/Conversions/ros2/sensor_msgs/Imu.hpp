@@ -17,7 +17,7 @@ namespace RosConversion {
         convert(from.acceleration(), &to->linear_acceleration);
     }
 
-    static void convert(const sensor_msgs::Imu &from, robot_remote_control::msg::IMU* to) {
+    static void convert(const sensor_msgs::msg::Imu &from, robot_remote_control::IMU* to) {
         convert(from.header, to->mutable_header());
         convert(from.orientation, to->mutable_orientation());
         convert(from.angular_velocity, to->mutable_gyro());
