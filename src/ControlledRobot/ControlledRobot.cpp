@@ -25,9 +25,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     receiveflags(Transport::NOBLOCK) {
 
     // init buffers for non-cast access in getters
-    protocolVersion = std::make_unique<BasicCommandBuffer<MesssageId>>(1);
-    libraryVersion = std::make_unique<BasicCommandBuffer<MesssageId>>(1);
-    gitVersion = std::make_unique<BasicCommandBuffer<MesssageId>>(1);
+    protocolVersion = std::make_unique<MessageIdCommandBuffer>(1);
+    libraryVersion = std::make_unique<MessageIdCommandBuffer>(1);
+    gitVersion = std::make_unique<MessageIdCommandBuffer>(1);
     poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
     twistCommand = std::make_unique<CommandBuffer<Twist>>(buffersize);
     goToCommand = std::make_unique<CommandBuffer<GoTo>>(buffersize);
@@ -114,7 +114,7 @@ void ControlledRobot::update() {
     }
 }
 
-void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const MesssageId &type) {
+void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const MessageId &type) {
     #ifdef RRC_STATISTICS
         statistics.global.addBytesSent(bytesSent);
         statistics.stat_per_type[type].addBytesSent(bytesSent);
@@ -132,13 +132,13 @@ ControlMessageType ControlledRobot::receiveRequest() {
 }
 
 ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) {
-    MesssageId* type = reinterpret_cast<MesssageId*>(const_cast<char*>(request.data()));
+    MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
     ControlMessageType msgtype = (ControlMessageType)*type;
-    std::string serializedMessage(request.data()+sizeof(MesssageId), request.size()-sizeof(MesssageId));
+    std::string serializedMessage(request.data()+sizeof(MessageId), request.size()-sizeof(MessageId));
 
     switch (msgtype) {
         case PROTOCOL_VERSION: {
-            BasicCommandBuffer<MesssageId> * cmdbuffer = dynamic_cast<BasicCommandBuffer<MesssageId>*>(commandbuffers[msgtype]);
+            MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgtype]);
             if (cmdbuffer) {
                 cmdbuffer->write(PROTOCOL_VERSION);
             }
@@ -146,7 +146,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             return PROTOCOL_VERSION;
         }
         case LIBRARY_VERSION: {
-            BasicCommandBuffer<MesssageId> * cmdbuffer = dynamic_cast<BasicCommandBuffer<MesssageId>*>(commandbuffers[msgtype]);
+            MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgtype]);
             if (cmdbuffer) {
                 cmdbuffer->write(LIBRARY_VERSION);
             }
@@ -154,7 +154,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             return LIBRARY_VERSION;
         }
         case GIT_VERSION: {
-            BasicCommandBuffer<MesssageId> * cmdbuffer = dynamic_cast<BasicCommandBuffer<MesssageId>*>(commandbuffers[msgtype]);
+            MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgtype]);
             if (cmdbuffer) {
                 cmdbuffer->write(GIT_VERSION);
             }
@@ -181,8 +181,8 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
     }
 }
 
-void ControlledRobot::notifyCommandCallbacks(const MesssageId &type) {
-    auto callCb = [&](const std::function<void(const MesssageId &type)> &cb){cb(type);};
+void ControlledRobot::notifyCommandCallbacks(const MessageId &type) {
+    auto callCb = [&](const std::function<void(const MessageId &type)> &cb){cb(type);};
     std::for_each(commandCallbacks.begin(), commandCallbacks.end(), callCb);
 }
 
@@ -233,15 +233,15 @@ robot_remote_control::TimeStamp ControlledRobot::getTime() {
 
 void ControlledRobot::addTelemetryMessageType(std::string *buf, const TelemetryMessageType& type) {
     int currsize = buf->size();
-    buf->resize(currsize + sizeof(MesssageId));
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf->data()+currsize));
+    buf->resize(currsize + sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf->data()+currsize));
     *data = type;
 }
 
 void ControlledRobot::addControlMessageType(std::string *buf, const ControlMessageType& type) {
     int currsize = buf->size();
-    buf->resize(currsize + sizeof(MesssageId));
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf->data()+currsize));
+    buf->resize(currsize + sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf->data()+currsize));
     *data = type;
 }
 
@@ -294,8 +294,8 @@ bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool c
 
 
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
-    MesssageId* requestedtype = reinterpret_cast<MesssageId*>(const_cast<char*>(serializedMessage.data()));
-    ChannelId* requestedchannel = reinterpret_cast<ChannelId*>(const_cast<char*>(serializedMessage.data()+sizeof(MesssageId)));
+    MessageId* requestedtype = reinterpret_cast<MessageId*>(const_cast<char*>(serializedMessage.data()));
+    ChannelId* requestedchannel = reinterpret_cast<ChannelId*>(const_cast<char*>(serializedMessage.data()+sizeof(MessageId)));
     //TODO channel
     TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
     std::string reply = buffers->peekSerialized(type, *requestedchannel);

@@ -96,9 +96,9 @@ class ControlledRobot: public UpdateThread {
         /**
          * @brief add a callback for any command type received
          * 
-         * @param function that takes const MesssageId &type (the tpye id from the message receive) as argument (may also be a lamda)
+         * @param function that takes const MessageId &type (the tpye id from the message receive) as argument (may also be a lamda)
          */
-        void addCommandReceivedCallback(const std::function<void(const MesssageId &type)> &function) {
+        void addCommandReceivedCallback(const std::function<void(const MessageId &type)> &function) {
             commandCallbacks.push_back(function);
         }
 
@@ -108,7 +108,7 @@ class ControlledRobot: public UpdateThread {
          * @param type the Command type id from the MessageTypes header
          * @param function 
          */
-        bool addCommandReceivedCallback(const MesssageId &type, const std::function<void()> &function) {
+        bool addCommandReceivedCallback(const MessageId &type, const std::function<void()> &function) {
             if (commandbuffers[type]) {
                 commandbuffers[type]->addCommandReceivedCallback(function);
                 return true;
@@ -195,7 +195,7 @@ class ControlledRobot: public UpdateThread {
             return robotTrajectoryCommand->read(command, onlyNewest);
         }
 
-        bool getCommandRaw(MesssageId type, std::string *dataSerialized, bool onlyNewest = true) {
+        bool getCommandRaw(MessageId type, std::string *dataSerialized, bool onlyNewest = true) {
             return commandbuffers[type]->read(dataSerialized, onlyNewest);
         }
 
@@ -217,14 +217,14 @@ class ControlledRobot: public UpdateThread {
          * @param type 
          * @return int size sent
          */
-        template<class CLASS> int sendTelemetry(const CLASS &protodata, const MesssageId& type, bool requestOnly, const ChannelId &channel) {
+        template<class CLASS> int sendTelemetry(const CLASS &protodata, const MessageId& type, bool requestOnly, const ChannelId &channel) {
             if (telemetryTransport.get()) {
-                size_t headersize = sizeof(MesssageId)+sizeof(ChannelId);
+                size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
                 std::string buf;
                 buf.resize(headersize);
-                MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+                MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
                 *data = type;
-                ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MesssageId)));
+                ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
                 *chan = channel;
                 protodata.AppendToString(&buf);
                 // store latest data for future requests
@@ -247,14 +247,14 @@ class ControlledRobot: public UpdateThread {
             return 0;
         }
 
-        int sendTelemetryRaw(const MesssageId& type, const std::string& serialized, const ChannelId &channel = 0) {
+        int sendTelemetryRaw(const MessageId& type, const std::string& serialized, const ChannelId &channel = 0) {
             if (telemetryTransport.get()) {
-                size_t headersize = sizeof(MesssageId)+sizeof(ChannelId);
+                size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
                 std::string buf;
                 buf.resize(headersize);
-                MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+                MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
                 *data = type;
-                ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MesssageId)));
+                ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
                 *chan = channel;
                 buf.append(serialized);
                 {
@@ -273,7 +273,7 @@ class ControlledRobot: public UpdateThread {
             return 0;
         }
 
-        void updateStatistics(const uint32_t &bytesSent, const MesssageId &type);
+        void updateStatistics(const uint32_t &bytesSent, const MessageId &type);
 
     public:
         /**
@@ -609,7 +609,7 @@ class ControlledRobot: public UpdateThread {
 
         bool loadFolder(Folder* folder, const std::string &path, bool compressed = false);
 
-        void notifyCommandCallbacks(const MesssageId &type);
+        void notifyCommandCallbacks(const MessageId &type);
 
         virtual ControlMessageType handleTelemetryRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
         virtual ControlMessageType handlePermissionRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
@@ -618,9 +618,9 @@ class ControlledRobot: public UpdateThread {
 
 
         // command buffers
-        std::unique_ptr<BasicCommandBuffer<MesssageId>> protocolVersion;
-        std::unique_ptr<BasicCommandBuffer<MesssageId>> libraryVersion;
-        std::unique_ptr<BasicCommandBuffer<MesssageId>> gitVersion;
+        std::unique_ptr<MessageIdCommandBuffer> protocolVersion;
+        std::unique_ptr<MessageIdCommandBuffer> libraryVersion;
+        std::unique_ptr<MessageIdCommandBuffer> gitVersion;
 
         std::unique_ptr<CommandBuffer<Pose>> poseCommand;
         std::unique_ptr<CommandBuffer<Twist>> twistCommand;
@@ -632,7 +632,7 @@ class ControlledRobot: public UpdateThread {
         std::unique_ptr<CommandBuffer<Permission>> permissionCommand;
         std::unique_ptr<CommandBuffer<Poses>> robotTrajectoryCommand;
 
-        std::vector< std::function<void(const MesssageId &type)> > commandCallbacks;
+        std::vector< std::function<void(const MessageId &type)> > commandCallbacks;
 
         FileDefinition files;
         HeartBeat heartbeatValues;
@@ -655,7 +655,7 @@ class ControlledRobot: public UpdateThread {
         std::string serializeControlMessageType(const ControlMessageType& type);
         // std::string serializeCurrentPose();
 
-        template <class PROTO> void registerTelemetryType(const MesssageId &type) {
+        template <class PROTO> void registerTelemetryType(const MessageId &type) {
             buffers->registerType<PROTO>(type, 1);
             #ifdef RRC_STATISTICS
                 PROTO telemetry_type;

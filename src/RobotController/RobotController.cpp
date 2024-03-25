@@ -86,8 +86,8 @@ bool RobotController::checkProtocolVersion() {
 
 std::string RobotController::requestProtocolVersion() {
     std::string buf;
-    buf.resize(sizeof(MesssageId));
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    buf.resize(sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
     *data = PROTOCOL_VERSION;
     return sendRequest(buf);
 }
@@ -107,8 +107,8 @@ bool RobotController::checkLibraryVersion() {
 
 std::string RobotController::requestLibraryVersion() {
     std::string buf;
-    buf.resize(sizeof(MesssageId));
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    buf.resize(sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
     *data = LIBRARY_VERSION;
     return sendRequest(buf);
 }
@@ -128,8 +128,8 @@ bool RobotController::checkGitVersion() {
 
 std::string RobotController::requestGitVersion() {
     std::string buf;
-    buf.resize(sizeof(MesssageId));
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    buf.resize(sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
     *data = GIT_VERSION;
     return sendRequest(buf);
 }
@@ -205,11 +205,11 @@ void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryComm
 
 void RobotController::setLogLevel(const LogLevelId &level) {
     std::string buf;
-    buf.resize(sizeof(MesssageId) + sizeof(LogLevelId));
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    buf.resize(sizeof(MessageId) + sizeof(LogLevelId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
     *data = LOG_LEVEL_SELECT;
 
-    LogLevelId *levelptr = reinterpret_cast<LogLevelId*>(const_cast<char*>(buf.data()+sizeof(MesssageId)));
+    LogLevelId *levelptr = reinterpret_cast<LogLevelId*>(const_cast<char*>(buf.data()+sizeof(MessageId)));
     *levelptr = level;
     sendRequest(buf);
 }
@@ -227,9 +227,9 @@ void RobotController::update() {
             flags = Transport::NOBLOCK;
         // }
         while (telemetryTransport->receive(&buf, flags)) {
-            MesssageId type = evaluateTelemetry(buf);
+            MessageId type = evaluateTelemetry(buf);
             if (type != NO_TELEMETRY_DATA) {
-                auto callCb = [&](const std::function<void(const MesssageId & type)> &cb){cb(type);};
+                auto callCb = [&](const std::function<void(const MessageId & type)> &cb){cb(type);};
                 std::for_each(telemetryReceivedCallbacks.begin(), telemetryReceivedCallbacks.end(), callCb);
             }
         }
@@ -263,7 +263,7 @@ bool RobotController::requestMap(Map *map, const ChannelId &channel, const float
     return result;
 }
 
-void RobotController::updateStatistics(const uint32_t &bytesSent, const MesssageId &type) {
+void RobotController::updateStatistics(const uint32_t &bytesSent, const MessageId &type) {
     #ifdef RRC_STATISTICS
         statistics.global.addBytesSent(bytesSent);
         statistics.stat_per_type[type].addBytesSent(bytesSent);
@@ -310,10 +310,10 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 }
 
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
-    MesssageId* type = reinterpret_cast<MesssageId*>(const_cast<char*>(reply.data()));
-    ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MesssageId)));
-    size_t headersize = sizeof(MesssageId) + sizeof(ChannelId);
-    // size_t headersize = sizeof(MesssageId);
+    MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(reply.data()));
+    ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MessageId)));
+    size_t headersize = sizeof(MessageId) + sizeof(ChannelId);
+    // size_t headersize = sizeof(MessageId);
     std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
 
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
@@ -351,23 +351,23 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     return NO_TELEMETRY_DATA;
 }
 
-bool RobotController::requestBinary(const MesssageId &type, std::string *result, const MesssageId &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const MessageId &type, std::string *result, const MessageId &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
     std::string request;
-    request.resize(sizeof(MesssageId) + sizeof(ChannelId));
+    request.resize(sizeof(MessageId) + sizeof(ChannelId));
 
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(request.data()));
-    ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MesssageId)));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
+    ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
     *data = type;
     *chan = channel;
 
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
-bool RobotController::requestBinary(const std::string &request, std::string *result, const MesssageId &requestType, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const std::string &request, std::string *result, const MessageId &requestType, const float &overrideMaxLatency) {
     std::string buf;
-    buf.resize(sizeof(MesssageId)+request.size());
+    buf.resize(sizeof(MessageId)+request.size());
 
-    MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
     *data = requestType;
     data++;
 

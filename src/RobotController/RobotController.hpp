@@ -419,13 +419,13 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        ChannelId getMaxChannelNo(const MesssageId& messsageId) {
-            return messageChannels[messsageId];
+        ChannelId getMaxChannelNo(const MessageId& MessageId) {
+            return messageChannels[MessageId];
         }
 
-        std::string getChannelName(const MesssageId& messsageId, const ChannelId &channel) {
-            if (messageChannelNames[messsageId].size() < channel) {
-                return messageChannelNames[messsageId][channel];
+        std::string getChannelName(const MessageId& MessageId, const ChannelId &channel) {
+            if (messageChannelNames[MessageId].size() < channel) {
+                return messageChannelNames[MessageId][channel];
             }
             return "";
         }
@@ -585,7 +585,7 @@ class RobotController: public UpdateThread {
          * @return unsigned int 
          */
 
-        template< class DATATYPE > unsigned int getTelemetry(const MesssageId &type, DATATYPE *data, bool onlyNewest, const ChannelId &channel) {
+        template< class DATATYPE > unsigned int getTelemetry(const MessageId &type, DATATYPE *data, bool onlyNewest, const ChannelId &channel) {
             auto lockedbuffer = buffers->lockedAccess();
             if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
@@ -594,7 +594,7 @@ class RobotController: public UpdateThread {
             return RingBufferAccess::popData(lockedbuffer.get()[type][channel], data, onlyNewest);
         }
 
-        unsigned int getTelemetryRaw(const MesssageId &type, std::string *dataSerialized, bool onlyNewest, const ChannelId &channel) {
+        unsigned int getTelemetryRaw(const MessageId &type, std::string *dataSerialized, bool onlyNewest, const ChannelId &channel) {
             if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
@@ -604,13 +604,13 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > bool requestTelemetry(const MesssageId &type, DATATYPE *result, const ChannelId &channel) {
-            const MesssageId requestType = TELEMETRY_REQUEST;
+        template< class DATATYPE > bool requestTelemetry(const MessageId &type, DATATYPE *result, const ChannelId &channel) {
+            const MessageId requestType = TELEMETRY_REQUEST;
             std::string replybuf;
             std::string request;
-            request.resize(sizeof(MesssageId) + sizeof(ChannelId));
-            MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(request.data()));
-            ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MesssageId)));
+            request.resize(sizeof(MessageId) + sizeof(ChannelId));
+            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
+            ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
             *data = type;
             *chan = channel;
             bool received = requestBinary(request, &replybuf, requestType);
@@ -619,20 +619,20 @@ class RobotController: public UpdateThread {
             return received;
         }
 
-        template< class DATATYPE > void addTelemetryReceivedCallback(const MesssageId &type, const std::function<void(const DATATYPE & data)> &function, const ChannelId &channel = 0) {
+        template< class DATATYPE > void addTelemetryReceivedCallback(const MessageId &type, const std::function<void(const DATATYPE & data)> &function, const ChannelId &channel = 0) {
             RingBufferAccess::addDataReceivedCallback<DATATYPE>(buffers->lockedAccess().get()[type][channel], function);
         }
 
-        void addTelemetryReceivedCallback(const std::function<void(const MesssageId &type)> &function) {
+        void addTelemetryReceivedCallback(const std::function<void(const MessageId &type)> &function) {
             telemetryReceivedCallbacks.push_back(function);
         }
 
 
-        bool requestBinary(const MesssageId &type, std::string *result, const MesssageId &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
-        bool requestBinary(const std::string &request, std::string *result, const MesssageId &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
+        bool requestBinary(const MessageId &type, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
+        bool requestBinary(const std::string &request, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
 
-        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const MesssageId &requestType, const float &overrideMaxLatency = 0) {
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const MessageId &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
             requestdata.SerializeToString(&request);
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
@@ -660,7 +660,7 @@ class RobotController: public UpdateThread {
 
         TelemetryMessageType evaluateTelemetry(const std::string& reply);
 
-        void updateStatistics(const uint32_t &bytesSent, const MesssageId &type);
+        void updateStatistics(const uint32_t &bytesSent, const MessageId &type);
 
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
@@ -676,7 +676,7 @@ class RobotController: public UpdateThread {
 
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::function<void(const float&)> lostConnectionCallback;
-        std::vector< std::function<void(const MesssageId &type)> > telemetryReceivedCallbacks;
+        std::vector< std::function<void(const MessageId &type)> > telemetryReceivedCallbacks;
         std::atomic<bool> connected;
 
         Statistics statistics;
@@ -685,10 +685,10 @@ class RobotController: public UpdateThread {
 
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MesssageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MessageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
-            buf.resize(sizeof(MesssageId));
-            MesssageId* data = reinterpret_cast<MesssageId*>(const_cast<char*>(buf.data()));
+            buf.resize(sizeof(MessageId));
+            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
             *data = type;
             protodata.AppendToString(&buf);
             return sendRequest(buf, 0, flags);
@@ -699,7 +699,7 @@ class RobotController: public UpdateThread {
          public:
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
-            virtual void addToTelemetryBuffer(const MesssageId &type, const std::string &serializedMessage, const ChannelId &channel) = 0;
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) = 0;
             void setOverwrite(bool mode = true) {
                 overwrite = mode;
             }
@@ -712,7 +712,7 @@ class RobotController: public UpdateThread {
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
-            virtual void addToTelemetryBuffer(const MesssageId &type, const std::string &serializedMessage, const ChannelId &channel) {
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) {
                 CLASS data;
                 data.ParseFromString(serializedMessage);
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);
@@ -721,7 +721,7 @@ class RobotController: public UpdateThread {
 
         std::vector< std::shared_ptr<TelemetryAdderBase> > telemetryAdders;
 
-        template <class PROTO> void registerTelemetryType(const MesssageId &type, const size_t &buffersize = 10) {
+        template <class PROTO> void registerTelemetryType(const MessageId &type, const size_t &buffersize = 10) {
             buffers->registerType<PROTO>(type, buffersize);
             if (type >= telemetryAdders.size()) {  // e.g. type == 42, for index 42, size must be 43
                 telemetryAdders.resize(type+1);
