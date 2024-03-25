@@ -25,6 +25,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     receiveflags(Transport::NOBLOCK) {
 
     // init buffers for non-cast access in getters
+    protocolVersion = std::make_unique<BasicCommandBuffer<MesssageId>>(1);
+    libraryVersion = std::make_unique<BasicCommandBuffer<MesssageId>>(1);
+    gitVersion = std::make_unique<BasicCommandBuffer<MesssageId>>(1);
     poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
     twistCommand = std::make_unique<CommandBuffer<Twist>>(buffersize);
     goToCommand = std::make_unique<CommandBuffer<GoTo>>(buffersize);
@@ -35,7 +38,12 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     permissionCommand = std::make_unique<CommandBuffer<Permission>>(1);
     robotTrajectoryCommand = std::make_unique<CommandBuffer<Poses>>(buffersize);
 
+
     // register command buffers
+    registerCommandType(PROTOCOL_VERSION, protocolVersion.get());
+    registerCommandType(LIBRARY_VERSION, libraryVersion.get());
+    registerCommandType(GIT_VERSION, gitVersion.get());
+
     registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
     registerCommandType(TWIST_COMMAND, twistCommand.get());
     registerCommandType(GOTO_COMMAND, goToCommand.get());
@@ -129,6 +137,30 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
     std::string serializedMessage(request.data()+sizeof(MesssageId), request.size()-sizeof(MesssageId));
 
     switch (msgtype) {
+        case PROTOCOL_VERSION: {
+            BasicCommandBuffer<MesssageId> * cmdbuffer = dynamic_cast<BasicCommandBuffer<MesssageId>*>(commandbuffers[msgtype]);
+            if (cmdbuffer) {
+                cmdbuffer->write(PROTOCOL_VERSION);
+            }
+            commandTransport->send(PROTOCOL_VERSION_CHECKSUM);
+            return PROTOCOL_VERSION;
+        }
+        case LIBRARY_VERSION: {
+            BasicCommandBuffer<MesssageId> * cmdbuffer = dynamic_cast<BasicCommandBuffer<MesssageId>*>(commandbuffers[msgtype]);
+            if (cmdbuffer) {
+                cmdbuffer->write(LIBRARY_VERSION);
+            }
+            commandTransport->send(LIBRARY_VERSION_STRING);
+            return LIBRARY_VERSION;
+        }
+        case GIT_VERSION: {
+            BasicCommandBuffer<MesssageId> * cmdbuffer = dynamic_cast<BasicCommandBuffer<MesssageId>*>(commandbuffers[msgtype]);
+            if (cmdbuffer) {
+                cmdbuffer->write(GIT_VERSION);
+            }
+            commandTransport->send(GIT_COMMIT_ID);
+            return GIT_VERSION;
+        }
         case TELEMETRY_REQUEST: {
             return handleTelemetryRequest(serializedMessage, commandTransport);
         }
@@ -143,20 +175,6 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case FILE_REQUEST: {
             return handleFileRequest(serializedMessage, commandTransport);
         }
-        case PROTOCOL_VERSION: {
-            commandTransport->send(PROTOCOL_VERSION_CHECKSUM);
-            return PROTOCOL_VERSION;
-        }
-        case LIBRARY_VERSION: {
-            commandTransport->send(LIBRARY_VERSION_STRING);
-            return LIBRARY_VERSION;
-        }
-        case GIT_VERSION: {
-            commandTransport->send(GIT_COMMIT_ID);
-            return GIT_VERSION;
-        }
-
-
         default: {
             return handleCommandRequest(msgtype, serializedMessage, commandTransport);
         }

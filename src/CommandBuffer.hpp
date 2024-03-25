@@ -41,6 +41,56 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
         if (!protocommand.ParseFromString(serializedMessage)) {
             return false;
         }
+        write(protocommand);
+        return true;
+    }
+
+    int hasNew() {
+        return buffer.lockedAccess()->size();
+    }
+
+    bool read(COMMAND *target, bool onlyNewest = true) {
+        bool oldval = isnew.load();
+        auto lockable = buffer.lockedAccess();
+        if (!lockable->popData(target, onlyNewest)) {
+            auto protocommand = lastcommand.lockedAccess();
+            target->CopyFrom(protocommand.get());
+        }
+        isnew.store(lockable->size());
+        return oldval;
+    }
+
+    virtual bool read(std::string *receivedMessage, bool onlyNewest = true) {
+        auto protocommand = lastcommand.lockedAccess();
+        bool oldval = read(&protocommand.get(), onlyNewest);
+        protocommand->SerializeToString(receivedMessage);
+        return oldval;
+    }
+
+ private:
+    LockableClass<RingBuffer<COMMAND>> buffer;
+    LockableClass<COMMAND> lastcommand;
+    std::atomic<bool> isnew;
+};
+
+template<class COMMAND> struct BasicCommandBuffer: public CommandBufferBase{
+ public:
+    explicit BasicCommandBuffer(const size_t & buffersize):isnew(false), buffer(RingBuffer<COMMAND>(buffersize)) {}
+
+    virtual ~BasicCommandBuffer() {}
+
+    void write(const COMMAND &src) {
+        {
+            auto lockable = buffer.lockedAccess();
+            lockable->pushData(src, true);
+            isnew.store(lockable->size());
+        }
+        notify();
+    }
+
+    virtual bool write(const std::string &serializedMessage) {
+        COMMAND protocommand;
+        memcpy(&protocommand, serializedMessage.data(), sizeof(COMMAND));
         {
             auto lockable = buffer.lockedAccess();
             lockable->pushData(protocommand, true);
@@ -70,7 +120,8 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
         auto protocommand = lastcommand.lockedAccess();
         auto lockable = buffer.lockedAccess();
         lockable->popData(&(protocommand.get()), onlyNewest);
-        protocommand->SerializeToString(receivedMessage);
+        receivedMessage->resize(sizeof(COMMAND));
+        memcpy(const_cast<char*>(receivedMessage->data()), &(protocommand.get()), sizeof(COMMAND));
         isnew.store(lockable->size());
         return oldval;
     }

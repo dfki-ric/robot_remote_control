@@ -409,6 +409,8 @@ class RobotController: public UpdateThread {
                 // save max channel no
                 if (channeldef.channelno() > messageChannels[channeldef.messagetype()]) {
                     messageChannels[channeldef.messagetype()] = channeldef.channelno();
+                }
+                if (channeldef.channelno() >= messageChannelNames[channeldef.messagetype()].size()) {
                     messageChannelNames[channeldef.messagetype()].resize(channeldef.channelno()+1);
                 }
                 // save name

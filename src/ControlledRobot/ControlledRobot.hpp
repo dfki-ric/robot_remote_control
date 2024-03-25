@@ -618,6 +618,10 @@ class ControlledRobot: public UpdateThread {
 
 
         // command buffers
+        std::unique_ptr<BasicCommandBuffer<MesssageId>> protocolVersion;
+        std::unique_ptr<BasicCommandBuffer<MesssageId>> libraryVersion;
+        std::unique_ptr<BasicCommandBuffer<MesssageId>> gitVersion;
+
         std::unique_ptr<CommandBuffer<Pose>> poseCommand;
         std::unique_ptr<CommandBuffer<Twist>> twistCommand;
         std::unique_ptr<CommandBuffer<GoTo>> goToCommand;
