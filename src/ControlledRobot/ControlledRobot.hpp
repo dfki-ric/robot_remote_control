@@ -615,7 +615,7 @@ class ControlledRobot: public UpdateThread {
         virtual ControlMessageType handlePermissionRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
         virtual ControlMessageType handleFileRequest(const std::string& serializedMessage, TransportSharedPtr commandTransport);
         virtual ControlMessageType handleCommandRequest(const ControlMessageType &msgtype, const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport);
-
+        virtual ControlMessageType handleVersionRequest(const MessageId& msgid, TransportSharedPtr commandTransport);
 
         // command buffers
         std::unique_ptr<MessageIdCommandBuffer> protocolVersion;

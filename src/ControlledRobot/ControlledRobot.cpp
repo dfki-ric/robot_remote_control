@@ -137,29 +137,10 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
     std::string serializedMessage(request.data()+sizeof(MessageId), request.size()-sizeof(MessageId));
 
     switch (msgtype) {
-        case PROTOCOL_VERSION: {
-            MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgtype]);
-            if (cmdbuffer) {
-                cmdbuffer->write(PROTOCOL_VERSION);
-            }
-            commandTransport->send(PROTOCOL_VERSION_CHECKSUM);
-            return PROTOCOL_VERSION;
-        }
-        case LIBRARY_VERSION: {
-            MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgtype]);
-            if (cmdbuffer) {
-                cmdbuffer->write(LIBRARY_VERSION);
-            }
-            commandTransport->send(LIBRARY_VERSION_STRING);
-            return LIBRARY_VERSION;
-        }
+        case PROTOCOL_VERSION:
+        case LIBRARY_VERSION:
         case GIT_VERSION: {
-            MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgtype]);
-            if (cmdbuffer) {
-                cmdbuffer->write(GIT_VERSION);
-            }
-            commandTransport->send(GIT_COMMIT_ID);
-            return GIT_VERSION;
+            return handleVersionRequest(msgtype, commandTransport);
         }
         case TELEMETRY_REQUEST: {
             return handleTelemetryRequest(serializedMessage, commandTransport);
@@ -370,6 +351,19 @@ ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageTyp
     }
 }
 
-
+ControlMessageType ControlledRobot::handleVersionRequest(const MessageId& msgid, TransportSharedPtr commandTransport) {
+    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+    std::string msg = "";
+    MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
+    if (cmdbuffer) {
+        cmdbuffer->write(msgid);
+    }
+    switch (msgid) {
+        case PROTOCOL_VERSION: commandTransport->send(PROTOCOL_VERSION_CHECKSUM); break;
+        case LIBRARY_VERSION:  commandTransport->send(LIBRARY_VERSION_STRING); break;
+        case GIT_VERSION:      commandTransport->send(GIT_COMMIT_ID); break;
+    }
+    return ControlMessageType(msgid);
+}
 
 }  // namespace robot_remote_control
