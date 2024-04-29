@@ -45,8 +45,7 @@ namespace RockConversion {
         if (rock_type.colors.size()) {
             // TODO: is this really how this should work?
             //       one channel for each point in the data set?
-            //       also space is reserved only for 1/4 of the expected data??
-            rrc_type->mutable_channels()->Reserve(rock_type.colors.size());
+            rrc_type->mutable_channels()->Reserve(rock_type.colors.size()*4);
             for (auto &color : rock_type.colors) {
                 robot_remote_control::ChannelFloat *channel = rrc_type->add_channels();
                 //robot_remote_control::ChannelFloat *channel = rrc_type->mutable_channels(counter);
