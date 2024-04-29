@@ -8,7 +8,7 @@ namespace robot_remote_control {
 namespace RosConversion {
 
     static void convert(const tf::StampedTransform &from, robot_remote_control::Pose *to) {
-        //convert(from.header, to->mutable_header());
+        convert(from.stamp_, to->mutable_header()->mutable_timestamp());
 
         tf::Vector3 pos = from.getOrigin();
         robot_remote_control::Position *rrc_pos = to->mutable_position();
