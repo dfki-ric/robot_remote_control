@@ -190,7 +190,7 @@ bool RobotController::requestMap(Map *map, const uint16_t &mapId, const float &o
     std::string replybuf;
     bool result = requestBinary(mapId, &replybuf, MAP_REQUEST, overrideMaxLatency);
     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
-    cistream.SetTotalBytesLimit(replybuf.size(), replybuf.size());
+    cistream.SetTotalBytesLimit(replybuf.size());
     map->ParseFromCodedStream(&cistream);
     return result;
 }
