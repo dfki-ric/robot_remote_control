@@ -7,7 +7,7 @@
 
 #include "UpdateThread/LockableClass.hpp"
 #include "RingBuffer.hpp"
-#include "MessageTypes.hpp"
+#include "Types/RobotRemoteControl.pb.h"
 
 
 namespace robot_remote_control {

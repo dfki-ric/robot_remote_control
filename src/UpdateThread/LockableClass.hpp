@@ -27,9 +27,9 @@ namespace robot_remote_control {
  *  int myint2 = thread_int->lockedAccess().get()[5];
  *  int size = thread_int->lockedAccess()->size();
  */
-template <class C> class LockableClass{
+template <class C, typename... ARGS> class LockableClass{
     public:
-        class LockedAccess {            
+        class LockedAccess {
          public:
             LockedAccess(std::mutex *mutex, C *object): accesslock(*mutex), object(object) { }
 
@@ -47,7 +47,7 @@ template <class C> class LockableClass{
             C *object;
         };
 
-        LockableClass() {}
+        LockableClass(ARGS... args): var(&args...) {}
         explicit LockableClass(const C &init):var(init) {}
 
         virtual ~LockableClass() {}

@@ -4,9 +4,29 @@
 #include <string>
 #include <base/samples/Pointcloud.hpp>
 #include "Time.hpp"
+#include <cinttypes>
+
 
 namespace robot_remote_control {
 namespace RockConversion {
+
+    // helper class to pack/unpack rgb to/from float
+    // binary format explained here, too:
+    // https://pointclouds.org/documentation/structpcl_1_1_point_x_y_z_r_g_b.html#details
+    // http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/ChannelFloat32.html
+    struct rgb_converter {
+        uint8_t b, g, r, a;
+        rgb_converter(uint8_t r, uint8_t g, uint8_t b) : b(b), g(g), r(r), a(0.0) {}
+        rgb_converter(float const x) {
+            static_assert(sizeof(rgb_converter)==sizeof x, "type sizes don't match");
+            std::memcpy(this, &x, sizeof x);
+        }
+        float to_float() const {
+            float x;
+            std::memcpy(&x, this, sizeof x);
+            return x;
+        }
+    };
 
     inline static void convert(base::samples::Pointcloud rock_type, PointCloud *rrc_type, const std::string frame = "") {
         int counter = 0;
@@ -23,7 +43,9 @@ namespace RockConversion {
         // std::vector<base::Vector4d> colors;
         counter = 0;
         if (rock_type.colors.size()) {
-            rrc_type->mutable_channels()->Reserve(rock_type.colors.size());
+            // TODO: is this really how this should work?
+            //       one channel for each point in the data set?
+            rrc_type->mutable_channels()->Reserve(rock_type.colors.size()*4);
             for (auto &color : rock_type.colors) {
                 robot_remote_control::ChannelFloat *channel = rrc_type->add_channels();
                 //robot_remote_control::ChannelFloat *channel = rrc_type->mutable_channels(counter);
@@ -57,6 +79,9 @@ namespace RockConversion {
         if (rrc_type.channels_size()) {
             for (auto &channel : rrc_type.channels()) {
                 if (channel.name() == "color_rgba") {
+                    // TODO: this should be adjusted
+                    //       don't transmit color pixels with four float values each
+                    //       also, please don't have one channel per point/pixel
                     rock_type->colors.reserve(channel.values().size()/4);
                     int index = 0;
                     base::Vector4d rock_color;
@@ -66,6 +91,22 @@ namespace RockConversion {
                         if (colorindex == 3) {
                             rock_type->colors.push_back(rock_color);
                         }
+                    }
+                }
+                else if (channel.name() == "rgb") {
+                    // rock pointclouds color values are stored as double in range [0, 1.0]
+                    // scale to convert uint8 to double
+                    const double rgb_scale = 1.0/255.0;
+                    rock_type->colors.reserve(channel.values().size());
+                    for (auto const& color : channel.values()) {
+                        // convert float to rgb tuple
+                        // rescale from uint8 to double
+                        rgb_converter rgb_convert{color};
+                        rock_type->colors.emplace_back(
+                                rgb_convert.r*rgb_scale,
+                                rgb_convert.g*rgb_scale,
+                                rgb_convert.b*rgb_scale,
+                                1.0);
                     }
                 }
             }

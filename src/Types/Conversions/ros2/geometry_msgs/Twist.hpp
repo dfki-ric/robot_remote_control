@@ -30,5 +30,27 @@ namespace RosConversion {
         to->linear.z = from.linear().z();
     }
 
+    inline static void convert(const geometry_msgs::msg::TwistStamped &from, robot_remote_control::Twist *to) {
+        convert(from.header, to->mutable_header());
+
+        to->mutable_angular()->set_x(from.twist.angular.x);
+        to->mutable_angular()->set_y(from.twist.angular.y);
+        to->mutable_angular()->set_z(from.twist.angular.z);
+
+        to->mutable_linear()->set_x(from.twist.linear.x);
+        to->mutable_linear()->set_y(from.twist.linear.y);
+        to->mutable_linear()->set_z(from.twist.linear.z);
+    }
+
+    inline static void convert(const geometry_msgs::msg::Twist &from, robot_remote_control::Twist *to ) {
+        to->mutable_angular()->set_x(from.angular.x);
+        to->mutable_angular()->set_y(from.angular.y);
+        to->mutable_angular()->set_z(from.angular.z);
+
+        to->mutable_linear()->set_x(from.linear.x);
+        to->mutable_linear()->set_y(from.linear.y);
+        to->mutable_linear()->set_z(from.linear.z);
+    }
+
 }  // namespace RosConversion
 }  // namespace robot_remote_control

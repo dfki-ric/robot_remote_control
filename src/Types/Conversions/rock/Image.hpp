@@ -4,6 +4,7 @@
 #include <string>
 #include <robot_remote_control/Types/RobotRemoteControl.pb.h>
 #include <base/samples/Frame.hpp>
+#include <frame_helper/FrameHelper.h>
 #include <boost/bimap.hpp>
 
 
@@ -56,16 +57,27 @@ namespace RockConversion {
     }
 
     inline static void convert(Image const &rrc_type, base::samples::frame::Frame *rock_type) {
-        convert(rrc_type.header().timestamp(), &rock_type->time);
         auto const encoding_mode = encodings.left.find(rrc_type.encoding());
         base::samples::frame::frame_mode_t encoding = encoding_mode != encodings.left.end()
                 ? encoding_mode->second : base::samples::frame::MODE_UNDEFINED;
 
-        rock_type->init(rrc_type.width(), rrc_type.height(), 8, encoding, 0, rrc_type.data().size());
-
-//        rrc_type->set_step(rock_type.getRowSize());
-//        rrc_type->set_is_bigendian(true);
-        rock_type->setImage(rrc_type.data().data(), rrc_type.data().size());
+        if(encoding < base::samples::frame::COMPRESSED_MODES)
+        {
+            rock_type->init(rrc_type.width(), rrc_type.height(), 8, encoding, 0, rrc_type.data().size());
+            rock_type->setImage(rrc_type.data().data(), rrc_type.data().size());
+        }
+        else if(encoding == base::samples::frame::MODE_JPEG)
+        {
+            frame_helper::FrameHelper::loadFrameJPEG(reinterpret_cast<const uint8_t*>(rrc_type.data().data()), rrc_type.data().size(), *rock_type);
+        }
+        else
+        {
+            throw std::runtime_error("Only MODE_JPEG or uncompressed frames are supported at the moment");
+        }
+        convert(rrc_type.header(), &(rock_type->time));
+        rock_type->setAttribute("frame_id", rrc_type.header().frame());
+        rock_type->received_time = base::Time::now();
+        rock_type->frame_status = base::samples::frame::STATUS_VALID;
     }
 
 }  // namespace RockConversion
