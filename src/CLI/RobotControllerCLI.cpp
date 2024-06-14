@@ -12,7 +12,7 @@ using robot_remote_control::TransportZmq;
 #define STRING(A) #A
 
 // rrc_type defined outside of lamda to print latest values if no new ones are received
-#define DEFINE_WATCH_COMMAND(TYPE, FUNCTION, DOC) \
+#define DEFINE_WATCH_COMMAND(TYPE, FUNCTION, CHANNEL, DOC) \
     robot_remote_control::TYPE rrc_type_watch_##FUNCTION; \
     console.registerCommand("watch_" STRING(FUNCTION), DOC, [&](const std::vector<std::string> &params) -> bool { \
             if (controller.FUNCTION(&rrc_type_watch_##FUNCTION)) { \
@@ -26,7 +26,11 @@ using robot_remote_control::TransportZmq;
 #define DEFINE_PRINT_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
     console.registerCommand(#FUNCTION, DOC, [&](const std::vector<std::string> &params) -> bool { \
-        if (controller.FUNCTION(&rrc_type_##FUNCTION, true)) { \
+        uint8_t channel = 0; \
+        if (params.size()) { \
+            channel = std::atoi(params.front().c_str()); \
+        } \
+        if (controller.FUNCTION(&rrc_type_##FUNCTION, true, channel)) { \
             rrc_type_##FUNCTION.PrintDebugString(); \
             return true; \
         } else { \
@@ -34,7 +38,12 @@ using robot_remote_control::TransportZmq;
             return false; \
         } \
     }); \
-    DEFINE_WATCH_COMMAND(TYPE, FUNCTION, "continuously "#DOC", press Enter to stop")
+    { \
+        std::vector<ConsoleCommands::ParamDef> params; \
+        params.push_back(ConsoleCommands::ParamDef("channel", "0", true)); \
+        console.registerParamsForCommand(#FUNCTION, params); \
+    } \
+    DEFINE_WATCH_COMMAND(TYPE, FUNCTION, channel, "continuously "#DOC", press Enter to stop")
 
 #define DEFINE_REQUEST_COMMAND(TYPE, FUNCTION, DOC) \
     robot_remote_control::TYPE rrc_type_##FUNCTION; \
@@ -84,9 +93,6 @@ int main(int argc, char** argv) {
 
     ConsoleCommands console;
     std::vector<ConsoleCommands::ParamDef> params;
-
-    // set Heartbeat to one second
-    controller.setHeartBeatDuration(1);
 
     bool run = true;
 
@@ -138,13 +144,16 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(IMU, getCurrentIMUState, "print current IMU");
     DEFINE_PRINT_COMMAND(Odometry, getOdometry, "print current Odometry");
     DEFINE_PRINT_COMMAND(Transforms, getCurrentTransforms, "print current Transforms");
+    DEFINE_PRINT_COMMAND(SimpleSensor, getSimpleSensor, "print simple sensor content");
+
+
 
 
     DEFINE_REQUEST_COMMAND(ControllableFrames, requestControllableFrames, "print ControllableFrames set by the robot");
     DEFINE_REQUEST_COMMAND(RobotName, requestRobotName, "print Robot name");
     DEFINE_REQUEST_COMMAND(VideoStreams, requestVideoStreams, "print video Stream ulrs");
     DEFINE_REQUEST_COMMAND(RobotState, requestRobotState, "print current Robot state");
-
+    DEFINE_REQUEST_COMMAND(ChannelsDefinition, requestChannelsDefinition, "get channels defined by the robot")
 
     /**
      * @brief specialized getRobotState (no optional onlyNewest flag)
@@ -156,12 +165,12 @@ int main(int argc, char** argv) {
             received = true;
             rrc_type_requestRobotState.PrintDebugString();
         }
-        if (!received){
+        if (!received) {
             printf("no new data received \n");
         }
         return received;
     });
-    DEFINE_WATCH_COMMAND(RobotState, getRobotState, "continuously print current Robot state, press Enter to stop")
+    DEFINE_WATCH_COMMAND(RobotState, getRobotState, 0, "continuously print current Robot state, press Enter to stop")
 
 
     /**
@@ -296,7 +305,6 @@ int main(int argc, char** argv) {
             } else if (params[0] == "effort") {
                 cmd.add_effort(std::stof(params[2]));
             }
-            
         } catch (const std::invalid_argument &e) {
             std::cout << "second value must be a number, was '" << params[1] <<"' " << std::endl;
             std::cout << e.what() << std::endl;
@@ -387,23 +395,22 @@ int main(int argc, char** argv) {
     };
 
     console.registerCommand("requestSimpleActions", "request simple actions and add them to autocomplete", requestSimpleActions);
-    
+
     robot_remote_control::Map map;
     console.registerCommand("requestMap", "get a map", [&](const std::vector<std::string> &params) {
-       int id = std::atoi(params[0].c_str());
-        if (controller.requestMap(&map,id)) {
+        int id = std::atoi(params[0].c_str());
+        if (controller.requestMap(&map, id)) {
             printf("%s\n", map.ShortDebugString().c_str());
-            //map.PrintDebugString();
             return true;
-        } else { 
+        } else {
             printf("no new data received \n");
-            return false; 
-        } 
+            return false;
+        }
     });
     params.push_back(ConsoleCommands::ParamDef("value (int)", "1"));
     console.registerParamsForCommand("requestMap", params);
     params.clear();
-   
+
 
 
     /**
@@ -500,35 +507,36 @@ int main(int argc, char** argv) {
     console.registerParamsForCommand("requestRobotModel", params);
     params.clear();
 
-    /**
-     * Simeplesensors
-     */
-    console.registerCommand("getSimpleSensor", "get simple sensor", [&](const std::vector<std::string> &params){
-        robot_remote_control::SimpleSensor simplesensor;
-        // simplesensores have a buffer of size 1
-        if (controller.getSimpleSensor(std::stoi(params[0]), &simplesensor)) {
-            if (simplesensor.value().size() > 25) {
-                // delete data (so it is not printed)
-                simplesensor.mutable_value()->Clear();
-            }
-            simplesensor.PrintDebugString();
-            return true;
-        } else {
-            printf("no files received\n");
-            return false;
-        }
-    });
-    params.push_back(ConsoleCommands::ParamDef("id (int)", ""));
-    console.registerParamsForCommand("getSimpleSensor", params);
-    params.clear();
 
+    console.registerCommand("requestProtocolVersion", "print the protocol sha256sum",  [&](const std::vector<std::string> &params) {
+        std::cout << "remote : " << controller.requestProtocolVersion() << std::endl;
+        std::cout << "local  : " << controller.protocolVersion() << std::endl;
+        return true;
+    });
+
+    console.registerCommand("requestLibraryVersion", "print the library version of the remote",  [&](const std::vector<std::string> &params) {
+        std::cout << "remote : " << controller.requestLibraryVersion() << std::endl;
+        std::cout << "local  : " << controller.libraryVersion() << std::endl;
+        return true;
+    });
+
+    console.registerCommand("requestGitVersion", "print the git version of the remote",  [&](const std::vector<std::string> &params) {
+        std::cout << "remote : " << controller.requestGitVersion() << std::endl;
+        std::cout << "local  : " << controller.gitVersion() << std::endl;
+        return true;
+    });
 
     /**
      * Main loop
      */
-    controller.waitForConnection();
 
+    // set Heartbeat to one second, needed tp detect the connection
+    controller.setHeartBeatDuration(1);
+
+    printf("waiting for connection\n");
+    controller.waitForConnection();
     printf("connected\n");
+
 
     // call request lamda (output off)
     requestControllableJoints(std::vector<std::string>());
@@ -536,6 +544,9 @@ int main(int argc, char** argv) {
 
     requestSimpleActions(std::vector<std::string>());
     printRequestSimpleActions = true;
+
+    controller.checkProtocolVersion();
+    controller.checkLibraryVersion();
 
     while (run)  {
         SUCCESS = console.readline("rrc@" + ip + " $ ", EXIT_ON_FAILURE);

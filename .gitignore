@@ -1,3 +1,6 @@
 build/
 *.sw?
 *.pb.*
+/src/GitVersion.hpp
+/src/LibraryVersion.hpp
+/src/ProtocolVersion.hpp

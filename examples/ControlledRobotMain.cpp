@@ -91,20 +91,6 @@ int main(int argc, char** argv)
     robot_remote_control::ComplexActions complexActions;
     robot.initComplexActions(complexActions);
 
-    robot_remote_control::SimpleSensors sensors;
-    robot_remote_control::SimpleSensor* sens;
-    sens = sensors.add_sensors();
-    sens->set_name("temperature");
-    sens->set_id(1);
-    sens->mutable_size()->set_x(1);  // only single value
-
-    sens = sensors.add_sensors();
-    sens->set_name("velocity");
-    sens->set_id(2);
-    sens->mutable_size()->set_x(3);  // 3 value vector
-
-    robot.initSimpleSensors(sensors);
-
     // init done, now fake a robot
 
     // robot state
@@ -114,11 +100,13 @@ int main(int argc, char** argv)
     robot_remote_control::Pose currentpose, targetpose;
 
     robot_remote_control::SimpleSensor temperature, velocity;
-    temperature.set_id(1);
     // init value
     temperature.add_value(42);
 
-    velocity.set_id(2);
+    // send velocity in a "channel" (seperate buffers in the RobotController)
+    // channels are numbered uint8_t, default channel is 0, first channel added is 1, etc.)
+    int velocity_channel_no = robot.addChannel(robot_remote_control::SIMPLE_SENSOR, "velocity");
+
     // init value
     velocity.add_value(0);
     velocity.add_value(0);
@@ -158,14 +146,14 @@ int main(int argc, char** argv)
     robot_remote_control::Poses posescommand;
 
 
-
-
     // fill inital robot state
     currentpose.mutable_position();
     currentpose.mutable_orientation()->set_w(1);
     robot.setCurrentPose(currentpose);
 
-
+    // define an extra channel to send two poses (only needed when you need extra receive buffers on the RobotController)
+    // otherwise use the header.frame field instead of headers to differentiate poses
+    uint8_t pose2channelno = robot.addChannel(robot_remote_control::CURRENT_POSE, "2nd pose via channel");
 
     // for requests to work, you need a valid connection:
     // only works when heartbeats are set up
@@ -176,7 +164,7 @@ int main(int argc, char** argv)
 
     robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
         // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads
-        //printf("Pose Command Callback\n");
+        // printf("Pose Command Callback\n");
     });
 
 
@@ -189,11 +177,10 @@ int main(int argc, char** argv)
     permreq.set_requestuid("testuid2");
     std::shared_future<bool> perm2 = robot.requestPermission(permreq);
 
-    //perm1.wait();
-    //printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
+    // perm1.wait();
+    // printf("result of permission request 1: %s\n", perm1.get() ? "true" : "false");
 
     while (true) {
-
         // if (perm2.valid()) {
         //     printf("result of permission request 2: %s\n", perm2.get() ? "true" : "false");
         // }
@@ -262,17 +249,17 @@ int main(int argc, char** argv)
         // fake some joint movement
         robot.setJointState(jointsstate);
 
+        robot.setCurrentTransforms(transforms);
+
         temperature.set_value(0, 42);
         robot.setSimpleSensor(temperature);
-
-        robot.setCurrentTransforms(transforms);
 
         velocity.set_value(0, 0.1);
         velocity.set_value(1, 0.1);
         velocity.set_value(2, 0.1);
-        robot.setSimpleSensor(velocity);
+        robot.setSimpleSensor(velocity, velocity_channel_no);  // 2nd param is the channelno.
 
-        
+
         robot_remote_control::Twist twistState;
         twistState.mutable_linear()->set_x(1);
         twistState.mutable_linear()->set_y(2);

@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 
 
         robot_remote_control::SimpleSensor sens;
-        controller.getSimpleSensor(1, &sens);
+        controller.getSimpleSensor(&sens);
 
         // read only one element (no matter how much available)
         if (controller.getCurrentTransforms(&transforms)) {
