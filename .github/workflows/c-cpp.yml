@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: install_deps
-      run: ./.circleci/prepare_build.sh -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
+      run: ./.github/workflows/prepare_build.sh -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
     - name: build
       run: make -C build/
     - name: test_def
