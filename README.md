@@ -1,7 +1,7 @@
 CI build and test:
 
-![Main](https://github.com/dfki-ric/robot_remote_control/actions/workflows/c-cpp.yml/badge.svg)
-![Devel](https://github.com/dfki-ric/robot_remote_control/actions/workflows/c-cpp.yml/badge.svg?branch=devel)
+Main: ![Main](https://github.com/dfki-ric/robot_remote_control/actions/workflows/c-cpp.yml/badge.svg)
+Devel: ![Devel](https://github.com/dfki-ric/robot_remote_control/actions/workflows/c-cpp.yml/badge.svg?branch=devel)
 
 # Robot Remote Control
 
