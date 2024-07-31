@@ -1,7 +1,7 @@
-CircleCI build and test:
+CI build and test:
 
-Master: [![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/master.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/master)
-Devel: [![CircleCI](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/devel.svg?style=svg)](https://circleci.com/gh/dfki-ric/robot_remote_control/tree/devel)
+![Main](https://github.com/dfki-ric/robot_remote_control/actions/workflows/c-cpp.yml/badge.svg)
+![Devel](https://github.com/dfki-ric/robot_remote_control/actions/workflows/c-cpp.yml/badge.svg?branch=devel)
 
 # Robot Remote Control
 

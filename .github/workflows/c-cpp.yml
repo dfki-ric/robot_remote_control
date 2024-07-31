@@ -1,0 +1,27 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: install_deps
+      run: bash ./.github/workflows/prepare_build.sh -DBUILD_TESTS=ON -DBUILD_EXAMPLES=ON
+    - name: build
+      run: make -C build/
+    - name: test_def
+      run: ./build/test/test_suite
+    - name: test_ipc
+      run: ./build/test/test_suite_ipc
+    - name: test_udt
+      run: ./build/test/test_suite_udt
+    - name: test_gzip
+      run: ./build/test/test_suite_gzip
