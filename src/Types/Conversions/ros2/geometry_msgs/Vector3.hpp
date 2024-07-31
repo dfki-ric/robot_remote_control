@@ -12,7 +12,7 @@ namespace RosConversion {
         to->z = from.z();
     }
 
-    inline static void convert(const geometry_msgs::Vector3 &from, robot_remote_control::msg::Vector3 *to ) {
+    inline static void convert(const geometry_msgs::msg::Vector3 &from, robot_remote_control::Vector3 *to ) {
         to->set_x(from.x);
         to->set_y(from.y);
         to->set_z(from.z);

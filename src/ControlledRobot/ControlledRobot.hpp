@@ -1,6 +1,5 @@
 #pragma once
 
-#include "MessageTypes.hpp"
 #include "Transports/Transport.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"

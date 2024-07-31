@@ -12,13 +12,15 @@ namespace RosConversion {
         to->set_nsecs(from.stamp.nsec);
     }
 
+    static convert(const ros::Time& from, robot_remote_control::TimeStamp *to) {
+        to->set_secs(from.sec);
+        to->set_nsecs(from.nsec);
+    }
 
     static void convert(const std_msgs::Header &from, robot_remote_control::Header *to) {
         to->set_seq(from.seq);
         to->set_frame(from.frame_id);
-        to->mutable_timestamp()->set_secs(from.stamp.sec);
-        to->mutable_timestamp()->set_nsecs(from.stamp.nsec);
-        
+        convert(from.stamp, to->mutable_timestamp());
     }
 
     static void convert(const robot_remote_control::Header &from, std_msgs::Header *to) {
