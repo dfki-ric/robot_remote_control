@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
 #include <mutex>
 #include <atomic>
 #include <experimental/filesystem>
@@ -415,12 +416,18 @@ class RobotController: public UpdateThread {
                 }
                 // save name
                 messageChannelNames[channeldef.messagetype()][channeldef.channelno()] = channeldef.name();
+                messageChannelIdByName[channeldef.messagetype()][channeldef.name()] = channeldef.channelno();
             }
             return result;
         }
 
         ChannelId getMaxChannelNo(const MessageId& MessageId) {
             return messageChannels[MessageId];
+        }
+
+        ChannelId getChannelIdByName(const MessageId& MessageId, const std::string &name) {
+            return messageChannelIdByName[MessageId][name];
+
         }
 
         std::string getChannelName(const MessageId& MessageId, const ChannelId &channel) {
@@ -684,6 +691,7 @@ class RobotController: public UpdateThread {
         std::array<ChannelId, TELEMETRY_MESSAGE_TYPES_NUMBER> messageChannels;
 
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
+        std::array<std::map<std::string, ChannelId>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelIdByName;
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MessageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
