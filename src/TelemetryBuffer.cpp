@@ -1,5 +1,6 @@
 #include "TelemetryBuffer.hpp"
 
+#include "Types/RobotRemoteControl.pb.h"
 
 namespace robot_remote_control {
 
@@ -24,8 +25,8 @@ namespace robot_remote_control {
         return buf;
     }
 
-    bool TelemetryBuffer::pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel) {
-        return convertersToProto[type]->set(data, channel);
+    bool TelemetryBuffer::pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel, const bool &overwrite) {
+        return convertersToProto[type]->set(data, channel, overwrite);
     }
 
 }  // namespace robot_remote_control

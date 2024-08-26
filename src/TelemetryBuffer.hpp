@@ -31,7 +31,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
      */
     std::string peekSerialized(const uint16_t &type, const uint8_t &channel = 0);
 
-    bool pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel = 0);
+    bool pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel = 0, const bool &overwrite = false);
 
     bool hasChannelBuffer(const uint16_t &type, const uint8_t &channel) {
         auto lockedAccessObject = lockedAccess();
@@ -95,7 +95,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
     class StringToProtobufBase {
      public:
         virtual ~StringToProtobufBase() {}
-        virtual bool set(const std::string& buf, const uint8_t &channel = 0) = 0;
+        virtual bool set(const std::string& buf, const uint8_t &channel = 0, const bool &overwrite = false) = 0;
     };
 
     template <class PBTYPE> class StringToProtobuf : public StringToProtobufBase {
@@ -103,12 +103,12 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         explicit StringToProtobuf(const uint16_t& type, TelemetryBuffer *telemetrybuffer) : type(type), telemetrybuffer(telemetrybuffer) {}
         virtual ~StringToProtobuf() {}
 
-        virtual bool set(const std::string& buf, const uint8_t &channel = 0) {
+        virtual bool set(const std::string& buf, const uint8_t &channel = 0, const bool &overwrite = false) {
             PBTYPE data;
             data.ParseFromString(buf);
             // expects the buffer to be locked!
             auto lockObj = telemetrybuffer->lockedAccess();
-            return RingBufferAccess::pushData(lockObj.get()[type][channel], data);
+            return RingBufferAccess::pushData(lockObj.get()[type][channel], data, overwrite);
         }
 
      private:

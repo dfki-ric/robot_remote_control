@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Types/RobotRemoteControl.pb.h"
-
 namespace robot_remote_control {
 
 typedef uint8_t MessageId;  // defines the size of MesssageIds in the protocol (max number of message types)
