@@ -1,3 +1,4 @@
+5.0.1 - Fix virtual_joystick increment setting
 5.0.0 - Channel support
 4.0.0 - added CLI, api change fpr simpleactions
 3.0.0 - consistend use of a header type for metadata in telemetry
