@@ -1,4 +1,5 @@
 #include "../src/MessageTypes.hpp"
+#include "../src/Types/RobotRemoteControl.pb.h"
 
 #include <cstdlib>
 #include <string>

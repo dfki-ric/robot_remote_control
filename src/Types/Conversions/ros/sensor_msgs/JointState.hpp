@@ -24,5 +24,22 @@ namespace RosConversion {
         }
     }
 
+    static void convert(const robot_remote_control::JointState &from, sensor_msgs::JointState* to) {
+        convert(from.header(), &to->header);
+
+        for (int i = 0; i < to->name.size(); ++i) {
+            to->name.push_back(from.name(i));
+            if (from.position().size()) {
+                to->position.push_back(from.position(i));
+            }
+            if (from.velocity().size()) {
+                to->velocity.push_back(from.velocity(i));
+            }
+            if (from.effort().size()) {
+                to->effort.push_back(from.effort(i));
+            }
+        }
+    }
+
 }  // namespace RosConversion
 }  // namespace robot_remote_control

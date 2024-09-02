@@ -352,12 +352,12 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data) {
 
   // test single request
   Pose requestedpose;
-  controller.requestTelemetry(CURRENT_POSE, &requestedpose);
+  controller.requestTelemetry(CURRENT_POSE, &requestedpose, 0);
   COMPARE_PROTOBUF(pose, requestedpose);
 
 
   JointState requestedJointState;
-  controller.requestTelemetry(JOINT_STATE, &requestedJointState);
+  controller.requestTelemetry(JOINT_STATE, &requestedJointState, 0);
   COMPARE_PROTOBUF(jointstate, requestedJointState);
 
 
@@ -454,7 +454,7 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   robot.startUpdateThread(10);
 
   std::vector<std::string> requested_robot_state;
-  std::vector<std::string> gotten_robot_state;
+  std::vector<std::string> received_robot_state;
   std::vector<std::string> second_requested_robot_state;
 
 
@@ -462,34 +462,32 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
   // test basic getRobotState and requestRobotState
   robot.setRobotState("ROBOT_DEMO_RUNNING");
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&received_robot_state)) {
     usleep(10000);
   }
   controller.requestRobotState(&requested_robot_state);
 
-  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
+  BOOST_TEST(requested_robot_state.front() == received_robot_state.front());
 
 
-  bool result = controller.getRobotState(&gotten_robot_state);
+  bool result = controller.getRobotState(&received_robot_state);
 
   // should be empty because state was already recieved
   BOOST_CHECK_EQUAL(result, false);
-  BOOST_TEST(gotten_robot_state.size() == 0);
-
-
+  BOOST_TEST(received_robot_state.size() == 0);
 
   // test multiple requestRobotState calls
   robot.setRobotState("ROBOT_DEMO_FINISHED");
   usleep(100 * 1000);
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&received_robot_state)) {
     usleep(10000);
   }
   controller.requestRobotState(&requested_robot_state);
   controller.requestRobotState(&second_requested_robot_state);
 
-  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_FINISHED");
-  BOOST_TEST(requested_robot_state.front() == gotten_robot_state.front());
+  BOOST_TEST(received_robot_state.front() == "ROBOT_DEMO_FINISHED");
+  BOOST_TEST(requested_robot_state.front() == received_robot_state.front());
   BOOST_TEST(requested_robot_state.front() == second_requested_robot_state.front());
 
 
@@ -502,19 +500,19 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
 
   controller.requestRobotState(&requested_robot_state);
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&received_robot_state)) {
     usleep(10000);
   }
   // request should return most recent state, get should return the oldest not retrieved one
   BOOST_TEST(requested_robot_state.front() == "ROBOT_DEMO_STOPPED");
-  BOOST_TEST(gotten_robot_state.front() == "ROBOT_DEMO_RUNNING_AGAIN");
+  BOOST_TEST(received_robot_state.front() == "ROBOT_DEMO_RUNNING_AGAIN");
 
 
-  while (!controller.getRobotState(&gotten_robot_state)) {
+  while (!controller.getRobotState(&requested_robot_state)) {
     usleep(10000);
   }
   // now they should be equal
-  BOOST_TEST(gotten_robot_state.front() == requested_robot_state.front());
+  BOOST_TEST(requested_robot_state.front() == requested_robot_state.front());
 
 
   robot.stopUpdateThread();
@@ -530,11 +528,11 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
 
   controller.startUpdateThread(10);
 
-  robot.sendTelemetry(protodata, type);
+  robot.sendTelemetry(protodata, type, false, 0);
 
   // wait for telemetry
   PROTOBUFDATA received;
-  while (!controller.getTelemetry(type, &received)) {
+  while (!controller.getTelemetry(type, &received, false, 0)) {
     usleep(10000);
   }
 
@@ -543,7 +541,7 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   PROTOBUFDATA receivedraw;
   protodata.SerializeToString(&binarydata);
   robot.sendTelemetryRaw(type, binarydata);
-  while (!controller.getTelemetry(type, &receivedraw)) {
+  while (!controller.getTelemetry(type, &receivedraw, false, 0)) {
     usleep(10000);
   }
 
@@ -554,7 +552,7 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   return received;
 }
 
-template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, const TelemetryMessageType &type) {
+template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, const TelemetryMessageType &type, const ChannelId channel = 0)  {
   initComms();
 
   RobotController controller(commands, telemetry);
@@ -562,11 +560,11 @@ template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, c
 
   robot.startUpdateThread(10);
 
-  robot.sendTelemetry(protodata, type);
+  robot.sendTelemetry(protodata, type, false, channel);
 
   // check request
   PROTOBUFDATA received;
-  controller.requestTelemetry(type, &received);
+  controller.requestTelemetry(type, &received, channel);
 
   robot.stopUpdateThread();
 
@@ -687,6 +685,57 @@ BOOST_AUTO_TEST_CASE(check_request_controllableframes) {
   recv = testRequest(send, CONTROLLABLE_FRAMES);
   COMPARE_PROTOBUF(send, recv);
 }
+
+BOOST_AUTO_TEST_CASE(check_request_map) {
+
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  GridMap grid;
+  PointCloud cloud;
+
+  Map map1, map2;
+
+  ChannelId cloudchannel = robot.addChannel(MAP, "PointCloudMap");
+  ChannelId gridchannel = robot.addChannel(MAP, "GridMap");
+
+  robot.startUpdateThread(10);
+
+  robot.setMap(cloud, cloudchannel);
+  robot.setMap(grid, gridchannel);
+
+  // check request
+
+  // request channel
+  robot_remote_control::ChannelsDefinition channels;
+  controller.requestChannelsDefinition(&channels);
+
+  BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "PointCloudMap");
+  BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
+  BOOST_CHECK_EQUAL(channels.channel().Get(1).name(), "GridMap");
+  BOOST_CHECK_EQUAL(channels.channel().Get(1).channelno(), 2);
+
+  Map received_grid_map;
+  Map received_cloud_map;
+
+  controller.requestTelemetry(MAP, &received_cloud_map, 1);
+  controller.requestTelemetry(MAP, &received_grid_map, 2);
+
+  robot.stopUpdateThread();
+
+  //unpack map
+  GridMap received_grid;
+  PointCloud received_cloud;
+
+  received_cloud_map.map().UnpackTo(&received_cloud);
+  received_grid_map.map().UnpackTo(&received_grid);
+
+  COMPARE_PROTOBUF(grid, received_grid);
+  COMPARE_PROTOBUF(cloud, received_cloud);
+}
+
 
 BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
   initComms();
@@ -839,52 +888,39 @@ BOOST_AUTO_TEST_CASE(check_simple_sensors) {
   SimpleSensor temp_recv;
 
   // getting an unavaile sensor should return false
-  bool result = controller.getSimpleSensor(1, &temp_recv);
+  bool result = controller.getSimpleSensor(&temp_recv);
   BOOST_TEST(result == false);
 
 
   // send unregistered sensor
   SimpleSensor temp;
-  temp.set_id(1);
   robot.setSimpleSensor(temp);
 
 
-  while (!controller.getSimpleSensor(1, &temp_recv)) {
-    // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
+  while (!controller.getSimpleSensor(&temp_recv)) {
     usleep(10000);
-    // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
   }
   COMPARE_PROTOBUF(temp, temp_recv);
 
 
-  robot_remote_control::SimpleSensors sensors;
-  robot_remote_control::SimpleSensor* sens;
-  sens = sensors.add_sensors();
-  sens->set_name("temperature");
-  sens->set_id(1);
-  sens->mutable_size()->set_x(1);  // only single value
+  // init channels for sensors
+  int c1 = robot.addChannel(robot_remote_control::SIMPLE_SENSOR, "temperature");  // channel 1
+  int c2 = robot.addChannel(robot_remote_control::SIMPLE_SENSOR, "velocity");  // channel 2
 
-  sens = sensors.add_sensors();
-  sens->set_name("velocity");
-  sens->set_id(2);
-  sens->mutable_size()->set_x(3);  // 3 value vector
-
-  robot.initSimpleSensors(sensors);
+  BOOST_CHECK_EQUAL(c1, 1);
+  BOOST_CHECK_EQUAL(c2, 2);
 
   // send unregistered sensor
   SimpleSensor velocity, velocity_recv;
-  velocity.set_id(2);
   velocity.add_value(std::rand());
-  robot.setSimpleSensor(velocity);
+  robot.setSimpleSensor(velocity, 2);
 
-  while (!controller.getSimpleSensor(2, &velocity_recv)) {
+  while (!controller.getSimpleSensor(&velocity_recv, false, 2)) {
     usleep(10000);
   }
   COMPARE_PROTOBUF(velocity, velocity_recv);
 
   controller.stopUpdateThread();
-
-
 }
 
 BOOST_AUTO_TEST_CASE(check_callbacks) {
@@ -900,7 +936,7 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
   robot.startUpdateThread(10);
 
   // add generic callback
-  robot.addCommandReceivedCallback([](const uint16_t &type){
+  robot.addCommandReceivedCallback([](const MessageId &type){
       // not getting the pose here, isnew will fail for other callback
       BOOST_TEST(type == TARGET_POSE_COMMAND); //we are sending a pose below
   });
@@ -1180,14 +1216,89 @@ BOOST_AUTO_TEST_CASE(robot_model) {
 }
 
 
+BOOST_AUTO_TEST_CASE(telemetry_channels) {
+    initComms();
+
+    RobotController controller(commands, telemetry);
+    ControlledRobot robot(command, telemetri);
+
+    robot.startUpdateThread(0);
+
+    uint8_t channelno = robot.addChannel(robot_remote_control::CURRENT_POSE, "ManipulatorPose");
+    // controller.addChannelBuffer<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
+
+    // after creating the channel, it should be requestable
+    robot_remote_control::ChannelsDefinition channels;
+    controller.requestChannelsDefinition(&channels);
+
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).messagetype(), robot_remote_control::CURRENT_POSE);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "ManipulatorPose");
+
+    uint8_t channelno2 = robot.addChannel(robot_remote_control::CURRENT_POSE, "ManipulatorPose2");
+
+    controller.requestChannelsDefinition(&channels);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).channelno(), 1);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).messagetype(), robot_remote_control::CURRENT_POSE);
+    BOOST_CHECK_EQUAL(channels.channel().Get(0).name(), "ManipulatorPose");
+    BOOST_CHECK_EQUAL(channels.channel().Get(1).channelno(), 2);
+    BOOST_CHECK_EQUAL(channels.channel().Get(1).messagetype(), robot_remote_control::CURRENT_POSE);
+    BOOST_CHECK_EQUAL(channels.channel().Get(1).name(), "ManipulatorPose2");
+
+    robot_remote_control::Pose pos1 = TypeGenerator::genPose();
+    robot_remote_control::Pose pos2 = TypeGenerator::genPose();
+    robot_remote_control::Pose pos3 = TypeGenerator::genPose();
+
+    robot_remote_control::Pose receivedPose;
+
+    // send telemetry data
+    robot.setCurrentPose(pos1);
+    robot.setCurrentPose(pos2, channelno);
+    // robot.setCurrentPose(pos3, 42);  // invalid channel
+
+    // wait a little for data transfer
+    // the Telemetry send is non-blocking in opposite to commands
+    usleep(100 * 1000);
+    while (!controller.getCurrentPose(&receivedPose)) {
+      // receive pending data
+      controller.update();
+      usleep(10000);
+    }
+    // channel 0 should be empty now
+    BOOST_CHECK_EQUAL(controller.getCurrentPose(&receivedPose), false);
+
+    // but channel 1 not
+    while (!controller.getCurrentPose(&receivedPose, false, channelno)) {
+      // receive pending data
+      controller.update();
+      usleep(10000);
+    }
+
+    // now tere are two messages in two channles
+    // try to request
+    robot_remote_control::Pose rpos1 = TypeGenerator::genPose();
+    robot_remote_control::Pose rpos2 = TypeGenerator::genPose();
+    robot_remote_control::Pose req_rpos1;
+    robot_remote_control::Pose req_rpos2;
+
+    robot.setCurrentPose(rpos1);
+    robot.setCurrentPose(rpos2, channelno);
+    controller.requestTelemetry(robot_remote_control::CURRENT_POSE, &req_rpos1, 0);
+    controller.requestTelemetry(robot_remote_control::CURRENT_POSE, &req_rpos2, 1);
+
+    COMPARE_PROTOBUF(req_rpos1, rpos1);
+    COMPARE_PROTOBUF(req_rpos2, rpos2);
 
 
-// BOOST_AUTO_TEST_CASE(check_permissions) {
-//   // not using the set/get functions
+    // receiving non-existing channel retruns false
+    // get is not thowing, as a channel buffer can could requeted before data was received
+    BOOST_CHECK_EQUAL(controller.getCurrentPose(&receivedPose, false, 42), false);
+
+    // try to send via non-existing channel thows, as the setup on the robot side must be valid
+    BOOST_CHECK_THROW(robot.setCurrentPose(pos1, 42), std::out_of_range);
 
 
-//   WrenchState send, recv;
-//   send = TypeGenerator::genWrenchState();
-//   recv = testTelemetry(send, WRENCH_STATE);
-//   COMPARE_PROTOBUF(send, recv);
-// }
+
+    // robot.addChannel<robot_remote_control::JointState>(robot_remote_control::CURRENT_POSE, "Invalid type");
+
+}

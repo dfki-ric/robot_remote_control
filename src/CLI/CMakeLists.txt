@@ -21,7 +21,7 @@ if (CURSES_HAVE_NCURSES_H)
              EXPORT robot_remote_control-targets
              RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
-endif(CURSES_FOUND)
+endif(CURSES_HAVE_NCURSES_H)
 
 add_executable(robot_controller RobotControllerCLI.cpp ConsoleCommands.cpp)
 target_link_libraries(robot_controller
