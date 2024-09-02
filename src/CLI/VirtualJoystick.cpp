@@ -245,7 +245,7 @@ class VirtualJoystick
                     increment_+=increment_;
                     break;
                 case '-':
-                    increment_-=increment_;
+                    increment_-=increment_/2.0;
                     break;
                 default:
                     highlightButton("arrowRight", false);

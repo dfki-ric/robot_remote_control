@@ -352,7 +352,6 @@ ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageTyp
 }
 
 ControlMessageType ControlledRobot::handleVersionRequest(const MessageId& msgid, TransportSharedPtr commandTransport) {
-    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
     std::string msg = "";
     MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
     if (cmdbuffer) {
