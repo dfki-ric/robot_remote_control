@@ -5,6 +5,8 @@ add_library(robot_remote_control-robot_controller
 )
 target_link_libraries (robot_remote_control-robot_controller stdc++fs robot_remote_control-types robot_remote_control-update_thread)
 
+add_dependencies(robot_remote_control-robot_controller versionheaders)
+
 if(ZLIB_FOUND)
         target_link_libraries(robot_remote_control-robot_controller robot_remote_control-compression)
         target_compile_definitions(robot_remote_control-robot_controller PUBLIC -DZLIB_FOUND)

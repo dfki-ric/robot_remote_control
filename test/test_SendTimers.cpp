@@ -2,6 +2,7 @@
 
 #include "../src/Tools/SendTimers.hpp"
 #include "../src/MessageTypes.hpp"
+#include "../src/Types/RobotRemoteControl.pb.h"
 
 using namespace robot_remote_control;
 

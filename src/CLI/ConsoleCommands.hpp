@@ -16,13 +16,14 @@ class ConsoleCommands {
     virtual ~ConsoleCommands();
 
     struct DefaultParam {
-        DefaultParam(const std::string& param, const std::string &only_if_before = ""):param(param), only_if_before(only_if_before){};
+        explicit DefaultParam(const std::string& param, const std::string &only_if_before = "", bool autoapply = false):param(param), only_if_before(only_if_before), autoapply(autoapply) {}
         std::string param;
         std::string only_if_before;
+        bool autoapply;
     };
 
     struct ParamDef {
-        ParamDef(const std::string& hint, const std::string& defaultvalue):hint(hint), defaultvalues({DefaultParam(defaultvalue, "")}) {}
+        ParamDef(const std::string& hint, const std::string& defaultvalue, bool autoapply = false):hint(hint), defaultvalues({DefaultParam(defaultvalue, "", autoapply)}) {}
         std::string hint;
         std::vector<DefaultParam> defaultvalues;
     };

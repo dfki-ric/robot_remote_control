@@ -1,5 +1,6 @@
 #include "TelemetryBuffer.hpp"
 
+#include "Types/RobotRemoteControl.pb.h"
 
 namespace robot_remote_control {
 
@@ -8,24 +9,24 @@ namespace robot_remote_control {
         // create vector of shared ptr
         // just pre-set sizes to minimize resize calls in registerType
         lockedAccess()->resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
-
         converters.resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
+        existingBuffers.resize(TELEMETRY_MESSAGE_TYPES_NUMBER);
     }
 
     TelemetryBuffer::~TelemetryBuffer() {
     }
 
 
-    std::string TelemetryBuffer::peekSerialized(const uint16_t &type) {
+    std::string TelemetryBuffer::peekSerialized(const uint16_t &type, const uint8_t &channel) {
         std::string buf("");
         if (type != NO_TELEMETRY_DATA || type < TELEMETRY_MESSAGE_TYPES_NUMBER) {
-            buf = converters[type]->get();
+            buf = converters[type]->get(channel);
         }
         return buf;
     }
 
-    bool TelemetryBuffer::pushSerialized(const uint16_t &type, const std::string& data) {
-        return convertersToProto[type]->set(data);
+    bool TelemetryBuffer::pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel, const bool &overwrite) {
+        return convertersToProto[type]->set(data, channel, overwrite);
     }
 
 }  // namespace robot_remote_control

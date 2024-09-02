@@ -87,6 +87,16 @@ When time synchronization of the command is important, a "ComplexAction" can be 
 
 When the robot should be usable for generic user interfaces (that use the RobotController library), the initControllableFrames() function should be used to report the availabe commands. 
 
+## Channels
+
+In some scenarios, multiple data has to use the same set function of the ControlledRobot class. In this case, you can set the frame name in the header to differenciate the data, but the messages are sharing the same receive buffer in the RobotController class. If the data fraquency on the robot side differs a lot, you might loose the data with the lower frequency, when it is overwritten by high freqency data in the receive buffer before it was read.
+
+For this scenario there is a optional "channel" paramater in each set function. In order to use it you need to call `addChannel(const TelemetryMessageType& type, const std::string name = "")` on the ControlledRobot first in order to create the sendbuffer, it returns the channel number to use. The name parameter can be used to identify the channel purpose/origin of data.
+
+The RobtoController can use `requestChannelsDefinition(ChannelsDefinition *channels)` to receive all channels used by the robot. Receive buffers for the channels are automatically created on first receive of the channel message, so even when `requestChannelsDefinition()` is not called, no data is lost.
+
+As an alternative to channels, you can also add a 2nd instance of ControlledRobot, which might beneficial if you mix high frequency small data with low frequency big data of different types, because the high frequency data is interrupted while the big message is transferred (this scenario should only apply when rrc is used as internal interface instead of remote controlling a robot).
+
 
 ## Defining Actions
 

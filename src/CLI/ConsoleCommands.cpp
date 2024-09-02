@@ -202,10 +202,14 @@ bool ConsoleCommands::runCommand(std::vector<std::string> &line) {
             while (params.size() < iter->second.params.size()) {
                 std::string question = iter->second.params[params.size()].hint + "[" + iter->second.params[params.size()].defaultvalues.front().param +"]:";
                 std::string param;
-                std::cout << "missing paramater: " << question;
-                std::getline(std::cin, param);
-                if (param == "") {
+                if (iter->second.params[params.size()].defaultvalues.front().autoapply) {
                     param = iter->second.params[params.size()].defaultvalues.front().param;
+                } else {
+                    std::cout << "missing paramater: " << question;
+                    std::getline(std::cin, param);
+                    if (param == "") {
+                        param = iter->second.params[params.size()].defaultvalues.front().param;
+                    }
                 }
                 params.push_back(param);
             }
