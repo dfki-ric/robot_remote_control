@@ -4,6 +4,75 @@ import "google/protobuf/any.proto";
 
 package robot_remote_control;
 
+// this enum definition is not used within other types here, it is defiend here to be able to print the name using
+// std::string robot_remote_control::ControlMessageType_Name(robot_remote_control::TARGET_POSE_COMMAND)
+enum ControlMessageType {
+    NO_CONTROL_DATA = 0;
+    PROTOCOL_VERSION = 1;
+    LIBRARY_VERSION = 2;
+    GIT_VERSION = 3;
+    HEARTBEAT = 4;
+    TELEMETRY_REQUEST = 5;
+    MAP_REQUEST = 6;
+    FILE_REQUEST = 7;
+    LOG_LEVEL_SELECT = 8;
+    PERMISSION = 9;
+
+    TARGET_POSE_COMMAND = 10;     // target Pose the robot should move to
+    TWIST_COMMAND = 11;           // directly move the robot Base
+    JOINTS_COMMAND = 12;
+    SIMPLE_ACTIONS_COMMAND = 13;
+    COMPLEX_ACTION_COMMAND = 14;
+    GOTO_COMMAND = 15;
+    ROBOT_TRAJECTORY_COMMAND = 16;
+    CONTROL_MESSAGE_TYPE_NUMBER = 17;  // LAST element
+}
+
+enum TelemetryMessageType {
+    NO_TELEMETRY_DATA = 0;
+    CURRENT_POSE = 1;               // the current Pose of the robot base
+    JOINT_STATE = 2;                // current Joint values
+    CONTROLLABLE_JOINTS = 3;        // info about the controllable joints of the robot
+    SIMPLE_ACTIONS = 4;             // info about the simple actions of the robot
+    COMPLEX_ACTIONS = 5;            // info about the complex actions of the robot
+    ROBOT_NAME = 6;                 // the name of the robot
+    ROBOT_STATE = 7;               // robot state description (string)
+    LOG_MESSAGE = 8;                // log messages
+    VIDEO_STREAMS = 9;              // definition of video streams
+    SIMPLE_SENSOR = 10;        // actual simple sensor values
+    WRENCH_STATE = 11;               // current Wrench values
+    MAP = 12;
+    POSES = 13;                      // number of poses
+    TRANSFORMS = 14;                 // number of transforms
+    PERMISSION_REQUEST = 15;         // a request for a permission
+    POINTCLOUD = 16;                 // Pointcloud as telemetry
+    IMU_VALUES = 17;                 // raw IMU
+    CONTACT_POINTS = 18;             // contact points
+    CURRENT_TWIST = 19;              // the current movement speeds of the robot
+    CURRENT_ACCELERATION = 20;       // the current movement accelerations of the robot
+    CAMERA_INFORMATION = 21;         // information on cameras (identified by frame in header)
+    IMAGE =    22;                   // raw images, in case video streasm are not an option (identified by frame in header)
+    IMAGE_LAYERS = 23;               // Collection of images with a single timestamp (e.g. stereo pairs)
+    ODOMETRY =        24;            // Odometry message (similar to ROS nav_msgs/Odometry)
+    CONTROLLABLE_FRAMES = 25;        // List of frames that can be used to send twist, pose or goto (which target can be set in the header of the command)
+    FILE_DEFINITION =  26;           // List of downloadable files (by name)
+    ROBOT_MODEL_INFORMATION = 27;                // Robot Model Imformation
+    INTERFACE_OPTIONS =  28;         // set options on how the connected controlled robots behaves (e.g. changing available simpleactions)
+    CHANNELS_DEFINITION = 29;        // definition of sub-channesl added be the ControlledRobot
+    TELEMETRY_MESSAGE_TYPES_NUMBER = 30;  // LAST element
+};
+
+enum LogLevel {
+    NONE = 0;
+    FATAL = 1;
+    ERROR = 2;
+    WARN = 3;
+    INFO = 4;
+    DEBUG = 5;
+    CUSTOM = 20;
+}
+
+
 message Acceleration {
     Vector3 linear = 1;
     Vector3 angular = 2;
@@ -31,6 +100,16 @@ message CameraInfo {
 
 message CameraInformation {
     repeated CameraInfo camerainfo = 1;
+}
+
+message ChannelDefinition {
+    string name = 1;
+    uint32 messagetype = 2;
+    uint32 channelno = 3;
+}
+
+message ChannelsDefinition {
+    repeated ChannelDefinition channel = 1;
 }
 
 message ChannelFloat {
@@ -192,19 +271,7 @@ message LogMessage {
 }
 
 message Map {
-    google.protobuf.Any map = 3;
-}
-
-enum MapMessageType {  
-    NO_MAP_DATA = 0;
-    POINTCLOUD_MAP = 1; // the pointcloud proto type
-    GRID_MAP = 2;  // transmitted as SimpleSensor
-    MAP_MESSAGE_TYPES_NUMBER = 3; // LAST element
-}
-
-message MapsDefinition {
-    repeated string name = 1;
-    repeated uint32 id = 2;
+    google.protobuf.Any map = 1;
 }
 
 message NamedValue {
@@ -337,7 +404,6 @@ enum SimpleActionType {
 message SimpleSensor{
     Header header = 1;
     string name = 2;
-    uint32 id = 3;
     //size in x and y in order to send e.g. gridmaps, indexing: val = value[x+y*sizex]
     //if this is a single value, you omit this completely
     Vector2 size = 4; 
@@ -350,13 +416,9 @@ message SimpleSensor{
     Orientation local_orientation = 9; //local orientation of the data
 }
 
-message SimpleSensors{
-    repeated SimpleSensor sensors = 1;
-}
-
 message TimeStamp {
-    int32 secs = 1;
-    int32 nsecs = 2;
+    uint32 secs = 1;
+    uint32 nsecs = 2;
 }
 
 message Transform {

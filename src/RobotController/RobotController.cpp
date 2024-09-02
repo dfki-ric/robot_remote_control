@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <stdexcept>
 
+#include "ProtocolVersion.hpp"
+#include "LibraryVersion.hpp"
+#include "GitVersion.hpp"
+
 #ifdef ZLIB_FOUND
 #include "../Tools/Compression.hpp"
 #endif
@@ -19,7 +23,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     heartBeatRoundTripTime(0),
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
-    simplesensorbuffer(std::make_shared< SimpleBuffer<SimpleSensor> >()),
     connected(false) {
         registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
         registerTelemetryType<JointState>(JOINT_STATE, buffersize);
@@ -30,10 +33,8 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
         registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
         registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<SimpleSensors>(SIMPLE_SENSOR_DEFINITION, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR_VALUE, buffersize);  // this is a configuration, so no bigger buffer needed
+        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
         registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
-        registerTelemetryType<MapsDefinition>(MAPS_DEFINITION, 1);
         registerTelemetryType<Map>(MAP, 1);
         registerTelemetryType<Poses>(POSES, buffersize);
         registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
@@ -51,16 +52,19 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
         registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
         registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
+        registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
 
-        #ifdef RRC_STATISTICS
-            // add names to buffer, this types have aspecial treatment, the should not be registered
-            SimpleSensor simpleSensor;
-            statistics.names[SIMPLE_SENSOR_VALUE] = simpleSensor.GetTypeName();
-            MapsDefinition mapsDefinition;
-            statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
-            Map map;
-            statistics.names[MAP] = map.GetTypeName();
-        #endif
+        // #ifdef RRC_STATISTICS
+        //     // add names to buffer, this types have aspecial treatment, the should not be registered
+        //     MapsDefinition mapsDefinition;
+        //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
+        //     Map map;
+        //     statistics.names[MAP] = map.GetTypeName();
+        // #endif
+
+        for (auto& chan : messageChannels) {
+            chan = 0;
+        }
 
         lostConnectionCallback = [&](const float& time){
             printf("lost connection to robot, no reply for %f seconds\n", time);
@@ -71,9 +75,72 @@ RobotController::~RobotController() {
     stopUpdateThread();
 }
 
+bool RobotController::checkProtocolVersion() {
+    std::string remote_ver = requestProtocolVersion();
+    if (remote_ver != PROTOCOL_VERSION_CHECKSUM) {
+        printf("protocol version mismatch, consider using the same version on both sides if your calls do not work\n");
+        return false;
+    }
+    return true;
+}
+
+std::string RobotController::requestProtocolVersion() {
+    std::string buf;
+    buf.resize(sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
+    *data = PROTOCOL_VERSION;
+    return sendRequest(buf);
+}
+
+std::string RobotController::protocolVersion() {
+    return PROTOCOL_VERSION_CHECKSUM;
+}
+
+bool RobotController::checkLibraryVersion() {
+    std::string remote_ver = requestLibraryVersion();
+    if (remote_ver != LIBRARY_VERSION_STRING) {
+        printf("library version mismatch (%s : %s), consider using the same version on both sides if your calls do not work\n", remote_ver.c_str(), LIBRARY_VERSION_STRING);
+        return false;
+    }
+    return true;
+}
+
+std::string RobotController::requestLibraryVersion() {
+    std::string buf;
+    buf.resize(sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
+    *data = LIBRARY_VERSION;
+    return sendRequest(buf);
+}
+
+std::string RobotController::libraryVersion() {
+    return LIBRARY_VERSION_STRING;
+}
+
+bool RobotController::checkGitVersion() {
+    std::string remote_ver = requestGitVersion();
+    if (remote_ver != GIT_COMMIT_ID) {
+        printf("git version mismatch, consider using the same version on both sides if your calls do not work\n");
+        return false;
+    }
+    return true;
+}
+
+std::string RobotController::requestGitVersion() {
+    std::string buf;
+    buf.resize(sizeof(MessageId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
+    *data = GIT_VERSION;
+    return sendRequest(buf);
+}
+
+std::string RobotController::gitVersion() {
+    return GIT_COMMIT_ID;
+}
 
 
-bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite) {
+
+bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite, const ChannelId &channel) {
     std::shared_ptr<TelemetryAdderBase> adder =  telemetryAdders[type];
     if (adder.get()) {
         adder->setOverwrite(overwrite);
@@ -82,7 +149,7 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
     return false;
 }
 
-void RobotController::setTelemetryBufferOverwrite(bool overwrite) {
+void RobotController::setTelemetryBufferOverwrite(bool overwrite, const ChannelId &channel) {
     for (auto &adder : telemetryAdders) {
         if (adder.get()) {
             adder->setOverwrite(overwrite);
@@ -90,9 +157,9 @@ void RobotController::setTelemetryBufferOverwrite(bool overwrite) {
     }
 }
 
-bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, uint16_t newsize) {
+bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, size_t newsize, const ChannelId &channel) {
     auto lockedTelemetryBuffers = buffers->lockedAccess();
-    std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type];
+    std::shared_ptr <RingBufferBase> buffer = lockedTelemetryBuffers.get()[type][channel];
     if (buffer.get()) {
         buffer->resize(newsize);
         return true;
@@ -100,12 +167,12 @@ bool RobotController::setSingleTelemetryBufferSize(TelemetryMessageType type, ui
     return false;
 }
 
-uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type) {
-    return buffers->lockedAccess().get()[type]->size();
+uint32_t RobotController::getTelemetryBufferDataSize(const TelemetryMessageType &type, const ChannelId &channel) {
+    return buffers->lockedAccess().get()[type][channel]->size();
 }
 
-size_t RobotController::getDroppedTelemetry(const TelemetryMessageType &type) {
-    return buffers->lockedAccess().get()[type]->dropped();
+size_t RobotController::getDroppedTelemetry(const TelemetryMessageType &type, const ChannelId &channel) {
+    return buffers->lockedAccess().get()[type][channel]->dropped();
 }
 
 void RobotController::setTargetPose(const Pose & pose) {
@@ -136,13 +203,13 @@ void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryComm
     sendProtobufData(robotTrajectoryCommand, ROBOT_TRAJECTORY_COMMAND);
 }
 
-void RobotController::setLogLevel(const uint16_t &level) {
+void RobotController::setLogLevel(const LogLevelId &level) {
     std::string buf;
-    buf.resize(sizeof(uint16_t) + sizeof(uint16_t));
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+    buf.resize(sizeof(MessageId) + sizeof(LogLevelId));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
     *data = LOG_LEVEL_SELECT;
 
-    uint16_t *levelptr = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()+sizeof(uint16_t)));
+    LogLevelId *levelptr = reinterpret_cast<LogLevelId*>(const_cast<char*>(buf.data()+sizeof(MessageId)));
     *levelptr = level;
     sendRequest(buf);
 }
@@ -160,9 +227,9 @@ void RobotController::update() {
             flags = Transport::NOBLOCK;
         // }
         while (telemetryTransport->receive(&buf, flags)) {
-            uint16_t type = evaluateTelemetry(buf);
+            MessageId type = evaluateTelemetry(buf);
             if (type != NO_TELEMETRY_DATA) {
-                auto callCb = [&](const std::function<void(const uint16_t & type)> &cb){cb(type);};
+                auto callCb = [&](const std::function<void(const MessageId & type)> &cb){cb(type);};
                 std::for_each(telemetryReceivedCallbacks.begin(), telemetryReceivedCallbacks.end(), callCb);
             }
         }
@@ -186,16 +253,17 @@ void RobotController::update() {
     }
 }
 
-bool RobotController::requestMap(Map *map, const uint16_t &mapId, const float &overrideMaxLatency){
+bool RobotController::requestMap(Map *map, const ChannelId &channel, const float &overrideMaxLatency){
     std::string replybuf;
-    bool result = requestBinary(mapId, &replybuf, MAP_REQUEST, overrideMaxLatency);
+    bool result = requestBinary(MAP, &replybuf, TELEMETRY_REQUEST, channel, overrideMaxLatency);
+
     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
     cistream.SetTotalBytesLimit(replybuf.size());
     map->ParseFromCodedStream(&cistream);
     return result;
 }
 
-void RobotController::updateStatistics(const uint32_t &bytesSent, const uint16_t &type) {
+void RobotController::updateStatistics(const uint32_t &bytesSent, const MessageId &type) {
     #ifdef RRC_STATISTICS
         statistics.global.addBytesSent(bytesSent);
         statistics.stat_per_type[type].addBytesSent(bytesSent);
@@ -242,23 +310,18 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 }
 
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
-    uint16_t* type = reinterpret_cast<uint16_t*>(const_cast<char*>(reply.data()));
-
-    std::string serializedMessage(reply.data()+sizeof(uint16_t), reply.size()-sizeof(uint16_t));
+    MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(reply.data()));
+    ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MessageId)));
+    size_t headersize = sizeof(MessageId) + sizeof(ChannelId);
+    // size_t headersize = sizeof(MessageId);
+    std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
 
     TelemetryMessageType msgtype = (TelemetryMessageType)*type;
 
     updateStatistics(serializedMessage.size(), *type);
 
-
-
     // handle special types
-
     switch (msgtype) {
-        // multi values in single stream
-        case SIMPLE_SENSOR_VALUE:       addToSimpleSensorBuffer(serializedMessage);
-                                        return msgtype;
-
         case TELEMETRY_MESSAGE_TYPES_NUMBER:
         case NO_TELEMETRY_DATA:
         {
@@ -266,10 +329,16 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         }
         default:
         {
+            if (*channel != 0) {
+                if (!buffers->hasChannelBuffer(msgtype,*channel)) {
+                    //TODO: let user pre-define buffers for channels and also defiene buffersize after creation
+                    buffers->addChannelBuffer(msgtype,*channel, 10);
+                }
+            }
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {
-                adder->addToTelemetryBuffer(msgtype, serializedMessage);
+                adder->addToTelemetryBuffer(msgtype, serializedMessage, *channel);
                 return msgtype;
             } else {
                 throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
@@ -282,35 +351,23 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     return NO_TELEMETRY_DATA;
 }
 
-void RobotController::addToSimpleSensorBuffer(const std::string &serializedMessage) {
-    SimpleSensor data;
-    data.ParseFromString(serializedMessage);
-    // check if buffer number is big enough
-    // size must be id+1 (id 0 needs size 1)
-    simplesensorbuffer->initBufferID(data.id());
-    // if (simplesensorbuffer->size() <= data.id()){
-    //     simplesensorbuffer->resize(data.id());
-    // }
-
-    RingBufferAccess::pushData(simplesensorbuffer->lockedAccess().get()[data.id()], data, true);
-    // also push the data to the "traditional" buffer
-    RingBufferAccess::pushData(buffers->lockedAccess().get()[SIMPLE_SENSOR_VALUE], data, true);
-}
-
-
-bool RobotController::requestBinary(const uint16_t &type, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const MessageId &type, std::string *result, const MessageId &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
     std::string request;
-    request.resize(sizeof(uint16_t));
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(request.data()));
+    request.resize(sizeof(MessageId) + sizeof(ChannelId));
+
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
+    ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
     *data = type;
+    *chan = channel;
+
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
-bool RobotController::requestBinary(const std::string &request, std::string *result, const uint16_t &requestType, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const std::string &request, std::string *result, const MessageId &requestType, const float &overrideMaxLatency) {
     std::string buf;
-    buf.resize(sizeof(uint16_t)+request.size());
+    buf.resize(sizeof(MessageId)+request.size());
 
-    uint16_t* data = reinterpret_cast<uint16_t*>(const_cast<char*>(buf.data()));
+    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
     *data = requestType;
     data++;
 
@@ -377,7 +434,7 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
 
 std::pair<std::string, std::string> RobotController::requestRobotModel(const std::string &targetfolder, const float &overrideMaxLatency) {
     RobotModelInformation model;
-    if (requestTelemetry(ROBOT_MODEL_INFORMATION, &model)) {
+    if (requestTelemetry(ROBOT_MODEL_INFORMATION, &model, 0)) {
         if (requestFile(model.filedef().file(0).identifier(), true, targetfolder, overrideMaxLatency)) {
             return {model.filedef().file(0).path(), model.modelfilename()};
         }

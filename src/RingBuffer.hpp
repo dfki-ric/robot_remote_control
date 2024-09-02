@@ -21,7 +21,7 @@ class RingBufferBase{
         virtual size_t capacity() = 0;
         virtual size_t dropped() = 0;
         virtual void resize(const size_t &newsize) = 0;
-        virtual void clear() = 0;
+        virtual void clear(bool complete = false) = 0;
         virtual bool pop(bool onlyNewest = false) = 0;
 };
 
@@ -52,10 +52,14 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
             return droppedMessages;
         }
 
-        void clear() {
+        void clear(bool complete = false) {
             contentsize = 0;
             in = 0;
             out = 0;
+            if (complete) {
+                callbacks.clear();
+                droppedMessages = 0;
+            }
         }
 
         /**
