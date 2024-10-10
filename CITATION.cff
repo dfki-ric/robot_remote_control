@@ -12,12 +12,14 @@ title: "Robot Remote Control"
 #doi: 10.5281/zenodo.1234
 #date-released: 2017-12-18
 url: "https://www.hou.usra.edu/meetings/isairas2020fullpapers/pdf/5063.pdf"
+repository-code: https://github.com/dfki-ric/robot_remote_control
   
 preferred-citation:
   type: conference-paper
   title: Lightweight and Framework-Independent Communication Library to Support Cross-Plattform Robotic Applications and High-Latency Connections
-  booktitile: International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference
+  journal: International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference
   year: 2020
+  repository-code: https://github.com/dfki-ric/robot_remote_control
   authors:
   - family-names: "Danter"
     given-names: "Leon"
