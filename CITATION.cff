@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Planthaber"
+  given-names: "Steffen"
+  orcid: "https://orcid.org/0000-0002-9432-465X"
+- family-names: "Danter"
+  given-names: "Leon"
+  #orcid: "https://orcid.org/0000-0000-0000-0000"
+title: "Robot Remote Control"
+#version: 2.0.4
+#doi: 10.5281/zenodo.1234
+#date-released: 2017-12-18
+url: "https://www.hou.usra.edu/meetings/isairas2020fullpapers/pdf/5063.pdf"
+  
+preferred-citation:
+  type: inproceedings
+  title: Lightweight and Framework-Independent Communication Library to Support Cross-Plattform Robotic Applications and High-Latency Connections
+  booktitile: International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference
+  year: 2020
+  authors:
+  - family-names: "Danter"
+    given-names: "Leon"
+  - family-names: "Planthaber"
+    given-names: "Steffen"
+    orcid: "https://orcid.org/0000-0002-9432-465X"
+  - family-names: "Dettmann"
+    given-names: "Alexander"
+  - family-names: "Brinkmann"
+    given-names: "Wiebke"
+  - family-names: "Kirchner"
+    given-names: "Frank"
