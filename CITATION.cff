@@ -17,7 +17,7 @@ repository-code: https://github.com/dfki-ric/robot_remote_control
 preferred-citation:
   type: conference-paper
   title: Lightweight and Framework-Independent Communication Library to Support Cross-Plattform Robotic Applications and High-Latency Connections
-  journal: International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference
+  volume-title: International Symposium on Systems, Artificial Intelligence, Robotics, and Automation in Space (i-SAIRAS), 15th, October 19-23, Online-Conference
   year: 2020
   repository-code: https://github.com/dfki-ric/robot_remote_control
   authors:
