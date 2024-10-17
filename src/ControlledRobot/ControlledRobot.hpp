@@ -340,6 +340,11 @@ class ControlledRobot: public UpdateThread {
         int initRobotName(const RobotName& telemetry) {
             return sendTelemetry(telemetry, ROBOT_NAME, true, 0);
         }
+        int initRobotName(const std::string& name){
+            RobotName msg;
+            msg.set_value(name);
+            return initRobotName(msg);
+        }
 
         /**
          * @brief submit the video strem urls
