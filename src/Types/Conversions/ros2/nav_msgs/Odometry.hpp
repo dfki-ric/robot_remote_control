@@ -21,5 +21,11 @@ namespace RosConversion {
         to->set_child_frame_id(from.child_frame_id);
     }
 
+    static void convert(const robot_remote_control::Odometry &from, nav_msgs::msg::Odometry *to) {
+        convert(from.header(), &to->header);
+        to->child_frame_id = from.child_frame_id();
+        convert(from.pose(), &to->pose);
+    }
+
 }  // namespace RosConversion
 }  // namespace robot_remote_control

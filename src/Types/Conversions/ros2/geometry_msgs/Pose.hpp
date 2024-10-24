@@ -39,5 +39,12 @@ namespace RosConversion {
         }
     }
 
+    inline static void convert(const robot_remote_control::PoseWithCovariance &from, geometry_msgs::msg::PoseWithCovariance *to ) {
+        convert(from.pose(), &to->pose);
+        for (int i = 0; i < from.covariance_size(); i++) {
+            to->covariance[i] = from.covariance(i);
+        }
+    }
+
 }  // namespace RosConversion
 }  // namespace robot_remote_control
