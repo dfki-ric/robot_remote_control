@@ -13,6 +13,7 @@ set (COMMON_SOURCE suite.cpp
             test_RingBuffer.cpp
             test_Thread.cpp
             test_SendTimers.cpp
+            test_SimpleActionHelper.cpp
 )
 set (COMMON_LIBS
    ${CMAKE_THREAD_LIBS_INIT}
@@ -20,6 +21,7 @@ set (COMMON_LIBS
    robot_remote_control-controlled_robot
    robot_remote_control-robot_controller
    robot_remote_control-send_timers
+   robot_remote_control-simple_action_helper
    ${Boost_LIBRARIES}
 )
 
