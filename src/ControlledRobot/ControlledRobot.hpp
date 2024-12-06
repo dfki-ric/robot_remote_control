@@ -1,11 +1,5 @@
 #pragma once
 
-#include "Transports/Transport.hpp"
-#include "UpdateThread/UpdateThread.hpp"
-#include "UpdateThread/Timer.hpp"
-#include "TelemetryBuffer.hpp"
-#include "CommandBuffer.hpp"
-#include "Statistics.hpp"
 #include <map>
 #include <string>
 #include <memory>
@@ -14,6 +8,14 @@
 #include <algorithm>
 #include <unistd.h>
 #include <stdexcept>
+
+#include "Types/RobotRemoteControl.pb.h"
+#include "Transports/Transport.hpp"
+#include "UpdateThread/UpdateThread.hpp"
+#include "UpdateThread/Timer.hpp"
+#include "TelemetryBuffer.hpp"
+#include "CommandBuffer.hpp"
+#include "Statistics.hpp"
 
 namespace robot_remote_control {
 
