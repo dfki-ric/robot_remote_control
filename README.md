@@ -139,3 +139,11 @@ In order to run the tests you can either run all by executing (in /build/test) `
 ## Bug Reports
 
 To search for bugs or report them, please use GitHubs [Issue-Tracker](https://github.com/dfki-ric/robot_remote_control/issues)
+
+## Acknowledgements
+This work was mainly developned as part of several projects: 
+
+* ROBDEKON was funded by the Federal Ministry of Economics and Technology in accordance with the parliamentary resolution of the German Parliament (grant no.13N14675). 
+* Mare-IT was funded by the German Space Agency (DLR Agentur) with federal funds of the Federal Ministry of Economics and Technology in accordance with the parliamentary resolution of the German Parliament (grant no. 01|S17029A).
+* PRO-ACT was funded under the European Commission Horizon 2020 Space Strategic Research Clusters (Operational Grants number 821903)
+

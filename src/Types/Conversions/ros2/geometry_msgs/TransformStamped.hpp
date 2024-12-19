@@ -26,6 +26,31 @@ namespace RosConversion {
         rrc_quat->set_w(quat.w);
     }
 
+    static void convert(const robot_remote_control::Pose &from, geometry_msgs::msg::TransformStamped *to) {
+        convert(from.header(), &to->header);
+
+        robot_remote_control::Position pos = from.position();
+        to->transform.translation.x = pos.x();
+        to->transform.translation.y = pos.y();
+        to->transform.translation.z = pos.z();
+
+        robot_remote_control::Orientation quat = from.orientation();
+        to->transform.rotation.x = quat.x();
+        to->transform.rotation.y = quat.y();
+        to->transform.rotation.z = quat.z();
+        to->transform.rotation.w = quat.w();
+    }
+
+    static void convert(const robot_remote_control::Transform &from, geometry_msgs::msg::TransformStamped *to) {
+        convert(from.header(), &to->header);
+
+        robot_remote_control::Pose pose = from.transform();
+        convert(pose, to);
+
+        to->header.frame_id = from.from();
+        to->child_frame_id = from.to();
+    }
+
 
 }  // namespace RosConversion
 }  // namespace robot_remote_control

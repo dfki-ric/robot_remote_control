@@ -496,7 +496,7 @@ int main(int argc, char** argv) {
     console.registerCommand("requestRobotModel", "download a robot model", [&](const std::vector<std::string> &params) {
         std::pair<std::string, std::string> filename = controller.requestRobotModel(params[0]);
         if (filename.first != "" && filename.second != "") {
-            printf("\ndownloaded model, please open '%s/%s' with an external viewer\n\n", filename.first.c_str(), filename.second.c_str());
+            printf("\ndownloaded model, please open '%s%s/%s' with an external viewer\n\n", params[0].c_str(), filename.first.c_str(), filename.second.c_str());
             return true;
         } else {
             printf("no model received, possibly the robot does not define one\n");
