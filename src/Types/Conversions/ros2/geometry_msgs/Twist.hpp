@@ -52,5 +52,12 @@ namespace RosConversion {
         to->mutable_linear()->set_z(from.linear.z);
     }
 
+    inline static void convert(const geometry_msgs::msg::TwistWithCovariance &from, robot_remote_control::TwistWithCovariance *to ) {
+        convert(from.twist, to->mutable_twist());
+        for (const auto& cov : from.covariance){
+            to->add_covariance(cov);
+        }
+    }
+
 }  // namespace RosConversion
 }  // namespace robot_remote_control
