@@ -115,6 +115,7 @@ configure_file(robot_remote_control-transport_zmq.pc.in robot_remote_control-tra
 configure_file(robot_remote_control-controlled_robot.pc.in robot_remote_control-controlled_robot.pc @ONLY)
 configure_file(robot_remote_control-robot_controller.pc.in robot_remote_control-robot_controller.pc @ONLY)
 configure_file(robot_remote_control-send_timers.pc.in robot_remote_control-send_timers.pc @ONLY)
+configure_file(robot_remote_control-simple_action_helper.pc.in robot_remote_control-simple_action_helper.pc @ONLY)
 
 install(FILES 
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-types.pc
@@ -123,6 +124,7 @@ install(FILES
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-controlled_robot.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-robot_controller.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-send_timers.pc
+    ${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-simple_action_helper.pc
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
