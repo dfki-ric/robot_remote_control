@@ -422,6 +422,11 @@ class RobotController: public UpdateThread {
             return result;
         }
 
+        bool requestChannelsDefinition() {
+            ChannelsDefinition channels;
+            return requestChannelsDefinition(&channels);
+        }
+
         ChannelId getMaxChannelNo(const MessageId& MessageId) {
             return messageChannels[MessageId];
         }
