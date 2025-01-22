@@ -390,7 +390,7 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
         request.set_compressed(false);
     #endif
 
-    Folder folder;
+    FolderTransfer folder;
 
     bool result = requestProtobuf(request, &folder, FILE_REQUEST, overrideMaxLatency);
     if (result) {

@@ -183,14 +183,12 @@ message FileTransfer {
     bytes data = 2;
 }
 
-message Folder {
+message FolderTransfer {
     string identifier = 1;
     bool compressed = 2;
     repeated FileTransfer file = 3;
     int32 uncompressed_size = 4;
 }
-
-
 
 message FileRequest {
     string identifier = 1;

@@ -1133,7 +1133,7 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     boost::filesystem::remove_all("./folder5");
     boost::filesystem::remove_all("./folder6");
 
-    // with compression
+    // with compression (test just the transfer, not renaming)
     // download folder
     BOOST_CHECK_EQUAL(controller.requestFile("folder", true, "./cfolder"), true);
     BOOST_TEST(boost::filesystem::exists("./cfolder/test/testfiles/topfolderfile"));

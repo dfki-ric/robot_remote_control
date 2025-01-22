@@ -263,7 +263,7 @@ bool ControlledRobot::loadFile(FileTransfer* file, const std::string &path, bool
     return false;
 }
 
-bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed, const std::string &remotePath) {
+bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path, bool compressed, const std::string &remotePath) {
     try {
         for (const auto & entry : std::experimental::filesystem::recursive_directory_iterator(path)) {
             FileTransfer* file = folder->add_file();
@@ -315,7 +315,7 @@ ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& s
 ControlMessageType ControlledRobot::handleFileRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     FileRequest request;
     request.ParseFromString(serializedMessage);
-    Folder folder;
+    FolderTransfer folder;
     std::string buf;
     int index = -1;
     for (int i = 0; i < files.file().size(); ++i) {

@@ -614,7 +614,7 @@ class ControlledRobot: public UpdateThread {
 
         bool loadFile(FileTransfer* file, const std::string &path, bool compressed = false, const std::string &remotePath = "");
 
-        bool loadFolder(Folder* folder, const std::string &path, bool compressed = false, const std::string &remotePath = "");
+        bool loadFolder(FolderTransfer* folder, const std::string &path, bool compressed = false, const std::string &remotePath = "");
 
         void notifyCommandCallbacks(const MessageId &type);
 
