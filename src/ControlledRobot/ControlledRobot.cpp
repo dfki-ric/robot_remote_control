@@ -233,8 +233,14 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
 }
 
 
-bool ControlledRobot::loadFile(FileTransfer* file, const std::string &path, bool compressed) {
-    file->set_path(path);
+bool ControlledRobot::loadFile(FileTransfer* file, const std::string &path, bool compressed, const std::string &remotePath) {
+    // if remote_path is set in def, override file path
+    if (remotePath == "") {
+        file->set_path(path);
+    } else {
+        file->set_path(remotePath);
+    }
+
     // read file (if it is and directory, no data is set)
     std::ifstream in(path, std::ios::in | std::ios::binary);
     if (in) {
@@ -257,11 +263,20 @@ bool ControlledRobot::loadFile(FileTransfer* file, const std::string &path, bool
     return false;
 }
 
-bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed) {
+bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed, const std::string &remotePath) {
     try {
         for (const auto & entry : std::experimental::filesystem::recursive_directory_iterator(path)) {
             FileTransfer* file = folder->add_file();
-            loadFile(file, entry.path(), compressed);
+            std::string remoteFilename = entry.path();
+            if (remotePath != "") {
+                // the folder part on the remote should be different
+                // get the local part
+                std::string localPath = remoteFilename.substr(path.size(),remoteFilename.size()-path.size());
+                printf("l: %s\n", localPath.c_str());
+                //construct new remote path
+                remoteFilename = remotePath + localPath;
+            }
+            loadFile(file, entry.path(), compressed, remoteFilename);
         }
         folder->set_compressed(compressed);
     } catch (const std::experimental::filesystem::v1::__cxx11::filesystem_error &e) {
@@ -319,10 +334,10 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
         File filedef = files.file(index);
         // todo: read folderfolder
         if (isFolder) {
-            loadFolder(&folder, filedef.path(), request.compressed());
+            loadFolder(&folder, filedef.path(), request.compressed(), filedef.remote_path());
         } else {
             FileTransfer* file = folder.add_file();
-            loadFile(file, filedef.path(), request.compressed());
+            loadFile(file, filedef.path(), request.compressed(), filedef.remote_path());
             folder.set_compressed(request.compressed());
         }
     } else {
