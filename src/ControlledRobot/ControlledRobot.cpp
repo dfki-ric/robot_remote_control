@@ -233,7 +233,7 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
 }
 
 
-bool ControlledRobot::loadFile(File* file, const std::string &path, bool compressed) {
+bool ControlledRobot::loadFile(FileTransfer* file, const std::string &path, bool compressed) {
     file->set_path(path);
     // read file (if it is and directory, no data is set)
     std::ifstream in(path, std::ios::in | std::ios::binary);
@@ -260,7 +260,7 @@ bool ControlledRobot::loadFile(File* file, const std::string &path, bool compres
 bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed) {
     try {
         for (const auto & entry : std::experimental::filesystem::recursive_directory_iterator(path)) {
-            File* file = folder->add_file();
+            FileTransfer* file = folder->add_file();
             loadFile(file, entry.path(), compressed);
         }
         folder->set_compressed(compressed);
@@ -321,7 +321,7 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
         if (isFolder) {
             loadFolder(&folder, filedef.path(), request.compressed());
         } else {
-            File* file = folder.add_file();
+            FileTransfer* file = folder.add_file();
             loadFile(file, filedef.path(), request.compressed());
             folder.set_compressed(request.compressed());
         }

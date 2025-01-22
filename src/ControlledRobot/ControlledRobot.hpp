@@ -612,7 +612,7 @@ class ControlledRobot: public UpdateThread {
 
         virtual ControlMessageType evaluateRequest(const std::string& request);
 
-        bool loadFile(File* file, const std::string &path, bool compressed = false);
+        bool loadFile(FileTransfer* file, const std::string &path, bool compressed = false);
 
         bool loadFolder(Folder* folder, const std::string &path, bool compressed = false);
 
