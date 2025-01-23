@@ -4,19 +4,28 @@
 
 
 SimpleActionsHelper::SimpleActionsHelper(const robot_remote_control::SimpleActions& initfrom) {
-    initFrom(initfrom);
+    update(initfrom);
 }
 
-void SimpleActionsHelper::initFrom(const robot_remote_control::SimpleActions& initfrom) {
+void SimpleActionsHelper::update(const robot_remote_control::SimpleActions& initfrom) {
     actions.Clear();
-    actionbyname.clear();
+    // actionbyname.clear();
 
     actions.CopyFrom(initfrom);
 
     //restore access buffers
     for (auto& action : *actions.mutable_actions()) {
-        std::shared_ptr<SimpleActionWrapper> wrapper = std::make_shared<SimpleActionWrapper>(&action);
-        actionbyname[action.name()] = wrapper;
+        std::shared_ptr<SimpleActionWrapper> wrapper;
+        if (actionbyname.find(action.name()) == actionbyname.end()) {
+            //create new wrapper
+            wrapper = std::make_shared<SimpleActionWrapper>(&action);
+            actionbyname[action.name()] = wrapper;
+        } else {
+            //update action pointer
+            printf("update pointer on existing wrapper\n");
+            wrapper = actionbyname[action.name()];
+            wrapper->updateActionPointer(&action);
+        }
 
         // restore valueByName access buffer
         for (auto& namedValue : action.type().value_names()) {

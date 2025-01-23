@@ -89,5 +89,28 @@ BOOST_CHECK_EQUAL(helper2.canExecute(action1), true);
 BOOST_TEST(helper.getSimpleActionsDefinition().SerializeAsString() != helper2.getSimpleActionsDefinition().SerializeAsString());
 
 
+
 }
 
+
+BOOST_AUTO_TEST_CASE(simple_action_helper_update) {
+    SimpleActionsHelper helper;
+    helper.addSimpleAction("action", robot_remote_control::VALUE_INT);
+
+    //simulate a freshly received action update
+    SimpleActionsHelper remote_helper;
+    remote_helper.addSimpleAction("action", robot_remote_control::VALUE_INT);
+
+    // get an action
+    std::shared_ptr<SimpleActionWrapper> renewedaction = helper.getSimpleAction("action");
+
+    const robot_remote_control::SimpleAction* oldptr = &renewedaction->getAction();
+
+    // renew helper2 info
+
+    helper.update(remote_helper.getSimpleActionsDefinition());
+
+    const robot_remote_control::SimpleAction* newptr = &renewedaction->getAction();
+
+    BOOST_CHECK(&renewedaction->getAction() != nullptr);
+}
