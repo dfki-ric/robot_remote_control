@@ -978,9 +978,13 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
 
 
   bool wasBusy = false;
+
+  bool started = false;
+  bool wasRunning = false;
   // setup threaded callback
-  auto dataCallback = [robotpose, &controller](const robot_remote_control::Pose &pose) {
-      sleep(3); // simulate some calculation time (data needs to stay valid, so check afterwards)
+  auto dataCallback = [robotpose, &controller, &wasRunning, &started](const robot_remote_control::Pose &pose) {
+      started = true;
+      sleep(1); // simulate some calculation time (data needs to stay valid, so check afterwards)
       COMPARE_PROTOBUF(robotpose, pose);
       Pose currentpose;
 
@@ -988,6 +992,7 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
       bool isnew = controller.getCurrentPose(&currentpose, true);
       BOOST_TEST(isnew == true);
       BOOST_TEST(robotpose.SerializeAsString() != currentpose.SerializeAsString());
+      wasRunning = true;
   };
 
   auto busyCallabck = [&wasBusy]() {
@@ -1000,17 +1005,28 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   // trigger initial callback (sleeps first)
   robot.setCurrentPose(robotpose);
   // after one second, it should definately be running
-  sleep(2);
+  while (!started) {
+    usleep(100);
+  }
   BOOST_TEST(threadedCallback.finished() == false);
   BOOST_CHECK_EQUAL(wasBusy, false);
 
   // set a new pose, tries to trigger thread the 2nd time, now the newest pose in the buffer is different but the one given to the callback is the older one
   robot.setCurrentPose(robotpose2);
-
-  sleep(1); // wait for 2nd callback execute attempt, should fail
+  
+  // wait until 
+  while (!wasBusy || threadedCallback.finished()) {
+    usleep(100);
+  }
   BOOST_CHECK_EQUAL(wasBusy, true);
 
-  sleep(1); //wait another second to let the initial callback finish
+  //wait to let the initial callback finish
+  while (!wasRunning) {
+     usleep(100);
+  }
+  // wait some time after callback ended to let the implemnentation set the threadedCallback.finished() value
+  sleep(1);
+  
   BOOST_TEST(threadedCallback.finished() == true);
 
 }
