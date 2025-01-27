@@ -984,7 +984,7 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   // setup threaded callback
   auto dataCallback = [robotpose, &controller, &wasRunning, &started](const robot_remote_control::Pose &pose) {
       started = true;
-      sleep(1); // simulate some calculation time (data needs to stay valid, so check afterwards)
+      sleep(2); // simulate some calculation time (data needs to stay valid, so check afterwards)
       COMPARE_PROTOBUF(robotpose, pose);
       Pose currentpose;
 
@@ -1008,13 +1008,13 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   while (!started) {
     usleep(100);
   }
-  BOOST_TEST(threadedCallback.finished() == false);
-  BOOST_CHECK_EQUAL(wasBusy, false);
+  BOOST_TEST(threadedCallback.finished() == false); // callback should be running
+  BOOST_CHECK_EQUAL(wasBusy, false); // callback should not have been called a 2nd time
 
   // set a new pose, tries to trigger thread the 2nd time, now the newest pose in the buffer is different but the one given to the callback is the older one
   robot.setCurrentPose(robotpose2);
   
-  // wait until 
+  // wait until 2nd call failed
   while (!wasBusy || threadedCallback.finished()) {
     usleep(100);
   }
