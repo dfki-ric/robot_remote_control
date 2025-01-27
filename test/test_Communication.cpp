@@ -1084,11 +1084,22 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
 
     robot.initFiles(files);
 
+    // set up how the received definitions should look like on the Controller side
+    FileDefinition remote;
+    remote.CopyFrom(files);
+    for (auto& file : *remote.mutable_file()) {
+        if (file.remote_path().size()) {
+            // hide local path from RobotController
+            file.set_path(file.remote_path());
+            file.set_remote_path("");
+        }
+    }
 
+    // Get Definition via Transport
     FileDefinition availablefiles;
     controller.requestAvailableFiles(&availablefiles);
 
-    COMPARE_PROTOBUF(files, availablefiles);
+    COMPARE_PROTOBUF(remote, availablefiles);
 
     // download folder
     BOOST_CHECK_EQUAL(controller.requestFile("folder", false, "./folder"), true);
@@ -1123,6 +1134,8 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     BOOST_CHECK_EQUAL(controller.requestFile("renamedfolder", false, "./folder6"), true);
     BOOST_TEST(boost::filesystem::exists("./folder6/renamedfolder/subfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder6/renamedfolder/subfolderfile"));
+
+
 
 
     // cleanup

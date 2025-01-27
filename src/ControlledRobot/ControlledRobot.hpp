@@ -385,10 +385,7 @@ class ControlledRobot: public UpdateThread {
          * @param files name:path list of named files/foilders that can be downloaded
          * @return int 
          */
-        int initFiles(const FileDefinition& files) {
-            this->files.MergeFrom(files);
-            return sendTelemetry(files, FILE_DEFINITION, true, 0);
-        }
+        int initFiles(const FileDefinition& files);
 
         int initRobotModel(const FileDefinition& filedef, const std::string& modelfilename = "") {
             RobotModelInformation modelinfo;
@@ -641,7 +638,7 @@ class ControlledRobot: public UpdateThread {
 
         std::vector< std::function<void(const MessageId &type)> > commandCallbacks;
 
-        FileDefinition files;
+        FileDefinition remote_files, internal_files;
         HeartBeat heartbeatValues;
         Timer heartbeatTimer;
         float heartbeatAllowedLatency;

@@ -167,6 +167,24 @@ void ControlledRobot::notifyCommandCallbacks(const MessageId &type) {
     std::for_each(commandCallbacks.begin(), commandCallbacks.end(), callCb);
 }
 
+int ControlledRobot::initFiles(const FileDefinition& files) {
+    // store private version
+    this->internal_files.MergeFrom(files);
+    // remove local paths from remote version
+    FileDefinition remote;
+    remote.CopyFrom(files);
+    for (auto& file : *remote.mutable_file()) {
+        if (file.remote_path().size()) {
+            // hide local path from RobotController
+            file.set_path(file.remote_path());
+            file.set_remote_path("");
+        }
+    }
+    // update remote version
+    this->remote_files.MergeFrom(remote);
+    // initialize buffer for requests
+    return sendTelemetry(this->remote_files, FILE_DEFINITION, true, 0);
+}
 
 int ControlledRobot::setRobotState(const std::string& state) {
     RobotState protostate;
@@ -318,8 +336,8 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
     FolderTransfer folder;
     std::string buf;
     int index = -1;
-    for (int i = 0; i < files.file().size(); ++i) {
-        if (files.file(i).identifier() == request.identifier()) {
+    for (int i = 0; i < internal_files.file().size(); ++i) {
+        if (internal_files.file(i).identifier() == request.identifier()) {
             index = i;
             break;
         }
@@ -329,9 +347,9 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
         printf("zlib for compression not available, sending uncompressed files\n");
         request.set_compressed(false);
     #endif
-    if (index >= 0 && index < files.file().size()) {
-        bool isFolder = files.isfolder(index);
-        File filedef = files.file(index);
+    if (index >= 0 && index < internal_files.file().size()) {
+        bool isFolder = internal_files.isfolder(index);
+        File filedef = internal_files.file(index);
         // todo: read folderfolder
         if (isFolder) {
             loadFolder(&folder, filedef.path(), request.compressed(), filedef.remote_path());
