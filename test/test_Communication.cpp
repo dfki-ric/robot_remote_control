@@ -443,6 +443,15 @@ BOOST_AUTO_TEST_CASE(checking_log_message) {
   // compare if message is still the first fatal message, not the second one
   COMPARE_PROTOBUF(fatal_message, requested_log_message);
 
+  robot.stopUpdateThread();
+  controller.stopUpdateThread();
+}
+
+BOOST_AUTO_TEST_CASE(checking_robot_state) {
+  initComms();
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+  controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
   std::vector<std::string> requested_robot_state;
