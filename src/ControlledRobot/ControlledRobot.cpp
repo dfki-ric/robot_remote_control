@@ -167,6 +167,24 @@ void ControlledRobot::notifyCommandCallbacks(const MessageId &type) {
     std::for_each(commandCallbacks.begin(), commandCallbacks.end(), callCb);
 }
 
+int ControlledRobot::initFiles(const FileDefinition& files) {
+    // store private version
+    this->internal_files.MergeFrom(files);
+    // remove local paths from remote version
+    FileDefinition remote;
+    remote.CopyFrom(files);
+    for (auto& file : *remote.mutable_file()) {
+        if (file.remote_path().size()) {
+            // hide local path from RobotController
+            file.set_path(file.remote_path());
+            file.set_remote_path("");
+        }
+    }
+    // update remote version
+    this->remote_files.MergeFrom(remote);
+    // initialize buffer for requests
+    return sendTelemetry(this->remote_files, FILE_DEFINITION, true, 0);
+}
 
 int ControlledRobot::setRobotState(const std::string& state) {
     RobotState protostate;
@@ -233,8 +251,14 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
 }
 
 
-bool ControlledRobot::loadFile(File* file, const std::string &path, bool compressed) {
-    file->set_path(path);
+bool ControlledRobot::loadFile(FileTransfer* file, const std::string &path, bool compressed, const std::string &remotePath) {
+    // if remote_path is set in def, override file path
+    if (remotePath == "") {
+        file->set_path(path);
+    } else {
+        file->set_path(remotePath);
+    }
+
     // read file (if it is and directory, no data is set)
     std::ifstream in(path, std::ios::in | std::ios::binary);
     if (in) {
@@ -257,11 +281,20 @@ bool ControlledRobot::loadFile(File* file, const std::string &path, bool compres
     return false;
 }
 
-bool ControlledRobot::loadFolder(Folder* folder, const std::string &path, bool compressed) {
+bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path, bool compressed, const std::string &remotePath) {
     try {
         for (const auto & entry : std::experimental::filesystem::recursive_directory_iterator(path)) {
-            File* file = folder->add_file();
-            loadFile(file, entry.path(), compressed);
+            FileTransfer* file = folder->add_file();
+            std::string remoteFilename = entry.path();
+            if (remotePath != "") {
+                // the folder part on the remote should be different
+                // get the local part
+                std::string localPath = remoteFilename.substr(path.size(),remoteFilename.size()-path.size());
+                printf("l: %s\n", localPath.c_str());
+                //construct new remote path
+                remoteFilename = remotePath + localPath;
+            }
+            loadFile(file, entry.path(), compressed, remoteFilename);
         }
         folder->set_compressed(compressed);
     } catch (const std::experimental::filesystem::v1::__cxx11::filesystem_error &e) {
@@ -300,11 +333,11 @@ ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& s
 ControlMessageType ControlledRobot::handleFileRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     FileRequest request;
     request.ParseFromString(serializedMessage);
-    Folder folder;
+    FolderTransfer folder;
     std::string buf;
     int index = -1;
-    for (int i = 0; i < files.file().size(); ++i) {
-        if (files.file(i).identifier() == request.identifier()) {
+    for (int i = 0; i < internal_files.file().size(); ++i) {
+        if (internal_files.file(i).identifier() == request.identifier()) {
             index = i;
             break;
         }
@@ -314,15 +347,15 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
         printf("zlib for compression not available, sending uncompressed files\n");
         request.set_compressed(false);
     #endif
-    if (index >= 0 && index < files.file().size()) {
-        bool isFolder = files.isfolder(index);
-        File filedef = files.file(index);
+    if (index >= 0 && index < internal_files.file().size()) {
+        bool isFolder = internal_files.isfolder(index);
+        File filedef = internal_files.file(index);
         // todo: read folderfolder
         if (isFolder) {
-            loadFolder(&folder, filedef.path(), request.compressed());
+            loadFolder(&folder, filedef.path(), request.compressed(), filedef.remote_path());
         } else {
-            File* file = folder.add_file();
-            loadFile(file, filedef.path(), request.compressed());
+            FileTransfer* file = folder.add_file();
+            loadFile(file, filedef.path(), request.compressed(), filedef.remote_path());
             folder.set_compressed(request.compressed());
         }
     } else {

@@ -170,19 +170,24 @@ message ControllableFrames {
 message File {
     string identifier = 1;
     string path = 2;
-    bytes data = 4;
-}
-
-message Folder {
-    string identifier = 1;
-    bool compressed = 2;
-    repeated File file = 3;
-    int32 uncompressed_size = 4;
+    string remote_path = 3;
 }
 
 message FileDefinition {
     repeated File file = 1;
     repeated bool isFolder = 2;
+}
+
+message FileTransfer {
+    string path = 1;
+    bytes data = 2;
+}
+
+message FolderTransfer {
+    string identifier = 1;
+    bool compressed = 2;
+    repeated FileTransfer file = 3;
+    int32 uncompressed_size = 4;
 }
 
 message FileRequest {

@@ -1065,13 +1065,41 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     file->set_identifier("subfolderfile");
     file->set_path("./test/testfiles/subfolder/subfolderfile");
 
+    file = files.add_file();
+    files.add_isfolder(false);
+    file->set_identifier("renamedfile");
+    file->set_path("./test/testfiles/subfolder/subfolderfile");
+    file->set_remote_path("./renamed_file");
+
+    file = files.add_file();
+    files.add_isfolder(true);
+    file->set_identifier("subfolder");
+    file->set_path("./test/testfiles/subfolder");
+
+    file = files.add_file();
+    files.add_isfolder(true);
+    file->set_identifier("renamedfolder");
+    file->set_path("./test/testfiles/subfolder");
+    file->set_remote_path("./renamedfolder");
+
     robot.initFiles(files);
 
+    // set up how the received definitions should look like on the Controller side
+    FileDefinition remote;
+    remote.CopyFrom(files);
+    for (auto& file : *remote.mutable_file()) {
+        if (file.remote_path().size()) {
+            // hide local path from RobotController
+            file.set_path(file.remote_path());
+            file.set_remote_path("");
+        }
+    }
 
+    // Get Definition via Transport
     FileDefinition availablefiles;
     controller.requestAvailableFiles(&availablefiles);
 
-    COMPARE_PROTOBUF(files, availablefiles);
+    COMPARE_PROTOBUF(remote, availablefiles);
 
     // download folder
     BOOST_CHECK_EQUAL(controller.requestFile("folder", false, "./folder"), true);
@@ -1093,13 +1121,32 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     BOOST_TEST(!boost::filesystem::exists("./folder3/test/testfiles/topfolderfile"));
     BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder3/test/testfiles/subfolder/subfolderfile"));
 
+    // download renamed subfolder file (change path)
+    BOOST_CHECK_EQUAL(controller.requestFile("renamedfile", false, "./folder4"), true);
+    BOOST_TEST(boost::filesystem::exists("./folder4/renamed_file"));
+    BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder4/renamed_file"));
+
+    // subfolder
+    BOOST_CHECK_EQUAL(controller.requestFile("subfolder", false, "./folder5"), true);
+    BOOST_TEST(boost::filesystem::exists("./folder5/test/testfiles/subfolder/subfolderfile"));
+
+    // relocate folder
+    BOOST_CHECK_EQUAL(controller.requestFile("renamedfolder", false, "./folder6"), true);
+    BOOST_TEST(boost::filesystem::exists("./folder6/renamedfolder/subfolderfile"));
+    BOOST_TEST(isFileEqual("./test/testfiles/subfolder/subfolderfile", "./folder6/renamedfolder/subfolderfile"));
+
+
+
 
     // cleanup
     boost::filesystem::remove_all("./folder");
     boost::filesystem::remove_all("./folder2");
     boost::filesystem::remove_all("./folder3");
+    boost::filesystem::remove_all("./folder4");
+    boost::filesystem::remove_all("./folder5");
+    boost::filesystem::remove_all("./folder6");
 
-    // with compression
+    // with compression (test just the transfer, not renaming)
     // download folder
     BOOST_CHECK_EQUAL(controller.requestFile("folder", true, "./cfolder"), true);
     BOOST_TEST(boost::filesystem::exists("./cfolder/test/testfiles/topfolderfile"));
@@ -1127,6 +1174,10 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     // non-existent ID leads to error
     BOOST_CHECK_EQUAL(controller.requestFile("", false, "./"), false);
     BOOST_CHECK_EQUAL(controller.requestFile("nonexist", false, "./"), false);
+
+
+
+
 }
 
 #ifdef TRANSPORT_DEFAULT
