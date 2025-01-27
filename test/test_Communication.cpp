@@ -980,7 +980,7 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   bool wasBusy = false;
   // setup threaded callback
   auto dataCallback = [robotpose, &controller](const robot_remote_control::Pose &pose) {
-      sleep(2); // simulate some calculation time (data needs to stay valid, so check afterwards)
+      sleep(3); // simulate some calculation time (data needs to stay valid, so check afterwards)
       COMPARE_PROTOBUF(robotpose, pose);
       Pose currentpose;
 
@@ -1000,7 +1000,7 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   // trigger initial callback (sleeps first)
   robot.setCurrentPose(robotpose);
   // after one second, it should definately be running
-  sleep(1);
+  sleep(2);
   BOOST_TEST(threadedCallback.finished() == false);
   BOOST_CHECK_EQUAL(wasBusy, false);
 
