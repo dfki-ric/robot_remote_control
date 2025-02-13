@@ -258,7 +258,7 @@ bool RobotController::requestMap(Map *map, const ChannelId &channel, const float
     bool result = requestBinary(MAP, &replybuf, TELEMETRY_REQUEST, channel, overrideMaxLatency);
 
     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
-    cistream.SetTotalBytesLimit(replybuf.size());
+    cistream.SetTotalBytesLimit(replybuf.size(), int(0.9*replybuf.size()));
     map->ParseFromCodedStream(&cistream);
     return result;
 }
