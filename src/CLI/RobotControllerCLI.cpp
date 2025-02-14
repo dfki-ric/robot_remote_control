@@ -412,7 +412,6 @@ int main(int argc, char** argv) {
     params.clear();
 
 
-
     /**
      * Special telemetry functions (non-default print etc.)
      */
@@ -420,13 +419,22 @@ int main(int argc, char** argv) {
     robot_remote_control::Image rrc_type_image;
     console.registerCommand("getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params) {
         bool received = false;
-        while (controller.getImage(&rrc_type_image)) {received = true;}
-        printf("image type: %s (%ix%i) frame: %s size: %lu bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
-        if (!received) {
-            printf("no new data received \n");
+        uint8_t channel = 0;
+        if (params.size()) { \
+            channel = std::atoi(params.front().c_str()); \
+        }
+        if (controller.getImage(&rrc_type_image, true, channel)) {
+            printf("image type: %s (%ix%i) frame: %s size: %lu bytes\n", rrc_type_image.encoding().c_str(), rrc_type_image.width(), rrc_type_image.height(), rrc_type_image.header().frame().c_str(), rrc_type_image.data().size());
+        } else {
+            printf("no new data received on channel %i\n", channel);
         }
         return received;
     });
+    params.push_back(ConsoleCommands::ParamDef("channel", "0", true));
+    console.registerParamsForCommand("getImage", params);
+    params.clear();
+
+
     console.registerCommand("watch_getImage", "get a single image and print its properties (without data)", [&](const std::vector<std::string> &params){
         robot_remote_control::Image rrc_type_image;
         while (controller.getImage(&rrc_type_image)) {
