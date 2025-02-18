@@ -114,3 +114,58 @@ BOOST_AUTO_TEST_CASE(simple_action_helper_update) {
 
     BOOST_CHECK(&renewedaction->getAction() != nullptr);
 }
+
+
+
+BOOST_AUTO_TEST_CASE(simple_action_wrapper_validate) {
+
+
+SimpleActionsHelper helper;
+
+std::shared_ptr<SimpleActionWrapper> action1 = helper.addSimpleAction("action1", robot_remote_control::VALUE_INT);
+
+
+action1->setLimits(-1,3,2);
+action1->addNamedValues({ {"VAL1", 1}, {"VAL2", 2},{"VAL3", 3} });
+
+BOOST_CHECK_EQUAL(action1->isValidState(-1), true);
+BOOST_CHECK_EQUAL(action1->isValidState(1), true);
+BOOST_CHECK_EQUAL(action1->isValidState(3), true);
+
+BOOST_CHECK_EQUAL(action1->isValidState(0.1), false); // not an int
+BOOST_CHECK_EQUAL(action1->isValidState(-2), false); // out of range
+BOOST_CHECK_EQUAL(action1->isValidState(5), false); // out of range
+BOOST_CHECK_EQUAL(action1->isValidState(0), false); // out of step size
+
+std::shared_ptr<SimpleActionWrapper> action2 = helper.addSimpleAction("action2", robot_remote_control::VALUE_FLOAT);
+
+action2->setLimits(-1,3,0.3);
+BOOST_CHECK_EQUAL(action2->isValidState(-1), true);
+BOOST_CHECK_EQUAL(action2->isValidState(-0.1), true);
+BOOST_CHECK_EQUAL(action2->isValidState(0.2), true);
+
+BOOST_CHECK_EQUAL(action2->isValidState(2.9), true);
+BOOST_CHECK_EQUAL(action2->isValidState(3), false); // not in step
+
+BOOST_CHECK_EQUAL(action2->isValidState(-2), false); // out of range
+BOOST_CHECK_EQUAL(action2->isValidState(5), false); // out of range
+BOOST_CHECK_EQUAL(action2->isValidState(0), false); // out of step size
+
+std::shared_ptr<SimpleActionWrapper> action3 = helper.addSimpleAction("action2", robot_remote_control::VALUE_FLOAT);
+
+action2->setLimits(-1,3,0);
+BOOST_CHECK_EQUAL(action2->isValidState(-1), true);
+BOOST_CHECK_EQUAL(action2->isValidState(-0.1), true);
+BOOST_CHECK_EQUAL(action2->isValidState(0.2), true);
+
+BOOST_CHECK_EQUAL(action2->isValidState(2.9), true);
+BOOST_CHECK_EQUAL(action2->isValidState(3), true); // no step
+
+BOOST_CHECK_EQUAL(action2->isValidState(-2), false); // out of range
+BOOST_CHECK_EQUAL(action2->isValidState(5), false); // out of range
+BOOST_CHECK_EQUAL(action2->isValidState(0), true); // no step
+
+// BOOST_CHECK_EQUAL(action2->isValidState(0.1), false);
+
+
+}

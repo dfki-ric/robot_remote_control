@@ -141,6 +141,16 @@ class SimpleActionWrapper {
         return *action;
     }
 
+    /**
+     * @brief check if a value is a valid setting based on this actions definition
+     * 
+     * @param value the value to check
+     * @param epsilon in case a step size is set for a VALUE_FLOAT action, you can set a epsilon in cace flaot precision if giving you wrong results
+     * @return true 
+     * @return false 
+     */
+    bool isValidState(const float &value, const float& epsilon = std::numeric_limits<float>::epsilon());
+
  private:
     robot_remote_control::SimpleAction* action;
 
