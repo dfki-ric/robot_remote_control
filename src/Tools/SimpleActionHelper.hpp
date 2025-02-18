@@ -156,7 +156,7 @@ class SimpleActionWrapper {
 
     friend class SimpleActionsHelper;
     void updateActionPointer(robot_remote_control::SimpleAction* newactionpointer) {
-        printf("replacing %p with %p\n", action, newactionpointer);
+        // printf("replacing %p with %p\n", action, newactionpointer);
         action = newactionpointer;
     }
     std::map<std::string, float> valueByName;
