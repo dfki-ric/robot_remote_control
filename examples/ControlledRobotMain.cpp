@@ -16,16 +16,22 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
-    robot.startUpdateThread(10);
+    robot.startUpdateThread(0);
 
     // set a callback for connection losses, allow 100ms of later arrival
     // (due to differences in latency between heartbeat commands)
     // the elapsed time may be used to have different stages of escalation
     // when there are multiple connections to this robots with different heartbeats
     // in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
-    robot.setupHeartbeatCallback(0.1, [](const float &elapsed){
+    robot.setupDisconnectedCallback(0.1, [](const float &elapsed){
         printf("no heartbeat since %.2f seconds\n", elapsed);
     });
+
+    robot.setupConnectedCallback([](){
+        printf("controller connected\n");
+    });
+
+    robot.setupHeartbeatCallbackInterval(2);
 
     robot_remote_control::RobotName name;
     name.set_value("TestRobot");

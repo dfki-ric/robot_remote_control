@@ -87,7 +87,15 @@ class RobotController: public UpdateThread {
          * @param callback 
          */
         void setupLostConnectionCallback(const std::function<void(const float&)> &callback) {
+            printf("warning: setupLostConnectionCallback deprecated, use setupDisconnectedCallback()\n");
+            setupDisconnectedCallback(callback);
+        }
+        void setupDisconnectedCallback(const std::function<void(const float&)> &callback) {
             lostConnectionCallback = callback;
+        }
+
+        void setupConnectedCallback(const std::function<void()> &callback) {
+            connectedCallback=callback;
         }
 
         /**
@@ -689,6 +697,7 @@ class RobotController: public UpdateThread {
 
         std::shared_ptr<TelemetryBuffer>  buffers;
         std::function<void(const float&)> lostConnectionCallback;
+        std::function<void()> connectedCallback;
         std::vector< std::function<void(const MessageId &type)> > telemetryReceivedCallbacks;
         std::atomic<bool> connected;
 

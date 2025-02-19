@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     twistcommand.mutable_linear()->set_x(0.1);
 
 
-    controller.startUpdateThread(100);
+    controller.startUpdateThread(0);
 
     float x = 0;
 
@@ -48,11 +48,13 @@ int main(int argc, char** argv) {
     // set Heartbeat to one second
     controller.setHeartBeatDuration(1);
 
-    controller.addTelemetryReceivedCallback<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE, [](const robot_remote_control::Pose &pose) {
-        // WARNING: this callback rund in the reveive thread, you cannot use this to access data, only to notify other threads
-        printf("Current Pose callback: %s\n", pose.ShortDebugString().c_str());
+    controller.setupDisconnectedCallback([](const float &elapsed){
+        printf("no lost connection since %.2f seconds\n", elapsed);
     });
 
+    controller.setupConnectedCallback([](){
+        printf("connected\n");
+    });
 
     while (true) {
 

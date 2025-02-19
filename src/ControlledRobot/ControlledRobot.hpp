@@ -38,8 +38,25 @@ class ControlledRobot: public UpdateThread {
          * @param callback the callback when no heartbeat message arrived in time
          */
         void setupHeartbeatCallback(const float &allowedLatency, const std::function<void(const float&)> &callback) {
+            printf("warning: setupHeartbeatCallback deprecated, use setupDisconnectedCallback()\n");
+            setupDisconnectedCallback(allowedLatency, callback);
+        }
+        void setupDisconnectedCallback(const float &allowedLatency, const std::function<void(const float&)> &callback) {
             heartbeatAllowedLatency = allowedLatency;
             heartbeatExpiredCallback = callback;
+        }
+
+        void setupConnectedCallback(const std::function<void()> &callback) {
+            connectedCallback=callback;
+        }
+
+        /**
+         * @brief The HeartbeatCallback will be called in this interval (plus allowedLatency set by setupHeartbeatCallback())
+         * 
+         * @param interval the desired interval in s
+         */
+        void setupHeartbeatCallbackInterval(const float &interval) {
+            connectionLostCallbackInterval = interval;
         }
 
         bool isConnected() {
@@ -640,9 +657,10 @@ class ControlledRobot: public UpdateThread {
 
         FileDefinition remote_files, internal_files;
         HeartBeat heartbeatValues;
-        Timer heartbeatTimer;
-        float heartbeatAllowedLatency;
+        Timer heartbeatTimer, connectionLostCallbackTimer;
+        float heartbeatAllowedLatency, connectionLostCallbackInterval;
         std::function<void(const float&)> heartbeatExpiredCallback;
+        std::function<void()> connectedCallback;
         std::atomic<bool> connected;
 
         std::array<CommandBufferBase*, CONTROL_MESSAGE_TYPE_NUMBER> commandbuffers;
