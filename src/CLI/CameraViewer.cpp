@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
             // TODO: switch other types, based on rrcimg.encoding() and rrcimg.step()
             //std::cout << rrcimg.encoding() << std::endl;
-            if (rrcimg.encoding() != "MODE_RGB") {
+            if (rrcimg.encoding() != "MODE_RGB" && rrcimg.encoding() != "MODE_BGR" ) {
                 std::cout << "Image received but encoding " << rrcimg.encoding() << " not supported for display "<< std::endl;
                 continue;
             }
