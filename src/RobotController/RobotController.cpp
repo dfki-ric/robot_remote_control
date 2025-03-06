@@ -6,7 +6,6 @@
 
 #include "ProtocolVersion.hpp"
 #include "LibraryVersion.hpp"
-#include "GitVersion.hpp"
 
 #ifdef ZLIB_FOUND
 #include "../Tools/Compression.hpp"
