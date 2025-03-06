@@ -6,18 +6,6 @@ include(GNUInstallDirs)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 
-
-add_subdirectory(Types)
-add_subdirectory(UpdateThread)
-add_subdirectory(Transports)
-
-add_subdirectory(ControlledRobot)
-add_subdirectory(RobotController)
-
-add_subdirectory(CLI)
-add_subdirectory(Tools)
-
-
 # generate header with sha256sum of the protocol defining files
 set(PROTOCOL_FILES Types/RobotRemoteControl.proto MessageTypes.hpp)
 
@@ -62,12 +50,23 @@ add_custom_command( OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/GitVersion.hpp
                     COMMAND echo " */" >> GitVersion.hpp
                     COMMAND echo "'#'pragma once" >> GitVersion.hpp # need to exacpe # with '' cmake inpterprets as comment otherwise
                     COMMAND echo -n "'#'define GIT_COMMIT_ID " >> GitVersion.hpp # -n: no newline, escaped #
-                    COMMAND cat ../COMMIT_ID | awk '{print \"\\\"\" $$2 \"\\\"\"}' >> GitVersion.hpp
-                    DEPENDS ../COMMIT_ID
+                    COMMAND git rev-parse HEAD | ${AWK_COMMAND} >> GitVersion.hpp
                     )
 
 set(VERSIONHEADERS ProtocolVersion.hpp LibraryVersion.hpp GitVersion.hpp)
 add_custom_target(versionheaders DEPENDS ${VERSIONHEADERS})
+
+
+add_subdirectory(Types)
+add_subdirectory(UpdateThread)
+add_subdirectory(Transports)
+
+add_subdirectory(ControlledRobot)
+add_subdirectory(RobotController)
+
+add_subdirectory(CLI)
+add_subdirectory(Tools)
+
 
 
 
