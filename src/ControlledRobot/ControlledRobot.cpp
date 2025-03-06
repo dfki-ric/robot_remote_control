@@ -10,7 +10,6 @@
 
 #include "ProtocolVersion.hpp"
 #include "LibraryVersion.hpp"
-#include "GitVersion.hpp"
 
 namespace robot_remote_control {
 
