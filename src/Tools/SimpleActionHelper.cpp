@@ -1,22 +1,31 @@
 #include "SimpleActionHelper.hpp"
-
+#include <cmath>
 
 
 
 SimpleActionsHelper::SimpleActionsHelper(const robot_remote_control::SimpleActions& initfrom) {
-    initFrom(initfrom);
+    update(initfrom);
 }
 
-void SimpleActionsHelper::initFrom(const robot_remote_control::SimpleActions& initfrom) {
+void SimpleActionsHelper::update(const robot_remote_control::SimpleActions& initfrom) {
     actions.Clear();
-    actionbyname.clear();
+    // actionbyname.clear();
 
     actions.CopyFrom(initfrom);
 
     //restore access buffers
     for (auto& action : *actions.mutable_actions()) {
-        std::shared_ptr<SimpleActionWrapper> wrapper = std::make_shared<SimpleActionWrapper>(&action);
-        actionbyname[action.name()] = wrapper;
+        std::shared_ptr<SimpleActionWrapper> wrapper;
+        if (actionbyname.find(action.name()) == actionbyname.end()) {
+            //create new wrapper
+            wrapper = std::make_shared<SimpleActionWrapper>(&action);
+            actionbyname[action.name()] = wrapper;
+        } else {
+            //update action pointer
+            printf("update pointer on existing wrapper\n");
+            wrapper = actionbyname[action.name()];
+            wrapper->updateActionPointer(&action);
+        }
 
         // restore valueByName access buffer
         for (auto& namedValue : action.type().value_names()) {
@@ -124,4 +133,66 @@ void SimpleActionWrapper::addActionDependency(const std::string &name, const flo
     actionDependencyStates[name].push_back(value);
 }
 
+
+bool SimpleActionWrapper::isValidState(const float &value, const float& epsilon) {
+    // it value exitst in named values, it is valid
+    for (const auto& nv : action->type().value_names()) {
+        if (value == nv.value()) {
+            return true;
+        }
+    }
+    // if it is not within min/max it is invalid
+    if (value < action->type().min_state() || value > action->type().max_state()) {
+        return false;
+    }
+
+    switch (action->type().type()) {
+        case robot_remote_control::UNDEFINED:
+             return false;
+            //  break;
+        case robot_remote_control::VALUE_INT: {
+            if (nearbyintf(value) != value) { // rounded to int is not the same as numer vlaue not an int
+                return false;
+            }
+            bool isInStep = false;
+            if (action->type().step_size() == 0) {
+                isInStep = true;
+            } else {
+                for (int i = action->type().min_state(); i<=action->type().max_state(); i += action->type().step_size()) {
+                    if (i == value) {
+                        isInStep=true;
+                        break;
+                    }
+                }
+            }
+            if (!isInStep) {
+                return false;
+            }
+            return true;
+        }
+        case robot_remote_control::VALUE_FLOAT:{
+            bool isInStep = false;
+            double values = (action->type().max_state() - action->type().min_state()) / action->type().step_size();
+            if (action->type().step_size() == 0) {
+                isInStep = true;
+            } else {
+                for (int i = 0; i< values; ++i) {
+                    // to avoid imcremental rounding errors, calc offset in each step (min + i * stepzize) to see if it is matching
+                    // there will be still an error so check against std::numeric_limits<float>::epsilon()
+                    if (fabs(action->type().min_state() + (i * action->type().step_size()) - value) < epsilon) {
+                        isInStep=true;
+                        break;
+                    }
+                }
+            }
+            if (!isInStep) {
+                return false;
+            }
+            return true;
+        }
+        case robot_remote_control::TRIGGER:
+            return true;
+    }
+    return false;
+}
 

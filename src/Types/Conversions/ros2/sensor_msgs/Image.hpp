@@ -31,9 +31,9 @@ namespace RosConversion {
         convert(from.header(), &(to->header));
         to->height = from.height();
         to->width = from.width();
-        if (encodings.right.find(from.encoding()) != encodings.right.end()) {
+        if (encodings.left.find(from.encoding()) != encodings.left.end()) {
             // encoding supported
-            to->encoding = encodings.right.at(from.encoding());
+            to->encoding = encodings.left.at(from.encoding());
         } else {
             // encoding unsupported, leave original value as hint, as to how to interpret the data
             to->encoding = from.encoding();
@@ -49,9 +49,9 @@ namespace RosConversion {
         convert(from.header, to->mutable_header());
         to->set_height(from.height);
         to->set_width(from.width);
-        if (encodings.left.find(from.encoding) != encodings.left.end()) {
+        if (encodings.right.find(from.encoding) != encodings.right.end()) {
             // encoding supported
-            to->set_encoding(encodings.left.at(from.encoding));
+            to->set_encoding(encodings.right.at(from.encoding));
         } else {
             // encoding unsupported, leave original value as hint, as to how to interpret the data
             to->set_encoding(from.encoding);

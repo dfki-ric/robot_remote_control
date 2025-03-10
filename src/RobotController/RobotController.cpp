@@ -6,7 +6,6 @@
 
 #include "ProtocolVersion.hpp"
 #include "LibraryVersion.hpp"
-#include "GitVersion.hpp"
 
 #ifdef ZLIB_FOUND
 #include "../Tools/Compression.hpp"
@@ -305,6 +304,13 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         return replystr;
     }
     lastConnectedTimer.start();
+
+    if (!connected) {
+        if (connectedCallback != nullptr) {
+            connectedCallback();
+        }
+    }
+
     connected.store(true);
     return replystr;
 }

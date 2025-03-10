@@ -1270,12 +1270,21 @@ BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
 
     controller.setHeartBeatDuration(0.1);
 
-    controller.setupLostConnectionCallback([&](const float& since) {
+    controller.setupDisconnectedCallback([&](const float& since) {
       detected_on_controller = true;
     });
-    robot.setupHeartbeatCallback(0.1, [&](const float& since) {
+    int controllerConnections = 0;
+    controller.setupConnectedCallback([&](){
+      controllerConnections++;
+    });
+    robot.setupDisconnectedCallback(0.1, [&](const float& since) {
       detected_on_robot = true;
     });
+    int robotConnections = 0;
+    robot.setupConnectedCallback([&](){
+      robotConnections++;
+    });
+
 
     // wait for connection
     while (!controller.isConnected()) {
@@ -1284,6 +1293,9 @@ BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
 
     BOOST_CHECK_EQUAL(controller.isConnected(), true);
     BOOST_CHECK_EQUAL(robot.isConnected(), true);
+
+    BOOST_CHECK_EQUAL(controllerConnections, 1);
+    BOOST_CHECK_EQUAL(robotConnections, 1);
 
     auto zmqptr = std::dynamic_pointer_cast<TransportZmq>(commands);
     zmqptr->disconnect();
@@ -1303,6 +1315,9 @@ BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
 
     BOOST_CHECK_EQUAL(controller.isConnected(), true);
     BOOST_CHECK_EQUAL(robot.isConnected(), true);
+
+    BOOST_CHECK_EQUAL(controllerConnections, 2);
+    BOOST_CHECK_EQUAL(robotConnections, 2);
 }
 #endif
 

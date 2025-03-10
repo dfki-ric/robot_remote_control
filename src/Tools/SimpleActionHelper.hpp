@@ -86,8 +86,15 @@ class SimpleActionsHelper {
         return canExecute(actionbyname[actionname]);
     }
 
+    /**
+     * @brief update the locak action with ne data (received from the robot)
+     * while updating the Action pointers in the SimpleActionWrappers (may be in use)
+     * 
+     * @param initfrom the newly received data
+     */
+    void update(const robot_remote_control::SimpleActions& initfrom);
+
  private:    
-    void initFrom(const robot_remote_control::SimpleActions& initfrom);
     robot_remote_control::SimpleActions actions;
     std::map<std::string, std::shared_ptr<SimpleActionWrapper>> actionbyname;
 
@@ -130,18 +137,30 @@ class SimpleActionWrapper {
         return action->type().type();
     }
 
-    
     const robot_remote_control::SimpleAction& getAction() {
         return *action;
     }
+
+    /**
+     * @brief check if a value is a valid setting based on this actions definition
+     * 
+     * @param value the value to check
+     * @param epsilon in case a step size is set for a VALUE_FLOAT action, you can set a epsilon in cace flaot precision if giving you wrong results
+     * @return true 
+     * @return false 
+     */
+    bool isValidState(const float &value, const float& epsilon = std::numeric_limits<float>::epsilon());
 
  private:
     robot_remote_control::SimpleAction* action;
 
     friend class SimpleActionsHelper;
+    void updateActionPointer(robot_remote_control::SimpleAction* newactionpointer) {
+        // printf("replacing %p with %p\n", action, newactionpointer);
+        action = newactionpointer;
+    }
     std::map<std::string, float> valueByName;
     std::map<float, std::string> nameByValue;
-
     std::map<std::string, std::vector<float> > actionDependencyStates;
 
 };

@@ -10,7 +10,6 @@
 
 #include "ProtocolVersion.hpp"
 #include "LibraryVersion.hpp"
-#include "GitVersion.hpp"
 
 namespace robot_remote_control {
 
@@ -19,6 +18,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     commandTransport(commandTransport),
     telemetryTransport(telemetryTransport),
     heartbeatAllowedLatency(0.1),
+    connectionLostCallbackInterval(1),
     connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1),
@@ -94,6 +94,11 @@ void ControlledRobot::update() {
     bool received = false;
     while (receiveRequest() != NO_CONTROL_DATA) {received = true;}
     if (received == true) {
+        if (!connected) {
+            if (connectedCallback != nullptr) {
+                connectedCallback();
+            }
+        }
         connected.store(true);
     }
 
@@ -106,10 +111,16 @@ void ControlledRobot::update() {
         heartbeatTimer.start(heartbeatValues.heartbeatduration() + heartbeatAllowedLatency);
     }
     if (heartbeatTimer.isExpired()) {
+        if (connected) {
+            connectionLostCallbackTimer.start(0);
+        }
         connected.store(false);
-        float elapsedTime = heartbeatTimer.getElapsedTime();
         if (heartbeatExpiredCallback != nullptr) {
-            heartbeatExpiredCallback(elapsedTime);
+            if (connectionLostCallbackTimer.isExpired()){
+                float elapsedTime = heartbeatTimer.getElapsedTime();
+                heartbeatExpiredCallback(elapsedTime);
+                connectionLostCallbackTimer.start(connectionLostCallbackInterval);
+            }
         }
     }
 }
