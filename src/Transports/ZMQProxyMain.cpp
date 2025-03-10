@@ -44,14 +44,17 @@ int main(int argc, char** argv) {
     std::thread tememetrythread = std::thread([&](){
         zmq::context_t context(4);
         zmq::socket_t sub(context, ZMQ_SUB);
-        sub.setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
+
+        // sub.setsockopt(ZMQ_SUBSCRIBE, NULL, 0)s;  // subscribe all
+        sub.set(zmq::sockopt::subscribe, 0);
         sub.connect("tcp://"+robotip+":"+robot_telemetryport);
 
 
         zmq::socket_t pub(context, ZMQ_PUB);
         pub.bind("tcp://*:"+local_telemetryport);
 
-        zmq::proxy(static_cast<void*>(sub), static_cast<void*>(pub), nullptr);
+        // zmq::proxy(static_cast<void*>(sub), static_cast<void*>(pub), nullptr);
+        zmq::proxy(sub, pub);
     });
 
     zmq::context_t context(1);
@@ -62,7 +65,8 @@ int main(int argc, char** argv) {
     zmq::socket_t rep(context, ZMQ_REP);
     rep.bind("tcp://*:"+local_commandport);
 
-    zmq::proxy(static_cast<void*>(req), static_cast<void*>(rep), nullptr);
+    //zmq::proxy(static_cast<void*>(req), static_cast<void*>(rep), nullptr);
+    zmq::proxy(req, rep);
 
 
     tememetrythread.join();
