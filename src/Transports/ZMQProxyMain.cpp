@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
         zmq::context_t context(4);
         zmq::socket_t sub(context, ZMQ_SUB);
 
-        #ifndef ZMQ_CPP11
+        #if ZMQ_VERSION < ZMQ_MAKE_VERSION(4, 7, 0)
             sub.setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
         #else
             sub.set(zmq::sockopt::subscribe, "");
