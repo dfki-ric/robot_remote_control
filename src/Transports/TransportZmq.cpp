@@ -45,14 +45,13 @@ int TransportZmq::receive(std::string* buf, Flags flags) {
     return requestmsg.size();
 }
 
-
 void TransportZmq::connect() {
     if (!connected) {
         switch (type) {
             case REQ: {
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REQ));
 
-                #if ZMQ_VERSION < ZMQ_MAKE_VERSION(4, 7, 0)
+                #if CPPZMQ_VERSION < ZMQ_MAKE_VERSION(4, 7, 0)
                     socket->setsockopt(ZMQ_REQ_CORRELATE, 1);
                     socket->setsockopt(ZMQ_REQ_RELAXED, 1);
                 #else
@@ -76,7 +75,7 @@ void TransportZmq::connect() {
             case SUB: {
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_SUB));
 
-                #if ZMQ_VERSION < ZMQ_MAKE_VERSION(4, 7, 0)
+                #if CPPZMQ_VERSION < ZMQ_MAKE_VERSION(4, 7, 0)
                     socket->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
                 #else
                     socket->set(zmq::sockopt::subscribe, "");
