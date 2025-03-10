@@ -195,11 +195,11 @@ class VirtualJoystick
             wattroff(warnWindow_.get(), A_BOLD);    
             mvwprintw(warnWindow_.get(), 4, 4, "At"); 
             wattron(warnWindow_.get(), A_UNDERLINE);    
-            mvwprintw(warnWindow_.get(), 4, 7, connectionInfo_.ip.c_str());
+            mvwprintw(warnWindow_.get(), 4, 7, "%s", connectionInfo_.ip.c_str());
             wattroff(warnWindow_.get(), A_UNDERLINE);    
             mvwprintw(warnWindow_.get(), 4, 8 + connectionInfo_.ip.length(), "on ports");
             wattron(warnWindow_.get(), A_UNDERLINE);    
-            mvwprintw(warnWindow_.get(), 4, 17 + connectionInfo_.ip.length(), (connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort).c_str());
+            mvwprintw(warnWindow_.get(), 4, 17 + connectionInfo_.ip.length(), "%s", (connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort).c_str());
             wattroff(warnWindow_.get(), A_UNDERLINE);    
             wborder(warnWindow_.get(), '!', '!', '-','-','+','+','+','+');
             wrefresh(warnWindow_.get());
@@ -306,16 +306,16 @@ class VirtualJoystick
         {
             wattron(windowMap_["statusWindow"].get(), A_BOLD);    
             std::string connected = "Connected to ";
-            mvwprintw(windowMap_["statusWindow"].get() , 1, 2, connected.c_str()); 
-            mvwprintw(windowMap_["statusWindow"].get() , 1, 15, robotName_.value().c_str()); 
+            mvwprintw(windowMap_["statusWindow"].get() , 1, 2, "%s", connected.c_str()); 
+            mvwprintw(windowMap_["statusWindow"].get() , 1, 15, "%s", robotName_.value().c_str()); 
             wattroff(windowMap_["statusWindow"].get(), A_BOLD);    
             mvwprintw(windowMap_["statusWindow"].get() , 3, 4, "At"); 
             wattron(windowMap_["statusWindow"].get(), A_UNDERLINE);    
-            mvwprintw(windowMap_["statusWindow"].get() , 3, 7, connectionInfo_.ip.c_str());
+            mvwprintw(windowMap_["statusWindow"].get() , 3, 7, "%s", connectionInfo_.ip.c_str());
             wattroff(windowMap_["statusWindow"].get(), A_UNDERLINE);    
             mvwprintw(windowMap_["statusWindow"].get() , 3, 8 + connectionInfo_.ip.length(), "on ports");
             wattron(windowMap_["statusWindow"].get(), A_UNDERLINE);    
-            mvwprintw(windowMap_["statusWindow"].get() , 3, 17 + connectionInfo_.ip.length(), (connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort).c_str());
+            mvwprintw(windowMap_["statusWindow"].get() , 3, 17 + connectionInfo_.ip.length(), "%s", (connectionInfo_.commandPort+":"+connectionInfo_.telemetryPort).c_str());
             wattroff(windowMap_["statusWindow"].get(), A_UNDERLINE);    
             wrefresh(windowMap_["statusWindow"].get());
         }
@@ -323,7 +323,7 @@ class VirtualJoystick
         void printHeartBeat()
         {
             std::string heartBeat = "HeartBeat RTT: " + std::to_string(controller_->getHeartBeatRoundTripTime());
-            mvwprintw(windowMap_["statusWindow"].get() , 5, 4, heartBeat.c_str()); 
+            mvwprintw(windowMap_["statusWindow"].get() , 5, 4, "%s", heartBeat.c_str()); 
             wrefresh(windowMap_["statusWindow"].get());
         }
 
@@ -331,7 +331,7 @@ class VirtualJoystick
         {
             wattron(windowMap_["arrowWindow"].get(), A_BOLD);    
             mvwprintw(windowMap_["arrowWindow"].get() , 1, 1, "Current Increment: "); 
-            mvwprintw(windowMap_["arrowWindow"].get() , 1, 21, std::to_string(increment_).c_str()); 
+            mvwprintw(windowMap_["arrowWindow"].get() , 1, 21, "%s", std::to_string(increment_).c_str()); 
             wrefresh(windowMap_["arrowWindow"].get());
         }
 
@@ -342,7 +342,7 @@ class VirtualJoystick
             wattroff(windowMap_["cmdWindow"].get(), A_BOLD);    
             wmove(windowMap_["cmdWindow"].get(), 4, 4);
             wclrtoeol(windowMap_["cmdWindow"].get());
-            mvwprintw(windowMap_["cmdWindow"].get(), 4, 4, twistCmd_.ShortDebugString().c_str());
+            mvwprintw(windowMap_["cmdWindow"].get(), 4, 4, "%s", twistCmd_.ShortDebugString().c_str());
             wrefresh(windowMap_["cmdWindow"].get());
         }
 };
