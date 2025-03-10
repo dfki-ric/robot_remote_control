@@ -1012,7 +1012,6 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   // after one second, it should definately be running
   while (!started) {
     usleep(100);
-    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
   }
   BOOST_TEST(threadedCallback.finished() == false); // callback should be running
   //BOOST_CHECK_EQUAL(wasBusy, false); // callback should not have been called a 2nd time
@@ -1022,14 +1021,12 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   
   // wait until 2nd call failed
   while (!wasBusy || threadedCallback.finished()) {
-    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
     usleep(100);
   }
   BOOST_CHECK_EQUAL(wasBusy, true);
 
   //wait to let the initial callback finish
   while (!wasRunning) {
-    printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
      usleep(100);
   }
   // wait some time after callback ended to let the implemnentation set the threadedCallback.finished() value
