@@ -21,9 +21,9 @@ TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type) 
 int TransportZmq::send(const std::string& buf, Flags flags) {
     zmq::message_t msg(buf.data(), buf.size());
 
-    int zmqflag = 0;
+    zmq::send_flags zmqflag = zmq::send_flags::none;
     if (flags & NOBLOCK) {
-        zmqflag = ZMQ_NOBLOCK;
+        zmqflag = zmq::send_flags::dontwait;
     }
     if (socket->send(msg, zmqflag)) {
         return buf.size();
@@ -33,26 +33,32 @@ int TransportZmq::send(const std::string& buf, Flags flags) {
 
 int TransportZmq::receive(std::string* buf, Flags flags) {
     zmq::message_t requestmsg;
-    int zmqflag = 0;
+    zmq::recv_flags zmqflag = zmq::recv_flags::none;
     if (flags & NOBLOCK) {
-        zmqflag = ZMQ_NOBLOCK;
+        zmqflag = zmq::recv_flags::dontwait;
     }
 
-    if (socket->recv(&requestmsg, zmqflag)) {
+    if (socket->recv(requestmsg, zmqflag)) {
         buf->assign(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
     }
 
     return requestmsg.size();
 }
 
-
 void TransportZmq::connect() {
     if (!connected) {
         switch (type) {
             case REQ: {
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REQ));
-                socket->setsockopt(ZMQ_REQ_CORRELATE, 1);
-                socket->setsockopt(ZMQ_REQ_RELAXED, 1);
+
+                #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)
+                    socket->setsockopt(ZMQ_REQ_CORRELATE, 1);
+                    socket->setsockopt(ZMQ_REQ_RELAXED, 1);
+                #else
+                    socket->set(zmq::sockopt::req_correlate, 1);
+                    socket->set(zmq::sockopt::req_relaxed, 1);
+                #endif
+
                 socket->connect(addr);
                 break;
             }
@@ -68,7 +74,13 @@ void TransportZmq::connect() {
             }
             case SUB: {
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_SUB));
-                socket->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
+
+                #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)
+                    socket->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
+                #else
+                    socket->set(zmq::sockopt::subscribe, "");
+                #endif
+                
                 socket->connect(addr);
                 break;
             }
