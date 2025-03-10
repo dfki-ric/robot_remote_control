@@ -55,7 +55,7 @@ void TransportZmq::connect() {
                 #ifndef ZMQ_CPP11
                     socket->setsockopt(ZMQ_REQ_CORRELATE, 1);
                     socket->setsockopt(ZMQ_REQ_RELAXED, 1);
-                else
+                #else
                     socket->set(zmq::sockopt::req_correlate, 1);
                     socket->set(zmq::sockopt::req_relaxed, 1);
                 #endif
@@ -78,8 +78,8 @@ void TransportZmq::connect() {
 
                 #ifndef ZMQ_CPP11
                     socket->setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
-                else
-                    socket->set(zmq::sockopt::subscribe, 0);
+                #else
+                    socket->set(zmq::sockopt::subscribe, "");
                 #endif
                 
                 socket->connect(addr);

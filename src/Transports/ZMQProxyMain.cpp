@@ -47,8 +47,8 @@ int main(int argc, char** argv) {
 
         #ifndef ZMQ_CPP11
             sub.setsockopt(ZMQ_SUBSCRIBE, NULL, 0);  // subscribe all
-        else
-            sub.set(zmq::sockopt::subscribe, 0);
+        #else
+            sub.set(zmq::sockopt::subscribe, "");
         #endif
         sub.connect("tcp://"+robotip+":"+robot_telemetryport);
 
