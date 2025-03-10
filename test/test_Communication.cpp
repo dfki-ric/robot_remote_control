@@ -980,9 +980,12 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   controller.setHeartBeatDuration(1);
   controller.waitForConnection();
 
-  std::atomic<bool> wasBusy = false;
-  std::atomic<bool> started = false;
-  std::atomic<bool> wasRunning = false;
+  std::atomic<bool> wasBusy;
+  wasBusy = false;
+  std::atomic<bool> started;
+  started = false;
+  std::atomic<bool> wasRunning;
+  wasRunning = false;
 
   // setup threaded callback
   auto dataCallback = [robotpose, &controller, &wasRunning, &started](const robot_remote_control::Pose &pose) {
