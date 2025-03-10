@@ -12,11 +12,14 @@
 #include "TypeGenerator.hpp"
 
 #include <iostream>
+#include <atomic>
 
 #define private public // :-|
 #define protected public // :-|
 #include "../src/RobotController/RobotController.hpp"
 #include "../src/ControlledRobot/ControlledRobot.hpp"
+
+#include "../src/Tools/TelemetryCallbackThread.hpp"
 
 //use boost::filesystem instead of std::filesystem here (tests have boost dependency anyways)
 #include <boost/filesystem.hpp>
@@ -440,7 +443,6 @@ BOOST_AUTO_TEST_CASE(checking_log_message) {
   BOOST_CHECK_EQUAL(received, false);
   // compare if message is still the first fatal message, not the second one
   COMPARE_PROTOBUF(fatal_message, requested_log_message);
-
 
   robot.stopUpdateThread();
   controller.stopUpdateThread();
@@ -961,6 +963,79 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
   robot.setCurrentPose(robotpose);
 
 }
+
+BOOST_AUTO_TEST_CASE(check_callback_threads) {
+  Pose robotpose, controlpose, robotpose2;
+  robotpose = TypeGenerator::genPose();
+  robotpose2 = TypeGenerator::genPose();
+  controlpose = TypeGenerator::genPose();
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  controller.startUpdateThread(0);
+  robot.startUpdateThread(0);
+
+  controller.setHeartBeatDuration(1);
+  controller.waitForConnection();
+
+  std::atomic<bool> wasBusy;
+  wasBusy = false;
+  std::atomic<bool> started;
+  started = false;
+  std::atomic<bool> wasRunning;
+  wasRunning = false;
+
+  // setup threaded callback
+  auto dataCallback = [robotpose, &controller, &wasRunning, &started](const robot_remote_control::Pose &pose) {
+      started = true;
+      sleep(2); // simulate some calculation time (data needs to stay valid, so check afterwards)
+      COMPARE_PROTOBUF(robotpose, pose);
+      Pose currentpose;
+
+      //in the 2 seconds of sleep, a new pose arrived, so it should be different when received via getCurrentPose() with onlynewest
+      bool isnew = controller.getCurrentPose(&currentpose, true);
+      BOOST_TEST(isnew == true);
+      BOOST_TEST(robotpose.SerializeAsString() != currentpose.SerializeAsString());
+      wasRunning = true;
+  };
+
+  auto busyCallabck = [&wasBusy]() {
+    wasBusy = true;
+  };
+
+  robot_remote_control::TelemetryCallbackThread<robot_remote_control::Pose> threadedCallback(controller, robot_remote_control::CURRENT_POSE, dataCallback, 0, busyCallabck);
+
+  // trigger initial callback (sleeps first)
+  robot.setCurrentPose(robotpose);
+  // after one second, it should definately be running
+  while (!started) {
+    usleep(100);
+  }
+  BOOST_TEST(threadedCallback.finished() == false); // callback should be running
+  //BOOST_CHECK_EQUAL(wasBusy, false); // callback should not have been called a 2nd time
+
+  // set a new pose, tries to trigger thread the 2nd time, now the newest pose in the buffer is different but the one given to the callback is the older one
+  robot.setCurrentPose(robotpose2);
+  
+  // wait until 2nd call failed
+  while (!wasBusy || threadedCallback.finished()) {
+    usleep(100);
+  }
+  BOOST_CHECK_EQUAL(wasBusy, true);
+
+  //wait to let the initial callback finish
+  while (!wasRunning) {
+     usleep(100);
+  }
+  // wait some time after callback ended to let the implemnentation set the threadedCallback.finished() value
+  sleep(1);
+  
+  BOOST_TEST(threadedCallback.finished() == true);
+
+}
+
 
 
 BOOST_AUTO_TEST_CASE(test_get_newest) {
