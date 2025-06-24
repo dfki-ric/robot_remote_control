@@ -554,6 +554,17 @@ class ControlledRobot: public UpdateThread {
         }
 
         /**
+         * @brief Set the Laser Scan object to be send as telemetry
+         *
+         * @param laserscan
+         * @return int
+         */
+        int setLaserScan(const robot_remote_control::LaserScan &laserscan, const ChannelId &channel = 0) {
+            return sendTelemetry(laserscan, LASER_SCAN, false, channel);
+        }
+
+
+        /**
          * @brief Set the Map object, maps are not sent via telemetry, they have to be requsted 
          *  to be sent via the command channel
          * 

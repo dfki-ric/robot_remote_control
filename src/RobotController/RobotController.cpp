@@ -52,6 +52,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
         registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
         registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
+        registerTelemetryType<LaserScan>(LASER_SCAN, buffersize);
 
         // #ifdef RRC_STATISTICS
         //     // add names to buffer, this types have aspecial treatment, the should not be registered

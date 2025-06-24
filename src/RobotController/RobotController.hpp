@@ -393,6 +393,18 @@ class RobotController: public UpdateThread {
             return getTelemetry(POINTCLOUD, pointcloud, onlyNewest, channel);
         }
 
+        /**
+         * @brief Get the Point Cloud object
+         * 
+         * @param laserscan 
+         * @return true 
+         * @return false 
+         */
+        bool getLaserScan(LaserScan *laserscan, bool onlyNewest = false, const ChannelId &channel = 0) {
+            return getTelemetry(LASER_SCAN, laserscan, onlyNewest, channel);
+        }
+
+
         bool getImage(Image *image, bool onlyNewest = false, const ChannelId &channel = 0) {
             return getTelemetry(IMAGE, image, onlyNewest, channel);
         }

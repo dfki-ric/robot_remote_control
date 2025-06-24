@@ -84,6 +84,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION);
     registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS);
     registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION);
+    registerTelemetryType<LaserScan>(LASER_SCAN);
 }
 
 ControlledRobot::~ControlledRobot() {
