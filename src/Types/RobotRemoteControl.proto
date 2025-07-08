@@ -59,7 +59,9 @@ enum TelemetryMessageType {
     ROBOT_MODEL_INFORMATION = 27;                // Robot Model Imformation
     INTERFACE_OPTIONS =  28;         // set options on how the connected controlled robots behaves (e.g. changing available simpleactions)
     CHANNELS_DEFINITION = 29;        // definition of sub-channesl added be the ControlledRobot
-    TELEMETRY_MESSAGE_TYPES_NUMBER = 30;  // LAST element
+    LASER_SCAN = 30;                // Laser scan data
+    TELEMETRY_MESSAGE_TYPES_NUMBER = 31;  // LAST element
+    
 };
 
 enum LogLevel {
@@ -318,6 +320,21 @@ message PointCloud {
     repeated ChannelFloat channels = 4;
 
 }
+
+message LaserScan {
+    Header header = 1;
+    uint32 vertical_size = 2; // number of vertical lines in the scan, e.g. 0 for one horizontal laser scan
+    uint32 horizontal_size = 3; // number of horizontal lines in the scan, e.g. 0 for one vertical laser scan
+    float vertical_angle_resolution = 4; // vertical angular distance between measurements in radians
+    float start_angle = 5; // start angle of the scan in radians(should be same as angle_min)
+    float horizontal_angle_resolution = 6; // angular distance between measurements in radians
+    float scan_speed = 7; // time between scans in seconds
+    float range_min = 8; // minimum range value in meters
+    float range_max = 9; // maximum range value in meters
+    repeated float ranges = 10; // range data in meters
+    repeated float remissions = 11; // intensity or other data associated with each range measurement
+}
+    
 
 message Pose {
     Header header = 1;
