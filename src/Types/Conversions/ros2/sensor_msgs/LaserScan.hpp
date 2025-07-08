@@ -11,7 +11,6 @@ namespace RosConversion {
         convert(laserscan.header, to->mutable_header());
 
         to->set_start_angle(laserscan.angle_min); // assuming angle_min is the start angle
-        to->set_angle_resolution(laserscan.angle_increment);
 
         float scan_time = laserscan.scan_time;
         float scan_speed = 0;
@@ -28,6 +27,11 @@ namespace RosConversion {
         to->set_range_min(laserscan.range_min);
         to->set_range_max(laserscan.range_max);
 
+        to->set_vertical_size(0); // Assuming no vertical lines for horizontal laser scans
+        to->set_horizontal_size(1); // Assuming no horizontal lines for vertical laser scans
+        to->set_vertical_angle_resolution(0); // Assuming no vertical angle resolution for horizontal laser scans
+        to->set_horizontal_angle_resolution(laserscan.angle_increment);
+
         for (const auto& range : laserscan.ranges) {
             to->add_ranges(range);
         }
@@ -40,8 +44,8 @@ namespace RosConversion {
 
         to->angle_min = laserscan.start_angle();
 
-        to->angle_max = laserscan.start_angle() + (laserscan.ranges_size() - 1) * laserscan.angle_resolution();
-        to->angle_increment = laserscan.angle_resolution();
+        to->angle_max = laserscan.start_angle() + (laserscan.ranges_size() - 1) * laserscan.horizontal_angle_resolution();
+        to->angle_increment = laserscan.horizontal_angle_resolution();
 
         float scan_time = 0;
         float scan_speed = laserscan.scan_speed();

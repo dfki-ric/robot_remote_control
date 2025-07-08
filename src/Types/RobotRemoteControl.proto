@@ -323,12 +323,16 @@ message PointCloud {
 
 message LaserScan {
     Header header = 1;
-    float start_angle = 2; // start angle of the scan in radians(should be same as angle_min)
-    float angle_resolution = 3; // angular distance between measurements in radians
-    float scan_speed = 4; // time between scans in seconds
-    float range_min = 5; // minimum range value in meters
-    float range_max = 6; // maximum range value in meters
-    repeated float ranges = 7; // range data in meters
+    uint32 vertical_size = 2; // number of vertical lines in the scan, e.g. 0 for one horizontal laser scan
+    uint32 horizontal_size = 3; // number of horizontal lines in the scan, e.g. 0 for one vertical laser scan
+    float vertical_angle_resolution = 4; // vertical angular distance between measurements in radians
+    float start_angle = 5; // start angle of the scan in radians(should be same as angle_min)
+    float horizontal_angle_resolution = 6; // angular distance between measurements in radians
+    float scan_speed = 7; // time between scans in seconds
+    float range_min = 8; // minimum range value in meters
+    float range_max = 9; // maximum range value in meters
+    repeated float ranges = 10; // range data in meters
+    repeated float remissions = 11; // intensity or other data associated with each range measurement
 }
     
 

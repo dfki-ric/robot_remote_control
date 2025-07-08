@@ -18,13 +18,17 @@ namespace RockConversion {
         convert(rock_type.time, rrc_type->mutable_header()->mutable_timestamp());
 
         rrc_type->set_start_angle(rock_type.start_angle);
-        rrc_type->set_angle_resolution(rock_type.angular_resolution);
+        rrc_type->set_horizontal_angle_resolution(rock_type.angular_resolution);
+        rrc_type->set_vertical_angle_resolution(0); // Assuming no vertical lines for horizontal laser scans
         rrc_type->set_scan_speed(rock_type.speed);
 
         rrc_type->set_range_min(rock_type.minRange / 1000.0); // Convert from mm to m
         rrc_type->set_range_max(rock_type.maxRange / 1000.0); // Convert from mm to m
 
         rrc_type->mutable_ranges()->Reserve(rock_type.ranges.size());
+
+        rrc_type->set_vertical_size(0); // Assuming no vertical lines for horizontal laser scans
+        rrc_type->set_horizontal_size(1); // Assuming no horizontal lines for vertical laser
 
         for (const auto& range : rock_type.ranges) {
             rrc_type->add_ranges(range / 1000.0); // Convert from mm to m
@@ -37,7 +41,7 @@ namespace RockConversion {
         convert(rrc_type.header().timestamp(), &(rock_type->time));
 
         rock_type->start_angle = rrc_type.start_angle();
-        rock_type->angular_resolution = rrc_type.angle_resolution();
+        rock_type->angular_resolution = rrc_type.horizontal_angle_resolution();
         rock_type->speed = rrc_type.scan_speed();
 
         rock_type->minRange = static_cast<uint32_t>(rrc_type.range_min() * 1000.0); // Convert from m to mm
