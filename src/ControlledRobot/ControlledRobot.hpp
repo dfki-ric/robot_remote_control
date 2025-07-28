@@ -132,7 +132,7 @@ class ControlledRobot: public UpdateThread {
                 commandbuffers[type]->addCommandReceivedCallback(function);
                 return true;
             } else {
-                printf("%s:%i there is no bufferes comamnd of type %i\n", __PRETTY_FUNCTION__, __LINE__, type);
+                printf("%s:%i there is no bufferes command of type %i\n", __PRETTY_FUNCTION__, __LINE__, type);
             }
             return false;
         }

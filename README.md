@@ -55,6 +55,20 @@ The library is compiled using cmake. To compile it manually execute the followin
     cmake ..
     make
 
+#### Build Options
+
+You can provide build options to enable/disable some components, provide them when running cmake:
+
+cmake -D [OPTION ON/OFF] ..
+
+Options:
+
+* RRC_STATISTICS (collect/calculate local bandwidth data)
+* BUILD_EXAMPLES Build the examples
+* BUILD_TESTS Build the tests
+
+You can also set them directly in the src/CMakeLists.txt file.
+
 Optionally you can add the flags -DBUILD_EXAMPLES=ON and -DBUILD_TESTS=ON to build the examples and test directory respectively.
 
 #### Building on systems without protobuf3

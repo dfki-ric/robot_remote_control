@@ -44,6 +44,14 @@ if( BUILD_EXAMPLES )
     add_subdirectory(examples)
 endif( BUILD_EXAMPLES )
 
+# set (BUILD_TUTORIAL ON)
+if( BUILD_TUTORIAL )
+    message("Adding example directory") 
+    add_subdirectory(tutorial)
+endif( BUILD_TUTORIAL )
+
+
+
 #set (BUILD_TESTS ON)
 if( BUILD_TESTS )
     message("Adding test directory") 
