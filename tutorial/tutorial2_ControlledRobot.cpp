@@ -20,11 +20,7 @@ int main(int argc, char** argv)
     // set a robot name
     robot.initRobotName("TestRobot");
 
-    // set a callback for connection losses, allow 100ms of later arrival
-    // (due to differences in latency between heartbeat commands)
-    // the elapsed time may be used to have different stages of escalation
-    // when there are multiple connections to this robots with different heartbeats
-    // in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
+    // connection manegement
     robot.setupDisconnectedCallback(0.1, [](const float &elapsed){
         printf("no heartbeat since %.2f seconds\n", elapsed);
     });
