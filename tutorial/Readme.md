@@ -137,7 +137,7 @@ And then fill a command protobuf class and send it to the robot
     }
 ```
 
-The code is available [here](./tutorial1_RobotController.cpp).
+The code is available here: [Controller](./tutorial1_RobotController.cpp) [Robot](./tutorial1_ControlledRobot.cpp).
 
 When the BUILD_TUTORIAL cmake option was on, it can be executed with `./build/tutorial/tutorial1_RobotController_bin`
 When you also start the robot side `./build/tutorial/tutorial1_ControlledRobot_bin`, you can see both sides communicate.
@@ -191,9 +191,106 @@ The Heartbeat may be prolonged by the controller during operation to allow the r
     robot.setupHeartbeatCallbackInterval(2);
 ```
 
-## Callbacks
+The code is available here: [Controller](./tutorial2_RobotController.cpp) [Robot](./tutorial2_ControlledRobot.cpp).
+
+When the BUILD_TUTORIAL cmake option was on, it can be executed with `./build/tutorial/tutorial2_RobotController_bin`
+When you also start the robot side `./build/tutorial/tutorial2_ControlledRobot_bin`, you can see both sides communicate.
+
+## Message Callbacks
+
+Apart from connection callbacks you can also set up callback when messages arrive.
+
+**These callbacks will run in the receive thread, do not use to long-time calculations**
+
+The ControlledRobots offers:
+* `void addCommandReceivedCallback(const std::function<void(const MessageId &type)> &function)`
+* `bool addCommandReceivedCallback(const MessageId &type, const std::function<void()> &function)`
+
+The RobotController offers:
+
+* `void addTelemetryReceivedCallback(const std::function<void(const MessageId &type)> &function)`
+* `template< class DATATYPE > void addTelemetryReceivedCallback(const MessageId &type, const std::function<void(const DATATYPE & data)> &function, const ChannelId &channel = 0)`
+
+Where the MessageId is from the ControlMessageType enum in the proto file.
+
+ControlledRobot:
+
+```cpp
+    robot.addCommandReceivedCallback(robot_remote_control::TWIST_COMMAND, [&](){
+        twist_command.PrintDebugString();
+        // we don't have real robot data, so we just write the value back
+        twist_telemetry = twist_command;
+    });
+```
+
+RobotController:
+
+```cpp
+    controller.addTelemetryReceivedCallback<robot_remote_control::Twist>(robot_remote_control::CURRENT_TWIST, [&](const robot_remote_control::Twist& twist){
+        twist.PrintDebugString();
+    });
+```
+
+Using these methods, the program may print received data directly when it arrives.
+
+The code is available here: [Controller](./tutorial3_RobotController.cpp) [Robot](./tutorial3_ControlledRobot.cpp).
+
+When the BUILD_TUTORIAL cmake option was on, it can be executed with `./build/tutorial/tutorial3_RobotController_bin`
+When you also start the robot side `./build/tutorial/tutorial3_ControlledRobot_bin`, you can see both sides communicate.
 
 ## Channels
+
+The telemetry getter functions offer a single buffer, while different data sources could be identifies using the frame information in the header (e.g. Point Clouds from different sensors), they are stored in a single receive buffer. To allow separation of the streams and buffers, "channels" can be added on the robot side. 
+
+When adding a 2nd channel, it is advised to also set a default channel name
+
+```cpp
+    robot.setDefaultChannelName(robot_remote_control::CURRENT_TWIST, "default channel");
+    int twist_2nd_channel = robot.addChannel(robot_remote_control::CURRENT_TWIST, "another channel");
+```
+Available channels and their names can be requested on the controller side (requestChannelsDefinition()), this is also available in the `robot_controller` application:
+
+```json
+rrc@localhost $ requestChannelsDefinition 
+channel {
+  name: "default channel"
+  messagetype: 19
+}
+channel {
+  name: "another channel"
+  messagetype: 19
+  channelno: 1
+}
+```
+To send data on the 2nd channel, provide the channel no as 2nd paramater to the setter:
+```cpp
+robot.setCurrentTwist(twist_telemetry2, twist_2nd_channel);
+```
+As channel numbers are in order, you don't need to store them in variables for simple programs, you can just use the index directly (default is 0):
+
+```cpp
+    robot.addChannel(robot_remote_control::CURRENT_TWIST, "2nd channel");
+    robot.setCurrentTwist(twist_telemetry, 1);
+```
+
+When you call requestChannelsDefinition() in the Controller, all needed buffers are set up directly.
+If you don't and know the channels used, they are created on the first arrival of a message on that channel.
+
+You can receive channel contents by setting the optional paramaters of the getTYPE function:
+`Twist *telemetry, bool onlyNewest = false, const ChannelId &channel = 0`
+The onlyNewest bool defines whether you want to empty the buffer in order of just need the most recent value.
+
+```cpp
+    if (controller.getCurrentTwist(&twist_telemetry2, true, 1)) {
+        std::string tele = twist_telemetry2.ShortDebugString();
+        printf("channel1: %s", tele.c_str());
+    }
+```
+
+The code is available here: [Controller](./tutorial4_RobotController.cpp) [Robot](./tutorial4_ControlledRobot.cpp).
+
+When the BUILD_TUTORIAL cmake option was on, it can be executed with `./build/tutorial/tutorial4_RobotController_bin`
+When you also start the robot side `./build/tutorial/tutorial4_ControlledRobot_bin`, you can see both sides communicate.
 
 ## Simple Actions
 

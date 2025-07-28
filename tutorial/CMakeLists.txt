@@ -24,3 +24,9 @@ build_tutorial_binary(tutorial1_RobotController)
 
 build_tutorial_binary(tutorial2_RobotController)
 build_tutorial_binary(tutorial2_ControlledRobot)
+
+build_tutorial_binary(tutorial3_RobotController)
+build_tutorial_binary(tutorial3_ControlledRobot)
+
+build_tutorial_binary(tutorial4_RobotController)
+build_tutorial_binary(tutorial4_ControlledRobot)
