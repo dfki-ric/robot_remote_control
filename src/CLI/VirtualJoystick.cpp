@@ -138,7 +138,7 @@ class VirtualJoystick
 
         void initController()
         {
-            controller_->startUpdateThread(0);
+            controller_->startUpdateThread(10);
             controller_->setHeartBeatDuration(1);
             controller_->setupLostConnectionCallback([&](const float& time){});
             controller_->requestRobotName(&robotName_);

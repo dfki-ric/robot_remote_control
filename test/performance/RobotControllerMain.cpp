@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     pose.mutable_orientation()->set_w(1);
 
     
-    controller.startUpdateThread(0);
+    controller.startUpdateThread(10);
 
     float x = 0;
 

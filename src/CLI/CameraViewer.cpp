@@ -44,7 +44,7 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+connectionInfo.ip+":"+connectionInfo.telemetryPort, TransportZmq::SUB));
     std::shared_ptr<robot_remote_control::RobotController> controller_ = std::make_shared<robot_remote_control::RobotController>(commands, telemetry);
 
-    controller_->startUpdateThread(0);
+    controller_->startUpdateThread(10);
 
     robot_remote_control::Image rrcimg;
 

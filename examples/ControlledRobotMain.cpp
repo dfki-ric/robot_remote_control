@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
-    robot.startUpdateThread(0);
+    robot.startUpdateThread(10);
 
     // set a callback for connection losses, allow 100ms of later arrival
     // (due to differences in latency between heartbeat commands)

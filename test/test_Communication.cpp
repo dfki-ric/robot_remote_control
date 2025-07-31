@@ -746,8 +746,8 @@ BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
   RobotController controller(commands, telemetry);
   ControlledRobot robot(command, telemetri);
 
-  controller.startUpdateThread(0);
-  robot.startUpdateThread(0);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
 
   // use pose as telemetry dummy, x value is the counter
   Pose pose = TypeGenerator::genPose();
@@ -805,8 +805,8 @@ BOOST_AUTO_TEST_CASE(buffer_setting_resize) {
   RobotController controller(commands, telemetry);
   ControlledRobot robot(command, telemetri);
 
-  controller.startUpdateThread(0);
-  robot.startUpdateThread(0);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
 
   // use pose as telemetry dummy, x value is the counter
   Pose pose = TypeGenerator::genPose();
@@ -974,8 +974,8 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   RobotController controller(commands, telemetry);
   ControlledRobot robot(command, telemetri);
 
-  controller.startUpdateThread(0);
-  robot.startUpdateThread(0);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
 
   controller.setHeartBeatDuration(1);
   controller.waitForConnection();
@@ -1045,8 +1045,8 @@ BOOST_AUTO_TEST_CASE(test_get_newest) {
   RobotController controller(commands, telemetry);
   ControlledRobot robot(command, telemetri);
 
-  controller.startUpdateThread(0);
-  robot.startUpdateThread(0);
+  controller.startUpdateThread(10);
+  robot.startUpdateThread(10);
 
   // use pose as telemetry dummy, x value is the counter
   Pose pose = TypeGenerator::genPose();
@@ -1115,8 +1115,8 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
     RobotController controller(commands, telemetry);
     ControlledRobot robot(command, telemetri);
 
-    controller.startUpdateThread(0);
-    robot.startUpdateThread(0);
+    controller.startUpdateThread(10);
+    robot.startUpdateThread(10);
 
     //should return false if no files set up
     BOOST_CHECK_EQUAL(controller.requestFile("folder", false, "./"), false);
@@ -1262,8 +1262,8 @@ BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
     RobotController controller(commands, telemetry);
     ControlledRobot robot(command, telemetri);
 
-    controller.startUpdateThread(0);
-    robot.startUpdateThread(0);
+    controller.startUpdateThread(10);
+    robot.startUpdateThread(10);
 
     bool detected_on_controller = false;
     bool detected_on_robot = false;
@@ -1328,8 +1328,8 @@ BOOST_AUTO_TEST_CASE(robot_model) {
     RobotController controller(commands, telemetry);
     ControlledRobot robot(command, telemetri);
 
-    controller.startUpdateThread(0);
-    robot.startUpdateThread(0);
+    controller.startUpdateThread(10);
+    robot.startUpdateThread(10);
 
     // should return false if no files set up
     BOOST_CHECK_EQUAL(controller.requestRobotModel("./downloaded_model_folder").first, "");
@@ -1363,7 +1363,7 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
     RobotController controller(commands, telemetry);
     ControlledRobot robot(command, telemetri);
 
-    robot.startUpdateThread(0);
+    robot.startUpdateThread(10);
 
     uint8_t channelno = robot.addChannel(robot_remote_control::CURRENT_POSE, "ManipulatorPose");
     // controller.addChannelBuffer<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE);
