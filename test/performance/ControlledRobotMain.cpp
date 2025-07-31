@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
 
  
-    robot.startUpdateThread(0);
+    robot.startUpdateThread(10);
 
     // set a callback for connection losses, allow 100ms of later arrival
     // (due to differences in latency between heartbeat commands)

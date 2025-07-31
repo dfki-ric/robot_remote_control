@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+telemetryport, TransportZmq::SUB));
 
     robot_remote_control::RobotController controller(commands, telemetry);
-    controller.startUpdateThread(0);
+    controller.startUpdateThread(10);
 
     ConsoleCommands console;
     std::vector<ConsoleCommands::ParamDef> params;
