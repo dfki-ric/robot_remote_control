@@ -145,6 +145,7 @@ int main(int argc, char** argv) {
     DEFINE_PRINT_COMMAND(Odometry, getOdometry, "print current Odometry");
     DEFINE_PRINT_COMMAND(Transforms, getCurrentTransforms, "print current Transforms");
     DEFINE_PRINT_COMMAND(SimpleSensor, getSimpleSensor, "print simple sensor content");
+    DEFINE_PRINT_COMMAND(WrenchState, getCurrentWrenchState, "print wrench data");
 
 
 
