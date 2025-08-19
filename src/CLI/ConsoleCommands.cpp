@@ -241,3 +241,7 @@ void ConsoleCommands::printHelp() {
         printf("%s %s \n\t - %s\n\n", cmd.first.c_str(), params.c_str(), cmd.second.doc.c_str());
     });
 }
+
+void ConsoleCommands::redraw() {
+    rl_forced_update_display();
+}

@@ -542,10 +542,13 @@ int main(int argc, char** argv) {
     // set Heartbeat to one second, needed tp detect the connection
     controller.setHeartBeatDuration(1);
 
+    controller.setupConnectedCallback([&](){
+        printf("connected\n");
+        console.redraw();
+    });
+
     printf("waiting for connection\n");
     controller.waitForConnection();
-    printf("connected\n");
-
 
     // call request lamda (output off)
     requestControllableJoints(std::vector<std::string>());

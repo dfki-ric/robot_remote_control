@@ -57,6 +57,8 @@ class ConsoleCommands {
 
     static std::vector<std::string> parseLine(const std::string &line, bool filter_empty = false);
 
+    void redraw();
+
     void printHelp();
 
  private:
