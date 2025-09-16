@@ -20,16 +20,16 @@ namespace RosConversion {
         pb_wrench->mutable_torque()->set_z(from.wrench.torque.z);
     }
 
-    static void convert(const robot_remote_control::WrenchState &from, geometry_msgs::msg::WrenchStamped* to) {
-        convert(from.wrenches(0).header(), &to->header);
+    static void convert(const robot_remote_control::WrenchState &from, geometry_msgs::msg::WrenchStamped* to, size_t index = 0) {
+        convert(from.wrenches(index).header(), &to->header);
 
-        to->wrench.force.x = from.wrenches(0).force().x();
-        to->wrench.force.y = from.wrenches(0).force().y();
-        to->wrench.force.z = from.wrenches(0).force().z();
+        to->wrench.force.x = from.wrenches(index).force().x();
+        to->wrench.force.y = from.wrenches(index).force().y();
+        to->wrench.force.z = from.wrenches(index).force().z();
 
-        to->wrench.torque.x = from.wrenches(0).torque().x();
-        to->wrench.torque.y = from.wrenches(0).torque().y();
-        to->wrench.torque.z = from.wrenches(0).torque().z();
+        to->wrench.torque.x = from.wrenches(index).torque().x();
+        to->wrench.torque.y = from.wrenches(index).torque().y();
+        to->wrench.torque.z = from.wrenches(index).torque().z();
     }
 
 }  // namespace RosConversion
