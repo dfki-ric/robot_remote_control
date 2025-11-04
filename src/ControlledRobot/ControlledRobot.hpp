@@ -674,8 +674,11 @@ class ControlledRobot: public UpdateThread {
         std::function<void()> connectedCallback;
         std::atomic<bool> connected;
 
-        std::array<CommandBufferBase*, CONTROL_MESSAGE_TYPE_NUMBER> commandbuffers;
+        std::vector<CommandBufferBase*> commandbuffers;
         void registerCommandType(const uint32_t & ID, CommandBufferBase *bufptr) {
+            if (commandbuffers.size() <= ID) {
+                commandbuffers.resize(ID+1);
+            }
             commandbuffers[ID] = bufptr;
         }
 
