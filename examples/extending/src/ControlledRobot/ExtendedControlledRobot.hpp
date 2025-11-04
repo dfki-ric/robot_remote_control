@@ -9,16 +9,16 @@ class ExtendedControlledRobot : public ControlledRobot {
  public:
     ExtendedControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport);
 
-    bool getNewControlMessage(myrobot::NewControlMessage *command) {
-        return newControlMessageCommand.read(command);
+    bool getNewControlMessage(myrobot::NewControlMessage *command, bool onlyNewest = true) {
+        return newControlMessageCommandBuffer->read(command, onlyNewest);
     }
 
-    int setNewTelemetryMessage(const myrobot::NewTelemetryMessage& telemetry) {
-        return sendTelemetry(telemetry, NEW_TELEMETRY_MESSAGE);
+    int setNewTelemetryMessage(const myrobot::NewTelemetryMessage& telemetry, const ChannelId &channel = 0) {
+        return sendTelemetry(telemetry, NEW_TELEMETRY_MESSAGE, false, channel);
     }
 
  private:
-    CommandBuffer<myrobot::NewControlMessage> newControlMessageCommand;
+    std::unique_ptr<CommandBuffer<myrobot::NewControlMessage>> newControlMessageCommandBuffer;
 };
 
 }  // namespace robot_remote_control

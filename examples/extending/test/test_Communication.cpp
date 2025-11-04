@@ -67,11 +67,11 @@ template <class PROTOBUFDATA, typename MESSAGETYPE, class CONTROLLER, class ROBO
                  PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata, const MESSAGETYPE &type, CONTROLLER * controller, ROBOT * robot) {
   controller->startUpdateThread(10);
 
-  robot->sendTelemetry(protodata, type);
+  robot->sendTelemetry(protodata, type, false, 0);
 
   // wait for telemetry
   PROTOBUFDATA received;
-  while (!controller->getTelemetry(type, &received)) {
+  while (!controller->getTelemetry(type, &received, false, 0)) {
     usleep(10000);
   }
 

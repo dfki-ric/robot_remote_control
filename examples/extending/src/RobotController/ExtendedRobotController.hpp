@@ -15,12 +15,12 @@ class ExtendedRobotController : public RobotController {
         sendProtobufData(msg, NEW_CONTROL_MESSAGE);
     }
 
-    void requestNewTelemetryMessage(myrobot::NewTelemetryMessage *msg) {
-        requestTelemetry(NEW_TELEMETRY_MESSAGE, msg);
+    void requestNewTelemetryMessage(myrobot::NewTelemetryMessage *msg, const ChannelId &channel = 0) {
+        requestTelemetry(NEW_TELEMETRY_MESSAGE, msg, channel);
     }
 
-    bool getNewTelemetryMessage(myrobot::NewTelemetryMessage *msg) {
-        return getTelemetry(NEW_TELEMETRY_MESSAGE, msg);
+    bool getNewTelemetryMessage(myrobot::NewTelemetryMessage *msg, bool onlyNewest = false, const ChannelId &channel = 0) {
+        return getTelemetry(NEW_TELEMETRY_MESSAGE, msg, onlyNewest, channel);
     }
 };
 

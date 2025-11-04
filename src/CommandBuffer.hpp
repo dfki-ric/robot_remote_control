@@ -51,8 +51,8 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
     }
 
     bool read(COMMAND *target, bool onlyNewest = true) {
-        bool oldval = isnew.load();
         auto lockable = buffer.lockedAccess();
+        bool oldval = isnew.load();
         if (!lockable->popData(target, onlyNewest)) {
             auto protocommand = lastcommand.lockedAccess();
             target->CopyFrom(protocommand.get());
