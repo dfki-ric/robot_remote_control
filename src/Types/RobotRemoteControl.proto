@@ -222,7 +222,6 @@ message GoTo {
 message Header {
     TimeStamp timestamp = 1;
     string frame = 2;
-    
     uint32 seq = 3;
 }
 
