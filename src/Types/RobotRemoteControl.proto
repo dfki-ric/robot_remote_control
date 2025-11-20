@@ -160,9 +160,17 @@ enum ControllableFrameTypes {
     GOTO_CONTROL = 2;
 }
 
+enum ControllableFrameMovementType {
+    UNDEFINED_CONTROL = 0;
+    MOVEMENT_CONTROL = 1;
+    MANIPULATION_CONTROL = 2;
+    WHOLE_BODY_CONTROL = 3;
+}
+
 message ControllableFrame {
     string frame = 1;
     ControllableFrameTypes type = 2;
+    ControllableFrameMovementType movement_type = 3;
 }
 
 message ControllableFrames {
@@ -214,6 +222,7 @@ message GoTo {
 message Header {
     TimeStamp timestamp = 1;
     string frame = 2;
+    
     uint32 seq = 3;
 }
 
