@@ -40,6 +40,8 @@ int main(int argc, char** argv)
         exit(1);
     }
 
+    printf("use up/down arrows to switch channles, esc to quit\n");
+
     TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://"+connectionInfo.ip+":"+connectionInfo.commandPort, TransportZmq::REQ));
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+connectionInfo.ip+":"+connectionInfo.telemetryPort, TransportZmq::SUB));
     std::shared_ptr<robot_remote_control::RobotController> controller_ = std::make_shared<robot_remote_control::RobotController>(commands, telemetry);
@@ -49,11 +51,24 @@ int main(int argc, char** argv)
     robot_remote_control::Image rrcimg;
 
     char key = 0;
+    size_t channel = 0;
 
     cv::namedWindow("Display Image", cv::WINDOW_NORMAL );
     cv::resizeWindow("Display Image", 800, 600);
 
     while( key != 27 ) {
+
+        
+        if (key == 82) {
+            ++channel;
+            printf("using channel %i\n",channel);
+        }
+
+        if (key == 84 && channel > 0) {
+            --channel;
+            printf("using channel %i\n",channel);
+        }
+
         if (controller_->getImage(&rrcimg, true)){
 
             // TODO: switch other types, based on rrcimg.encoding() and rrcimg.step()
