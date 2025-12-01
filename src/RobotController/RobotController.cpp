@@ -69,6 +69,10 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         lostConnectionCallback = [&](const float& time){
             printf("lost connection to robot, no reply for %f seconds\n", time);
         };
+
+        connectedCallback = [&](){
+            printf("connected to robot\n");
+        };
 }
 
 RobotController::~RobotController() {
