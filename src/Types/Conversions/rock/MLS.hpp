@@ -7,6 +7,10 @@
 
 #include "Eigen.hpp"
 #include "Time.hpp"
+#include "Pose.hpp"
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 namespace robot_remote_control {
 namespace RockConversion {
@@ -168,6 +172,63 @@ namespace RockConversion {
                 }
             }
         }
+    }
+
+
+    template <class MLS> void convert (const MLS& mls, std::string* data) {
+        std::stringstream str;
+        boost::archive::text_oarchive oa(str);
+        oa << mls;
+        *data = str.str();
+    }
+
+    template <class MLS> void convert(const std::string& data, MLS* mls) {
+        std::stringstream str (data);
+        boost::archive::text_iarchive ia(str);
+        ia >> *mls;
+    }
+
+    inline static void convert(const maps::grid::MLSMapSloped &rock_type, Map *rrc_type) {
+        robot_remote_control::BinaryMap bmap;
+        bmap.set_type("MLSMapSloped");
+        std::string ser;
+        convert(rock_type, &ser);
+        bmap.set_data(ser);
+        rrc_type->mutable_map()->PackFrom(bmap);
+    }
+
+    inline static bool convert(const Map &rrc_type, maps::grid::MLSMapSloped *rock_type) {
+        if (rrc_type.map().Is<robot_remote_control::BinaryMap>()) {
+            robot_remote_control::BinaryMap bmap;
+            rrc_type.map().UnpackTo(&bmap);
+            if (bmap.type() == "MLSMapSloped") {
+                printf("%s:%i %s\n", __PRETTY_FUNCTION__, __LINE__, bmap.type().c_str());
+                convert(bmap.data(), rock_type);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline static void convert(const maps::grid::MLSMapPrecalculated &rock_type, Map *rrc_type) {
+        robot_remote_control::BinaryMap bmap;
+        bmap.set_type("MLSMapPrecalculated");
+        std::string ser;
+        convert(rock_type, &ser);
+        bmap.set_data(ser);
+        rrc_type->mutable_map()->PackFrom(bmap);
+    }
+
+    inline static bool convert(const Map &rrc_type, maps::grid::MLSMapPrecalculated *rock_type) {
+        if (rrc_type.map().Is<robot_remote_control::BinaryMap>()) {
+            robot_remote_control::BinaryMap bmap;
+            rrc_type.map().UnpackTo(&bmap);
+            if (bmap.type() == "MLSMapPrecalculated") {
+                convert(bmap.data(), rock_type);
+                return true;
+            }
+        }
+        return false;
     }
 
     // inline static void convert(const SimpleSensor &rrc_type, maps::grid::MLSMapPrecalculated *rock_type) {

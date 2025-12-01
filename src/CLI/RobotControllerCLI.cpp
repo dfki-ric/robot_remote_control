@@ -401,7 +401,13 @@ int main(int argc, char** argv) {
     console.registerCommand("requestMap", "get a map", [&](const std::vector<std::string> &params) {
         int id = std::atoi(params[0].c_str());
         if (controller.requestMap(&map, id)) {
-            printf("%s\n", map.ShortDebugString().c_str());
+            if (map.map().Is<robot_remote_control::BinaryMap>()) {
+                robot_remote_control::BinaryMap bmap;
+                map.map().UnpackTo(&bmap);
+                printf("got map of type %s, size: %li bytes\n", bmap.type().c_str(), bmap.data().size());
+            } else {
+                printf("%s\n", map.ShortDebugString().c_str());
+            }
             return true;
         } else {
             printf("no new data received \n");

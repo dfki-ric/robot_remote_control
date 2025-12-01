@@ -289,6 +289,11 @@ message Map {
     google.protobuf.Any map = 1;
 }
 
+message BinaryMap {
+    string type = 1;
+    bytes data = 2;
+}
+
 message NamedValue {
     string name = 1;
     float value = 2;
