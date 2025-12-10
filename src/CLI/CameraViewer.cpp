@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     robot_remote_control::Image rrcimg;
 
     char key = 0;
-    size_t channel = 0;
+    uint8_t channel = 0;
 
     cv::namedWindow("Display Image", cv::WINDOW_NORMAL );
     cv::resizeWindow("Display Image", 800, 600);
