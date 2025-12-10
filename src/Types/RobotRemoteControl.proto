@@ -155,9 +155,10 @@ message ContactPoints {
 }
 
 enum ControllableFrameTypes {
-    TWIST_CONTROL = 0;
-    POSE_CONTROL = 1;
-    GOTO_CONTROL = 2;
+    UNDEFINED_FRAME_CONTROL_TYPE = 0;
+    TWIST_CONTROL = 1;
+    POSE_CONTROL = 2;
+    GOTO_CONTROL = 3;
 }
 
 enum ControllableFrameMovementType {
@@ -169,7 +170,7 @@ enum ControllableFrameMovementType {
 
 message ControllableFrame {
     string frame = 1;
-    ControllableFrameTypes type = 2;
+    repeated ControllableFrameTypes type = 2;
     ControllableFrameMovementType movement_type = 3;
 }
 
