@@ -10,7 +10,7 @@ endif()
 
 add_custom_command( OUTPUT RobotRemoteControl.pb.cc RobotRemoteControl.pb.h
                     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ${RRC_PROTO_INCLUDES} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} RobotRemoteControl.proto
+                    COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ${RRC_PROTO_INCLUDES} --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --js_out=${CMAKE_CURRENT_SOURCE_DIR}/js RobotRemoteControl.proto
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/RobotRemoteControl.pb.cc ${CMAKE_CURRENT_BINARY_DIR}/RobotRemoteControl.pb.cc 
                     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/RobotRemoteControl.pb.h ${CMAKE_CURRENT_BINARY_DIR}/RobotRemoteControl.pb.h
                     MAIN_DEPENDENCY RobotRemoteControl.proto

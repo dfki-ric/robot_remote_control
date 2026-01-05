@@ -49,6 +49,34 @@ if(UDT_FOUND)
     )
 endif()
 
+
+if (websocketpp_FOUND)
+
+add_library(robot_remote_control-transport_ws
+            TransportWebSocket.cpp
+)
+target_include_directories(robot_remote_control-transport_ws
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries (robot_remote_control-transport_ws
+                        websocketpp::websocketpp
+                       ${CMAKE_THREAD_LIBS_INIT}
+)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
+        FILES_MATCHING PATTERN "*.hpp"
+)
+install (TARGETS robot_remote_control-transport_ws
+         EXPORT robot_remote_control-targets
+         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+endif()
+
+
+
 ################################################################# Gzip wrapper
 if(ZLIB_FOUND)
     add_library(robot_remote_control-transport_wrapper_gzip

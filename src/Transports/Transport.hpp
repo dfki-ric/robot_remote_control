@@ -17,7 +17,7 @@ namespace robot_remote_control
         virtual ~Transport(){};
 
         /**
-         * @brief send date
+         * @brief send data
          * 
          * @param buf the buffer to send
          * @param Flags flags the flags

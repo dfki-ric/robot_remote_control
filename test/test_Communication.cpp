@@ -8,6 +8,10 @@
 #ifdef TRANSPORT_UDT
   #include "../src/Transports/TransportUDT.hpp"
 #endif
+#ifdef TRANSPORT_WS
+  #include "../src/Transports/TransportWebSocket.hpp"
+#endif
+
 
 #include "TypeGenerator.hpp"
 
@@ -81,6 +85,12 @@ void initComms() {
     if (!telemetry.get()) {
         telemetry = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7002, "127.0.0.1"));
     }
+  #endif
+  #ifdef TRANSPORT_WS
+    // if (!command.get()) {command = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));printf("using WS\n");}
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7002));}
+    // if (!commands.get()) {commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "127.0.0.1"));}
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "127.0.0.1"));}
   #endif
 }
 

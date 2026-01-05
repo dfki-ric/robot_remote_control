@@ -25,6 +25,9 @@ else()
     endif()
 endif()
 
+######################################################## CHECK FOR WebSocket++
+find_package(websocketpp)
+
 ######################################################## CHECK FOR ZLIB
 find_package(ZLIB)
 

@@ -6,6 +6,7 @@ add_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp
 target_link_libraries(robot_remote_control-controlled_robot_bin
     robot_remote_control-controlled_robot
     robot_remote_control-transport_zmq
+    robot_remote_control-transport_ws
 )
 target_include_directories(robot_remote_control-controlled_robot_bin
 	PUBLIC
@@ -19,6 +20,7 @@ add_executable(robot_remote_control-robot_controller_bin RobotControllerMain.cpp
 target_link_libraries(robot_remote_control-robot_controller_bin
     robot_remote_control-robot_controller
     robot_remote_control-transport_zmq
+    robot_remote_control-transport_ws
 )
 target_include_directories(robot_remote_control-robot_controller_bin
 	PUBLIC

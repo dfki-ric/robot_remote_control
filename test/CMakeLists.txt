@@ -51,4 +51,14 @@ if(UDT_FOUND)
     target_compile_definitions(test_suite_udt PUBLIC -DTRANSPORT_UDT)
 endif()
 
+if(websocketpp_FOUND)
+    add_executable(test_suite_ws ${COMMON_SOURCE})
+    target_link_libraries(test_suite_ws
+      ${COMMON_LIBS}
+      robot_remote_control-transport_ws
+    )
+    target_compile_definitions(test_suite_ws PUBLIC -DTRANSPORT_WS)
+endif()
+
+
 #set_target_properties(test_suite PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)

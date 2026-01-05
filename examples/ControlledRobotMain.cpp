@@ -5,18 +5,23 @@
 #include <iostream>
 
 #include "Transports/TransportZmq.hpp"
+#include "Transports/TransportWebSocket.hpp"
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
-
+using robot_remote_control::TransportWebSocket;
 
 int main(int argc, char** argv)
 {
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001", TransportZmq::REP));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001", TransportZmq::REP));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
+    TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7002));
+
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
     robot.startUpdateThread(10);
+
 
     // set a callback for connection losses, allow 100ms of later arrival
     // (due to differences in latency between heartbeat commands)
