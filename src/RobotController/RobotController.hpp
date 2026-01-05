@@ -637,17 +637,22 @@ class RobotController: public UpdateThread {
             return result;
         }
 
-        template< class DATATYPE > bool requestTelemetry(const MessageId &type, DATATYPE *result, const ChannelId &channel) {
-            const MessageId requestType = TELEMETRY_REQUEST;
+        template< class DATATYPE > bool requestTelemetry(const TelemetryMessageType &type, DATATYPE *result, const ChannelId &channel) {
+            // const MessageId requestType = TELEMETRY_REQUEST;
             std::string replybuf;
-            std::string request;
-            request.resize(sizeof(MessageId) + sizeof(ChannelId));
-            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
-            ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
-            *data = type;
-            *chan = channel;
-            bool received = requestBinary(request, &replybuf, requestType);
+            // std::string request;
+            // request.resize(sizeof(MessageId) + sizeof(ChannelId));
+            // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
+            // ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
+            // *data = type;
+            // *chan = channel;
 
+            // TelemetryRequest telemetryRequest;
+            // telemetryRequest.set_type(type);
+            // telemetryRequest.set_channel(channel);
+
+
+            bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
             result->ParseFromString(replybuf);
             return received;
         }
@@ -661,11 +666,11 @@ class RobotController: public UpdateThread {
         }
 
 
-        bool requestBinary(const MessageId &type, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
-        bool requestBinary(const std::string &request, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
+        bool requestBinary(const TelemetryMessageType &type, std::string *result, const ControlMessageType &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
+        bool requestBinary(const std::string &request, std::string *result, const ControlMessageType &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
 
-        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const MessageId &requestType, const float &overrideMaxLatency = 0) {
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const ControlMessageType &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
             requestdata.SerializeToString(&request);
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
@@ -720,15 +725,22 @@ class RobotController: public UpdateThread {
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
         std::array<std::map<std::string, ChannelId>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelIdByName;
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MessageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
-            std::string buf;
-            buf.resize(sizeof(MessageId));
-            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-            *data = type;
-            protodata.AppendToString(&buf);
-            return sendRequest(buf, 0, flags);
+
+        ControlMessage initControlMessage(const ControlMessageType &type, const std::string &data);
+        
+        template< class CLASS > ControlMessage initControlMessage(const ControlMessageType &type, const CLASS &protodata) {
+            ControlMessage controlMessage;
+            controlMessage.set_type(type);
+            protodata.SerializeToString(controlMessage.mutable_data());
+            return controlMessage;
         }
 
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
+            std::string buf;
+            ControlMessage controlMessage = initControlMessage(type, protodata);
+            controlMessage.SerializeToString(&buf);
+            return sendRequest(buf, 0, flags);
+        }
 
         class TelemetryAdderBase{
          public:

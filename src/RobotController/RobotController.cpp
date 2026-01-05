@@ -209,12 +209,10 @@ void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryComm
 
 void RobotController::setLogLevel(const LogLevelId &level) {
     std::string buf;
-    buf.resize(sizeof(MessageId) + sizeof(LogLevelId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = LOG_LEVEL_SELECT;
-
-    LogLevelId *levelptr = reinterpret_cast<LogLevelId*>(const_cast<char*>(buf.data()+sizeof(MessageId)));
-    *levelptr = level;
+    LogLevelRequest levelrequest;
+    levelrequest.set_level(static_cast<LogLevel>(level));
+    ControlMessage controlMessage = initControlMessage(LOG_LEVEL_SELECT, levelrequest);
+    controlMessage.SerializeToString(&buf);
     sendRequest(buf);
 }
 
@@ -324,13 +322,6 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     TelemetryMessage telemetryMessage;
     telemetryMessage.ParseFromString(reply);
-
-    // MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(reply.data()));
-    // ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MessageId)));
-    // size_t headersize = sizeof(MessageId) + sizeof(ChannelId);
-    // // size_t headersize = sizeof(MessageId);
-    // std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
-
     ChannelId channel = telemetryMessage.channel();
     TelemetryMessageType msgtype = telemetryMessage.type();
     std::string serializedMessage = telemetryMessage.data();
@@ -370,28 +361,30 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     return NO_TELEMETRY_DATA;
 }
 
-bool RobotController::requestBinary(const MessageId &type, std::string *result, const MessageId &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const TelemetryMessageType &type, std::string *result, const ControlMessageType &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
     std::string request;
-    request.resize(sizeof(MessageId) + sizeof(ChannelId));
 
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
-    ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
-    *data = type;
-    *chan = channel;
+    TelemetryRequest telemetryRequest;
+    telemetryRequest.set_type(type);
+    telemetryRequest.set_channel(channel);
+    telemetryRequest.SerializeToString(&request);
 
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
-bool RobotController::requestBinary(const std::string &request, std::string *result, const MessageId &requestType, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const std::string &request, std::string *result, const ControlMessageType &requestType, const float &overrideMaxLatency) {
     std::string buf;
-    buf.resize(sizeof(MessageId)+request.size());
+    // buf.resize(sizeof(MessageId)+request.size());
 
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = requestType;
-    data++;
+    // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
+    // *data = requestType;
+    // data++;
 
-    // add the requested data
-    memcpy(data, request.data(), request.size());
+    // // add the requested data
+    // memcpy(data, request.data(), request.size());
+    ControlMessage controlmessage = initControlMessage(requestType, request);
+    controlmessage.SerializeToString(&buf);
+
     *result = sendRequest(buf, overrideMaxLatency);
     return (result->size() > 0) ? true : false;
 }
@@ -461,4 +454,9 @@ std::pair<std::string, std::string> RobotController::requestRobotModel(const std
     return {"",""};
 }
 
-
+ControlMessage RobotController::initControlMessage(const ControlMessageType &type, const std::string &data) {
+    ControlMessage controlMessage;
+    controlMessage.set_type(type);
+    controlMessage.set_data(data);
+    return controlMessage;
+}

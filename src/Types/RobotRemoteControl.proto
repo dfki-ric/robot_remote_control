@@ -216,6 +216,15 @@ message FileRequest {
     bool compressed = 2;
 }
 
+message TelemetryRequest {
+    TelemetryMessageType type = 1;
+    uint32 channel = 2;
+}
+
+message LogLevelRequest {
+    LogLevel level = 1;
+}
+
 message GridMap {
     Header header = 1;
     string frame = 2;

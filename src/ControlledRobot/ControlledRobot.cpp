@@ -144,9 +144,12 @@ ControlMessageType ControlledRobot::receiveRequest() {
 }
 
 ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) {
-    MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
-    ControlMessageType msgtype = (ControlMessageType)*type;
-    std::string serializedMessage(request.data()+sizeof(MessageId), request.size()-sizeof(MessageId));
+
+    ControlMessage controlMessage;
+    controlMessage.ParseFromString(request);
+
+    ControlMessageType msgtype = controlMessage.type();
+    std::string serializedMessage = controlMessage.data();
 
     switch (msgtype) {
         case PROTOCOL_VERSION:
@@ -158,7 +161,9 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
             return handleTelemetryRequest(serializedMessage, commandTransport);
         }
         case LOG_LEVEL_SELECT: {
-            logLevel = *reinterpret_cast<uint16_t*>(const_cast<char*>(serializedMessage.data()));
+            LogLevelRequest req;
+            req.ParseFromString(serializedMessage);
+            logLevel = req.level();
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
             return LOG_LEVEL_SELECT;
         }
@@ -320,11 +325,9 @@ bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path
 
 
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
-    MessageId* requestedtype = reinterpret_cast<MessageId*>(const_cast<char*>(serializedMessage.data()));
-    ChannelId* requestedchannel = reinterpret_cast<ChannelId*>(const_cast<char*>(serializedMessage.data()+sizeof(MessageId)));
-    //TODO channel
-    TelemetryMessageType type = (TelemetryMessageType) *requestedtype;
-    std::string reply = buffers->peekSerialized(type, *requestedchannel);
+    TelemetryRequest request;
+    request.ParseFromString(serializedMessage);
+    std::string reply = buffers->peekSerialized(request.type(), request.channel());
     commandTransport->send(reply);
     return TELEMETRY_REQUEST;
 }

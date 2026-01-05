@@ -275,21 +275,12 @@ class ControlledRobot: public UpdateThread {
 
         int sendTelemetryRaw(const TelemetryMessageType& type, const std::string& serialized, const ChannelId &channel = 0) {
             if (telemetryTransport.get()) {
-                // size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
                 std::string buf;
-                // buf.resize(headersize);
-                // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-                // *data = type;
-                // ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
-                // *chan = channel;
-
                 TelemetryMessage telemetryMessage;
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
                 telemetryMessage.set_data(serialized);
-
                 telemetryMessage.AppendToString(&buf);
-
                 {
                     // check existence only if channel is actially set
                     if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
