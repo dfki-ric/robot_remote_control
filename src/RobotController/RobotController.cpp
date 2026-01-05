@@ -321,15 +321,23 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 }
 
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
-    MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(reply.data()));
-    ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MessageId)));
-    size_t headersize = sizeof(MessageId) + sizeof(ChannelId);
-    // size_t headersize = sizeof(MessageId);
-    std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
 
-    TelemetryMessageType msgtype = (TelemetryMessageType)*type;
+    TelemetryMessage telemetryMessage;
+    telemetryMessage.ParseFromString(reply);
 
-    updateStatistics(serializedMessage.size(), *type);
+    // MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(reply.data()));
+    // ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MessageId)));
+    // size_t headersize = sizeof(MessageId) + sizeof(ChannelId);
+    // // size_t headersize = sizeof(MessageId);
+    // std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
+
+    ChannelId channel = telemetryMessage.channel();
+    TelemetryMessageType msgtype = telemetryMessage.type();
+    std::string serializedMessage = telemetryMessage.data();
+
+    
+
+    updateStatistics(serializedMessage.size(), msgtype);
 
     // handle special types
     switch (msgtype) {
@@ -340,16 +348,16 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         }
         default:
         {
-            if (*channel != 0) {
-                if (!buffers->hasChannelBuffer(msgtype,*channel)) {
+            if (channel != 0) {
+                if (!buffers->hasChannelBuffer(msgtype,channel)) {
                     //TODO: let user pre-define buffers for channels and also defiene buffersize after creation
-                    buffers->addChannelBuffer(msgtype,*channel, 10);
+                    buffers->addChannelBuffer(msgtype,channel, 10);
                 }
             }
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {
-                adder->addToTelemetryBuffer(msgtype, serializedMessage, *channel);
+                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel);
                 return msgtype;
             } else {
                 throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");

@@ -74,6 +74,16 @@ enum LogLevel {
     CUSTOM = 20;
 }
 
+message TelemetryMessage {
+    TelemetryMessageType type = 1;
+    uint32 channel = 2;
+    bytes data = 3;
+}
+
+message ControlMessage {
+    ControlMessageType type = 1;
+    bytes data = 2;
+}
 
 message Acceleration {
     Vector3 linear = 1;

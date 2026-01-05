@@ -236,16 +236,23 @@ class ControlledRobot: public UpdateThread {
          * @param type 
          * @return int size sent
          */
-        template<class CLASS> int sendTelemetry(const CLASS &protodata, const MessageId& type, bool requestOnly, const ChannelId &channel) {
+        template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type, bool requestOnly, const ChannelId &channel) {
             if (telemetryTransport.get()) {
-                size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
+                // size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
                 std::string buf;
-                buf.resize(headersize);
-                MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-                *data = type;
-                ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
-                *chan = channel;
-                protodata.AppendToString(&buf);
+                // buf.resize(headersize);
+                // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
+                // *data = type;
+                // ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
+                // *chan = channel;
+
+                TelemetryMessage telemetryMessage;
+                telemetryMessage.set_type(type);
+                telemetryMessage.set_channel(channel);
+                protodata.AppendToString(telemetryMessage.mutable_data());
+
+                telemetryMessage.AppendToString(&buf);
+                
                 // store latest data for future requests
                 {
                     auto lockedbuffer = buffers->lockedAccess();
@@ -258,24 +265,31 @@ class ControlledRobot: public UpdateThread {
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
-                    return bytes - headersize;
+                    return telemetryMessage.data().size();
                 }
-                return buf.size() - headersize;
+                return telemetryMessage.data().size();
             }
             printf("ERROR Transport invalid\n");
             return 0;
         }
 
-        int sendTelemetryRaw(const MessageId& type, const std::string& serialized, const ChannelId &channel = 0) {
+        int sendTelemetryRaw(const TelemetryMessageType& type, const std::string& serialized, const ChannelId &channel = 0) {
             if (telemetryTransport.get()) {
-                size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
+                // size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
                 std::string buf;
-                buf.resize(headersize);
-                MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-                *data = type;
-                ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
-                *chan = channel;
-                buf.append(serialized);
+                // buf.resize(headersize);
+                // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
+                // *data = type;
+                // ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
+                // *chan = channel;
+
+                TelemetryMessage telemetryMessage;
+                telemetryMessage.set_type(type);
+                telemetryMessage.set_channel(channel);
+                telemetryMessage.set_data(serialized);
+
+                telemetryMessage.AppendToString(&buf);
+
                 {
                     // check existence only if channel is actially set
                     if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
@@ -286,7 +300,7 @@ class ControlledRobot: public UpdateThread {
                 }
                 uint32_t bytes = telemetryTransport->send(buf);
                 updateStatistics(bytes, type);
-                return bytes - headersize;
+                return telemetryMessage.data().size();
             }
             printf("ERROR Transport invalid\n");
             return 0;
