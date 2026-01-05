@@ -374,17 +374,8 @@ bool RobotController::requestBinary(const TelemetryMessageType &type, std::strin
 
 bool RobotController::requestBinary(const std::string &request, std::string *result, const ControlMessageType &requestType, const float &overrideMaxLatency) {
     std::string buf;
-    // buf.resize(sizeof(MessageId)+request.size());
-
-    // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    // *data = requestType;
-    // data++;
-
-    // // add the requested data
-    // memcpy(data, request.data(), request.size());
     ControlMessage controlmessage = initControlMessage(requestType, request);
     controlmessage.SerializeToString(&buf);
-
     *result = sendRequest(buf, overrideMaxLatency);
     return (result->size() > 0) ? true : false;
 }

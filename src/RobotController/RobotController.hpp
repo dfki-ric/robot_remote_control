@@ -638,20 +638,7 @@ class RobotController: public UpdateThread {
         }
 
         template< class DATATYPE > bool requestTelemetry(const TelemetryMessageType &type, DATATYPE *result, const ChannelId &channel) {
-            // const MessageId requestType = TELEMETRY_REQUEST;
             std::string replybuf;
-            // std::string request;
-            // request.resize(sizeof(MessageId) + sizeof(ChannelId));
-            // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
-            // ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
-            // *data = type;
-            // *chan = channel;
-
-            // TelemetryRequest telemetryRequest;
-            // telemetryRequest.set_type(type);
-            // telemetryRequest.set_channel(channel);
-
-
             bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
             result->ParseFromString(replybuf);
             return received;
@@ -727,7 +714,7 @@ class RobotController: public UpdateThread {
 
 
         ControlMessage initControlMessage(const ControlMessageType &type, const std::string &data);
-        
+
         template< class CLASS > ControlMessage initControlMessage(const ControlMessageType &type, const CLASS &protodata) {
             ControlMessage controlMessage;
             controlMessage.set_type(type);

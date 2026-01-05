@@ -238,14 +238,7 @@ class ControlledRobot: public UpdateThread {
          */
         template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type, bool requestOnly, const ChannelId &channel) {
             if (telemetryTransport.get()) {
-                // size_t headersize = sizeof(MessageId)+sizeof(ChannelId);
                 std::string buf;
-                // buf.resize(headersize);
-                // MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-                // *data = type;
-                // ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(buf.data() + sizeof(MessageId)));
-                // *chan = channel;
-
                 TelemetryMessage telemetryMessage;
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
