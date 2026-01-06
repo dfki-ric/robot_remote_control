@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <unistd.h>
 
 #include "../src/Transports/TransportZmq.hpp"
 
@@ -87,9 +88,9 @@ void initComms() {
     }
   #endif
   #ifdef TRANSPORT_WS
-    // if (!command.get()) {command = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));printf("using WS\n");}
+    if (!command.get()) {command = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));printf("using WS\n");}
     if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7002));}
-    // if (!commands.get()) {commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "127.0.0.1"));}
+    if (!commands.get()) {commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "127.0.0.1"));}
     if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "127.0.0.1"));}
   #endif
 }

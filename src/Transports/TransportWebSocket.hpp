@@ -11,6 +11,8 @@
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 
+#include "../UpdateThread/LockableClass.hpp"
+
 namespace robot_remote_control {
 
 
@@ -19,6 +21,7 @@ class TransportWebSocket : public Transport {
     typedef websocketpp::client<websocketpp::config::asio_client> WSClient;
     typedef websocketpp::server<websocketpp::config::asio> WSServer;
     typedef std::set<websocketpp::connection_hdl,std::owner_less<websocketpp::connection_hdl>> Connections;
+    // typedef std::vector<websocketpp::connection_hdl> Connections;
     
     enum ConnectionType {SERVER,CLIENT};
 
@@ -54,11 +57,14 @@ class TransportWebSocket : public Transport {
     std::shared_ptr<WSClient> client;
     std::shared_ptr<WSServer> server;
     websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread;
-    Connections connections;
+    
+    LockableClass<Connections> connections;
+    LockableClass<std::queue<std::string>> recvQueue;
     
     WSClient::connection_ptr clientConnection;
-    std::queue<std::string> recvQueue;
-    std::mutex recvQueueMutex;
+    bool clientConnected;
+
+
 };
 
 } // end namespace robot_remote_control
