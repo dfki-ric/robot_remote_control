@@ -328,7 +328,7 @@ bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     TelemetryRequest request;
     request.ParseFromString(serializedMessage);
-    std::string reply = buffers->peekSerialized(request.type(), request.channel());
+    std::string reply = buffers->peekSerialized(request.type(), request.channel(),useJSON);
     commandTransport->send(reply);
     return TELEMETRY_REQUEST;
 }

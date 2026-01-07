@@ -10,6 +10,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/util/json_util.h>
 
 #include "Types/RobotRemoteControl.pb.h"
 #include "Transports/Transport.hpp"
@@ -632,7 +633,7 @@ class RobotController: public UpdateThread {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
             }
-            *dataSerialized = buffers->peekSerialized(type, channel);
+            *dataSerialized = buffers->peekSerialized(type, channel, useJSON);
             bool result = buffers->lockedAccess().get()[type][channel]->pop(onlyNewest);
             return result;
         }
@@ -640,7 +641,13 @@ class RobotController: public UpdateThread {
         template< class DATATYPE > bool requestTelemetry(const TelemetryMessageType &type, DATATYPE *result, const ChannelId &channel) {
             std::string replybuf;
             bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
-            result->ParseFromString(replybuf);
+            
+            if (useJSON) {
+                google::protobuf::util::JsonStringToMessage(replybuf, result);
+            }else{
+                result->ParseFromString(replybuf);
+            }
+
             return received;
         }
 
@@ -659,12 +666,19 @@ class RobotController: public UpdateThread {
 
         template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const ControlMessageType &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
+            
+            
             requestdata.SerializeToString(&request);
+
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
 
-            google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
-            cistream.SetTotalBytesLimit(recvbuf.size());
-            reply->ParseFromCodedStream(&cistream);
+            if (useJSON) {
+                google::protobuf::util::JsonStringToMessage(recvbuf, reply);
+            }else{
+                google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
+                cistream.SetTotalBytesLimit(recvbuf.size());
+                reply->ParseFromCodedStream(&cistream);    
+            }
 
             return (recvbuf.size() > 0) ? true : false;
         }
@@ -712,6 +726,7 @@ class RobotController: public UpdateThread {
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
         std::array<std::map<std::string, ChannelId>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelIdByName;
 
+        bool useJSON;
 
         ControlMessage initControlMessage(const ControlMessageType &type, const std::string &data);
 
@@ -733,7 +748,7 @@ class RobotController: public UpdateThread {
          public:
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
-            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) = 0;
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel, bool textMode) = 0;
             void setOverwrite(bool mode = true) {
                 overwrite = mode;
             }
@@ -746,9 +761,14 @@ class RobotController: public UpdateThread {
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
-            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) {
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel, bool textMode) {
                 CLASS data;
-                data.ParseFromString(serializedMessage);
+                
+                if (textMode) {
+                    google::protobuf::util::JsonStringToMessage(serializedMessage, &data);
+                }else{
+                    data.ParseFromString(serializedMessage);
+                }
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);
             }
         };

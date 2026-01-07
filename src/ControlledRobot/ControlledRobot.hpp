@@ -230,6 +230,8 @@ class ControlledRobot: public UpdateThread {
         // Telemetry setters
 
     protected:
+
+
         /**
          * @brief generic send of telemetry types
          * 
@@ -240,10 +242,12 @@ class ControlledRobot: public UpdateThread {
          */
         template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type, bool requestOnly, const ChannelId &channel) {
             if (telemetryTransport.get()) {
-                std::string buf;
+                
                 TelemetryMessage telemetryMessage;
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
+
+                std::string buf;
 
                 if (useJSON) {
                     google::protobuf::util::JsonPrintOptions jsonOptions;
@@ -282,6 +286,19 @@ class ControlledRobot: public UpdateThread {
                 TelemetryMessage telemetryMessage;
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
+
+
+                if (useJSON) {
+                    google::protobuf::util::JsonPrintOptions jsonOptions;
+                    // jsonOptions.add_whitespace = true;
+                    jsonOptions.always_print_primitive_fields = true;
+                    telemetryMessage.set_json(serialized);
+                    google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
+                }else{
+                    telemetryMessage.set_data(serialized);
+                    telemetryMessage.SerializeToString(&buf);
+                }
+
                 telemetryMessage.set_data(serialized);
                 telemetryMessage.SerializeToString(&buf);
                 {

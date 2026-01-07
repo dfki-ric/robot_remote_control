@@ -1,3 +1,5 @@
+#include "RobotController.hpp"
+
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -5,7 +7,7 @@
 #include <ncurses.h> 
 #include <unistd.h>
 
-#include "RobotController.hpp"
+
 #include "Transports/TransportZmq.hpp"
 #include "ConsoleCommands.hpp"
 
