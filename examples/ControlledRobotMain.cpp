@@ -5,16 +5,21 @@
 #include <iostream>
 
 #include "Transports/TransportZmq.hpp"
+#include "Transports/TransportWebSocket.hpp"
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
-
+using robot_remote_control::TransportWebSocket;
 
 int main(int argc, char** argv)
 {
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001", TransportZmq::REP));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
-    robot_remote_control::ControlledRobot robot(commands, telemetry);
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001", TransportZmq::REP));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
+    // robot_remote_control::ControlledRobot robot(commands, telemetry);
+
+    TransportSharedPtr connection = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));
+    robot_remote_control::ControlledRobot robot(connection, connection);
+    
 
     robot.startUpdateThread(10);
 
@@ -163,10 +168,10 @@ int main(int argc, char** argv)
 
     // for requests to work, you need a valid connection:
     // only works when heartbeats are set up
-    while (!robot.isConnected()) {
-        printf("waiting for connection\n");
-        usleep(100000);
-    }
+    // while (!robot.isConnected()) {
+    //     printf("waiting for connection\n");
+    //     usleep(100000);
+    // }
 
     robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
         // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads

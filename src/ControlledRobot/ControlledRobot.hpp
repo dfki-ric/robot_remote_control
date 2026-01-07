@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <stdexcept>
 
+#include <google/protobuf/util/json_util.h>
+
 #include "Types/RobotRemoteControl.pb.h"
 #include "Transports/Transport.hpp"
 #include "UpdateThread/UpdateThread.hpp"
@@ -242,9 +244,17 @@ class ControlledRobot: public UpdateThread {
                 TelemetryMessage telemetryMessage;
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
-                protodata.AppendToString(telemetryMessage.mutable_data());
 
-                telemetryMessage.AppendToString(&buf);
+                if (useJSON) {
+                    google::protobuf::util::JsonPrintOptions jsonOptions;
+                    // jsonOptions.add_whitespace = true;
+                    jsonOptions.always_print_primitive_fields = true;
+                    google::protobuf::util::MessageToJsonString(protodata, telemetryMessage.mutable_json(),jsonOptions); 
+                    google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
+                }else{
+                    protodata.SerializeToString(telemetryMessage.mutable_data());
+                    telemetryMessage.SerializeToString(&buf);
+                }
                 
                 // store latest data for future requests
                 {
@@ -273,7 +283,7 @@ class ControlledRobot: public UpdateThread {
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
                 telemetryMessage.set_data(serialized);
-                telemetryMessage.AppendToString(&buf);
+                telemetryMessage.SerializeToString(&buf);
                 {
                     // check existence only if channel is actially set
                     if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
@@ -282,7 +292,9 @@ class ControlledRobot: public UpdateThread {
                     buffers->pushSerialized(type, buf, channel);
                     // RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
                 }
-                uint32_t bytes = telemetryTransport->send(buf);
+                uint32_t bytes = 0;
+                bytes = telemetryTransport->send(buf);
+                
                 updateStatistics(bytes, type);
                 return telemetryMessage.data().size();
             }
@@ -707,6 +719,8 @@ class ControlledRobot: public UpdateThread {
         ChannelsDefinition channels;
 
         Transport::Flags receiveflags;
+
+        bool useJSON;
 
 };
 

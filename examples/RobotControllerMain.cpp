@@ -1,16 +1,23 @@
 #include <iostream>
 #include "RobotController.hpp"
 #include "Transports/TransportZmq.hpp"
+#include "Transports/TransportWebSocket.hpp"
 #include <unistd.h>
 
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
+using robot_remote_control::TransportWebSocket;
+
 
 int main(int argc, char** argv) {
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
-    robot_remote_control::RobotController controller(commands, telemetry);
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
+    // robot_remote_control::RobotController controller(commands, telemetry);
+
+    TransportSharedPtr connection = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "localhost"));
+    robot_remote_control::RobotController controller(connection, connection);
+    
 
     // construct types
     robot_remote_control::Position position;

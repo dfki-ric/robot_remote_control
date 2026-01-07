@@ -107,7 +107,8 @@ int TransportWebSocket::send(const std::string& buf, Flags flags) {
     if (server) {
         auto lock = connections.lockedAccess();
         for (auto &listener : lock.get()) {
-            server->send(listener, buf, websocketpp::frame::opcode::binary, ec);
+            // server->send(listener, buf, websocketpp::frame::opcode::binary, ec);
+            server->send(listener, buf, websocketpp::frame::opcode::text, ec);
         }
     } else if (clientConnected) {
         client->send(clientConnection, buf, websocketpp::frame::opcode::binary, ec);

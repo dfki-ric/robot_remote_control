@@ -22,7 +22,8 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1),
-    receiveflags(Transport::NOBLOCK) {
+    receiveflags(Transport::NOBLOCK),
+    useJSON(true) {
 
     // init buffers for non-cast access in getters
     protocolVersion = std::make_unique<MessageIdCommandBuffer>(1);
