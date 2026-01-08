@@ -378,7 +378,16 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
         printf("requested file '%s' undefined, sending empty folder\n", request.identifier().c_str());
         folder.set_identifier("file/folder :" + request.identifier() + " undefined");
     }
-    folder.SerializeToString(&buf);
+
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonPrintOptions jsonOptions;
+        // jsonOptions.add_whitespace = true;
+        jsonOptions.always_print_primitive_fields = true;
+        google::protobuf::util::MessageToJsonString(folder, &buf,jsonOptions); 
+    }else{
+        folder.SerializeToString(&buf);
+    }
+    
     commandTransport->send(buf);
     return FILE_REQUEST;
 }
