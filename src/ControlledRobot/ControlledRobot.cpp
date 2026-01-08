@@ -147,10 +147,16 @@ ControlMessageType ControlledRobot::receiveRequest() {
 ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) {
 
     ControlMessage controlMessage;
-    controlMessage.ParseFromString(request);
+    std::string serializedMessage;
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonStringToMessage(request, &controlMessage);
+        serializedMessage = controlMessage.json();
+    }else{
+        controlMessage.ParseFromString(request);
+        serializedMessage = controlMessage.data();
+    }
 
     ControlMessageType msgtype = controlMessage.type();
-    std::string serializedMessage = controlMessage.data();
 
     switch (msgtype) {
         case PROTOCOL_VERSION:
@@ -163,7 +169,13 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         }
         case LOG_LEVEL_SELECT: {
             LogLevelRequest req;
-            req.ParseFromString(serializedMessage);
+
+            if (serializationMode == JSON) {
+                google::protobuf::util::JsonStringToMessage(serializedMessage, &req);
+            }else{
+                req.ParseFromString(serializedMessage);
+            }
+
             logLevel = req.level();
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
             return LOG_LEVEL_SELECT;
@@ -248,23 +260,11 @@ robot_remote_control::TimeStamp ControlledRobot::getTime() {
     return timestamp;
 }
 
-void ControlledRobot::addTelemetryMessageType(std::string *buf, const TelemetryMessageType& type) {
-    int currsize = buf->size();
-    buf->resize(currsize + sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf->data()+currsize));
-    *data = type;
-}
-
-void ControlledRobot::addControlMessageType(std::string *buf, const ControlMessageType& type) {
-    int currsize = buf->size();
-    buf->resize(currsize + sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf->data()+currsize));
-    *data = type;
-}
-
 std::string ControlledRobot::serializeControlMessageType(const ControlMessageType& type) {
+    ControlMessageReply reply;
+    reply.set_type(type);
     std::string buf;
-    addControlMessageType(&buf, type);
+    reply.SerializeToString(&buf);
     return buf;
 }
 
@@ -327,7 +327,12 @@ bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path
 
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     TelemetryRequest request;
-    request.ParseFromString(serializedMessage);
+
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
+    }else{
+        request.ParseFromString(serializedMessage);
+    }
     std::string reply = buffers->peekSerialized(request.type(), request.channel(), serializationMode);
     commandTransport->send(reply);
     return TELEMETRY_REQUEST;
@@ -335,7 +340,13 @@ ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& se
 
 ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     Permission perm;
-    perm.ParseFromString(serializedMessage);
+
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonStringToMessage(serializedMessage, &perm);
+    }else{
+        perm.ParseFromString(serializedMessage);
+    }
+
     std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
     try {
         promise.set_value(perm.granted());
@@ -348,7 +359,13 @@ ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& s
 
 ControlMessageType ControlledRobot::handleFileRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     FileRequest request;
-    request.ParseFromString(serializedMessage);
+
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
+    }else{
+        request.ParseFromString(serializedMessage);
+    }
+
     FolderTransfer folder;
     std::string buf;
     int index = -1;
@@ -395,7 +412,7 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
 ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageType &msgtype, const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
     if (cmdbuffer) {
-        if (!cmdbuffer->write(serializedMessage)) {
+        if (!cmdbuffer->write(serializedMessage, serializationMode)) {
             printf("unable to parse message of type %i in %s:%i\n", msgtype, __FILE__, __LINE__);
             commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
             return NO_CONTROL_DATA;
@@ -411,10 +428,10 @@ ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageTyp
 
 ControlMessageType ControlledRobot::handleVersionRequest(const MessageId& msgid, TransportSharedPtr commandTransport) {
     std::string msg = "";
-    MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
-    if (cmdbuffer) {
-        cmdbuffer->write(msgid);
-    }
+    // MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
+    // if (cmdbuffer) {
+    //     cmdbuffer->write(msgid);
+    // }
     switch (msgid) {
         case PROTOCOL_VERSION: commandTransport->send(PROTOCOL_VERSION_CHECKSUM); break;
         case LIBRARY_VERSION:  commandTransport->send(LIBRARY_VERSION_STRING); break;

@@ -213,7 +213,15 @@ void RobotController::setLogLevel(const LogLevelId &level) {
     LogLevelRequest levelrequest;
     levelrequest.set_level(static_cast<LogLevel>(level));
     ControlMessage controlMessage = initControlMessage(LOG_LEVEL_SELECT, levelrequest);
-    controlMessage.SerializeToString(&buf);
+    
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonPrintOptions jsonOptions;
+        // jsonOptions.add_whitespace = true;
+        jsonOptions.always_print_primitive_fields = true;
+        google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
+    }else{
+        controlMessage.SerializeToString(&buf);
+    }
     sendRequest(buf);
 }
 
@@ -384,8 +392,15 @@ bool RobotController::requestBinary(const TelemetryMessageType &type, std::strin
     TelemetryRequest telemetryRequest;
     telemetryRequest.set_type(type);
     telemetryRequest.set_channel(channel);
-    telemetryRequest.SerializeToString(&request);
-
+    
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonPrintOptions jsonOptions;
+        // jsonOptions.add_whitespace = true;
+        jsonOptions.always_print_primitive_fields = true;
+        google::protobuf::util::MessageToJsonString(telemetryRequest, &request, jsonOptions); 
+    }else{
+        telemetryRequest.SerializeToString(&request);
+    }
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
@@ -393,7 +408,14 @@ bool RobotController::requestBinary(const std::string &request, std::string *res
     std::string buf;
     ControlMessage controlmessage = initControlMessage(requestType, request);
     
-    controlmessage.SerializeToString(&buf);
+    if (serializationMode == JSON) {
+        google::protobuf::util::JsonPrintOptions jsonOptions;
+        // jsonOptions.add_whitespace = true;
+        jsonOptions.always_print_primitive_fields = true;
+        google::protobuf::util::MessageToJsonString(controlmessage, &buf, jsonOptions); 
+    }else{
+        controlmessage.SerializeToString(&buf);
+    }
     
     *result = sendRequest(buf, overrideMaxLatency);
     return (result->size() > 0) ? true : false;
@@ -466,6 +488,10 @@ std::pair<std::string, std::string> RobotController::requestRobotModel(const std
 ControlMessage RobotController::initControlMessage(const ControlMessageType &type, const std::string &data) {
     ControlMessage controlMessage;
     controlMessage.set_type(type);
-    controlMessage.set_data(data);
+    if (serializationMode == JSON) {
+        controlMessage.set_json(data);
+    }else{
+        controlMessage.set_data(data);
+    }
     return controlMessage;
 }

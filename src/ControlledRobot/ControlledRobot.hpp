@@ -720,9 +720,6 @@ class ControlledRobot: public UpdateThread {
             commandbuffers[ID] = bufptr;
         }
 
-        void addControlMessageType(std::string *buf, const ControlMessageType& type);
-        void addTelemetryMessageType(std::string *buf, const TelemetryMessageType& type);
-
         TransportSharedPtr commandTransport;
         TransportSharedPtr telemetryTransport;
 

@@ -4,13 +4,14 @@
 #include <string>
 #include "RingBuffer.hpp"
 #include "MessageTypes.hpp"
+#include <google/protobuf/util/json_util.h>
 
 namespace robot_remote_control {
 
 struct CommandBufferBase {
     CommandBufferBase() {}
     virtual ~CommandBufferBase() {}
-    virtual bool write(const std::string &serializedMessage) = 0;
+    virtual bool write(const std::string &serializedMessage, bool useJSON) = 0;
     virtual bool read(std::string *receivedMessage, bool onlyNewest = true) = 0;
     void notify() {
         auto callCb = [](const std::function<void()> &cb){cb();};
@@ -37,9 +38,15 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
         notify();
     }
 
-    virtual bool write(const std::string &serializedMessage) {
+    virtual bool write(const std::string &serializedMessage, bool useJSON) {
         COMMAND protocommand;
-        if (!protocommand.ParseFromString(serializedMessage)) {
+        bool res;
+        if (useJSON) {
+            res = google::protobuf::util::JsonStringToMessage(serializedMessage, &protocommand) == google::protobuf::util::Status::OK;
+        }else{
+            res = protocommand.ParseFromString(serializedMessage);
+        }
+        if (!res) {
             return false;
         }
         write(protocommand);
@@ -89,7 +96,7 @@ struct MessageIdCommandBuffer: public CommandBufferBase{
         notify();
     }
 
-    virtual bool write(const std::string &serializedMessage) {
+    virtual bool write(const std::string &serializedMessage, bool useJSON) {
         write(std::atoi(serializedMessage.c_str()));
         return true;
     }

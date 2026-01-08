@@ -649,13 +649,12 @@ class RobotController: public UpdateThread {
         template< class DATATYPE > bool requestTelemetry(const TelemetryMessageType &type, DATATYPE *result, const ChannelId &channel) {
             std::string replybuf;
             bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
-            
+
             if (serializationMode == JSON) {
                 google::protobuf::util::JsonStringToMessage(replybuf, result);
             }else{
                 result->ParseFromString(replybuf);
             }
-
             return received;
         }
 
@@ -675,8 +674,14 @@ class RobotController: public UpdateThread {
         template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const ControlMessageType &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
             
-            
-            requestdata.SerializeToString(&request);
+            if (serializationMode == JSON) {
+                google::protobuf::util::JsonPrintOptions jsonOptions;
+                // jsonOptions.add_whitespace = true;
+                jsonOptions.always_print_primitive_fields = true;
+                google::protobuf::util::MessageToJsonString(requestdata, &request, jsonOptions); 
+            }else{
+                requestdata.SerializeToString(&request);
+            }
 
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
 
@@ -741,14 +746,31 @@ class RobotController: public UpdateThread {
         template< class CLASS > ControlMessage initControlMessage(const ControlMessageType &type, const CLASS &protodata) {
             ControlMessage controlMessage;
             controlMessage.set_type(type);
-            protodata.SerializeToString(controlMessage.mutable_data());
+
+            if (serializationMode == JSON) {
+                google::protobuf::util::JsonPrintOptions jsonOptions;
+                // jsonOptions.add_whitespace = true;
+                jsonOptions.always_print_primitive_fields = true;
+                google::protobuf::util::MessageToJsonString(protodata, controlMessage.mutable_json(), jsonOptions); 
+            }else{
+                protodata.SerializeToString(controlMessage.mutable_data());
+            }
             return controlMessage;
         }
 
         template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
             std::string buf;
             ControlMessage controlMessage = initControlMessage(type, protodata);
-            controlMessage.SerializeToString(&buf);
+
+            if (serializationMode == JSON) {
+                google::protobuf::util::JsonPrintOptions jsonOptions;
+                // jsonOptions.add_whitespace = true;
+                jsonOptions.always_print_primitive_fields = true;
+                google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
+            }else{
+                controlMessage.SerializeToString(&buf);
+            }
+            
             return sendRequest(buf, 0, flags);
         }
 
