@@ -23,7 +23,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1),
     receiveflags(Transport::NOBLOCK),
-    useJSON(true) {
+    serializationMode(JSON) {
 
     // init buffers for non-cast access in getters
     protocolVersion = std::make_unique<MessageIdCommandBuffer>(1);
@@ -328,7 +328,7 @@ bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     TelemetryRequest request;
     request.ParseFromString(serializedMessage);
-    std::string reply = buffers->peekSerialized(request.type(), request.channel(),useJSON);
+    std::string reply = buffers->peekSerialized(request.type(), request.channel(), serializationMode);
     commandTransport->send(reply);
     return TELEMETRY_REQUEST;
 }

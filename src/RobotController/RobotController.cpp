@@ -23,7 +23,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
     connected(false),
-    useJSON(true) {
+    serializationMode(JSON) {
         registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
         registerTelemetryType<JointState>(JOINT_STATE, buffersize);
         registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
@@ -260,7 +260,7 @@ bool RobotController::requestMap(Map *map, const ChannelId &channel, const float
     std::string replybuf;
     bool result = requestBinary(MAP, &replybuf, TELEMETRY_REQUEST, channel, overrideMaxLatency);
 
-     if (useJSON) {
+     if (serializationMode == JSON) {
         google::protobuf::util::JsonStringToMessage(replybuf, map);
      } else {
         google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
@@ -329,24 +329,21 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
 
     TelemetryMessage telemetryMessage;
 
-    if (useJSON) {
+    if (serializationMode == JSON) {
         google::protobuf::util::JsonStringToMessage(reply, &telemetryMessage);
     }else{
         telemetryMessage.ParseFromString(reply);
     }
-    
-
 
     ChannelId channel = telemetryMessage.channel();
     TelemetryMessageType msgtype = telemetryMessage.type();
     
     std::string serializedMessage;
-    if (useJSON) {
+    if (serializationMode == JSON) {
         serializedMessage = telemetryMessage.json();
     } else {
         serializedMessage = telemetryMessage.data();
     }
-
 
     updateStatistics(serializedMessage.size(), msgtype);
 
@@ -368,7 +365,7 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {
-                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel, useJSON);
+                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel, serializationMode);
                 return msgtype;
             } else {
                 throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
@@ -421,7 +418,6 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
     if (result) {
         if (folder.file().size() == 0) {
             // no files defined in ControlledRobot
-            folder.PrintDebugString();
             return false;
         }
         std::experimental::filesystem::create_directories(targetpath);

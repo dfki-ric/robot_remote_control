@@ -26,6 +26,14 @@ class ControlledRobot: public UpdateThread {
         explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize = 10);
         virtual ~ControlledRobot();
 
+        enum SerializationMode{BINARY, JSON};
+        void setSerializationMode(const SerializationMode & mode) {
+            serializationMode = mode;
+        }
+        SerializationMode getSerializationMode() {
+            return serializationMode;
+        }
+
         /**
          * @brief threaded update function called by UpdateThread that receives commands
          */
@@ -248,16 +256,19 @@ class ControlledRobot: public UpdateThread {
                 telemetryMessage.set_channel(channel);
 
                 std::string buf;
+                size_t payloadSize;
 
-                if (useJSON) {
+                if (serializationMode == JSON) {
                     google::protobuf::util::JsonPrintOptions jsonOptions;
                     // jsonOptions.add_whitespace = true;
                     jsonOptions.always_print_primitive_fields = true;
                     google::protobuf::util::MessageToJsonString(protodata, telemetryMessage.mutable_json(),jsonOptions); 
                     google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
+                    payloadSize = telemetryMessage.json().size();
                 }else{
                     protodata.SerializeToString(telemetryMessage.mutable_data());
                     telemetryMessage.SerializeToString(&buf);
+                    payloadSize = telemetryMessage.data().size();
                 }
                 
                 // store latest data for future requests
@@ -272,9 +283,9 @@ class ControlledRobot: public UpdateThread {
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
-                    return telemetryMessage.data().size();
+                    return payloadSize;
                 }
-                return telemetryMessage.data().size();
+                return payloadSize;
             }
             printf("ERROR Transport invalid\n");
             return 0;
@@ -287,20 +298,20 @@ class ControlledRobot: public UpdateThread {
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
 
-
-                if (useJSON) {
+                size_t payloadSize;
+                if (serializationMode == JSON) {
                     google::protobuf::util::JsonPrintOptions jsonOptions;
                     // jsonOptions.add_whitespace = true;
                     jsonOptions.always_print_primitive_fields = true;
                     telemetryMessage.set_json(serialized);
+                    payloadSize = telemetryMessage.json().size();
                     google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
                 }else{
                     telemetryMessage.set_data(serialized);
                     telemetryMessage.SerializeToString(&buf);
+                    payloadSize = telemetryMessage.data().size();
                 }
 
-                telemetryMessage.set_data(serialized);
-                telemetryMessage.SerializeToString(&buf);
                 {
                     // check existence only if channel is actially set
                     if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
@@ -313,7 +324,7 @@ class ControlledRobot: public UpdateThread {
                 bytes = telemetryTransport->send(buf);
                 
                 updateStatistics(bytes, type);
-                return telemetryMessage.data().size();
+                return payloadSize;
             }
             printf("ERROR Transport invalid\n");
             return 0;
@@ -737,7 +748,7 @@ class ControlledRobot: public UpdateThread {
 
         Transport::Flags receiveflags;
 
-        bool useJSON;
+        SerializationMode serializationMode;
 
 };
 

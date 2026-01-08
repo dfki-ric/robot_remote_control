@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 #include <unistd.h>
+#include <google/protobuf/util/json_util.h>
 
 #include "../src/Transports/TransportZmq.hpp"
 
@@ -242,15 +243,22 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   controller.update();
   usleep(100 * 1000);
 
-  Pose pose = TypeGenerator::genPose();
+  Pose telemetry_data = TypeGenerator::genPose();
   Pose currentpose;
 
   // buffer for size comparsion
   std::string buf;
-  pose.SerializeToString(&buf);
+  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+      telemetry_data.SerializeToString(&buf);
+  } else {
+      google::protobuf::util::JsonPrintOptions jsonOptions;
+      // jsonOptions.add_whitespace = true;
+      jsonOptions.always_print_primitive_fields = true;
+      google::protobuf::util::MessageToJsonString(telemetry_data, &buf, jsonOptions);
+  }
 
   // send telemetry data
-  int sent = robot.setCurrentPose(pose);
+  int sent = robot.setCurrentPose(telemetry_data);
 
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
@@ -265,7 +273,7 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   // data was sent completely
   BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
-  COMPARE_PROTOBUF(pose, currentpose);
+  COMPARE_PROTOBUF(telemetry_data, currentpose);
 }
 
 BOOST_AUTO_TEST_CASE(checking_current_twist) {
@@ -275,15 +283,22 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
   controller.update();
   usleep(100 * 1000);
 
-  Twist telemetry = TypeGenerator::genTwist();
+  Twist telemetry_data = TypeGenerator::genTwist();
   Twist currenttelemetry;
 
   // buffer for size comparsion
   std::string buf;
-  telemetry.SerializeToString(&buf);
+  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+      telemetry_data.SerializeToString(&buf);
+  } else {
+      google::protobuf::util::JsonPrintOptions jsonOptions;
+      // jsonOptions.add_whitespace = true;
+      jsonOptions.always_print_primitive_fields = true;
+      google::protobuf::util::MessageToJsonString(telemetry_data, &buf, jsonOptions);
+  }
 
   // send telemetry data
-  int sent = robot.setCurrentTwist(telemetry);
+  int sent = robot.setCurrentTwist(telemetry_data);
 
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
@@ -299,7 +314,7 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
   // data was sent completely
   BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
-  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+  COMPARE_PROTOBUF(telemetry_data, currenttelemetry);
 }
 
 BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
@@ -309,15 +324,23 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
   controller.update();
   usleep(100 * 1000);
 
-  Acceleration telemetry = TypeGenerator::genAcceleration();
+  Acceleration telemetry_data = TypeGenerator::genAcceleration();
   Acceleration currenttelemetry;
 
   // buffer for size comparsion
   std::string buf;
-  telemetry.SerializeToString(&buf);
+
+  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+      telemetry_data.SerializeToString(&buf);
+  } else {
+      google::protobuf::util::JsonPrintOptions jsonOptions;
+      // jsonOptions.add_whitespace = true;
+      jsonOptions.always_print_primitive_fields = true;
+      google::protobuf::util::MessageToJsonString(telemetry_data, &buf, jsonOptions);
+  }
 
   // send telemetry data
-  int sent = robot.setCurrentAcceleration(telemetry);
+  int sent = robot.setCurrentAcceleration(telemetry_data);
 
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
@@ -333,7 +356,7 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
   // data was sent completely
   BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
-  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+  COMPARE_PROTOBUF(telemetry_data, currenttelemetry);
 }
 
 BOOST_AUTO_TEST_CASE(generic_request_telemetry_data) {
@@ -552,7 +575,16 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   // check if raw telemetry sending works
   std::string binarydata;
   PROTOBUFDATA receivedraw;
-  protodata.SerializeToString(&binarydata);
+  
+  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+      protodata.SerializeToString(&binarydata);
+  } else {
+      google::protobuf::util::JsonPrintOptions jsonOptions;
+      // jsonOptions.add_whitespace = true;
+      jsonOptions.always_print_primitive_fields = true;
+      google::protobuf::util::MessageToJsonString(protodata, &binarydata, jsonOptions);
+  }
+
   robot.sendTelemetryRaw(type, binarydata);
   while (!controller.getTelemetry(type, &receivedraw, false, 0)) {
     usleep(10000);

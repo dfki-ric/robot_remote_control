@@ -31,6 +31,14 @@ class RobotController: public UpdateThread {
                                 const float &maxLatency = 1);
         virtual ~RobotController();
 
+        enum SerializationMode {BINARY, JSON};
+        void setSerializationMode(const SerializationMode & mode) {
+            serializationMode = mode;
+        }
+        SerializationMode getSerializationMode() {
+            return serializationMode;
+        }
+
         /**
          * @brief in case there is a telemetry connection, receive all and fill the data fields
          */
@@ -633,7 +641,7 @@ class RobotController: public UpdateThread {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
             }
-            *dataSerialized = buffers->peekSerialized(type, channel, useJSON);
+            *dataSerialized = buffers->peekSerialized(type, channel, serializationMode);
             bool result = buffers->lockedAccess().get()[type][channel]->pop(onlyNewest);
             return result;
         }
@@ -642,7 +650,7 @@ class RobotController: public UpdateThread {
             std::string replybuf;
             bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
             
-            if (useJSON) {
+            if (serializationMode == JSON) {
                 google::protobuf::util::JsonStringToMessage(replybuf, result);
             }else{
                 result->ParseFromString(replybuf);
@@ -672,7 +680,7 @@ class RobotController: public UpdateThread {
 
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
 
-            if (useJSON) {
+            if (serializationMode == JSON) {
                 google::protobuf::util::JsonStringToMessage(recvbuf, reply);
             }else{
                 google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
@@ -726,7 +734,7 @@ class RobotController: public UpdateThread {
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
         std::array<std::map<std::string, ChannelId>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelIdByName;
 
-        bool useJSON;
+        SerializationMode serializationMode;
 
         ControlMessage initControlMessage(const ControlMessageType &type, const std::string &data);
 
