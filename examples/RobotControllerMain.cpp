@@ -1,7 +1,7 @@
 #include <iostream>
 #include "RobotController.hpp"
 #include "Transports/TransportZmq.hpp"
-#include "Transports/TransportWebSocket.hpp"
+// #include "Transports/TransportWebSocket.hpp"
 #include <unistd.h>
 
 
@@ -11,13 +11,13 @@ using robot_remote_control::TransportWebSocket;
 
 
 int main(int argc, char** argv) {
-    // TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
-    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
-    // robot_remote_control::RobotController controller(commands, telemetry);
+    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
 
-    TransportSharedPtr connection = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "localhost"));
-    robot_remote_control::RobotController controller(connection, connection);
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "localhost"));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "localhost"));
     
+    robot_remote_control::RobotController controller(commands, telemetry);
 
     // construct types
     robot_remote_control::Position position;
