@@ -21,6 +21,9 @@ int main(int argc, char** argv)
     
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
+    // when you are using the websocket transport, connect with a browser and cannot parse the binary format,
+    // you can set the setSerializationMode mode eto JSON to use the data directly
+    // robot.setSerializationMode(robot_remote_control::Serialization::JSON);
 
     robot.startUpdateThread(10);
 
