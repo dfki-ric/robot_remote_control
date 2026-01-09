@@ -7,7 +7,7 @@
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
-using robot_remote_control::TransportWebSocket;
+// using robot_remote_control::TransportWebSocket;
 
 
 int main(int argc, char** argv) {

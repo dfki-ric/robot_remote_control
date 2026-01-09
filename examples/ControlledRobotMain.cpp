@@ -9,7 +9,7 @@
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
-using robot_remote_control::TransportWebSocket;
+// using robot_remote_control::TransportWebSocket;
 
 int main(int argc, char** argv)
 {
@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
     
     // TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));
-    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7002));
     
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
