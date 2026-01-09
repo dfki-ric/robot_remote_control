@@ -4,14 +4,15 @@
 #include <string>
 #include "RingBuffer.hpp"
 #include "MessageTypes.hpp"
-#include <google/protobuf/util/json_util.h>
+
+#include "Serialization.hpp"
 
 namespace robot_remote_control {
 
 struct CommandBufferBase {
     CommandBufferBase() {}
     virtual ~CommandBufferBase() {}
-    virtual bool write(const std::string &serializedMessage, bool useJSON) = 0;
+    virtual bool write(const std::string &serializedMessage, const Serialization::Mode& mode) = 0;
     virtual bool read(std::string *receivedMessage, bool onlyNewest = true) = 0;
     void notify() {
         auto callCb = [](const std::function<void()> &cb){cb();};
@@ -38,15 +39,16 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
         notify();
     }
 
-    virtual bool write(const std::string &serializedMessage, bool useJSON) {
+    virtual bool write(const std::string &serializedMessage, const Serialization::Mode& mode) {
         COMMAND protocommand;
-        bool res;
-        if (useJSON) {
-            res = google::protobuf::util::JsonStringToMessage(serializedMessage, &protocommand) == google::protobuf::util::Status::OK;
-        }else{
-            res = protocommand.ParseFromString(serializedMessage);
-        }
-        if (!res) {
+        serialization.setMode(mode);
+        // ;
+        // if (useJSON) {
+        //     res = google::protobuf::util::JsonStringToMessage(serializedMessage, &protocommand) == google::protobuf::util::Status::OK;
+        // }else{
+        //     res = protocommand.ParseFromString(serializedMessage);
+        // }
+        if (!serialization.deserialize(serializedMessage, &protocommand)) {
             return false;
         }
         write(protocommand);
@@ -79,6 +81,7 @@ template<class COMMAND> struct CommandBuffer: public CommandBufferBase{
     std::atomic<bool> isnew;
     LockableClass<RingBuffer<COMMAND>> buffer;
     LockableClass<COMMAND> lastcommand;
+    Serialization serialization;
 };
 
 struct MessageIdCommandBuffer: public CommandBufferBase{
@@ -96,7 +99,7 @@ struct MessageIdCommandBuffer: public CommandBufferBase{
         notify();
     }
 
-    virtual bool write(const std::string &serializedMessage, bool useJSON) {
+    virtual bool write(const std::string &serializedMessage, const Serialization::Mode& mode) {
         write(std::atoi(serializedMessage.c_str()));
         return true;
     }

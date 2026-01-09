@@ -17,10 +17,10 @@ namespace robot_remote_control {
     }
 
 
-    std::string TelemetryBuffer::peekSerialized(const uint16_t &type, const uint8_t &channel, const bool &useText) {
+    std::string TelemetryBuffer::peekSerialized(const uint16_t &type, const uint8_t &channel, const Serialization::Mode &serializationMode) {
         std::string buf("");
         if (type != NO_TELEMETRY_DATA || type < TELEMETRY_MESSAGE_TYPES_NUMBER) {
-            buf = converters[type]->get(channel, useText);
+            buf = converters[type]->get(channel, serializationMode);
         }
         return buf;
     }
