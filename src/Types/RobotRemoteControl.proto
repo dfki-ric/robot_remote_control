@@ -77,18 +77,12 @@ enum LogLevel {
 message TelemetryMessage {
     TelemetryMessageType type = 1;
     uint32 channel = 2;
-    oneof telemetry {
-        bytes data = 3;
-        string json = 4;
-    }
+    bytes data = 3;
 }
 
 message ControlMessage {
     ControlMessageType type = 1;
-    oneof command {
-        bytes data = 2;
-        string json = 3;
-    }
+    bytes data = 2;
 }
 
 message ControlMessageReply {

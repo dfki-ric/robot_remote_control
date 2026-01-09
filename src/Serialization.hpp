@@ -13,7 +13,7 @@ class Serialization {
     Serialization(){
         // jsonOptions.add_whitespace = true;
         jsonOptions.always_print_primitive_fields = true;
-        serializationMode = JSON;
+        serializationMode = BINARY;
     }
     virtual ~Serialization(){}
 
@@ -40,7 +40,7 @@ class Serialization {
     template<class PROTO> bool serialize(const PROTO& src, TelemetryMessage *target) {
         bool res = false;
         if (serializationMode == JSON) {
-            if (google::protobuf::util::MessageToJsonString(src, target->mutable_json(), jsonOptions).ok()){
+            if (google::protobuf::util::MessageToJsonString(src, target->mutable_data(), jsonOptions).ok()){
                 res = true;
             }
         }else{
@@ -52,7 +52,7 @@ class Serialization {
     template<class PROTO> bool serialize(const PROTO& src, ControlMessage *target) {
         bool res = false;
         if (serializationMode == JSON) {
-            if (google::protobuf::util::MessageToJsonString(src, target->mutable_json(), jsonOptions).ok()){
+            if (google::protobuf::util::MessageToJsonString(src, target->mutable_data(), jsonOptions).ok()){
                 res = true;
             }
         }else{
@@ -63,26 +63,26 @@ class Serialization {
 
     template<class PROTO> void setSerialized(const std::string &serialized, PROTO *target) {
         if (serializationMode == JSON) {
-            target->set_json(serialized);
+            target->set_data(serialized);
         }else{
             target->set_data(serialized);
         }
     }
 
     template<class PROTO> size_t getPayloadSize(const PROTO& message) {
-        if (serializationMode == JSON) {
-            return message.json().size();
-        }else{
+        // if (serializationMode == JSON) {
+        //     return message.json().size();
+        // }else{
             return message.data().size();
-        }
-        return 0;
+        // }
+        // return 0;
     }
 
     bool deserialize(const std::string& src, TelemetryMessage* target, std::string *serializedMessage) {
         bool res = false;
         if (serializationMode == JSON) {
             if(google::protobuf::util::JsonStringToMessage(src, target).ok()) {
-                *serializedMessage = target->json();
+                *serializedMessage = target->data();
                 res = true;
             }
         } else {

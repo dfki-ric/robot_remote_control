@@ -21,6 +21,8 @@ int main(int argc, char** argv)
     
     robot_remote_control::ControlledRobot robot(commands, telemetry);
 
+    // if you want to test receiving (when using TransportWebSocket), you shoudl enable serialization direct to json
+    // robot.setSerializationMode(robot_remote_control::Serialization::JSON);
 
     robot.startUpdateThread(10);
 

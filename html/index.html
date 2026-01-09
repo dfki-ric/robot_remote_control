@@ -18,7 +18,7 @@
         var host = url.hostname
         var wsport = url.searchParams.get("wsport")
         if (typeof wsport === 'undefined' || wsport == null) {
-            wsport = "7001"
+            wsport = "7002"
         }
     }
 
@@ -42,17 +42,16 @@
         ws.onmessage=function(evt) {
 
 
-            // console.log(evt.data);
-            
+            // fist step, but telemetrs message contains addiinal (unparsed) data
             var telemetryMessage = JSON.parse(evt.data)
-
             console.log(telemetryMessage);
 
-            var json = JSON.parse(telemetryMessage.json)
-            // console.log(json);
-            
+            // protobufs bytes fields are base64 encoded in json, we use atob to convert back
+            var payload = JSON.parse(atob(telemetryMessage.data))
+            console.log(payload);
+
             if (telemetryMessage.type == "CURRENT_POSE") {
-                document.getElementById("pose").innerHTML = telemetryMessage.json
+                document.getElementById("pose").innerHTML = payload.position.x + " " + payload.position.y
             }
 
 

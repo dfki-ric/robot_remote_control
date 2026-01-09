@@ -149,12 +149,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
     std::string serializedMessage;
 
     serialization.deserialize(request, &controlMessage);
-
-    if (controlMessage.json() != "") {
-        serializedMessage = controlMessage.json();
-    }else{
-        serializedMessage = controlMessage.data();
-    }
+    serializedMessage = controlMessage.data();
 
     // if (serializationMode == JSON) {
     //     google::protobuf::util::JsonStringToMessage(request, &controlMessage);
