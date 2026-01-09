@@ -22,8 +22,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     heartBeatRoundTripTime(0),
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
-    connected(false),
-    serializationMode(JSON) {
+    connected(false) {
         registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
         registerTelemetryType<JointState>(JOINT_STATE, buffersize);
         registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
@@ -212,16 +211,18 @@ void RobotController::setLogLevel(const LogLevelId &level) {
     std::string buf;
     LogLevelRequest levelrequest;
     levelrequest.set_level(static_cast<LogLevel>(level));
+
     ControlMessage controlMessage = initControlMessage(LOG_LEVEL_SELECT, levelrequest);
-    
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonPrintOptions jsonOptions;
-        // jsonOptions.add_whitespace = true;
-        jsonOptions.always_print_primitive_fields = true;
-        google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
-    }else{
-        controlMessage.SerializeToString(&buf);
-    }
+
+    serialization.serialize(controlMessage, &buf);
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonPrintOptions jsonOptions;
+    //     // jsonOptions.add_whitespace = true;
+    //     jsonOptions.always_print_primitive_fields = true;
+    //     google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
+    // }else{
+    //     controlMessage.SerializeToString(&buf);
+    // }
     sendRequest(buf);
 }
 
@@ -268,14 +269,14 @@ bool RobotController::requestMap(Map *map, const ChannelId &channel, const float
     std::string replybuf;
     bool result = requestBinary(MAP, &replybuf, TELEMETRY_REQUEST, channel, overrideMaxLatency);
 
-     if (serializationMode == JSON) {
-        google::protobuf::util::JsonStringToMessage(replybuf, map);
-     } else {
-        google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
-        cistream.SetTotalBytesLimit(replybuf.size());
-        map->ParseFromCodedStream(&cistream);
-    }
-
+    //  if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonStringToMessage(replybuf, map);
+    //  } else {
+    //     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
+    //     cistream.SetTotalBytesLimit(replybuf.size());
+    //     map->ParseFromCodedStream(&cistream);
+    // }
+    serialization.deserializeLongData(replybuf, map);
 
     return result;
 }
@@ -336,22 +337,19 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
 
     TelemetryMessage telemetryMessage;
+    std::string serializedMessage;
 
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonStringToMessage(reply, &telemetryMessage);
-    }else{
-        telemetryMessage.ParseFromString(reply);
-    }
+    serialization.deserialize(reply, &telemetryMessage, &serializedMessage);
 
     ChannelId channel = telemetryMessage.channel();
     TelemetryMessageType msgtype = telemetryMessage.type();
     
-    std::string serializedMessage;
-    if (serializationMode == JSON) {
-        serializedMessage = telemetryMessage.json();
-    } else {
-        serializedMessage = telemetryMessage.data();
-    }
+    
+    // if (serializationMode == JSON) {
+    //     serializedMessage = telemetryMessage.json();
+    // } else {
+    //     serializedMessage = telemetryMessage.data();
+    // }
 
     updateStatistics(serializedMessage.size(), msgtype);
 
@@ -373,7 +371,7 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {
-                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel, serializationMode);
+                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel, serialization.getMode());
                 return msgtype;
             } else {
                 throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
@@ -393,30 +391,38 @@ bool RobotController::requestBinary(const TelemetryMessageType &type, std::strin
     telemetryRequest.set_type(type);
     telemetryRequest.set_channel(channel);
     
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonPrintOptions jsonOptions;
-        // jsonOptions.add_whitespace = true;
-        jsonOptions.always_print_primitive_fields = true;
-        google::protobuf::util::MessageToJsonString(telemetryRequest, &request, jsonOptions); 
-    }else{
-        telemetryRequest.SerializeToString(&request);
-    }
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonPrintOptions jsonOptions;
+    //     // jsonOptions.add_whitespace = true;
+    //     jsonOptions.always_print_primitive_fields = true;
+    //     google::protobuf::util::MessageToJsonString(telemetryRequest, &request, jsonOptions); 
+    // }else{
+    //     telemetryRequest.SerializeToString(&request);
+    // }
+
+    serialization.serialize(telemetryRequest, &request);
+
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
 bool RobotController::requestBinary(const std::string &request, std::string *result, const ControlMessageType &requestType, const float &overrideMaxLatency) {
     std::string buf;
-    ControlMessage controlmessage = initControlMessage(requestType, request);
+    ControlMessage controlmessage;
+    controlmessage.set_type(requestType);
+
+    serialization.setSerialized(request, &controlmessage);
     
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonPrintOptions jsonOptions;
-        // jsonOptions.add_whitespace = true;
-        jsonOptions.always_print_primitive_fields = true;
-        google::protobuf::util::MessageToJsonString(controlmessage, &buf, jsonOptions); 
-    }else{
-        controlmessage.SerializeToString(&buf);
-    }
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonPrintOptions jsonOptions;
+    //     // jsonOptions.add_whitespace = true;
+    //     jsonOptions.always_print_primitive_fields = true;
+    //     google::protobuf::util::MessageToJsonString(controlmessage, &buf, jsonOptions); 
+    // }else{
+    //     controlmessage.SerializeToString(&buf);
+    // }
     
+    serialization.serialize(controlmessage, &buf);
+
     *result = sendRequest(buf, overrideMaxLatency);
     return (result->size() > 0) ? true : false;
 }
@@ -485,13 +491,13 @@ std::pair<std::string, std::string> RobotController::requestRobotModel(const std
     return {"",""};
 }
 
-ControlMessage RobotController::initControlMessage(const ControlMessageType &type, const std::string &data) {
-    ControlMessage controlMessage;
-    controlMessage.set_type(type);
-    if (serializationMode == JSON) {
-        controlMessage.set_json(data);
-    }else{
-        controlMessage.set_data(data);
-    }
-    return controlMessage;
-}
+// ControlMessage RobotController::initControlMessage(const ControlMessageType &type, const std::string &data) {
+//     ControlMessage controlMessage;
+//     controlMessage.set_type(type);
+//     if (serialization.getMode() == Serialization::JSON) {
+//         controlMessage.set_json(data);
+//     }else{
+//         controlMessage.set_data(data);
+//     }
+//     return controlMessage;
+// }

@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
 
   // buffer for size comparsion
   std::string buf;
-  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+  if (controller.getSerializationMode() == Serialization::BINARY) {
       telemetry_data.SerializeToString(&buf);
   } else {
       google::protobuf::util::JsonPrintOptions jsonOptions;
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
 
   // buffer for size comparsion
   std::string buf;
-  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+  if (controller.getSerializationMode() == Serialization::BINARY) {
       telemetry_data.SerializeToString(&buf);
   } else {
       google::protobuf::util::JsonPrintOptions jsonOptions;
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
   // buffer for size comparsion
   std::string buf;
 
-  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+  if (controller.getSerializationMode() == Serialization::BINARY) {
       telemetry_data.SerializeToString(&buf);
   } else {
       google::protobuf::util::JsonPrintOptions jsonOptions;
@@ -576,7 +576,7 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   std::string binarydata;
   PROTOBUFDATA receivedraw;
   
-  if (controller.getSerializationMode() == ControlledRobot::BINARY) {
+  if (controller.getSerializationMode() == Serialization::BINARY) {
       protodata.SerializeToString(&binarydata);
   } else {
       google::protobuf::util::JsonPrintOptions jsonOptions;

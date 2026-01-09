@@ -75,6 +75,7 @@ install(FILES
 	CommandBuffer.hpp
 	TelemetryBuffer.hpp
 	Statistics.hpp
+    Serialization.hpp
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 )
 

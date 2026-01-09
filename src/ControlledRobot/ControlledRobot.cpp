@@ -22,8 +22,7 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     connected(false),
     buffers(std::make_shared<TelemetryBuffer>()),
     logLevel(CUSTOM-1),
-    receiveflags(Transport::NOBLOCK),
-    serializationMode(JSON) {
+    receiveflags(Transport::NOBLOCK) {
 
     // init buffers for non-cast access in getters
     protocolVersion = std::make_unique<MessageIdCommandBuffer>(1);
@@ -148,13 +147,22 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
 
     ControlMessage controlMessage;
     std::string serializedMessage;
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonStringToMessage(request, &controlMessage);
+
+    serialization.deserialize(request, &controlMessage);
+
+    if (controlMessage.json() != "") {
         serializedMessage = controlMessage.json();
     }else{
-        controlMessage.ParseFromString(request);
         serializedMessage = controlMessage.data();
     }
+
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonStringToMessage(request, &controlMessage);
+    //     serializedMessage = controlMessage.json();
+    // }else{
+    //     controlMessage.ParseFromString(request);
+    //     serializedMessage = controlMessage.data();
+    // }
 
     ControlMessageType msgtype = controlMessage.type();
 
@@ -170,11 +178,13 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         case LOG_LEVEL_SELECT: {
             LogLevelRequest req;
 
-            if (serializationMode == JSON) {
-                google::protobuf::util::JsonStringToMessage(serializedMessage, &req);
-            }else{
-                req.ParseFromString(serializedMessage);
-            }
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonStringToMessage(serializedMessage, &req);
+            // }else{
+            //     req.ParseFromString(serializedMessage);
+            // }
+
+            serialization.deserialize(serializedMessage, &req);
 
             logLevel = req.level();
             commandTransport->send(serializeControlMessageType(LOG_LEVEL_SELECT));
@@ -328,12 +338,13 @@ bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     TelemetryRequest request;
 
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
-    }else{
-        request.ParseFromString(serializedMessage);
-    }
-    std::string reply = buffers->peekSerialized(request.type(), request.channel(), serializationMode);
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
+    // }else{
+    //     request.ParseFromString(serializedMessage);
+    // }
+    serialization.deserialize(serializedMessage, &request);
+    std::string reply = buffers->peekSerialized(request.type(), request.channel(), serialization.getMode());
     commandTransport->send(reply);
     return TELEMETRY_REQUEST;
 }
@@ -341,11 +352,12 @@ ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& se
 ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     Permission perm;
 
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonStringToMessage(serializedMessage, &perm);
-    }else{
-        perm.ParseFromString(serializedMessage);
-    }
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonStringToMessage(serializedMessage, &perm);
+    // }else{
+    //     perm.ParseFromString(serializedMessage);
+    // }
+    serialization.deserialize(serializedMessage, &perm);
 
     std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
     try {
@@ -360,11 +372,12 @@ ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& s
 ControlMessageType ControlledRobot::handleFileRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     FileRequest request;
 
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
-    }else{
-        request.ParseFromString(serializedMessage);
-    }
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
+    // }else{
+    //     request.ParseFromString(serializedMessage);
+    // }
+    serialization.deserialize(serializedMessage, &request);
 
     FolderTransfer folder;
     std::string buf;
@@ -396,15 +409,17 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
         folder.set_identifier("file/folder :" + request.identifier() + " undefined");
     }
 
-    if (serializationMode == JSON) {
-        google::protobuf::util::JsonPrintOptions jsonOptions;
-        // jsonOptions.add_whitespace = true;
-        jsonOptions.always_print_primitive_fields = true;
-        google::protobuf::util::MessageToJsonString(folder, &buf,jsonOptions); 
-    }else{
-        folder.SerializeToString(&buf);
-    }
-    
+    // if (serializationMode == JSON) {
+    //     google::protobuf::util::JsonPrintOptions jsonOptions;
+    //     // jsonOptions.add_whitespace = true;
+    //     jsonOptions.always_print_primitive_fields = true;
+    //     google::protobuf::util::MessageToJsonString(folder, &buf,jsonOptions); 
+    // }else{
+    //     folder.SerializeToString(&buf);
+    // }
+    serialization.serialize(folder, &buf);
+
+
     commandTransport->send(buf);
     return FILE_REQUEST;
 }
@@ -412,7 +427,7 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
 ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageType &msgtype, const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     CommandBufferBase * cmdbuffer = commandbuffers[msgtype];
     if (cmdbuffer) {
-        if (!cmdbuffer->write(serializedMessage, serializationMode)) {
+        if (!cmdbuffer->write(serializedMessage, serialization.getMode())) {
             printf("unable to parse message of type %i in %s:%i\n", msgtype, __FILE__, __LINE__);
             commandTransport->send(serializeControlMessageType(NO_CONTROL_DATA));
             return NO_CONTROL_DATA;

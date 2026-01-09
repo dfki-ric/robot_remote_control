@@ -9,15 +9,14 @@
 #include <unistd.h>
 #include <stdexcept>
 
-#include <google/protobuf/util/json_util.h>
 
-#include "Types/RobotRemoteControl.pb.h"
 #include "Transports/Transport.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
 #include "TelemetryBuffer.hpp"
 #include "CommandBuffer.hpp"
 #include "Statistics.hpp"
+#include "Serialization.hpp"
 
 namespace robot_remote_control {
 
@@ -26,12 +25,12 @@ class ControlledRobot: public UpdateThread {
         explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize = 10);
         virtual ~ControlledRobot();
 
-        enum SerializationMode{BINARY, JSON};
-        void setSerializationMode(const SerializationMode & mode) {
-            serializationMode = mode;
+        
+        void setSerializationMode(const Serialization::Mode & mode) {
+            serialization.setMode(mode);
         }
-        SerializationMode getSerializationMode() {
-            return serializationMode;
+        Serialization::Mode getSerializationMode() {
+            return serialization.getMode();
         }
 
         /**
@@ -256,20 +255,26 @@ class ControlledRobot: public UpdateThread {
                 telemetryMessage.set_channel(channel);
 
                 std::string buf;
-                size_t payloadSize;
+                
 
-                if (serializationMode == JSON) {
-                    google::protobuf::util::JsonPrintOptions jsonOptions;
-                    // jsonOptions.add_whitespace = true;
-                    jsonOptions.always_print_primitive_fields = true;
-                    google::protobuf::util::MessageToJsonString(protodata, telemetryMessage.mutable_json(),jsonOptions); 
-                    google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
-                    payloadSize = telemetryMessage.json().size();
-                }else{
-                    protodata.SerializeToString(telemetryMessage.mutable_data());
-                    telemetryMessage.SerializeToString(&buf);
-                    payloadSize = telemetryMessage.data().size();
-                }
+                serialization.serialize(protodata, &telemetryMessage);
+                size_t payloadsize = serialization.getPayloadSize(telemetryMessage);
+
+                serialization.serialize(telemetryMessage, &buf);
+                
+
+                // if (serializationMode == JSON) {
+                //     google::protobuf::util::JsonPrintOptions jsonOptions;
+                //     // jsonOptions.add_whitespace = true;
+                //     jsonOptions.always_print_primitive_fields = true;
+                //     google::protobuf::util::MessageToJsonString(protodata, telemetryMessage.mutable_json(),jsonOptions); 
+                //     google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
+                //     payloadSize = telemetryMessage.json().size();
+                // }else{
+                //     protodata.SerializeToString(telemetryMessage.mutable_data());
+                //     telemetryMessage.SerializeToString(&buf);
+                //     payloadSize = telemetryMessage.data().size();
+                // }
                 
                 // store latest data for future requests
                 {
@@ -283,9 +288,9 @@ class ControlledRobot: public UpdateThread {
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
-                    return payloadSize;
+                    return payloadsize;
                 }
-                return payloadSize;
+                return payloadsize;
             }
             printf("ERROR Transport invalid\n");
             return 0;
@@ -298,19 +303,20 @@ class ControlledRobot: public UpdateThread {
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
 
-                size_t payloadSize;
-                if (serializationMode == JSON) {
-                    google::protobuf::util::JsonPrintOptions jsonOptions;
-                    // jsonOptions.add_whitespace = true;
-                    jsonOptions.always_print_primitive_fields = true;
-                    telemetryMessage.set_json(serialized);
-                    payloadSize = telemetryMessage.json().size();
-                    google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
-                }else{
-                    telemetryMessage.set_data(serialized);
-                    telemetryMessage.SerializeToString(&buf);
-                    payloadSize = telemetryMessage.data().size();
-                }
+                serialization.setSerialized(serialized, &telemetryMessage);
+                serialization.serialize(telemetryMessage, &buf);
+                // if (serializationMode == JSON) {
+                //     google::protobuf::util::JsonPrintOptions jsonOptions;
+                //     // jsonOptions.add_whitespace = true;
+                //     jsonOptions.always_print_primitive_fields = true;
+                //     telemetryMessage.set_json(serialized);
+                //     payloadSize = telemetryMessage.json().size();
+                //     google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
+                // }else{
+                //     telemetryMessage.set_data(serialized);
+                //     telemetryMessage.SerializeToString(&buf);
+                //     payloadSize = telemetryMessage.data().size();
+                // }
 
                 {
                     // check existence only if channel is actially set
@@ -324,7 +330,7 @@ class ControlledRobot: public UpdateThread {
                 bytes = telemetryTransport->send(buf);
                 
                 updateStatistics(bytes, type);
-                return payloadSize;
+                return serialized.size();
             }
             printf("ERROR Transport invalid\n");
             return 0;
@@ -745,7 +751,7 @@ class ControlledRobot: public UpdateThread {
 
         Transport::Flags receiveflags;
 
-        SerializationMode serializationMode;
+        Serialization serialization;
 
 };
 

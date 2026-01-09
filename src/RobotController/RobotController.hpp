@@ -18,7 +18,7 @@
 #include "Statistics.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
-
+#include "Serialization.hpp"
 
 
 namespace robot_remote_control {
@@ -31,12 +31,11 @@ class RobotController: public UpdateThread {
                                 const float &maxLatency = 1);
         virtual ~RobotController();
 
-        enum SerializationMode {BINARY, JSON};
-        void setSerializationMode(const SerializationMode & mode) {
-            serializationMode = mode;
+        void setSerializationMode(const Serialization::Mode & mode) {
+            serialization.setMode(mode);
         }
-        SerializationMode getSerializationMode() {
-            return serializationMode;
+        Serialization::Mode getSerializationMode() {
+            return serialization.getMode();
         }
 
         /**
@@ -641,7 +640,7 @@ class RobotController: public UpdateThread {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
             }
-            *dataSerialized = buffers->peekSerialized(type, channel, serializationMode);
+            *dataSerialized = buffers->peekSerialized(type, channel, serialization.getMode());
             bool result = buffers->lockedAccess().get()[type][channel]->pop(onlyNewest);
             return result;
         }
@@ -650,11 +649,12 @@ class RobotController: public UpdateThread {
             std::string replybuf;
             bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
 
-            if (serializationMode == JSON) {
-                google::protobuf::util::JsonStringToMessage(replybuf, result);
-            }else{
-                result->ParseFromString(replybuf);
-            }
+            serialization.deserialize(replybuf, result);
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonStringToMessage(replybuf, result);
+            // }else{
+            //     result->ParseFromString(replybuf);
+            // }
             return received;
         }
 
@@ -674,24 +674,26 @@ class RobotController: public UpdateThread {
         template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const ControlMessageType &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
             
-            if (serializationMode == JSON) {
-                google::protobuf::util::JsonPrintOptions jsonOptions;
-                // jsonOptions.add_whitespace = true;
-                jsonOptions.always_print_primitive_fields = true;
-                google::protobuf::util::MessageToJsonString(requestdata, &request, jsonOptions); 
-            }else{
-                requestdata.SerializeToString(&request);
-            }
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonPrintOptions jsonOptions;
+            //     // jsonOptions.add_whitespace = true;
+            //     jsonOptions.always_print_primitive_fields = true;
+            //     google::protobuf::util::MessageToJsonString(requestdata, &request, jsonOptions); 
+            // }else{
+            //     requestdata.SerializeToString(&request);
+            // }
+            serialization.serialize(requestdata, &request);
 
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
 
-            if (serializationMode == JSON) {
-                google::protobuf::util::JsonStringToMessage(recvbuf, reply);
-            }else{
-                google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
-                cistream.SetTotalBytesLimit(recvbuf.size());
-                reply->ParseFromCodedStream(&cistream);    
-            }
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonStringToMessage(recvbuf, reply);
+            // }else{
+            //     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
+            //     cistream.SetTotalBytesLimit(recvbuf.size());
+            //     reply->ParseFromCodedStream(&cistream);    
+            // }
+            serialization.deserializeLongData(recvbuf, reply);
 
             return (recvbuf.size() > 0) ? true : false;
         }
@@ -739,22 +741,24 @@ class RobotController: public UpdateThread {
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
         std::array<std::map<std::string, ChannelId>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelIdByName;
 
-        SerializationMode serializationMode;
+        Serialization serialization;
 
-        ControlMessage initControlMessage(const ControlMessageType &type, const std::string &data);
+        // ControlMessage initControlMessage(const ControlMessageType &type, const std::string &data);
 
         template< class CLASS > ControlMessage initControlMessage(const ControlMessageType &type, const CLASS &protodata) {
             ControlMessage controlMessage;
             controlMessage.set_type(type);
 
-            if (serializationMode == JSON) {
-                google::protobuf::util::JsonPrintOptions jsonOptions;
-                // jsonOptions.add_whitespace = true;
-                jsonOptions.always_print_primitive_fields = true;
-                google::protobuf::util::MessageToJsonString(protodata, controlMessage.mutable_json(), jsonOptions); 
-            }else{
-                protodata.SerializeToString(controlMessage.mutable_data());
-            }
+        
+            serialization.serialize(protodata, &controlMessage);
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonPrintOptions jsonOptions;
+            //     // jsonOptions.add_whitespace = true;
+            //     jsonOptions.always_print_primitive_fields = true;
+            //     google::protobuf::util::MessageToJsonString(protodata, controlMessage.mutable_json(), jsonOptions); 
+            // }else{
+            //     protodata.SerializeToString(controlMessage.mutable_data());
+            // }
             return controlMessage;
         }
 
@@ -762,14 +766,16 @@ class RobotController: public UpdateThread {
             std::string buf;
             ControlMessage controlMessage = initControlMessage(type, protodata);
 
-            if (serializationMode == JSON) {
-                google::protobuf::util::JsonPrintOptions jsonOptions;
-                // jsonOptions.add_whitespace = true;
-                jsonOptions.always_print_primitive_fields = true;
-                google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
-            }else{
-                controlMessage.SerializeToString(&buf);
-            }
+            serialization.serialize(controlMessage, &buf);
+
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonPrintOptions jsonOptions;
+            //     // jsonOptions.add_whitespace = true;
+            //     jsonOptions.always_print_primitive_fields = true;
+            //     google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
+            // }else{
+            //     controlMessage.SerializeToString(&buf);
+            // }
             
             return sendRequest(buf, 0, flags);
         }
