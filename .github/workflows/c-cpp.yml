@@ -29,3 +29,5 @@ jobs:
       run: ./build/test/test_suite_udt
     - name: test_gzip
       run: ./build/test/test_suite_gzip
+    - name: test_gzip
+      run: ./build/test/test_suite_ws

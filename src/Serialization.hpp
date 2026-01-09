@@ -3,7 +3,6 @@
 #include "Types/RobotRemoteControl.pb.h"
 #include <google/protobuf/util/json_util.h>
 
-
 namespace robot_remote_control {
 
 class Serialization {
@@ -29,7 +28,7 @@ class Serialization {
     template<class PROTO> bool serialize(const PROTO& src, std::string *target) {
         bool res = false;
         if (serializationMode == JSON) {
-            if (google::protobuf::util::MessageToJsonString(src, target, jsonOptions) == google::protobuf::util::Status::OK){
+            if (google::protobuf::util::MessageToJsonString(src, target, jsonOptions).ok()){
                 res = true;
             }
         }else{
@@ -41,7 +40,7 @@ class Serialization {
     template<class PROTO> bool serialize(const PROTO& src, TelemetryMessage *target) {
         bool res = false;
         if (serializationMode == JSON) {
-            if (google::protobuf::util::MessageToJsonString(src, target->mutable_json(), jsonOptions) == google::protobuf::util::Status::OK){
+            if (google::protobuf::util::MessageToJsonString(src, target->mutable_json(), jsonOptions).ok()){
                 res = true;
             }
         }else{
@@ -53,7 +52,7 @@ class Serialization {
     template<class PROTO> bool serialize(const PROTO& src, ControlMessage *target) {
         bool res = false;
         if (serializationMode == JSON) {
-            if (google::protobuf::util::MessageToJsonString(src, target->mutable_json(), jsonOptions) == google::protobuf::util::Status::OK){
+            if (google::protobuf::util::MessageToJsonString(src, target->mutable_json(), jsonOptions).ok()){
                 res = true;
             }
         }else{
@@ -82,7 +81,7 @@ class Serialization {
     bool deserialize(const std::string& src, TelemetryMessage* target, std::string *serializedMessage) {
         bool res = false;
         if (serializationMode == JSON) {
-            if(google::protobuf::util::JsonStringToMessage(src, target) == google::protobuf::util::Status::OK) {
+            if(google::protobuf::util::JsonStringToMessage(src, target).ok()) {
                 *serializedMessage = target->json();
                 res = true;
             }
@@ -96,7 +95,7 @@ class Serialization {
     template<class PROTO> bool deserialize(const std::string& src, PROTO* target) {
         bool res = false;
         if (serializationMode == JSON) {
-            if(google::protobuf::util::JsonStringToMessage(src, target) == google::protobuf::util::Status::OK) {
+            if(google::protobuf::util::JsonStringToMessage(src, target).ok()) {
                 res = true;
             }
         } else {
@@ -109,7 +108,7 @@ class Serialization {
     template<class PROTO> bool deserializeLongData(const std::string& src, PROTO* target) {
         bool res = false;
         if (serializationMode == JSON) {
-            if(google::protobuf::util::JsonStringToMessage(src, target) == google::protobuf::util::Status::OK) {
+            if(google::protobuf::util::JsonStringToMessage(src, target).ok()) {
                 res = true;
             }
         } else {
