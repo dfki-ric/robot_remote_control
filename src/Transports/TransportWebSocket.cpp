@@ -25,7 +25,6 @@ TransportWebSocket::TransportWebSocket(const ConnectionType &type, const int &po
         server->set_reuse_addr(true);
 
         server->set_open_handler([&](websocketpp::connection_hdl hdl){
-            printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
             connections.lockedAccess()->insert(hdl);
         });
 
@@ -62,12 +61,10 @@ TransportWebSocket::TransportWebSocket(const ConnectionType &type, const int &po
         client->start_perpetual();
 
         client->set_open_handler([&](websocketpp::connection_hdl hdl){
-            printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
             clientConnected = true;
         });
 
         client->set_close_handler([&](websocketpp::connection_hdl hdl){
-            printf("client closing %s:%i\n", __PRETTY_FUNCTION__, __LINE__);
             clientConnected = false;
         });
 
@@ -99,6 +96,7 @@ TransportWebSocket::~TransportWebSocket() {
     if (client){
         client->stop();
     }
+    thread->join();
 }
 
 int TransportWebSocket::send(const std::string& buf, Flags flags) {
