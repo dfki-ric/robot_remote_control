@@ -87,8 +87,8 @@ int main(int argc, char** argv) {
 
     boost::program_options::positional_options_description p;
     p.add("ip", 1);
-    p.add("commandport", 2);
-    p.add("telemetryport", 3);
+    p.add("commandport", 1);
+    p.add("telemetryport", 1);
 
     boost::program_options::variables_map vm;
     boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
