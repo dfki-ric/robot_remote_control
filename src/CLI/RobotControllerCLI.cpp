@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     bool SUCCESS = true;
     bool EXIT_ON_FAILURE = false;
     bool ws = false;
-
+    bool json = false;
 
     boost::program_options::options_description options_desc("Options:");
     options_desc.add_options()
@@ -79,6 +79,7 @@ int main(int argc, char** argv) {
         ("ip,i", boost::program_options::value(&ip), "The ip or host to conenct to")
         ("commandport,c", boost::program_options::value(&commandport), "the port to connect to for commands")
         ("telemetryport,t", boost::program_options::value(&telemetryport), "the port to connect to for telemetry")
+        ("json", boost::program_options::bool_switch(&json), "use JSON serialization")
         #ifdef ADD_WEBSOCKET_TRANSPORT
         ("ws", boost::program_options::bool_switch(&ws), "connect via websocket instead of ZeroMQ")
         #endif
@@ -119,6 +120,11 @@ int main(int argc, char** argv) {
     }
 
     robot_remote_control::RobotController controller(commands, telemetry);
+
+    if (json) {
+        controller.setSerializationMode(robot_remote_control::Serialization::JSON);
+    }
+
     controller.startUpdateThread(10);
 
     ConsoleCommands console;
