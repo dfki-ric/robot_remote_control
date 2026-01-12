@@ -1,6 +1,5 @@
 #include <boost/test/unit_test.hpp>
 #include <unistd.h>
-#include <google/protobuf/util/json_util.h>
 
 #include "../src/Transports/TransportZmq.hpp"
 
@@ -38,7 +37,7 @@ TransportSharedPtr telemetry;
 TransportSharedPtr command;
 TransportSharedPtr telemetri;
 
-
+Serialization serialization;
 
 
 #define COMPARE_PROTOBUF(VAR1, VAR2) BOOST_TEST(VAR1.SerializeAsString() == VAR2.SerializeAsString())
@@ -248,14 +247,9 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
 
   // buffer for size comparsion
   std::string buf;
-  if (controller.getSerializationMode() == Serialization::BINARY) {
-      telemetry_data.SerializeToString(&buf);
-  } else {
-      google::protobuf::util::JsonPrintOptions jsonOptions;
-      // jsonOptions.add_whitespace = true;
-      jsonOptions.always_print_primitive_fields = true;
-      google::protobuf::util::MessageToJsonString(telemetry_data, &buf, jsonOptions);
-  }
+
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
   int sent = robot.setCurrentPose(telemetry_data);
@@ -288,14 +282,8 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
 
   // buffer for size comparsion
   std::string buf;
-  if (controller.getSerializationMode() == Serialization::BINARY) {
-      telemetry_data.SerializeToString(&buf);
-  } else {
-      google::protobuf::util::JsonPrintOptions jsonOptions;
-      // jsonOptions.add_whitespace = true;
-      jsonOptions.always_print_primitive_fields = true;
-      google::protobuf::util::MessageToJsonString(telemetry_data, &buf, jsonOptions);
-  }
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
   int sent = robot.setCurrentTwist(telemetry_data);
@@ -330,14 +318,8 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
   // buffer for size comparsion
   std::string buf;
 
-  if (controller.getSerializationMode() == Serialization::BINARY) {
-      telemetry_data.SerializeToString(&buf);
-  } else {
-      google::protobuf::util::JsonPrintOptions jsonOptions;
-      // jsonOptions.add_whitespace = true;
-      jsonOptions.always_print_primitive_fields = true;
-      google::protobuf::util::MessageToJsonString(telemetry_data, &buf, jsonOptions);
-  }
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
   int sent = robot.setCurrentAcceleration(telemetry_data);
@@ -576,14 +558,8 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   std::string binarydata;
   PROTOBUFDATA receivedraw;
   
-  if (controller.getSerializationMode() == Serialization::BINARY) {
-      protodata.SerializeToString(&binarydata);
-  } else {
-      google::protobuf::util::JsonPrintOptions jsonOptions;
-      // jsonOptions.add_whitespace = true;
-      jsonOptions.always_print_primitive_fields = true;
-      google::protobuf::util::MessageToJsonString(protodata, &binarydata, jsonOptions);
-  }
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(protodata, &binarydata);
 
   robot.sendTelemetryRaw(type, binarydata);
   while (!controller.getTelemetry(type, &receivedraw, false, 0)) {
