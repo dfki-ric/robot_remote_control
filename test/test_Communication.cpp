@@ -95,6 +95,25 @@ void initComms() {
   #endif
 }
 
+BOOST_AUTO_TEST_CASE(check_versions) {
+  initComms();
+
+  RobotController controller(commands, telemetry);
+  ControlledRobot robot(command, telemetri);
+
+  robot.startUpdateThread(10);
+  controller.startUpdateThread(10);
+  
+  BOOST_CHECK_EQUAL(controller.protocolVersion(), robot.protocolVersion());
+  BOOST_CHECK_EQUAL(controller.libraryVersion(), robot.libraryVersion());
+  BOOST_CHECK_EQUAL(controller.gitVersion(), robot.gitVersion());
+  
+  BOOST_CHECK_EQUAL(controller.checkProtocolVersion(), true);
+  BOOST_CHECK_EQUAL(controller.checkLibraryVersion(), true);
+  BOOST_CHECK_EQUAL(controller.checkGitVersion(), true);
+
+}
+
 bool isFileEqual(const std::string& path1, const std::string& path2) {
     std::ifstream f1(path1, std::ios::in | std::ios::binary);
     std::ifstream f2(path2, std::ios::in | std::ios::binary);

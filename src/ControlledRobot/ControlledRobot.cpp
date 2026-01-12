@@ -25,9 +25,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     receiveflags(Transport::NOBLOCK) {
 
     // init buffers for non-cast access in getters
-    protocolVersion = std::make_unique<MessageIdCommandBuffer>(1);
-    libraryVersion = std::make_unique<MessageIdCommandBuffer>(1);
-    gitVersion = std::make_unique<MessageIdCommandBuffer>(1);
+    protocolVersionBuf = std::make_unique<MessageIdCommandBuffer>(1);
+    libraryVersionBuf = std::make_unique<MessageIdCommandBuffer>(1);
+    gitVersionBuf = std::make_unique<MessageIdCommandBuffer>(1);
     poseCommand = std::make_unique<CommandBuffer<Pose>>(buffersize);
     twistCommand = std::make_unique<CommandBuffer<Twist>>(buffersize);
     goToCommand = std::make_unique<CommandBuffer<GoTo>>(buffersize);
@@ -40,9 +40,9 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
 
 
     // register command buffers
-    registerCommandType(PROTOCOL_VERSION, protocolVersion.get());
-    registerCommandType(LIBRARY_VERSION, libraryVersion.get());
-    registerCommandType(GIT_VERSION, gitVersion.get());
+    registerCommandType(PROTOCOL_VERSION, protocolVersionBuf.get());
+    registerCommandType(LIBRARY_VERSION, libraryVersionBuf.get());
+    registerCommandType(GIT_VERSION, gitVersionBuf.get());
 
     registerCommandType(TARGET_POSE_COMMAND, poseCommand.get());
     registerCommandType(TWIST_COMMAND, twistCommand.get());
@@ -155,16 +155,9 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
     }else{
         serializedMessage = controlMessage.data();
     }
-
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonStringToMessage(request, &controlMessage);
-    //     serializedMessage = controlMessage.json();
-    // }else{
-    //     controlMessage.ParseFromString(request);
-    //     serializedMessage = controlMessage.data();
-    // }
-
+    
     ControlMessageType msgtype = controlMessage.type();
+
 
     switch (msgtype) {
         case PROTOCOL_VERSION:
@@ -177,13 +170,6 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
         }
         case LOG_LEVEL_SELECT: {
             LogLevelRequest req;
-
-            // if (serializationMode == JSON) {
-            //     google::protobuf::util::JsonStringToMessage(serializedMessage, &req);
-            // }else{
-            //     req.ParseFromString(serializedMessage);
-            // }
-
             serialization.deserialize(serializedMessage, &req);
 
             logLevel = req.level();
@@ -338,11 +324,6 @@ bool ControlledRobot::loadFolder(FolderTransfer* folder, const std::string &path
 ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     TelemetryRequest request;
 
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
-    // }else{
-    //     request.ParseFromString(serializedMessage);
-    // }
     serialization.deserialize(serializedMessage, &request);
     std::string reply = buffers->peekSerialized(request.type(), request.channel(), serialization.getMode());
     commandTransport->send(reply);
@@ -352,11 +333,6 @@ ControlMessageType ControlledRobot::handleTelemetryRequest(const std::string& se
 ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     Permission perm;
 
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonStringToMessage(serializedMessage, &perm);
-    // }else{
-    //     perm.ParseFromString(serializedMessage);
-    // }
     serialization.deserialize(serializedMessage, &perm);
 
     std::promise<bool> &promise = pendingPermissionRequests[perm.requestuid()];
@@ -372,11 +348,6 @@ ControlMessageType ControlledRobot::handlePermissionRequest(const std::string& s
 ControlMessageType ControlledRobot::handleFileRequest(const std::string& serializedMessage, robot_remote_control::TransportSharedPtr commandTransport) {
     FileRequest request;
 
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonStringToMessage(serializedMessage, &request);
-    // }else{
-    //     request.ParseFromString(serializedMessage);
-    // }
     serialization.deserialize(serializedMessage, &request);
 
     FolderTransfer folder;
@@ -408,15 +379,6 @@ ControlMessageType ControlledRobot::handleFileRequest(const std::string& seriali
         printf("requested file '%s' undefined, sending empty folder\n", request.identifier().c_str());
         folder.set_identifier("file/folder :" + request.identifier() + " undefined");
     }
-
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonPrintOptions jsonOptions;
-    //     // jsonOptions.add_whitespace = true;
-    //     jsonOptions.always_print_primitive_fields = true;
-    //     google::protobuf::util::MessageToJsonString(folder, &buf,jsonOptions); 
-    // }else{
-    //     folder.SerializeToString(&buf);
-    // }
     serialization.serialize(folder, &buf);
 
 
@@ -443,16 +405,30 @@ ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageTyp
 
 ControlMessageType ControlledRobot::handleVersionRequest(const MessageId& msgid, TransportSharedPtr commandTransport) {
     std::string msg = "";
-    // MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
-    // if (cmdbuffer) {
-    //     cmdbuffer->write(msgid);
-    // }
-    switch (msgid) {
-        case PROTOCOL_VERSION: commandTransport->send(PROTOCOL_VERSION_CHECKSUM); break;
-        case LIBRARY_VERSION:  commandTransport->send(LIBRARY_VERSION_STRING); break;
-        case GIT_VERSION:      commandTransport->send(GIT_COMMIT_ID); break;
+    MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
+    if (cmdbuffer) {
+        cmdbuffer->write(msgid);
     }
+    std::string version;
+
+    switch (msgid) {
+        case PROTOCOL_VERSION: version = protocolVersion(); break;
+        case LIBRARY_VERSION:  version = libraryVersion(); break;
+        case GIT_VERSION:      version = gitVersion(); break;
+    }
+    commandTransport->send(version);
     return ControlMessageType(msgid);
 }
+
+std::string ControlledRobot::protocolVersion() {
+    return PROTOCOL_VERSION_CHECKSUM;
+}
+std::string ControlledRobot::libraryVersion() {
+    return LIBRARY_VERSION_STRING;
+}
+std::string ControlledRobot::gitVersion() {
+    return GIT_COMMIT_ID;
+}
+
 
 }  // namespace robot_remote_control
