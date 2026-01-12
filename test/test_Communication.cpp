@@ -12,7 +12,9 @@
 #ifdef TRANSPORT_WS
   #include "../src/Transports/TransportWebSocket.hpp"
 #endif
-
+#ifdef TRANSPORT_WS_JSON
+  #include "../src/Transports/TransportWebSocket.hpp"
+#endif
 
 #include "TypeGenerator.hpp"
 
@@ -92,6 +94,12 @@ void initComms() {
     if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7002));}
     if (!commands.get()) {commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "127.0.0.1"));}
     if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "127.0.0.1"));}
+  #endif
+  #ifdef TRANSPORT_WS_JSON
+    if (!command.get()) {command = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7001));printf("using WS JSON\n");}
+    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7002));}
+    if (!commands.get()) {commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT_TEXT, 7001, "127.0.0.1"));}
+    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT_TEXT, 7002, "127.0.0.1"));}
   #endif
 }
 

@@ -56,6 +56,12 @@ if(websocketpp_FOUND)
       robot_remote_control-transport_ws
     )
     target_compile_definitions(test_suite_ws PUBLIC -DTRANSPORT_WS)
+    add_executable(test_suite_ws_json ${COMMON_SOURCE})
+    target_link_libraries(test_suite_ws_json
+      ${COMMON_LIBS}
+      robot_remote_control-transport_ws
+    )
+    target_compile_definitions(test_suite_ws_json PUBLIC -DTRANSPORT_WS_JSON)
 endif()
 
 

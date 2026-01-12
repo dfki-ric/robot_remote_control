@@ -85,6 +85,10 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS);
     registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION);
     registerTelemetryType<LaserScan>(LASER_SCAN);
+
+    if (commandTransport->requiresTextProtocol() || telemetryTransport->requiresTextProtocol()) {
+        serialization.setMode(Serialization::JSON);
+    }
 }
 
 ControlledRobot::~ControlledRobot() {
@@ -150,7 +154,7 @@ ControlMessageType ControlledRobot::evaluateRequest(const std::string& request) 
 
     serialization.deserialize(request, &controlMessage);
 
-    if (controlMessage.json() != "") {
+    if (serialization.getMode() == Serialization::JSON) {
         serializedMessage = controlMessage.json();
     }else{
         serializedMessage = controlMessage.data();
@@ -405,10 +409,10 @@ ControlMessageType ControlledRobot::handleCommandRequest(const ControlMessageTyp
 
 ControlMessageType ControlledRobot::handleVersionRequest(const MessageId& msgid, TransportSharedPtr commandTransport) {
     std::string msg = "";
-    MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
-    if (cmdbuffer) {
-        cmdbuffer->write(msgid);
-    }
+    // MessageIdCommandBuffer* cmdbuffer = dynamic_cast<MessageIdCommandBuffer*>(commandbuffers[msgid]);
+    // if (cmdbuffer) {
+    //     cmdbuffer->write(msgid);
+    // }
     std::string version;
 
     switch (msgid) {

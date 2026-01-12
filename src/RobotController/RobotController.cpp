@@ -54,6 +54,10 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
         registerTelemetryType<LaserScan>(LASER_SCAN, buffersize);
 
+
+        if (commandTransport->requiresTextProtocol() || telemetryTransport->requiresTextProtocol()) {
+            serialization.setMode(Serialization::JSON);
+        }
         // #ifdef RRC_STATISTICS
         //     // add names to buffer, this types have aspecial treatment, the should not be registered
         //     MapsDefinition mapsDefinition;

@@ -34,6 +34,16 @@ namespace robot_remote_control
          */
         virtual int receive(std::string* buf, Flags flags = NONE) = 0;
 
+        /**
+         * @brief some transports may require a non-binary format
+         * 
+         * @return true 
+         * @return false 
+         */
+        virtual bool requiresTextProtocol() {
+            return false;
+        };
+
     };
 
     typedef std::shared_ptr<Transport> TransportSharedPtr;

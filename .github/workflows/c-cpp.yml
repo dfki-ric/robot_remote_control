@@ -31,3 +31,5 @@ jobs:
       run: ./build/test/test_suite_gzip
     - name: test_ws
       run: ./build/test/test_suite_ws
+    - name: test_ws_json
+      run: ./build/test/test_suite_ws_json
