@@ -1,21 +1,21 @@
 #include <iostream>
 #include "RobotController.hpp"
 #include "Transports/TransportZmq.hpp"
-// #include "Transports/TransportWebSocket.hpp"
+#include "Transports/TransportWebSocket.hpp"
 #include <unistd.h>
 
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
-// using robot_remote_control::TransportWebSocket;
+using robot_remote_control::TransportWebSocket;
 
 
 int main(int argc, char** argv) {
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7001", TransportZmq::REQ));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7002", TransportZmq::SUB));
 
-    // TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "localhost"));
-    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "localhost"));
+    TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "localhost"));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "localhost"));
     
     robot_remote_control::RobotController controller(commands, telemetry);
 
@@ -76,17 +76,20 @@ int main(int argc, char** argv) {
 
         // in production, the get function should use a while loop
         // while (controller.getCurrentPose(currentpose)){do stuff}
-        while (controller.getCurrentPose(&currentpose)) {
+        if (controller.getCurrentPose(&currentpose), true) {
             //read all poses from the buffer
+            printf("Current Pose: %s\n", currentpose.ShortDebugString().c_str());
         }
+
         bool new_joint = controller.getCurrentJointState(&jointstate);
 
 
 
         //printf("%.2f %.2f %.2f\n", currentpose.position().x(), currentpose.position().y(), currentpose.position().z());
-        printf("Current Pose: %s\n", currentpose.ShortDebugString().c_str());
-
-        printf("got %i joints\n", jointstate.name_size());
+        
+        if (new_joint) {
+            printf("got %i joints\n", jointstate.name_size());
+        }
         google::protobuf::RepeatedPtrField<std::string> names = jointstate.name();
 
 

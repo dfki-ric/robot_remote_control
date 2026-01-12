@@ -12,7 +12,7 @@ class Serialization {
 
     Serialization(){
         // jsonOptions.add_whitespace = true;
-        jsonOptions.always_print_primitive_fields = true;
+        // jsonOptions.always_print_primitive_fields = true;
         serializationMode = JSON;
     }
     virtual ~Serialization(){}
