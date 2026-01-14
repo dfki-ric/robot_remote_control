@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 
-#include "Transports/TransportZmq.hpp"
+#include "Transports/ZeroMQ/TransportZmq.hpp"
 #include "ConsoleCommands.hpp"
 
 using robot_remote_control::TransportSharedPtr;

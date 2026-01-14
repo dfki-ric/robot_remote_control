@@ -1,18 +1,18 @@
 #pragma once
 
-#include "../src/Transports/TransportZmq.hpp"
+#include "../src/Transports/ZeroMQ/TransportZmq.hpp"
 
 #ifdef TRANSPORT_DEFAULT_GZIP
-  #include "../src/Transports/TransportWrapperGzip.hpp"
+  #include "../src/TransportWrappers/Gzip/TransportWrapperGzip.hpp"
 #endif
 #ifdef TRANSPORT_UDT
-  #include "../src/Transports/TransportUDT.hpp"
+  #include "../src/Transports/UDT/TransportUDT.hpp"
 #endif
 #ifdef TRANSPORT_WS
-  #include "../src/Transports/TransportWebSocket.hpp"
+  #include "../src/Transports/WebSocket/TransportWebSocket.hpp"
 #endif
 #ifdef TRANSPORT_WS_JSON
-  #include "../src/Transports/TransportWebSocket.hpp"
+  #include "../src/Transports/WebSocket/TransportWebSocket.hpp"
 #endif
 namespace robot_remote_control {
 

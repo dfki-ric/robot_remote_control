@@ -1,8 +1,5 @@
 #include "TransportWebSocket.hpp"
 
-
-
-
 using namespace std;
 using namespace robot_remote_control;
 

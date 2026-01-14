@@ -3,13 +3,13 @@
 #include <unistd.h>
 
 #include "RobotController.hpp"
-#include "Transports/TransportZmq.hpp"
+#include "Transports/ZeroMQ/TransportZmq.hpp"
 #include "ConsoleCommands.hpp"
 
 #include <boost/program_options.hpp>
 
 #ifdef ADD_WEBSOCKET_TRANSPORT
-    #include "Transports/TransportWebSocket.hpp"
+    #include "Transports/WebSocket/TransportWebSocket.hpp"
     using robot_remote_control::TransportWebSocket;
 #endif
 
