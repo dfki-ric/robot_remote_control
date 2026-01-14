@@ -45,4 +45,11 @@ Transports::Transports() {
     if (!robotControllerCommands.get()) {robotControllerCommands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "127.0.0.1"));}
     if (!robotControllerTelemetry.get()) {robotControllerTelemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "127.0.0.1"));}
   #endif
+  #ifdef TRANSPORT_WS_JSON
+    if (!controlledRobotCommands.get()) {controlledRobotCommands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7001));printf("using WS JSON\n");}
+    if (!controlledRobotTelemetry.get()) {controlledRobotTelemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7002));}
+    if (!robotControllerCommands.get()) {robotControllerCommands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT_TEXT, 7001, "127.0.0.1"));}
+    if (!robotControllerTelemetry.get()) {robotControllerTelemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT_TEXT, 7002, "127.0.0.1"));}
+  #endif
+
 }

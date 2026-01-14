@@ -11,7 +11,9 @@
 #ifdef TRANSPORT_WS
   #include "../src/Transports/TransportWebSocket.hpp"
 #endif
-
+#ifdef TRANSPORT_WS_JSON
+  #include "../src/Transports/TransportWebSocket.hpp"
+#endif
 namespace robot_remote_control {
 
 class Transports {
