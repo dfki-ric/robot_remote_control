@@ -5,25 +5,23 @@
 #include <iostream>
 
 #include "Transports/TransportZmq.hpp"
-#include "Transports/TransportWebSocket.hpp"
+// #include "Transports/TransportWebSocket.hpp"
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
-using robot_remote_control::TransportWebSocket;
+// using robot_remote_control::TransportWebSocket;
 
 int main(int argc, char** argv)
 {
-    // TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001", TransportZmq::REP));
-    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
+    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001", TransportZmq::REP));
+    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
     
-    TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7001));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER, 7002));
+    // TransportWebSocket may run in SERVER or SERVER_TEXT mode, SERVER_TEXT tells the ControlledRobot, that binary can't be transmitted
+    // als switches to JSON serialization, this is required to connect the WS from a browser, if just SERVER is set, data will be binary
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7001));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7002));
     
     robot_remote_control::ControlledRobot robot(commands, telemetry);
-
-    // when you are using the websocket transport, connect with a browser and cannot parse the binary format,
-    // you can set the setSerializationMode mode eto JSON to use the data directly
-    // robot.setSerializationMode(robot_remote_control::Serialization::JSON);
 
     robot.startUpdateThread(10);
 

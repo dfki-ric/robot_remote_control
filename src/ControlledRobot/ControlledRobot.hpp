@@ -675,6 +675,9 @@ class ControlledRobot: public UpdateThread {
             return sendTelemetry(telemetry, ODOMETRY, false, channel);
         }
 
+        std::string protocolVersion();
+        std::string libraryVersion();
+        std::string gitVersion();
 
     protected:
         virtual ControlMessageType receiveRequest();
@@ -694,9 +697,9 @@ class ControlledRobot: public UpdateThread {
         virtual ControlMessageType handleVersionRequest(const MessageId& msgid, TransportSharedPtr commandTransport);
 
         // command buffers
-        std::unique_ptr<MessageIdCommandBuffer> protocolVersion;
-        std::unique_ptr<MessageIdCommandBuffer> libraryVersion;
-        std::unique_ptr<MessageIdCommandBuffer> gitVersion;
+        std::unique_ptr<MessageIdCommandBuffer> protocolVersionBuf;
+        std::unique_ptr<MessageIdCommandBuffer> libraryVersionBuf;
+        std::unique_ptr<MessageIdCommandBuffer> gitVersionBuf;
 
         std::unique_ptr<CommandBuffer<Pose>> poseCommand;
         std::unique_ptr<CommandBuffer<Twist>> twistCommand;

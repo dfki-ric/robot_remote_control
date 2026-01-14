@@ -32,6 +32,10 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         throw std::runtime_error("RobotController: provided telemetry transport is not supporting telemeter");
     }
 
+    if (commandTransport->requiresTextProtocol() || telemetryTransport->requiresTextProtocol()) {
+        serialization.setMode(Serialization::JSON);
+    }
+
     registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
     registerTelemetryType<JointState>(JOINT_STATE, buffersize);
     registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
@@ -99,9 +103,9 @@ bool RobotController::checkProtocolVersion() {
 
 std::string RobotController::requestProtocolVersion() {
     std::string buf;
-    buf.resize(sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = PROTOCOL_VERSION;
+    ControlMessage controlMessage;
+    controlMessage.set_type(PROTOCOL_VERSION);
+    serialization.serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -111,7 +115,7 @@ std::string RobotController::protocolVersion() {
 
 bool RobotController::checkLibraryVersion() {
     std::string remote_ver = requestLibraryVersion();
-    if (remote_ver != LIBRARY_VERSION_STRING) {
+    if (remote_ver != libraryVersion()) {
         printf("library version mismatch (%s : %s), consider using the same version on both sides if your calls do not work\n", remote_ver.c_str(), LIBRARY_VERSION_STRING);
         return false;
     }
@@ -120,9 +124,9 @@ bool RobotController::checkLibraryVersion() {
 
 std::string RobotController::requestLibraryVersion() {
     std::string buf;
-    buf.resize(sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = LIBRARY_VERSION;
+    ControlMessage controlMessage;
+    controlMessage.set_type(LIBRARY_VERSION);
+    serialization.serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -132,7 +136,7 @@ std::string RobotController::libraryVersion() {
 
 bool RobotController::checkGitVersion() {
     std::string remote_ver = requestGitVersion();
-    if (remote_ver != GIT_COMMIT_ID) {
+    if (remote_ver != gitVersion()) {
         printf("git version mismatch, consider using the same version on both sides if your calls do not work\n");
         return false;
     }
@@ -141,9 +145,9 @@ bool RobotController::checkGitVersion() {
 
 std::string RobotController::requestGitVersion() {
     std::string buf;
-    buf.resize(sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = GIT_VERSION;
+    ControlMessage controlMessage;
+    controlMessage.set_type(GIT_VERSION);
+    serialization.serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -224,14 +228,7 @@ void RobotController::setLogLevel(const LogLevelId &level) {
     ControlMessage controlMessage = initControlMessage(LOG_LEVEL_SELECT, levelrequest);
 
     serialization.serialize(controlMessage, &buf);
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonPrintOptions jsonOptions;
-    //     // jsonOptions.add_whitespace = true;
-    //     jsonOptions.always_print_primitive_fields = true;
-    //     google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
-    // }else{
-    //     controlMessage.SerializeToString(&buf);
-    // }
+
     sendRequest(buf);
 }
 
@@ -400,15 +397,6 @@ bool RobotController::requestBinary(const TelemetryMessageType &type, std::strin
     telemetryRequest.set_type(type);
     telemetryRequest.set_channel(channel);
     
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonPrintOptions jsonOptions;
-    //     // jsonOptions.add_whitespace = true;
-    //     jsonOptions.always_print_primitive_fields = true;
-    //     google::protobuf::util::MessageToJsonString(telemetryRequest, &request, jsonOptions); 
-    // }else{
-    //     telemetryRequest.SerializeToString(&request);
-    // }
-
     serialization.serialize(telemetryRequest, &request);
 
     return requestBinary(request, result, requestType, overrideMaxLatency);
@@ -420,16 +408,6 @@ bool RobotController::requestBinary(const std::string &request, std::string *res
     controlmessage.set_type(requestType);
 
     serialization.setSerialized(request, &controlmessage);
-    
-    // if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonPrintOptions jsonOptions;
-    //     // jsonOptions.add_whitespace = true;
-    //     jsonOptions.always_print_primitive_fields = true;
-    //     google::protobuf::util::MessageToJsonString(controlmessage, &buf, jsonOptions); 
-    // }else{
-    //     controlmessage.SerializeToString(&buf);
-    // }
-    
     serialization.serialize(controlmessage, &buf);
 
     *result = sendRequest(buf, overrideMaxLatency);
@@ -499,14 +477,3 @@ std::pair<std::string, std::string> RobotController::requestRobotModel(const std
     }
     return {"",""};
 }
-
-// ControlMessage RobotController::initControlMessage(const ControlMessageType &type, const std::string &data) {
-//     ControlMessage controlMessage;
-//     controlMessage.set_type(type);
-//     if (serialization.getMode() == Serialization::JSON) {
-//         controlMessage.set_json(data);
-//     }else{
-//         controlMessage.set_data(data);
-//     }
-//     return controlMessage;
-// }

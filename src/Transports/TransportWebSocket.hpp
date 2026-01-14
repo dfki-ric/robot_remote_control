@@ -23,7 +23,7 @@ class TransportWebSocket : public Transport {
     typedef std::set<websocketpp::connection_hdl,std::owner_less<websocketpp::connection_hdl>> Connections;
     // typedef std::vector<websocketpp::connection_hdl> Connections;
     
-    enum ConnectionType {SERVER,CLIENT};
+    enum ConnectionType {SERVER,CLIENT,SERVER_TEXT,CLIENT_TEXT};
 
     TransportWebSocket(const ConnectionType &type, const int &port, const std::string &addr = "");
     virtual ~TransportWebSocket();
@@ -53,6 +53,10 @@ class TransportWebSocket : public Transport {
         return server;
     }
 
+    virtual bool requiresTextProtocol() {
+        return opcode == websocketpp::frame::opcode::text;
+    };
+
  private:
     std::shared_ptr<WSClient> client;
     std::shared_ptr<WSServer> server;
@@ -64,6 +68,7 @@ class TransportWebSocket : public Transport {
     WSClient::connection_ptr clientConnection;
     bool clientConnected;
 
+    websocketpp::frame::opcode::value opcode;
 
 };
 

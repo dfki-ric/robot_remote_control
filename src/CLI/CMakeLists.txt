@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1.0)
 
 set(CURSES_NEED_NCURSES true)
 find_package(Curses)
+find_package(Boost COMPONENTS program_options REQUIRED)
 
 if (CURSES_HAVE_NCURSES_H)
     add_executable(virtual_joystick VirtualJoystick.cpp)
@@ -24,10 +25,18 @@ if (CURSES_HAVE_NCURSES_H)
 endif(CURSES_HAVE_NCURSES_H)
 
 add_executable(robot_controller RobotControllerCLI.cpp ConsoleCommands.cpp)
+
+if (websocketpp_FOUND)
+    target_compile_definitions(robot_controller PRIVATE -DADD_WEBSOCKET_TRANSPORT=TRUE)
+    set(OTHER_TRANSPORT_LIBS robot_remote_control-transport_ws)
+endif()
+
 target_link_libraries(robot_controller
     robot_remote_control-robot_controller
     robot_remote_control-transport_zmq
+    ${OTHER_TRANSPORT_LIBS}
     readline
+    Boost::program_options
 )
 target_include_directories(robot_controller
 	PUBLIC

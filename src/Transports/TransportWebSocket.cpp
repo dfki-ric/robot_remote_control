@@ -9,7 +9,14 @@ using namespace robot_remote_control;
 //https://github.com/zaphoyd/websocketpp/blob/master/examples/telemetry_server/telemetry_server.cpp
 
 TransportWebSocket::TransportWebSocket(const ConnectionType &type, const int &port, const std::string &addr):clientConnected(false) {
-    if (type == SERVER) {
+
+    if (type == SERVER_TEXT || type == CLIENT_TEXT) {
+        opcode = websocketpp::frame::opcode::text;
+    }else{
+        opcode = websocketpp::frame::opcode::binary;
+    }
+
+    if (type == SERVER || type == SERVER_TEXT) {
         setTransportSupport(ROBOTCOMMANDS | ROBOTTELEMETRY);
         server = std::make_shared<WSServer>();
 
@@ -105,11 +112,10 @@ int TransportWebSocket::send(const std::string& buf, Flags flags) {
     if (server) {
         auto lock = connections.lockedAccess();
         for (auto &listener : lock.get()) {
-            // server->send(listener, buf, websocketpp::frame::opcode::binary, ec);
-            server->send(listener, buf, websocketpp::frame::opcode::text, ec);
+            server->send(listener, buf, opcode, ec);
         }
     } else if (clientConnected) {
-        client->send(clientConnection, buf, websocketpp::frame::opcode::binary, ec);
+        client->send(clientConnection, buf, opcode, ec);
     }
     if (ec) {
         std::cout << "> send error: " << ec.message() << std::endl;

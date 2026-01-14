@@ -2,7 +2,6 @@
 #include <unistd.h>
 
 
-
 #include "TypeGenerator.hpp"
 
 #include <iostream>

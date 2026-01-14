@@ -44,7 +44,13 @@ If you want to cite this library you can use this bibtex entry:
 
 The library is using the high-level networking library ZeroMQ (ZMQ) and Google's language- and platform-neutral proto3 for de-/serialization. Therefor you need to manually install the following OS dependencies: protobuf and zeromq
 
-    sudo apt install libprotobuf-dev protobuf-compiler libzmq3-dev libreadline-dev
+    sudo apt install libboost-test-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libprotobuf-dev protobuf-compiler libzmq3-devlibreadline-dev libncurses5-dev 
+
+    where optionally, more packages may be installed, for more featues:
+    
+     * libudt-dev to have a UDT-based transport (reliable UDP usable with very high latencies)
+     * zlib1g-dev to be able to additionally compress the data sent via transports
+     * libwebsocketpp-dev to have a websocket thansport, that allows browsers to use rrc connections (only JSON serialization is set)
 
 ### Building
 
