@@ -24,6 +24,14 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
     logLevel(CUSTOM-1),
     receiveflags(Transport::NOBLOCK) {
 
+    if (!commandTransport->supportsControlledRobotCommands()) {
+        throw std::runtime_error("ControlledRobot: provided command transport is not supporting commands");
+    }
+
+    if (!telemetryTransport->supportsControlledRobotTelemetry()) {
+        throw std::runtime_error("ControlledRobot: provided telemetry transport is not supporting telemeter");
+    }
+
     // init buffers for non-cast access in getters
     protocolVersion = std::make_unique<MessageIdCommandBuffer>(1);
     libraryVersion = std::make_unique<MessageIdCommandBuffer>(1);

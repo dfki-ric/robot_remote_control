@@ -23,56 +23,65 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
     connected(false) {
-        registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
-        registerTelemetryType<JointState>(JOINT_STATE, buffersize);
-        registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
-        registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<RobotName>(ROBOT_NAME, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
-        registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
-        registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
-        registerTelemetryType<Map>(MAP, 1);
-        registerTelemetryType<Poses>(POSES, buffersize);
-        registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
-        registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
-        registerTelemetryType<PointCloud>(POINTCLOUD, buffersize);
-        registerTelemetryType<IMU>(IMU_VALUES, buffersize);
-        registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
-        registerTelemetryType<Twist>(CURRENT_TWIST, buffersize);
-        registerTelemetryType<Acceleration>(CURRENT_ACCELERATION, buffersize);
-        registerTelemetryType<CameraInformation>(CAMERA_INFORMATION, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<Image>(IMAGE, buffersize);
-        registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
-        registerTelemetryType<Odometry>(ODOMETRY, buffersize);
-        registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
-        registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
-        registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
-        registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
-        registerTelemetryType<LaserScan>(LASER_SCAN, buffersize);
 
-        // #ifdef RRC_STATISTICS
-        //     // add names to buffer, this types have aspecial treatment, the should not be registered
-        //     MapsDefinition mapsDefinition;
-        //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
-        //     Map map;
-        //     statistics.names[MAP] = map.GetTypeName();
-        // #endif
+    if (!commandTransport->supportsRobotControllerCommands()) {
+        throw std::runtime_error("RobotController: provided command transport is not supporting commands");
+    }
 
-        for (auto& chan : messageChannels) {
-            chan = 0;
-        }
+    if (!telemetryTransport->supportsRobotControllerTelemetry()) {
+        throw std::runtime_error("RobotController: provided telemetry transport is not supporting telemeter");
+    }
 
-        lostConnectionCallback = [&](const float& time){
-            printf("lost connection to robot, no reply for %f seconds\n", time);
-        };
+    registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
+    registerTelemetryType<JointState>(JOINT_STATE, buffersize);
+    registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
+    registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<RobotName>(ROBOT_NAME, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
+    registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
+    registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
+    registerTelemetryType<Map>(MAP, 1);
+    registerTelemetryType<Poses>(POSES, buffersize);
+    registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
+    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
+    registerTelemetryType<PointCloud>(POINTCLOUD, buffersize);
+    registerTelemetryType<IMU>(IMU_VALUES, buffersize);
+    registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
+    registerTelemetryType<Twist>(CURRENT_TWIST, buffersize);
+    registerTelemetryType<Acceleration>(CURRENT_ACCELERATION, buffersize);
+    registerTelemetryType<CameraInformation>(CAMERA_INFORMATION, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<Image>(IMAGE, buffersize);
+    registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
+    registerTelemetryType<Odometry>(ODOMETRY, buffersize);
+    registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
+    registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
+    registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
+    registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
+    registerTelemetryType<LaserScan>(LASER_SCAN, buffersize);
 
-        connectedCallback = [&](){
-            printf("connected to robot\n");
-        };
+    // #ifdef RRC_STATISTICS
+    //     // add names to buffer, this types have aspecial treatment, the should not be registered
+    //     MapsDefinition mapsDefinition;
+    //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
+    //     Map map;
+    //     statistics.names[MAP] = map.GetTypeName();
+    // #endif
+
+    for (auto& chan : messageChannels) {
+        chan = 0;
+    }
+
+    lostConnectionCallback = [&](const float& time){
+        printf("lost connection to robot, no reply for %f seconds\n", time);
+    };
+
+    connectedCallback = [&](){
+        // printf("connected to robot\n");
+    };
 }
 
 RobotController::~RobotController() {

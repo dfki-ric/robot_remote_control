@@ -5,7 +5,8 @@ cmake_minimum_required(VERSION 3.1.0)
 project(robot_remote_control VERSION "0.0.9")
 
 set(BUILD_SHARED_LIBS ON)
- 
+set(CMAKE_BUILD_TYPE Debug)
+
 ######################################################## CHECK FOR UDT
 find_package(PkgConfig)
 pkg_check_modules(UDT "udt")
@@ -41,13 +42,13 @@ endif( RRC_STATISTICS )
 ################################################### ADD SUBDIRECTORIES
 add_subdirectory(src)
 
-#set (BUILD_EXAMPLES ON)
+set (BUILD_EXAMPLES ON)
 if( BUILD_EXAMPLES )
     message("Adding example directory") 
     add_subdirectory(examples)
 endif( BUILD_EXAMPLES )
 
-#set (BUILD_TESTS ON)
+set (BUILD_TESTS ON)
 if( BUILD_TESTS )
     message("Adding test directory") 
     add_subdirectory(test)

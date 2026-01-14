@@ -3,39 +3,65 @@
 #include <string>
 #include <memory>
 
-namespace robot_remote_control
-{
+namespace robot_remote_control {
 
+class Transport {
+ public: 
     
+    enum Flags {NONE = 0x0, NOBLOCK = 0x1};
 
-    class Transport{
-        public: 
-        
-        enum Flags {NONE = 0x0, NOBLOCK = 0x1};
+    Transport():supports(UNSET){};
+    virtual ~Transport(){};
 
-        Transport(){};
-        virtual ~Transport(){};
+    /**
+     * @brief send data
+     * 
+     * @param buf the buffer to send
+     * @param Flags flags the flags
+     * @return int number of bytes sent
+     */
+    virtual int send(const std::string& buf, Flags flags = NONE) = 0;
 
-        /**
-         * @brief send data
-         * 
-         * @param buf the buffer to send
-         * @param Flags flags the flags
-         * @return int number of bytes sent
-         */
-        virtual int send(const std::string& buf, Flags flags = NONE) = 0;
+    /**
+     * @brief receive data
+     * 
+     * @param buf buffer to fill on receive
+     * @param Flags flags the flags
+     * @return int 0 if no data received, size of data otherwise
+     */
+    virtual int receive(std::string* buf, Flags flags = NONE) = 0;
 
-        /**
-         * @brief receive data
-         * 
-         * @param buf buffer to fill on receive
-         * @param Flags flags the flags
-         * @return int 0 if no data received, size of data otherwise
-         */
-        virtual int receive(std::string* buf, Flags flags = NONE) = 0;
 
-    };
+    enum TransportSupport {UNSET = 0, ROBOTCOMMANDS = 1<<1, ROBOTTELEMETRY = 1<<2, CONTOLLERCOMMANDS = 1<<3, CONTROLLERTELEMETRY = 1<<4};
+    uint8_t supports;
 
-    typedef std::shared_ptr<Transport> TransportSharedPtr;
+    virtual bool supportsControlledRobotTelemetry() {
+        return supports & ROBOTTELEMETRY;
+    }
+
+    virtual bool supportsControlledRobotCommands() {
+        return supports & ROBOTCOMMANDS;
+    }
+
+    virtual bool supportsRobotControllerTelemetry() {
+        return supports & CONTROLLERTELEMETRY;
+    }
+    
+    virtual bool supportsRobotControllerCommands() {
+        return supports & CONTOLLERCOMMANDS;
+    }
+
+    virtual uint8_t getTransportSupportBitmask(){
+        return supports;
+    }
+
+ protected:
+    void setTransportSupport(uint8_t supportdef){
+        supports = supportdef;
+    }
+
+};
+    
+typedef std::shared_ptr<Transport> TransportSharedPtr;
 
 }

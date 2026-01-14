@@ -10,7 +10,7 @@ using namespace robot_remote_control;
 
 TransportWebSocket::TransportWebSocket(const ConnectionType &type, const int &port, const std::string &addr):clientConnected(false) {
     if (type == SERVER) {
-        
+        setTransportSupport(ROBOTCOMMANDS | ROBOTTELEMETRY);
         server = std::make_shared<WSServer>();
 
          // Set logging settings
@@ -49,7 +49,7 @@ TransportWebSocket::TransportWebSocket(const ConnectionType &type, const int &po
         }));
 
     } else {
-
+        setTransportSupport(CONTOLLERCOMMANDS | CONTROLLERTELEMETRY);
         client = std::make_shared<WSClient>();
         
         // server->set_error_channels(websocketpp::log::elevel::all);

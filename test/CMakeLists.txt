@@ -7,11 +7,13 @@ add_subdirectory(performance)
 add_definitions(-DBOOST_TEST_DYN_LINK)
 
 set (COMMON_SOURCE suite.cpp
+            Transports.cpp
             test_Communication.cpp
             test_RingBuffer.cpp
             test_Thread.cpp
             test_SendTimers.cpp
             test_SimpleActionHelper.cpp
+            test_TransportSupport.cpp
 )
 set (COMMON_LIBS
    ${CMAKE_THREAD_LIBS_INIT}

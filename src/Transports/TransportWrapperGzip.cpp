@@ -6,10 +6,10 @@
 
 namespace robot_remote_control {
 
-TransportWrapperGzip::TransportWrapperGzip(std::shared_ptr<Transport> transport, const int &compressionlevel):transport(transport), compressionlevel(compressionlevel) {}
+TransportWrapperGzip::TransportWrapperGzip(std::shared_ptr<Transport> transport, const int &compressionlevel):TransportWrapper(transport), compressionlevel(compressionlevel) {}
 
 
-int TransportWrapperGzip::send(const std::string& uncompressed, Flags flags) {
+int TransportWrapperGzip::send(const std::string& uncompressed, Transport::Flags flags) {
     std::string compressed;
     int32_t len = Compression::compressString(uncompressed, &compressed);
     if (transport->send(compressed, flags)) {
@@ -18,7 +18,7 @@ int TransportWrapperGzip::send(const std::string& uncompressed, Flags flags) {
     return 0;
 }
 
-int TransportWrapperGzip::receive(std::string* uncompressed, Flags flags) {
+int TransportWrapperGzip::receive(std::string* uncompressed, Transport::Flags flags) {
     std::string compressed;
     if (transport->receive(&compressed, flags)) {
         int32_t len = Compression::decompressString(compressed, uncompressed);
