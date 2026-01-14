@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "Transports/ZeroMQ/TransportZmq.hpp"
-// #include "Transports/TransportWebSocket.hpp"
+#include "Transports/ZeroMQ/TransportZmq.hpp" // in a non-example use #include <robot_remote_control/Transports/TransportZmq>
+// #include "Transports/WebSocket/TransportWebSocket.hpp"
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
