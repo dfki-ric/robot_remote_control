@@ -2,13 +2,12 @@
 #include <unistd.h>
 
 #include <iostream>
-
-#define protected public // :-|
+#include "Transports.hpp"
 
 #include "../src/RobotController/RobotController.hpp"
 #include "../src/ControlledRobot/ControlledRobot.hpp"
 
-#include "Transports.hpp"
+
 
 using namespace robot_remote_control;
 
@@ -18,6 +17,10 @@ class TransportDummy : public Transport {
 
     virtual int send(const std::string& buf, Flags flags = NONE){return false;};
     virtual int receive(std::string* buf, Flags flags = NONE){return false;};
+
+    void setSupport(uint8_t s) {
+        this->setTransportSupport(s);
+    }
 
 };
 
@@ -44,39 +47,39 @@ BOOST_AUTO_TEST_CASE(transport_compatibility_reports_correctly) {
     // check generic 
     
     TransportSharedPtr dummy = TransportSharedPtr(new TransportDummy());
-
-
-    dummy->setTransportSupport(Transport::ROBOTCOMMANDS);
+    std::shared_ptr<TransportDummy> tdummy = std::dynamic_pointer_cast<TransportDummy>(dummy);
+    
+    tdummy->setSupport(Transport::ROBOTCOMMANDS);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotCommands(), true);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotTelemetry(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerTelemetry(), false);
 
-    dummy->setTransportSupport(Transport::ROBOTTELEMETRY);
+    tdummy->setSupport(Transport::ROBOTTELEMETRY);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotTelemetry(), true);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerTelemetry(), false);
 
-    dummy->setTransportSupport(Transport::CONTOLLERCOMMANDS);
+    tdummy->setSupport(Transport::CONTOLLERCOMMANDS);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotTelemetry(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerCommands(), true);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerTelemetry(), false);
 
-    dummy->setTransportSupport(Transport::CONTROLLERTELEMETRY);
+    tdummy->setSupport(Transport::CONTROLLERTELEMETRY);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotTelemetry(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerTelemetry(), true);
 
-    dummy->setTransportSupport(Transport::ROBOTCOMMANDS | Transport::ROBOTTELEMETRY);
+    tdummy->setSupport(Transport::ROBOTCOMMANDS | Transport::ROBOTTELEMETRY);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotCommands(), true);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotTelemetry(), true);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerTelemetry(), false);
 
-    dummy->setTransportSupport(Transport::CONTROLLERTELEMETRY | Transport::CONTOLLERCOMMANDS);
+    tdummy->setSupport(Transport::CONTROLLERTELEMETRY | Transport::CONTOLLERCOMMANDS);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotCommands(), false);
     BOOST_CHECK_EQUAL(dummy->supportsControlledRobotTelemetry(), false);
     BOOST_CHECK_EQUAL(dummy->supportsRobotControllerCommands(), true);
@@ -89,14 +92,15 @@ BOOST_AUTO_TEST_CASE(throws_on_incorrect_transport_use) {
     TransportSharedPtr dummyCommands = TransportSharedPtr(new TransportDummy());
     TransportSharedPtr dummyTelemetry = TransportSharedPtr(new TransportDummy());
 
+    std::shared_ptr<TransportDummy> tdummyCommands = std::dynamic_pointer_cast<TransportDummy>(dummyCommands);
+    std::shared_ptr<TransportDummy> tdummyTelemetry = std::dynamic_pointer_cast<TransportDummy>(dummyTelemetry);
+
     // throw on false telemetry
-    dummyCommands->setTransportSupport(Transport::CONTOLLERCOMMANDS);
-    dummyTelemetry->setTransportSupport(Transport::ROBOTCOMMANDS);
+    tdummyCommands->setSupport(Transport::CONTOLLERCOMMANDS);
+    tdummyTelemetry->setSupport(Transport::ROBOTCOMMANDS);
     BOOST_CHECK_THROW(ControlledRobot(dummyCommands, dummyTelemetry), std::runtime_error);
 
-    dummyCommands->setTransportSupport(Transport::ROBOTCOMMANDS);
-    dummyTelemetry->setTransportSupport(Transport::ROBOTCOMMANDS);
+    tdummyCommands->setSupport(Transport::ROBOTCOMMANDS);
+    tdummyTelemetry->setSupport(Transport::ROBOTCOMMANDS);
     BOOST_CHECK_THROW(RobotController(dummyCommands, dummyTelemetry), std::runtime_error);
-
-
 }

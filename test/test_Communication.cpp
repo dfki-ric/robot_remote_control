@@ -1,22 +1,23 @@
 #include <boost/test/unit_test.hpp>
 #include <unistd.h>
 
-
-#include "TypeGenerator.hpp"
+//use boost::filesystem instead of std::filesystem here (tests have boost dependency anyways)
+#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <atomic>
 
+
+#include "Transports.hpp"
+#include "TypeGenerator.hpp"
+
+
 #define private public // :-|
 #define protected public // :-|
+#include "../src/Tools/TelemetryCallbackThread.hpp"
 #include "../src/RobotController/RobotController.hpp"
 #include "../src/ControlledRobot/ControlledRobot.hpp"
 
-#include "../src/Tools/TelemetryCallbackThread.hpp"
-#include "Transports.hpp"
-
-//use boost::filesystem instead of std::filesystem here (tests have boost dependency anyways)
-#include <boost/filesystem.hpp>
 
 using namespace robot_remote_control;
 
