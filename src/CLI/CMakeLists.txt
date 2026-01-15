@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.1.0)
 set(CURSES_NEED_NCURSES true)
 find_package(Curses)
 find_package(Boost COMPONENTS program_options REQUIRED)
+pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 
 if (CURSES_HAVE_NCURSES_H)
     add_executable(virtual_joystick VirtualJoystick.cpp)
@@ -13,7 +14,6 @@ if (CURSES_HAVE_NCURSES_H)
     )
     target_include_directories(virtual_joystick
         PUBLIC
-            $<BUILD_INTERFACE:/usr/include/readline>
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/RobotController>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -35,12 +35,11 @@ target_link_libraries(robot_controller
     robot_remote_control-robot_controller
     robot_remote_control-transport_zmq
     ${OTHER_TRANSPORT_LIBS}
-    readline
+    PkgConfig::readline
     Boost::program_options
 )
 target_include_directories(robot_controller
 	PUBLIC
-        $<BUILD_INTERFACE:/usr/include/readline>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/RobotController>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -64,10 +63,10 @@ if (OpenCV_FOUND)
         robot_remote_control-robot_controller
         robot_remote_control-transport_zmq
         ${OpenCV_LIBS}
+        PkgConfig::readline
     )
     target_include_directories(robot_controller_camera_viewer
         PUBLIC
-            $<BUILD_INTERFACE:/usr/include/readline>
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/RobotController>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
