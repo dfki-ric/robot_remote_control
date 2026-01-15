@@ -7,14 +7,12 @@ project(robot_remote_control VERSION "0.0.9")
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_BUILD_TYPE Debug)
 
+find_package(PkgConfig)
 
 ######################################################## CHECK FOR ZeroMQ
-find_package(PkgConfig)
 pkg_check_modules(ZMQ libzmq)
 
-
 ######################################################## CHECK FOR UDT
-find_package(PkgConfig)
 pkg_check_modules(UDT "udt")
 if(UDT_FOUND)
     message(STATUS "  Found UDT using pkg-config: ${UDT_LIBRARIES}")
