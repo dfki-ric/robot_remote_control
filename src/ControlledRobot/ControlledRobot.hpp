@@ -262,15 +262,22 @@ class ControlledRobot: public UpdateThread {
                 serialization.serialize(telemetryMessage, &buf);
                 
                 // store latest data for future requests
-
+                {
+                    auto lockedbuffer = buffers->lockedAccess();
+                    // check existence only if channel is actially set
+                    if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
+                        throw std::out_of_range ("Channel does not exist");
+                    }
+                    RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
+                }
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
                     return payloadsize;
                 }
                 return payloadsize;
-            }    
-            {
+            } else {  
+                // to telemetry transport, just store for requests
                 auto lockedbuffer = buffers->lockedAccess();
                 // check existence only if channel is actially set
                 if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
