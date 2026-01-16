@@ -36,6 +36,9 @@ find_package(websocketpp)
 ######################################################## CHECK FOR ZLIB
 find_package(ZLIB)
 
+######################################################## CHECK FOR cpprest
+find_package(cpprestsdk)
+
 #################################################### COLLECT SATISTICS?
 set (RRC_STATISTICS ON)
 if( RRC_STATISTICS )
