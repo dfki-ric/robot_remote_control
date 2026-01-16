@@ -22,7 +22,7 @@ namespace robot_remote_control {
 
 class ControlledRobot: public UpdateThread {
     public:
-        explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport, const size_t &buffersize = 10);
+        explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr(), const size_t &buffersize = 10);
         virtual ~ControlledRobot();
 
         
@@ -259,40 +259,25 @@ class ControlledRobot: public UpdateThread {
 
                 serialization.serialize(protodata, &telemetryMessage);
                 size_t payloadsize = serialization.getPayloadSize(telemetryMessage);
-
                 serialization.serialize(telemetryMessage, &buf);
                 
-
-                // if (serializationMode == JSON) {
-                //     google::protobuf::util::JsonPrintOptions jsonOptions;
-                //     // jsonOptions.add_whitespace = true;
-                //     jsonOptions.always_print_primitive_fields = true;
-                //     google::protobuf::util::MessageToJsonString(protodata, telemetryMessage.mutable_json(),jsonOptions); 
-                //     google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
-                //     payloadSize = telemetryMessage.json().size();
-                // }else{
-                //     protodata.SerializeToString(telemetryMessage.mutable_data());
-                //     telemetryMessage.SerializeToString(&buf);
-                //     payloadSize = telemetryMessage.data().size();
-                // }
-                
                 // store latest data for future requests
-                {
-                    auto lockedbuffer = buffers->lockedAccess();
-                    // check existence only if channel is actially set
-                    if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
-                        throw std::out_of_range ("Channel does not exist");
-                    }
-                    RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
-                }
+
                 if (!requestOnly) {
                     uint32_t bytes = telemetryTransport->send(buf);
                     updateStatistics(bytes, type);
                     return payloadsize;
                 }
                 return payloadsize;
+            }    
+            {
+                auto lockedbuffer = buffers->lockedAccess();
+                // check existence only if channel is actially set
+                if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
+                    throw std::out_of_range ("Channel does not exist");
+                }
+                RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
             }
-            printf("ERROR Transport invalid\n");
             return 0;
         }
 

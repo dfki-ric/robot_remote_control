@@ -28,13 +28,17 @@ ControlledRobot::ControlledRobot(TransportSharedPtr commandTransport, TransportS
         throw std::runtime_error("ControlledRobot: provided command transport is not supporting commands");
     }
 
-    if (!telemetryTransport->supportsControlledRobotTelemetry()) {
-        throw std::runtime_error("ControlledRobot: provided telemetry transport is not supporting telemeter");
+    if (telemetryTransport) {
+        if (!telemetryTransport->supportsControlledRobotTelemetry()) {
+            throw std::runtime_error("ControlledRobot: provided telemetry transport is not supporting telemeter");
+        }
     }
 
     if (commandTransport->requiresTextProtocol() || telemetryTransport->requiresTextProtocol()) {
         serialization.setMode(Serialization::JSON);
     }
+    
+
     // init buffers for non-cast access in getters
     protocolVersionBuf = std::make_unique<MessageIdCommandBuffer>(1);
     libraryVersionBuf = std::make_unique<MessageIdCommandBuffer>(1);
