@@ -275,7 +275,7 @@ std::string ControlledRobot::serializeControlMessageType(const ControlMessageTyp
     ControlMessageReply reply;
     reply.set_type(type);
     std::string buf;
-    reply.SerializeToString(&buf);
+    serialization.serialize(reply,&buf);
     return buf;
 }
 
