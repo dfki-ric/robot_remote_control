@@ -13,6 +13,14 @@
     using robot_remote_control::TransportWebSocket;
 #endif
 
+#ifdef ADD_HTTP_TRANSPORT
+    #include "Transports/WebSocket/TransportWebSocket.hpp"
+    #include "Transports/Http/TransportHttp.hpp"
+    using robot_remote_control::TransportWebSocket;
+    using robot_remote_control::TransportHttp;
+#endif
+
+
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
 
@@ -72,6 +80,7 @@ int main(int argc, char** argv) {
     bool EXIT_ON_FAILURE = false;
     bool ws = false;
     bool json = false;
+    bool http = false;
 
     boost::program_options::options_description options_desc("Options:");
     options_desc.add_options()
@@ -82,6 +91,9 @@ int main(int argc, char** argv) {
         ("json", boost::program_options::bool_switch(&json), "use JSON serialization")
         #ifdef ADD_WEBSOCKET_TRANSPORT
         ("ws", boost::program_options::bool_switch(&ws), "connect via websocket instead of ZeroMQ")
+        #endif
+        #ifdef ADD_HTTP_TRANSPORT
+        ("http", boost::program_options::bool_switch(&http), "connect via http (commands) and websocket (telemetry) instead of ZeroMQ")
         #endif
         ;
 
@@ -109,11 +121,20 @@ int main(int argc, char** argv) {
     TransportSharedPtr commands;
     TransportSharedPtr telemetry;
 
-    if (ws) {
-        printf("connecting WebSocket to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
-        commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7001, "localhost"));
-        telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, 7002, "localhost"));
+    if (http) {
+        #ifdef ADD_HTTP_TRANSPORT
+            printf("connecting http/WebSocket to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
+            commands = TransportSharedPtr(new TransportHttp("http://"+ip+":"+commandport, TransportHttp::CLIENT));
+            telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, std::atoi(telemetryport.c_str()), ip));
+        #endif
+    } else if (ws) {
+        #ifdef ADD_WEBSOCKET_TRANSPORT
+            printf("connecting WebSocket to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
+            commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, std::atoi(commandport.c_str()), ip));
+            telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, std::atoi(telemetryport.c_str()), ip));
+        #endif
     } else {
+        //default
         printf("connecting ZMQ to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
         commands = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+commandport, TransportZmq::REQ));
         telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+telemetryport, TransportZmq::SUB));

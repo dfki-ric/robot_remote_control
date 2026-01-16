@@ -6,10 +6,12 @@
 
 #include "Transports/ZeroMQ/TransportZmq.hpp" // in a non-example use #include <robot_remote_control/Transports/TransportZmq>
 // #include "Transports/WebSocket/TransportWebSocket.hpp"
+// #include "Transports/Http/TransportHttp.hpp"
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
 // using robot_remote_control::TransportWebSocket;
+// using robot_remote_control::TransportHttp;
 
 int main(int argc, char** argv)
 {
@@ -21,7 +23,9 @@ int main(int argc, char** argv)
     // TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7001));
     // TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7002));
     
-    robot_remote_control::ControlledRobot robot(commands, telemetry);
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportHttp("http://0.0.0.0:7001"));
+
+    robot_remote_control::ControlledRobot robot(commands,telemetry);
 
     robot.startUpdateThread(10);
 
@@ -30,7 +34,7 @@ int main(int argc, char** argv)
     // the elapsed time may be used to have different stages of escalation
     // when there are multiple connections to this robots with different heartbeats
     // in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
-    robot.setupDisconnectedCallback(0.1, [](const float &elapsed){
+    robot.setupDisconnectedCallback(0.2, [](const float &elapsed){
         printf("no heartbeat since %.2f seconds\n", elapsed);
     });
 

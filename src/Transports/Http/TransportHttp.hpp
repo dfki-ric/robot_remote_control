@@ -3,6 +3,8 @@
 #include <future>
 #include <utility>
 
+#include <cpprest/http_client.h>
+
 #include "Transport.hpp"
 #include "RestServer.hpp"
 
@@ -16,7 +18,7 @@ class TransportHttp : public Transport {
 
     enum ConnectionType {SERVER,CLIENT};
 
-    TransportHttp(const std::string& url);
+    TransportHttp(const std::string& url, const ConnectionType& mode = SERVER);
     virtual ~TransportHttp();
 
     /**
@@ -67,9 +69,12 @@ class TransportHttp : public Transport {
     };
 
     LockableClass<std::queue<Request>> recvQueue;
+    
+    LockableClass<std::queue<std::string>> clientRecvQueue;
+
     Request activeRequest;
     std::unique_ptr<rest_api::RestServer> server;
-
+    std::unique_ptr<web::http::client::http_client> client;
 
 };
 

@@ -31,6 +31,11 @@ if (websocketpp_FOUND)
     set(OTHER_TRANSPORT_LIBS robot_remote_control-transport_ws)
 endif()
 
+if (cpprestsdk_FOUND AND websocketpp_FOUND)
+    target_compile_definitions(robot_controller PRIVATE -DADD_HTTP_TRANSPORT=TRUE)
+    set(OTHER_TRANSPORT_LIBS ${OTHER_TRANSPORT_LIBS} robot_remote_control-transport_http)
+endif()
+
 target_link_libraries(robot_controller
     robot_remote_control-robot_controller
     robot_remote_control-transport_zmq

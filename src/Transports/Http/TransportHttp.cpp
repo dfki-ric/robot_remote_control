@@ -4,54 +4,56 @@
 
 using namespace robot_remote_control;
 
-TransportHttp::TransportHttp(const std::string& url):Transport() {
-    server = std::unique_ptr<rest_api::RestServer>(new rest_api::RestServer(url));
-    setTransportSupport(ROBOTCOMMANDS);
-
+TransportHttp::TransportHttp(const std::string& url, const ConnectionType& mode):Transport() {
     serialization.setMode(Serialization::JSON);
 
-    server->registerPostCallback("command", [&](web::http::http_request& message) {
-        printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
-        // web::json::value json = message.extract_json().get();
-        // x = json["x"].as_integer();
-        // y = json["y"].as_integer();
-        
-        //set recvQueue
-        // 
-        std::shared_ptr<std::promise<std::string>> promise = std::make_shared<std::promise<std::string>>();
-        std::future<std::string> reply = promise->get_future();
+    if (mode == CLIENT) {
+        setTransportSupport(CONTOLLERCOMMANDS);
 
-        Request r;
-        r.request = message.extract_string().get();
-        r.reply = promise;
-        
-        printf("%s:%i %s\n", __PRETTY_FUNCTION__, __LINE__, r.request.c_str());
+        web::http::client::http_client_config clientconf;
+        clientconf.set_validate_certificates(false);
+        clientconf.set_timeout(std::chrono::seconds(10)); 
+        // web::credentials clientcred(_XPLATSTR("user"), _XPLATSTR("pass"));
+        // clientconf.set_credentials(clientcred);
+        client = std::unique_ptr<web::http::client::http_client>(new web::http::client::http_client(_XPLATSTR(url), clientconf));
+    } else {
+        setTransportSupport(ROBOTCOMMANDS);
 
-        recvQueue.lockedAccess()->push(r);
+        server = std::unique_ptr<rest_api::RestServer>(new rest_api::RestServer(url));
+        server->registerPostCallback("command", [&](web::http::http_request& message) {
+            //set recvQueue
+            std::shared_ptr<std::promise<std::string>> promise = std::make_shared<std::promise<std::string>>();
+            std::future<std::string> reply = promise->get_future();
 
-        //wait for Robotcontroller process to process the request
-        reply.wait();
+            Request r;
+            r.request = message.extract_string().get();
+            r.reply = promise;
 
-        return rest_api::Response(status_codes::OK, reply.get());
-    });
+            recvQueue.lockedAccess()->push(r);
+
+            //wait for Robotcontroller process to process the request
+            reply.wait();
+
+            return rest_api::Response(status_codes::OK, reply.get());
+        });
+
+        // these get funcuins are for browser access only
+
+        server->registerGetCallback("controllableJoints", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
+            // controllableJoints doesn't habe channels
+            // if (query["channel"] > 0) {
+            // }
+            std::future<std::string> reply = requestTelemetry(CONTROLLABLE_JOINTS);
+            //wait for Robotcontroller process to process the request
+            reply.wait();
+
+            return rest_api::Response(status_codes::OK, reply.get());
+        });
 
 
-    server->registerGetCallback("controllableJoints", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
-        printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
-        
-        // controllableJoints doesn't habe chennels
-        // if (query["channel"] > 0) {
-        // }
-
-        std::future<std::string> reply = requestTelemetry(CONTROLLABLE_JOINTS);
-        //wait for Robotcontroller process to process the request
-        reply.wait();
-
-        return rest_api::Response(status_codes::OK, reply.get());
-    });
-
-
-    server->startListen();
+        server->startListen();
+    }
+    
 
 }
 
@@ -81,23 +83,44 @@ std::future<std::string> TransportHttp::requestTelemetry(const TelemetryMessageT
 
 
 int TransportHttp::send(const std::string& buf, Flags flags) {
-    // in controller send comed after receive
-    activeRequest.reply->set_value(buf);
+    if (server) {
+        // in controller send comed after receive
+        activeRequest.reply->set_value(buf);
+    }
+    if (client) {
+        web::http::http_response response = client->request(web::http::methods::POST, "/api/command", buf, "text/json").get();
+        if (response.status_code() == status_codes::OK) {
+            // we now already received the answer, store it for the next get call:
+            clientRecvQueue.lockedAccess()->push(response.extract_string().get());
+        }else{
+            printf("connection lost");
+        }
+    }
     return buf.size();
 }
 
 int TransportHttp::receive(std::string* buf, Flags flags) {
-
-    // forward POST requests 
-    int res = 0;
-    auto queue = recvQueue.lockedAccess();
-    if (queue->size()) {
-        // todo use conditionvar to block?
-        activeRequest = queue->front();
-        *buf = activeRequest.request;
-        queue->pop();
-        return buf->size();
+    if (server) {
+        // forward POST requests 
+        int res = 0;
+        auto queue = recvQueue.lockedAccess();
+        if (queue->size()) {
+            // todo use conditionvar to block?
+            activeRequest = queue->front();
+            *buf = activeRequest.request;
+            queue->pop();
+            return buf->size();
+        }
     }
+    if (client) {
+        auto queue = clientRecvQueue.lockedAccess();
+        if (queue->size()) {
+            *buf = queue->front();
+            queue->pop();
+            return buf->size();
+        }
+    }
+
     return 0;
 }
 
