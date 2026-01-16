@@ -37,7 +37,31 @@ TransportHttp::TransportHttp(const std::string& url, const ConnectionType& mode)
             return rest_api::Response(status_codes::OK, reply.get());
         });
 
-        // these get funcuins are for browser access only
+        // these get functions are for browser access only
+
+        server->registerGetCallback("telemetry", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
+            // controllableJoints doesn't habe channels
+            // if (query["channel"] > 0) {
+            // }
+            TelemetryMessageType type = static_cast<TelemetryMessageType>(std::atoi(query["type"].c_str()));
+            std::future<std::string> reply = requestTelemetry(type, std::atoi(query["channel"].c_str()));
+            //wait for Robotcontroller process to process the request
+            reply.wait();
+
+            return rest_api::Response(status_codes::OK, reply.get());
+        }, "generic telemetry call /telemetry?type=1&channel=0, for types, only numbers are suported");
+
+
+        server->registerGetCallback("robotName", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
+            // controllableJoints doesn't habe channels
+            // if (query["channel"] > 0) {
+            // }
+            std::future<std::string> reply = requestTelemetry(ROBOT_NAME);
+            //wait for Robotcontroller process to process the request
+            reply.wait();
+
+            return rest_api::Response(status_codes::OK, reply.get());
+        });
 
         server->registerGetCallback("controllableJoints", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
             // controllableJoints doesn't habe channels
