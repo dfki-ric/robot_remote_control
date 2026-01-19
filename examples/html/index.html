@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Robot Remote Control</title>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 
 <link rel="stylesheet" href="css/style.css">
@@ -27,6 +28,40 @@
         }
 
     }
+
+    function get(url, callback){
+        var loader = $.get( url, function( ) {
+            //console.log( "success" );
+            })
+            .done(function(data) {
+                callback(data);
+            })
+            .fail(function(err) {
+                //alert("error reading: " + url + "\n\n" + JSON.stringify(err) );
+            })
+            .always(function() {
+            //console.log( "complete" );
+            });
+        return loader;
+    }
+
+    function post(url, data, callback){
+        var loader = $.post( url, JSON.stringify(data), function( ) {
+            //console.log( "success" );
+            })
+            .done(function(data) {
+                callback(data);
+            })
+            .fail(function(err) {
+                //alert("error reading: " + url + "\n\n" + JSON.stringify(err) );
+            })
+            .always(function() {
+            //console.log( "complete" );
+            });
+        return loader;
+    }
+
+
 
     // the websocket
     var telemetryws;
@@ -66,38 +101,6 @@
         };
     }
 
-    function connectCommands() {
-        commandws = new WebSocket("ws://"+host+":"+commandport);
-        commandws.onopen=function(evt) {
-            console.log("opened");
-
-            //todo enable heartbeat
-            //todo request simple actions
-            requestSimpleActions();
-
-        }
-        commandws.onmessage=function(evt) {
-            // parse wrapping TelemetryMessage js Object
-            // console.log(evt)
-            console.log(evt.data)
-
-            // an ack without data is ""
-            if ((evt.data) != "") {
-                // commands have direct annswersm no data/json field
-                var message = JSON.parse(evt.data)
-                
-                
-                if (lastrequest.type == "SIMPLE_ACTIONS") {
-                    console.log(message)
-                    updateSimpleActions(message)
-                }
-            }
-
-        };
-        commandws.onclose=function(evt) {
-            console.log("closed");
-        };
-    }
 
     function generateControlMessage(type, payload) {
         var msg = new Object
@@ -116,26 +119,14 @@
         return msg
     }
 
-    function sendWsCommand(type, cmd) {
-        var request = generateControlMessage(type, cmd)
-        console.log(request);
-        commandws.send(JSON.stringify(request));
-        lastrequest = cmd
-    }
-
-    function requestSimpleActions () {
-        var req = generateTelemetryRequest("SIMPLE_ACTIONS");
-        sendWsCommand("TELEMETRY_REQUEST", req)
-    }
 
     function setSimpleAction(name, value){
-
         var simpleactioncommand = new Object;
         simpleactioncommand["name"] = name;
         simpleactioncommand["state"] = value;
-        
-        sendWsCommand("SIMPLE_ACTIONS_COMMAND" , simpleactioncommand)
-        
+        post("http://"+host+":"+commandport+"/api/command", generateControlMessage("SIMPLE_ACTIONS_COMMAND", simpleactioncommand),function (reply){
+            console.log(reply)
+        })
     }
 
 
@@ -144,17 +135,16 @@
         document.getElementById(id).value = value;
     }
 
-    var dependentsimpleactionforms = new Array();
+        var dependentsimpleactionforms = new Array();
     // var dependentsimpleactioncontent = new Object();
 
     function setDependentSimpleActions(newactions){
-
         dependentsimpleactionforms = newactions;
         
         //loop actions and add update to click on the dependent ones
         dependentsimpleactionforms.forEach(function(action){
-            console.log(action);
-            console.log(action.depend.dependsOnAction);
+            // console.log(action);
+            // console.log(action.depend.dependsOnAction);
             actionForm = document.getElementById(action.depend.dependsOnAction);
             command =  'updateDependentSimpleActions();'
             actionForm.setAttribute("onclick", command);
@@ -173,6 +163,7 @@
             // get current form value
             formvalue = document.querySelector('input[name="'+action.depend.dependsOnAction+'"]:checked').value;
 
+
             formdiv = document.getElementById(action.name+"div");
 
             if (action.depend.dependsOnActionInState == formvalue) {
@@ -188,32 +179,36 @@
         });
     }
 
-    function updateSimpleActions(actions) {
-        // get("http://"+host+":"+port+"/api/requestSimpleActions", function (data) {
-            //console.log(data.actions)
+    function updateSimpleActions() {
+        get("http://"+host+":"+commandport+"/api/simpleActions", function (data) {
+            console.log(data.actions)
             actionselement = document.getElementById("simpleactions");
             actionselement.innerHTML = "";
 
             var dependentactions = new Array();
 
-            actions.actions.forEach( function(simpleaction) {
+            data.actions.forEach( function(simpleaction) {
                 formdiv = document.createElement("div");
                 formdiv.setAttribute("id", simpleaction.name+"div");
                 form = document.createElement("form");
                 form.setAttribute("id", simpleaction.name);
                 formdiv.appendChild(form);
-
-                console.log(simpleaction)
+                
 
                 if (simpleaction.type.type == "TRIGGER") {
                     button = document.createElement("button");
                     button.setAttribute("type", "button");
+                    command = 'setSimpleAction("'+ simpleaction.name + '",1);'
+                    button.setAttribute("onclick", command);
+                    button.setAttribute("id", simpleaction.name+"_button");
+                    button.setAttribute("class", "simpleaction_input_button");
+                    button.innerHTML = simpleaction.name
                     form.appendChild(button);
                     //actionselement.appendChild(document.createElement("br"));
-                } else if (simpleaction.type.valueNames !== undefined && simpleaction.type.valueNames.length > 0) {
+                } else if (simpleaction.type.valueNames !== undefined) {
                     // has named values
                     //these need to be added/removed on selection of another action
-                    if (simpleaction.type.actionDependency !== undefined && simpleaction.type.actionDependency.length > 0) {
+                    if (simpleaction.type.actionDependency !== undefined) {
                         var action = new Object();
                         action["name"] = simpleaction.name;
                         action["depend"] = simpleaction.type.actionDependency;
@@ -299,7 +294,11 @@
                 actionselement.appendChild(formdiv);
             });
             setDependentSimpleActions(dependentactions);
-        // });
+        });
+    }
+
+    function connectCommands() {
+        updateSimpleActions();
     }
 
 
@@ -311,8 +310,8 @@
     }
 
     function init() {
-        connectCommands();
-        connectTelemetry();
+        connectTelemetry()
+        connectCommands()
     }
 
 </script>    
