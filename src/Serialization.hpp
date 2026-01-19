@@ -25,6 +25,14 @@ class Serialization {
         return serializationMode;
     }
 
+    void setAddWhitespace(const bool& newvalue) {
+        jsonOptions.add_whitespace = newvalue;
+    }
+
+    void setPrintPrimitiveFields(const bool& newvalue) {
+        jsonOptions.always_print_primitive_fields = newvalue;
+    }
+
     template<class PROTO> bool serialize(const PROTO& src, std::string *target) {
         bool res = false;
         if (serializationMode == JSON) {
