@@ -54,6 +54,36 @@ TransportHttp::TransportHttp(const std::string& url, const ConnectionType& mode)
             return rest_api::Response(status_codes::OK, reply.get(), "application/json");
         },"generic POST to send ControlMessages to, this could also be used to obtain all the other calls exposed int his api");
 
+
+        server->registerGetCallback("simpleActionCommand", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
+            //set recvQueue
+            std::shared_ptr<std::promise<std::string>> promise = std::make_shared<std::promise<std::string>>();
+            std::future<std::string> reply = promise->get_future();
+
+            std::string name = query["name"];
+            double state = std::stod(query["state"]);
+
+            ControlMessage msg;
+            msg.set_type(SIMPLE_ACTIONS_COMMAND);
+            SimpleAction action;
+            action.set_name(name);
+            action.set_state(state);
+            serialization.serialize(action, &msg);
+
+            Request r;
+            // r.request = message.extract_string().get();
+            serialization.serialize(msg, &r.request);
+            r.reply = promise;
+
+            recvQueue.lockedAccess()->push(r);
+
+            //wait for Robotcontroller process to process the request
+            reply.wait();
+
+            return rest_api::Response(status_codes::OK, reply.get(), "application/json");
+        },"generic GET request to set Simpleactions /?name=<SIMPLEACTIONNAME>&state=<VALUE>");
+
+
         // these get functions are for browser access only
 
         server->registerGetCallback("telemetry", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
