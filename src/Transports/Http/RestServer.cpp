@@ -60,7 +60,7 @@ void RestServer::handle_get(http_request message) {
             page << "</head>";
             page << "<body>";
             page << "Please use:<br>";
-            page << "<a href=/api>api</a><br>";
+            page << "<a href=/api>api</a> Tip: Use a json parser plugin for your brwoser <br>";
             for (auto &entry : servedFolders) {
                 page << "<a href=/" << entry.first << ">" << entry.first <<"</a><br>";
             }

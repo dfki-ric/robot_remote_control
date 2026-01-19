@@ -33,6 +33,11 @@ class Serialization {
         jsonOptions.always_print_primitive_fields = newvalue;
     }
 
+    void setPrintEnumsAsInts(const bool& newvalue) {
+        jsonOptions.always_print_enums_as_ints = newvalue;
+    }
+
+
     template<class PROTO> bool serialize(const PROTO& src, std::string *target) {
         bool res = false;
         if (serializationMode == JSON) {

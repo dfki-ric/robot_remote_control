@@ -64,9 +64,16 @@ class TransportHttp : public Transport {
     TelemetryMessageType getTelemetryType(const std::string &param);
     ControlMessageType getControlType(const std::string &param);
 
+    template <class PROTO> std::string getDocJsonString(const PROTO &proto) {
+        std::string json;
+        docSerialization.serialize(proto, &json);
+        return json;
+    }
+
     std::future<std::string> requestTelemetry(const TelemetryMessageType type, const int &channel = 0);
 
     Serialization serialization;
+    Serialization docSerialization;
     Serialization sampleSerialization;
 
     struct Request {

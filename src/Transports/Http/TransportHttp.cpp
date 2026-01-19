@@ -23,6 +23,9 @@ TransportHttp::TransportHttp(const std::string& url, const ConnectionType& mode)
     sampleSerialization.setMode(Serialization::JSON);
     sampleSerialization.setPrintPrimitiveFields(true);
     sampleSerialization.setAddWhitespace(true);
+    docSerialization.setMode(Serialization::JSON);
+    docSerialization.setPrintPrimitiveFields(true);
+
 
     if (mode == CLIENT) {
         setTransportSupport(CONTOLLERCOMMANDS);
@@ -37,6 +40,11 @@ TransportHttp::TransportHttp(const std::string& url, const ConnectionType& mode)
         setTransportSupport(ROBOTCOMMANDS);
 
         server = std::unique_ptr<rest_api::RestServer>(new rest_api::RestServer(url));
+
+        ControlMessage commandsample;
+        commandsample.mutable_json();
+
+        std::string doc = "generic POST to send ControlMessages to, this could also be used to obtain all the other calls exposed int his api. The ControlMessage.json field needs to contain a stringified command message: " + getDocJsonString(commandsample);
         server->registerPostCallback("command", [&](web::http::http_request& message) {
             //set recvQueue
             std::shared_ptr<std::promise<std::string>> promise = std::make_shared<std::promise<std::string>>();
@@ -52,7 +60,7 @@ TransportHttp::TransportHttp(const std::string& url, const ConnectionType& mode)
             reply.wait();
 
             return rest_api::Response(status_codes::OK, reply.get(), "application/json");
-        },"generic POST to send ControlMessages to, this could also be used to obtain all the other calls exposed int his api");
+        }, doc);
 
 
         server->registerGetCallback("simpleActionCommand", [&](rest_api::RestServer::GetQuery query, web::http::http_request& message) {
