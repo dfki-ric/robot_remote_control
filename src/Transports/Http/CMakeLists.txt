@@ -1,5 +1,6 @@
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem)
+find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
 
 add_library(robot_remote_control-transport_http
     RestServer.cpp
@@ -14,6 +15,8 @@ target_include_directories(robot_remote_control-transport_http
 target_link_libraries (robot_remote_control-transport_http
     cpprestsdk::cpprest
     Boost::filesystem
+    OpenSSL::SSL
+    OpenSSL::Crypto
     ${CMAKE_THREAD_LIBS_INIT}
 )
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/Transports/UDT/
