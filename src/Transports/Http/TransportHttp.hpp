@@ -25,7 +25,7 @@ class TransportHttp : public Transport {
      * @brief TODO: allow serverFolder
      * 
      */
-    bool serveFolder(const std::string& folderpath, const std::string& url = "html");
+    void serveFolder(const std::string& folderpath, const std::string& url = "html");
 
     /**
      * @brief send data

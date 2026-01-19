@@ -156,7 +156,7 @@ TransportHttp::~TransportHttp() {
 
 }
 
-bool TransportHttp::serveFolder(const std::string& folderpath, const std::string& url) {
+void TransportHttp::serveFolder(const std::string& folderpath, const std::string& url) {
     server->serveFolder(folderpath, url);
 }
 
