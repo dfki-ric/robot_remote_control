@@ -50,7 +50,8 @@ The library is using the high-level networking library ZeroMQ (ZMQ) and Google's
     
      * libudt-dev to have a UDT-based transport (reliable UDP usable with very high latencies)
      * zlib1g-dev to be able to additionally compress the data sent via transports
-     * libwebsocketpp-dev to have a websocket thansport, that allows browsers to use rrc connections (only JSON serialization is set)
+     * libwebsocketpp-dev to have a websocket transport, that allows browsers to use rrc connections (only JSON serialization is set)
+     * libcpprest-dev to build a http transport (only for commands (and telemetry requests) through the command connection, may be used without telemetry connection)
 
 ### Building
 

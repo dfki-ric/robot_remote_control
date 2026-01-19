@@ -1,6 +1,6 @@
 # Transports
 
-RRC lets you select a transport of your choice, 
+RRC lets you select a transport of your choice: 
 
 # ZeroMQ
 
@@ -30,3 +30,8 @@ The http transport is meant to be used for browser-based access in combination w
 The http transport also offers additional data shortcuts with GET calls. You can see available calls when opening the api page in a browser (http://localhost:7001/api) you'll get an overview of available calls (and you can test them in the browser).
 
 curl -X POST http://localhost:7001/api/command -H "Content-Type: application/json" -d ' {"type":"HEARTBEAT","json":"{\"heartBeatDuration\":1}"}' && echo
+
+
+# Webbrowser Functionality
+
+If http is used for commands and websocket for telemetry (in JSON serialization mode, SERVER_JSON), you can provide full web functionality for browser use.
