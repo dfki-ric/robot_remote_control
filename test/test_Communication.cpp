@@ -9,7 +9,6 @@
 
 
 #include "Transports.hpp"
-#include "TypeGenerator.hpp"
 
 
 #define private public // :-|
@@ -17,6 +16,7 @@
 #include "../src/Tools/TelemetryCallbackThread.hpp"
 #include "../src/RobotController/RobotController.hpp"
 #include "../src/ControlledRobot/ControlledRobot.hpp"
+#include "../src/TypeGenerator.hpp"
 
 
 using namespace robot_remote_control;
@@ -99,8 +99,8 @@ BOOST_AUTO_TEST_CASE(check_goto_command) {
 }
 
 BOOST_AUTO_TEST_CASE(check_joint_command) {
-  JointState cmd, recv;
-  cmd = TypeGenerator::genJointState();
+  JointCommand cmd, recv;
+  cmd = TypeGenerator::genJointCommand();
   recv = testCommand(cmd, JOINTS_COMMAND);
   COMPARE_PROTOBUF(cmd, recv);
 }

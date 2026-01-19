@@ -25,6 +25,7 @@ class TransportHttp : public Transport {
      * @brief TODO: allow serverFolder
      * 
      */
+    bool serveFolder(const std::string& folderpath, const std::string& url = "html");
 
     /**
      * @brief send data
@@ -60,9 +61,14 @@ class TransportHttp : public Transport {
 
  private:
 
+    TelemetryMessageType getTelemetryType(const std::string &param);
+    ControlMessageType getControlType(const std::string &param);
+
     std::future<std::string> requestTelemetry(const TelemetryMessageType type, const int &channel = 0);
 
     Serialization serialization;
+    Serialization sampleSerialization;
+
     struct Request {
         std::string request;
         std::shared_ptr<std::promise<std::string>> reply;

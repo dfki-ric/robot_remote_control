@@ -95,5 +95,15 @@ if(websocketpp_FOUND)
     target_compile_definitions(test_suite_ws_json PUBLIC -DTRANSPORT_WS_JSON)
 endif()
 
+if(websocketpp_FOUND AND cpprestsdk_FOUND)
+    add_executable(test_suite_web ${COMMON_SOURCE})
+    target_link_libraries(test_suite_web
+      ${COMMON_LIBS}
+      robot_remote_control-transport_ws
+      robot_remote_control-transport_http
+    )
+    target_compile_definitions(test_suite_web PUBLIC -DTRANSPORT_WEB)
+endif()
+
 
 #set_target_properties(test_suite PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
