@@ -3,8 +3,23 @@
 #include <unistd.h>
 
 #include "RobotController.hpp"
-#include "Transports/TransportZmq.hpp"
+#include "Transports/ZeroMQ/TransportZmq.hpp"
 #include "ConsoleCommands.hpp"
+
+#include <boost/program_options.hpp>
+
+#ifdef ADD_WEBSOCKET_TRANSPORT
+    #include "Transports/WebSocket/TransportWebSocket.hpp"
+    using robot_remote_control::TransportWebSocket;
+#endif
+
+#ifdef ADD_HTTP_TRANSPORT
+    #include "Transports/WebSocket/TransportWebSocket.hpp"
+    #include "Transports/Http/TransportHttp.hpp"
+    using robot_remote_control::TransportWebSocket;
+    using robot_remote_control::TransportHttp;
+#endif
+
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
@@ -58,37 +73,79 @@ using robot_remote_control::TransportZmq;
     });
 
 int main(int argc, char** argv) {
-    printf("\nThis is work in progress, not a fully functional CLI.\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
-
-    std::string ip;
-    std::string commandport;
-    std::string telemetryport;
+    std::string ip = "127.0.0.1";
+    std::string commandport = "7001";
+    std::string telemetryport = "7002";
     bool SUCCESS = true;
     bool EXIT_ON_FAILURE = false;
+    bool ws = false;
+    bool json = false;
+    bool http = false;
 
-    if (argc == 1) {
-        ip = "localhost";
-        commandport = "7001";
-        telemetryport = "7002";
-    } else if (argc == 2) {
-        ip = argv[1];
-        commandport = "7001";
-        telemetryport = "7002";
-    } else if (argc == 4) {
-        ip = argv[1];
-        commandport = argv[2];
-        telemetryport = argv[3];
-    } else {
-        printf("needs 0 or 3 params: ip commandport telemetryport\n");
-        exit(1);
+    boost::program_options::options_description options_desc("Options:");
+    options_desc.add_options()
+        ("help,h", "print help")
+        ("ip,i", boost::program_options::value(&ip), "The ip or host to conenct to")
+        ("commandport,c", boost::program_options::value(&commandport), "the port to connect to for commands")
+        ("telemetryport,t", boost::program_options::value(&telemetryport), "the port to connect to for telemetry")
+        ("json", boost::program_options::bool_switch(&json), "use JSON serialization")
+        #ifdef ADD_WEBSOCKET_TRANSPORT
+        ("ws", boost::program_options::bool_switch(&ws), "connect via websocket instead of ZeroMQ")
+        #endif
+        #ifdef ADD_HTTP_TRANSPORT
+        ("http", boost::program_options::bool_switch(&http), "connect via http (commands) and websocket (telemetry) instead of ZeroMQ")
+        #endif
+        ;
+
+    boost::program_options::positional_options_description p;
+    p.add("ip", 1);
+    p.add("commandport", 1);
+    p.add("telemetryport", 1);
+
+    boost::program_options::variables_map vm;
+    boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
+                                    .options(options_desc).positional(p)
+                                    .style(boost::program_options::command_line_style::unix_style ^ boost::program_options::command_line_style::allow_short)
+                                    .run(), vm
+                                 );
+    boost::program_options::notify(vm);
+
+    if (vm.count("help")) {
+        std::cout << "Usage: $> robot_controller [options] host commandport telemetryport" << std::endl;
+        std::cout << options_desc << std::endl;
+        return 0;
     }
 
-    printf("connecting to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
+    printf("\nThis is work in progress, not a fully functional CLI.\nUse TAB to show/complete commands, type 'exit' or use crtl-d to close\n\n");
 
-    TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+commandport, TransportZmq::REQ));
-    TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+telemetryport, TransportZmq::SUB));
+    TransportSharedPtr commands;
+    TransportSharedPtr telemetry;
+
+    if (http) {
+        #ifdef ADD_HTTP_TRANSPORT
+            printf("connecting http/WebSocket to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
+            commands = TransportSharedPtr(new TransportHttp("http://"+ip+":"+commandport, TransportHttp::CLIENT));
+            telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, std::atoi(telemetryport.c_str()), ip));
+        #endif
+    } else if (ws) {
+        #ifdef ADD_WEBSOCKET_TRANSPORT
+            printf("connecting WebSocket to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
+            commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, std::atoi(commandport.c_str()), ip));
+            telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::CLIENT, std::atoi(telemetryport.c_str()), ip));
+        #endif
+    } else {
+        //default
+        printf("connecting ZMQ to %s, ports: %s,%s\n", ip.c_str(), commandport.c_str(), telemetryport.c_str());
+        commands = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+commandport, TransportZmq::REQ));
+        telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+telemetryport, TransportZmq::SUB));
+    }
 
     robot_remote_control::RobotController controller(commands, telemetry);
+
+    if (json) {
+        controller.setSerializationMode(robot_remote_control::Serialization::JSON);
+    }
+
     controller.startUpdateThread(10);
 
     ConsoleCommands console;

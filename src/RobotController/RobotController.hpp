@@ -10,6 +10,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/util/json_util.h>
 
 #include "Types/RobotRemoteControl.pb.h"
 #include "Transports/Transport.hpp"
@@ -17,7 +18,7 @@
 #include "Statistics.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
-
+#include "Serialization.hpp"
 
 
 namespace robot_remote_control {
@@ -29,6 +30,13 @@ class RobotController: public UpdateThread {
                                 const size_t &buffersize = 10,
                                 const float &maxLatency = 1);
         virtual ~RobotController();
+
+        void setSerializationMode(const Serialization::Mode & mode) {
+            serialization.setMode(mode);
+        }
+        Serialization::Mode getSerializationMode() {
+            return serialization.getMode();
+        }
 
         /**
          * @brief in case there is a telemetry connection, receive all and fill the data fields
@@ -632,23 +640,21 @@ class RobotController: public UpdateThread {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
             }
-            *dataSerialized = buffers->peekSerialized(type, channel);
+            *dataSerialized = buffers->peekSerialized(type, channel, serialization.getMode());
             bool result = buffers->lockedAccess().get()[type][channel]->pop(onlyNewest);
             return result;
         }
 
-        template< class DATATYPE > bool requestTelemetry(const MessageId &type, DATATYPE *result, const ChannelId &channel) {
-            const MessageId requestType = TELEMETRY_REQUEST;
+        template< class DATATYPE > bool requestTelemetry(const TelemetryMessageType &type, DATATYPE *result, const ChannelId &channel) {
             std::string replybuf;
-            std::string request;
-            request.resize(sizeof(MessageId) + sizeof(ChannelId));
-            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
-            ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
-            *data = type;
-            *chan = channel;
-            bool received = requestBinary(request, &replybuf, requestType);
+            bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
 
-            result->ParseFromString(replybuf);
+            serialization.deserialize(replybuf, result);
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonStringToMessage(replybuf, result);
+            // }else{
+            //     result->ParseFromString(replybuf);
+            // }
             return received;
         }
 
@@ -661,18 +667,33 @@ class RobotController: public UpdateThread {
         }
 
 
-        bool requestBinary(const MessageId &type, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
-        bool requestBinary(const std::string &request, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
+        bool requestBinary(const TelemetryMessageType &type, std::string *result, const ControlMessageType &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
+        bool requestBinary(const std::string &request, std::string *result, const ControlMessageType &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
 
-        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const MessageId &requestType, const float &overrideMaxLatency = 0) {
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const ControlMessageType &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
-            requestdata.SerializeToString(&request);
+            
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonPrintOptions jsonOptions;
+            //     // jsonOptions.add_whitespace = true;
+            //     jsonOptions.always_print_primitive_fields = true;
+            //     google::protobuf::util::MessageToJsonString(requestdata, &request, jsonOptions); 
+            // }else{
+            //     requestdata.SerializeToString(&request);
+            // }
+            serialization.serialize(requestdata, &request);
+
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
 
-            google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
-            cistream.SetTotalBytesLimit(recvbuf.size());
-            reply->ParseFromCodedStream(&cistream);
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonStringToMessage(recvbuf, reply);
+            // }else{
+            //     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
+            //     cistream.SetTotalBytesLimit(recvbuf.size());
+            //     reply->ParseFromCodedStream(&cistream);    
+            // }
+            serialization.deserializeLongData(recvbuf, reply);
 
             return (recvbuf.size() > 0) ? true : false;
         }
@@ -720,21 +741,50 @@ class RobotController: public UpdateThread {
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
         std::array<std::map<std::string, ChannelId>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelIdByName;
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MessageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
-            std::string buf;
-            buf.resize(sizeof(MessageId));
-            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-            *data = type;
-            protodata.AppendToString(&buf);
-            return sendRequest(buf, 0, flags);
+        Serialization serialization;
+
+        // ControlMessage initControlMessage(const ControlMessageType &type, const std::string &data);
+
+        template< class CLASS > ControlMessage initControlMessage(const ControlMessageType &type, const CLASS &protodata) {
+            ControlMessage controlMessage;
+            controlMessage.set_type(type);
+
+        
+            serialization.serialize(protodata, &controlMessage);
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonPrintOptions jsonOptions;
+            //     // jsonOptions.add_whitespace = true;
+            //     jsonOptions.always_print_primitive_fields = true;
+            //     google::protobuf::util::MessageToJsonString(protodata, controlMessage.mutable_json(), jsonOptions); 
+            // }else{
+            //     protodata.SerializeToString(controlMessage.mutable_data());
+            // }
+            return controlMessage;
         }
 
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
+            std::string buf;
+            ControlMessage controlMessage = initControlMessage(type, protodata);
+
+            serialization.serialize(controlMessage, &buf);
+
+            // if (serializationMode == JSON) {
+            //     google::protobuf::util::JsonPrintOptions jsonOptions;
+            //     // jsonOptions.add_whitespace = true;
+            //     jsonOptions.always_print_primitive_fields = true;
+            //     google::protobuf::util::MessageToJsonString(controlMessage, &buf, jsonOptions); 
+            // }else{
+            //     controlMessage.SerializeToString(&buf);
+            // }
+            
+            return sendRequest(buf, 0, flags);
+        }
 
         class TelemetryAdderBase{
          public:
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
-            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) = 0;
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel, bool textMode) = 0;
             void setOverwrite(bool mode = true) {
                 overwrite = mode;
             }
@@ -747,9 +797,14 @@ class RobotController: public UpdateThread {
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
-            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) {
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel, bool textMode) {
                 CLASS data;
-                data.ParseFromString(serializedMessage);
+                
+                if (textMode) {
+                    google::protobuf::util::JsonStringToMessage(serializedMessage, &data);
+                }else{
+                    data.ParseFromString(serializedMessage);
+                }
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);
             }
         };

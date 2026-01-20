@@ -1,88 +1,31 @@
 #include <boost/test/unit_test.hpp>
-
-#include "../src/Transports/TransportZmq.hpp"
-
-#ifdef TRANSPORT_DEFAULT_GZIP
-  #include "../src/Transports/TransportWrapperGzip.hpp"
-#endif
-#ifdef TRANSPORT_UDT
-  #include "../src/Transports/TransportUDT.hpp"
-#endif
-
-#include "TypeGenerator.hpp"
-
-#include <iostream>
-#include <atomic>
-
-#define private public // :-|
-#define protected public // :-|
-#include "../src/RobotController/RobotController.hpp"
-#include "../src/ControlledRobot/ControlledRobot.hpp"
-
-#include "../src/Tools/TelemetryCallbackThread.hpp"
+#include <unistd.h>
 
 //use boost::filesystem instead of std::filesystem here (tests have boost dependency anyways)
 #include <boost/filesystem.hpp>
 
+#include <iostream>
+#include <atomic>
+
+
+#include "Transports.hpp"
+
+
+#define private public // :-|
+#define protected public // :-|
+#include "../src/Tools/TelemetryCallbackThread.hpp"
+#include "../src/RobotController/RobotController.hpp"
+#include "../src/ControlledRobot/ControlledRobot.hpp"
+#include "../src/TypeGenerator.hpp"
+
+
 using namespace robot_remote_control;
 
-TransportSharedPtr commands;
-TransportSharedPtr telemetry;
 
-TransportSharedPtr command;
-TransportSharedPtr telemetri;
-
-
-
+Serialization serialization;
+const Transports& transports = Transports::instance();
 
 #define COMPARE_PROTOBUF(VAR1, VAR2) BOOST_TEST(VAR1.SerializeAsString() == VAR2.SerializeAsString())
-
-/**
- * @brief used to init the communication only when it is used, it is reused then.
- * 
- */
-void initComms() {
-  #ifdef TRANSPORT_DEFAULT
-    if (!commands.get()) {
-        printf("using zmq tcp\n");
-        commands = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ));
-    }
-    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB));}
-
-    if (!command.get()) {command = TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP));}
-    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB));}
-  #endif
-  #ifdef TRANSPORT_DEFAULT_GZIP
-    if (!commands.get()) {
-        printf("using zmq tcp with gzip wrapper\n");
-        commands = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7003", TransportZmq::REQ))));
-    }
-    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://127.0.0.1:7004", TransportZmq::SUB))));}
-
-    if (!command.get()) {command = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://*:7003", TransportZmq::REP))));}
-    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportWrapperGzip(TransportSharedPtr(new TransportZmq("tcp://*:7004", TransportZmq::PUB))));}
-  #endif
-  #ifdef TRANSPORT_IPC
-    if (!command.get()) {
-        printf("using zmq IPC\n");
-        command = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REP));
-    }
-    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::PUB));}
-    if (!commands.get()) {commands = TransportSharedPtr(new TransportZmq("ipc:///tmp/test0", TransportZmq::REQ));}
-    if (!telemetry.get()) {telemetry = TransportSharedPtr(new TransportZmq("ipc:///tmp/test1", TransportZmq::SUB));}
-  #endif
-  #ifdef TRANSPORT_UDT
-    if (!command.get()) {
-        printf("using UDT\n");
-        command = TransportSharedPtr(new TransportUDT(TransportUDT::SERVER, 7001));
-    }
-    if (!telemetri.get()) {telemetri = TransportSharedPtr(new TransportUDT(TransportUDT::SERVER, 7002));}
-    if (!commands.get()) {commands = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7001, "127.0.0.1"));}
-    if (!telemetry.get()) {
-        telemetry = TransportSharedPtr(new TransportUDT(TransportUDT::CLIENT, 7002, "127.0.0.1"));
-    }
-  #endif
-}
 
 bool isFileEqual(const std::string& path1, const std::string& path2) {
     std::ifstream f1(path1, std::ios::in | std::ios::binary);
@@ -101,10 +44,10 @@ bool isFileEqual(const std::string& path1, const std::string& path2) {
 }
 
 template <class PROTOBUFDATA> PROTOBUFDATA testCommand(PROTOBUFDATA protodata, const ControlMessageType &type) {
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   robot.startUpdateThread(10);
 
@@ -156,8 +99,8 @@ BOOST_AUTO_TEST_CASE(check_goto_command) {
 }
 
 BOOST_AUTO_TEST_CASE(check_joint_command) {
-  JointState cmd, recv;
-  cmd = TypeGenerator::genJointState();
+  JointCommand cmd, recv;
+  cmd = TypeGenerator::genJointCommand();
   recv = testCommand(cmd, JOINTS_COMMAND);
   COMPARE_PROTOBUF(cmd, recv);
 }
@@ -178,10 +121,10 @@ BOOST_AUTO_TEST_CASE(check_complex_action_command) {
 
 
 BOOST_AUTO_TEST_CASE(checking_twist_command_transfer) {
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   robot.startUpdateThread(10);
 
@@ -202,10 +145,10 @@ BOOST_AUTO_TEST_CASE(checking_twist_command_transfer) {
 }
 
 BOOST_AUTO_TEST_CASE(checking_target_pose) {
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   Pose pose = TypeGenerator::genPose();
   Pose pose2;
@@ -225,21 +168,23 @@ BOOST_AUTO_TEST_CASE(checking_target_pose) {
 }
 
 BOOST_AUTO_TEST_CASE(checking_current_pose) {
-  initComms();
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
   controller.update();
   usleep(100 * 1000);
 
-  Pose pose = TypeGenerator::genPose();
+  Pose telemetry_data = TypeGenerator::genPose();
   Pose currentpose;
 
   // buffer for size comparsion
   std::string buf;
-  pose.SerializeToString(&buf);
+
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
-  int sent = robot.setCurrentPose(pose);
+  int sent = robot.setCurrentPose(telemetry_data);
 
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
@@ -254,25 +199,26 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   // data was sent completely
   BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
-  COMPARE_PROTOBUF(pose, currentpose);
+  COMPARE_PROTOBUF(telemetry_data, currentpose);
 }
 
 BOOST_AUTO_TEST_CASE(checking_current_twist) {
-  initComms();
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
   controller.update();
   usleep(100 * 1000);
 
-  Twist telemetry = TypeGenerator::genTwist();
+  Twist telemetry_data = TypeGenerator::genTwist();
   Twist currenttelemetry;
 
   // buffer for size comparsion
   std::string buf;
-  telemetry.SerializeToString(&buf);
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
-  int sent = robot.setCurrentTwist(telemetry);
+  int sent = robot.setCurrentTwist(telemetry_data);
 
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
@@ -288,25 +234,27 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
   // data was sent completely
   BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
-  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+  COMPARE_PROTOBUF(telemetry_data, currenttelemetry);
 }
 
 BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
-  initComms();
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
   controller.update();
   usleep(100 * 1000);
 
-  Acceleration telemetry = TypeGenerator::genAcceleration();
+  Acceleration telemetry_data = TypeGenerator::genAcceleration();
   Acceleration currenttelemetry;
 
   // buffer for size comparsion
   std::string buf;
-  telemetry.SerializeToString(&buf);
+
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
-  int sent = robot.setCurrentAcceleration(telemetry);
+  int sent = robot.setCurrentAcceleration(telemetry_data);
 
   // wait a little for data transfer
   // the Telemetry send is non-blocking in opposite to commands
@@ -322,13 +270,13 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
   // data was sent completely
   BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
-  COMPARE_PROTOBUF(telemetry, currenttelemetry);
+  COMPARE_PROTOBUF(telemetry_data, currenttelemetry);
 }
 
 BOOST_AUTO_TEST_CASE(generic_request_telemetry_data) {
-  initComms();
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
@@ -369,9 +317,9 @@ BOOST_AUTO_TEST_CASE(generic_request_telemetry_data) {
 }
 
 BOOST_AUTO_TEST_CASE(checking_log_message) {
-  initComms();
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
@@ -449,9 +397,9 @@ BOOST_AUTO_TEST_CASE(checking_log_message) {
 }
 
 BOOST_AUTO_TEST_CASE(checking_robot_state) {
-  initComms();
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
 
@@ -523,10 +471,10 @@ BOOST_AUTO_TEST_CASE(checking_robot_state) {
 
 
 template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata, const TelemetryMessageType &type) {
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   controller.startUpdateThread(10);
 
@@ -541,7 +489,10 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   // check if raw telemetry sending works
   std::string binarydata;
   PROTOBUFDATA receivedraw;
-  protodata.SerializeToString(&binarydata);
+  
+  serialization.setMode(controller.getSerializationMode());
+  serialization.serialize(protodata, &binarydata);
+
   robot.sendTelemetryRaw(type, binarydata);
   while (!controller.getTelemetry(type, &receivedraw, false, 0)) {
     usleep(10000);
@@ -555,10 +506,10 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
 }
 
 template <class PROTOBUFDATA> PROTOBUFDATA testRequest(PROTOBUFDATA protodata, const TelemetryMessageType &type, const ChannelId channel = 0)  {
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   robot.startUpdateThread(10);
 
@@ -690,10 +641,10 @@ BOOST_AUTO_TEST_CASE(check_request_controllableframes) {
 
 BOOST_AUTO_TEST_CASE(check_request_map) {
 
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   GridMap grid;
   PointCloud cloud;
@@ -740,11 +691,11 @@ BOOST_AUTO_TEST_CASE(check_request_map) {
 
 
 BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
-  initComms();
+
 
   // start with default buffer size and overwrite off (defaults)
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
@@ -799,11 +750,11 @@ BOOST_AUTO_TEST_CASE(buffer_setting_overwrite) {
 }
 
 BOOST_AUTO_TEST_CASE(buffer_setting_resize) {
-  initComms();
+
 
   // start with default buffer size and overwrite off (defaults)
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
@@ -879,10 +830,10 @@ BOOST_AUTO_TEST_CASE(buffer_setting_resize) {
 }
 
 BOOST_AUTO_TEST_CASE(check_simple_sensors) {
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
@@ -929,10 +880,10 @@ BOOST_AUTO_TEST_CASE(check_callbacks) {
   Pose robotpose, controlpose;
   robotpose = TypeGenerator::genPose();
   controlpose = TypeGenerator::genPose();
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
@@ -969,10 +920,10 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
   robotpose = TypeGenerator::genPose();
   robotpose2 = TypeGenerator::genPose();
   controlpose = TypeGenerator::genPose();
-  initComms();
 
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
@@ -1039,11 +990,11 @@ BOOST_AUTO_TEST_CASE(check_callback_threads) {
 
 
 BOOST_AUTO_TEST_CASE(test_get_newest) {
-  initComms();
+
 
   // start with default buffer size and overwrite off (defaults)
-  RobotController controller(commands, telemetry);
-  ControlledRobot robot(command, telemetri);
+  RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+  ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
   controller.startUpdateThread(10);
   robot.startUpdateThread(10);
@@ -1110,10 +1061,10 @@ BOOST_AUTO_TEST_CASE(test_get_newest) {
 }
 
 BOOST_AUTO_TEST_CASE(file_transfer) {
-    initComms();
+  
 
-    RobotController controller(commands, telemetry);
-    ControlledRobot robot(command, telemetri);
+    RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+    ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
     controller.startUpdateThread(10);
     robot.startUpdateThread(10);
@@ -1257,10 +1208,10 @@ BOOST_AUTO_TEST_CASE(file_transfer) {
 
 #ifdef TRANSPORT_DEFAULT
 BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
-    initComms();
+  
 
-    RobotController controller(commands, telemetry);
-    ControlledRobot robot(command, telemetri);
+    RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+    ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
     controller.startUpdateThread(10);
     robot.startUpdateThread(10);
@@ -1297,7 +1248,7 @@ BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
     BOOST_CHECK_EQUAL(controllerConnections, 1);
     BOOST_CHECK_EQUAL(robotConnections, 1);
 
-    auto zmqptr = std::dynamic_pointer_cast<TransportZmq>(commands);
+    auto zmqptr = std::dynamic_pointer_cast<TransportZmq>(transports.robotControllerCommands);
     zmqptr->disconnect();
 
     usleep(300000);
@@ -1323,10 +1274,10 @@ BOOST_AUTO_TEST_CASE(connection_loss_and_reconnect) {
 
 
 BOOST_AUTO_TEST_CASE(robot_model) {
-    initComms();
+  
 
-    RobotController controller(commands, telemetry);
-    ControlledRobot robot(command, telemetri);
+    RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+    ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
     controller.startUpdateThread(10);
     robot.startUpdateThread(10);
@@ -1358,10 +1309,10 @@ BOOST_AUTO_TEST_CASE(robot_model) {
 
 
 BOOST_AUTO_TEST_CASE(telemetry_channels) {
-    initComms();
+  
 
-    RobotController controller(commands, telemetry);
-    ControlledRobot robot(command, telemetri);
+    RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+    ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
 
     robot.startUpdateThread(10);
 

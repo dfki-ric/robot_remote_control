@@ -5,9 +5,14 @@ cmake_minimum_required(VERSION 3.1.0)
 project(robot_remote_control VERSION "0.0.9")
 
 set(BUILD_SHARED_LIBS ON)
- 
-######################################################## CHECK FOR UDT
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(PkgConfig)
+
+######################################################## CHECK FOR ZeroMQ
+pkg_check_modules(ZMQ libzmq)
+
+######################################################## CHECK FOR UDT
 pkg_check_modules(UDT "udt")
 if(UDT_FOUND)
     message(STATUS "  Found UDT using pkg-config: ${UDT_LIBRARIES}")
@@ -25,8 +30,14 @@ else()
     endif()
 endif()
 
+######################################################## CHECK FOR WebSocket++
+find_package(websocketpp)
+
 ######################################################## CHECK FOR ZLIB
 find_package(ZLIB)
+
+######################################################## CHECK FOR cpprest
+find_package(cpprestsdk)
 
 #################################################### COLLECT SATISTICS?
 set (RRC_STATISTICS ON)
@@ -38,13 +49,13 @@ endif( RRC_STATISTICS )
 ################################################### ADD SUBDIRECTORIES
 add_subdirectory(src)
 
-#set (BUILD_EXAMPLES ON)
+set (BUILD_EXAMPLES ON)
 if( BUILD_EXAMPLES )
     message("Adding example directory") 
     add_subdirectory(examples)
 endif( BUILD_EXAMPLES )
 
-#set (BUILD_TESTS ON)
+set (BUILD_TESTS ON)
 if( BUILD_TESTS )
     message("Adding test directory") 
     add_subdirectory(test)

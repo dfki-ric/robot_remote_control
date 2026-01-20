@@ -13,7 +13,7 @@ enum ControlMessageType {
     GIT_VERSION = 3;
     HEARTBEAT = 4;
     TELEMETRY_REQUEST = 5;
-    MAP_REQUEST = 6;
+    // MAP_REQUEST = 6;           // deprecated, now set by using channels
     FILE_REQUEST = 7;
     LOG_LEVEL_SELECT = 8;
     PERMISSION = 9;
@@ -74,6 +74,26 @@ enum LogLevel {
     CUSTOM = 20;
 }
 
+message TelemetryMessage {
+    TelemetryMessageType type = 1;
+    uint32 channel = 2;
+    oneof telemetry {
+        bytes data = 3;
+        string json = 4;
+    }
+}
+
+message ControlMessage {
+    ControlMessageType type = 1;
+    oneof command {
+        bytes data = 2;
+        string json = 3;
+    }
+}
+
+message ControlMessageReply {
+    ControlMessageType type = 1;
+}
 
 message Acceleration {
     Vector3 linear = 1;
@@ -204,6 +224,15 @@ message FolderTransfer {
 message FileRequest {
     string identifier = 1;
     bool compressed = 2;
+}
+
+message TelemetryRequest {
+    TelemetryMessageType type = 1;
+    uint32 channel = 2;
+}
+
+message LogLevelRequest {
+    LogLevel level = 1;
 }
 
 message GridMap {
