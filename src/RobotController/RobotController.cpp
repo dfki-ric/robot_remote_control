@@ -277,38 +277,11 @@ void RobotController::updateStatistics(const uint32_t &bytesSent, const MessageI
 std::string RobotController::sendRequest(const std::string& serializedMessage, const float &overrideMaxLatency, const robot_remote_control::Transport::Flags &flags) {
     std::lock_guard<std::mutex> lock(commandTransportMutex);
 
-    float currentMaxLatency = maxLatency;
-    if (overrideMaxLatency > 0) {
-        currentMaxLatency = overrideMaxLatency;
-    }
+    WireProtocolReply protocol(commandTransport, maxLatency); // TODO 
 
-    try {
-        commandTransport->send(serializedMessage, flags);
-    } catch (const std::exception &error) {
-        connected.store(false);
-        lostConnectionCallback(lastConnectedTimer.getElapsedTime());
-        return "";
-    }
-    std::string replystr;
+    protocol->send(commandTransport,overrideMaxLatency,flags);
 
-    requestTimer.start(currentMaxLatency);
-
-    try {
-        while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
-            // wait time depends on how long the transports recv blocks
-            usleep(1000);
-        }
-    } catch (const std::exception &error) {
-        connected.store(false);
-        lostConnectionCallback(lastConnectedTimer.getElapsedTime());
-        return "";
-    }
-    if (replystr.size() == 0 && requestTimer.isExpired()) {
-        connected.store(false);
-        lostConnectionCallback(lastConnectedTimer.getElapsedTime());
-        return replystr;
-    }
-    lastConnectedTimer.start();
+    connected = protocol.isConnected();
 
     if (!connected) {
         if (connectedCallback != nullptr) {
@@ -317,7 +290,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     }
 
     connected.store(true);
-    return replystr;
+    return protocol.getReply();
 }
 
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {

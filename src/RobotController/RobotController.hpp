@@ -702,7 +702,7 @@ class RobotController: public UpdateThread {
         Timer heartBeatTimer;
         std::atomic<float> heartBeatRoundTripTime;
         Timer latencyTimer;
-        Timer requestTimer;
+        
         Timer lastConnectedTimer;
         std::mutex commandTransportMutex;
         float maxLatency;
