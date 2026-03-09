@@ -2,6 +2,7 @@
 
 #include "Types/RobotRemoteControl.pb.h"
 #include <string>
+#include <array>
 #include <sys/time.h>
 
 namespace robot_remote_control {
