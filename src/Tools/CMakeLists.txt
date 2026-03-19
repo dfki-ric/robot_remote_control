@@ -1,3 +1,6 @@
+
+add_subdirectory(PlotjugglerDataStream)
+
 add_library(robot_remote_control-send_timers
             SendTimers.cpp
             )
@@ -61,3 +64,5 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 	FILES_MATCHING PATTERN "*.hpp"
 )
+
+
