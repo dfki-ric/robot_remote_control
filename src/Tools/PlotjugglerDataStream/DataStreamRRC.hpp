@@ -20,6 +20,25 @@ class DataStreamRRC : public PJ::DataStreamer {
 
  public:
 
+    struct UpdateBool {
+        UpdateBool():state(false){}
+
+        bool operator=(const bool &update) {
+            if (update) {
+                state = true;
+            }
+            return state;
+        }
+        bool needsUpdate(){
+            return state;
+        }
+        void reset() {
+            state = false;
+        }
+
+        bool state;
+    };
+
 
     DataStreamRRC();
 
@@ -50,19 +69,20 @@ class DataStreamRRC : public PJ::DataStreamer {
     //     return { _dummy_notification, _notifications_count };
     // }
 
+    /** gereric version for "flat, top level data" might be slower */
     template <class PROTO> void addToPlot(const PROTO& proto, const double stamp, const std::string prefix = "") {
         // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
         const auto reflection = proto.GetReflection();
         std::vector<const  google::protobuf::FieldDescriptor*> fields;
         reflection->ListFields(proto, &fields);
         
-        for (const auto& field: fields) {
-            std::string fieldname = prefix + field->name() + "/";
-            // std::cout << fieldname << std::endl;
-            // if field <= 7; //https://protobuf.dev/reference/cpp/api-docs/google.protobuf.descriptor/#FieldDescriptor
+        std::deque<const google::protobuf::FieldDescriptor*> queue (fields.begin(), fields.end());
 
-            printf("%s:%i %s %.2f\n", __PRETTY_FUNCTION__, __LINE__,fieldname.c_str(), stamp);
-            // proto.PrintDebugString();
+        for (const auto& field : fields) {
+        // while (queue.size()) {
+        //     const google::protobuf::FieldDescriptor* field = queue.front();
+        //     queue.pop_front();
+            std::string fieldname = prefix + field->name() + "/";
 
             if (field->is_repeated()) {
                 size_t size = reflection->FieldSize(proto, field);
@@ -71,7 +91,7 @@ class DataStreamRRC : public PJ::DataStreamer {
                     if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING){
                         auto& plot = dataMap().getOrCreateStringSeries(fieldname + std::to_string(i));
                         plot.pushBack(PJ::StringSeries::Point(stamp, reflection->GetRepeatedString(proto,field,i))); break;
-                    }else{
+                    } else {
                         auto& plot = dataMap().getOrCreateNumeric(fieldname + std::to_string(i));    
                         switch (field->cpp_type()) {
                             case google::protobuf::FieldDescriptor::CPPTYPE_INT32: plot.pushBack(PJ::PlotData::Point(stamp, reflection->GetRepeatedInt32(proto,field,i))); break;
@@ -88,7 +108,7 @@ class DataStreamRRC : public PJ::DataStreamer {
                 if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING){
                     auto& plot = dataMap().getOrCreateStringSeries(fieldname);
                     plot.pushBack(PJ::StringSeries::Point(stamp, reflection->GetString(proto,field))); break;
-                }else{
+                } else {
                     auto& plot = dataMap().getOrCreateNumeric(fieldname);
                     switch (field->cpp_type()) {
                         case google::protobuf::FieldDescriptor::CPPTYPE_INT32: plot.pushBack(PJ::PlotData::Point(stamp, reflection->GetInt32(proto,field))); break;
@@ -104,18 +124,29 @@ class DataStreamRRC : public PJ::DataStreamer {
         }
     }
 
-    template<class PROTO> void handleChannels(const robot_remote_control::TelemetryMessageType &type, const double& stamp) {
+    void addToPlot(const robot_remote_control::TimeStamp& ts, const double stamp, const std::string prefix = "");
+
+    void addToPlot(const robot_remote_control::Header& header, const double stamp, const std::string prefix = "");
+
+    void addToPlot(const robot_remote_control::JointState& proto, const double stamp, const std::string prefix = "");
+
+
+    template<class PROTO> bool handleChannels(const robot_remote_control::TelemetryMessageType &type, const double& stamp) {
         PROTO proto;
+        bool newDataReceived = false;
         int channels = robotdata->getMaxChannelNo(type);
-        // printf("%s:%i\n", __PRETTY_FUNCTION__, __LINE__);
         for (size_t chan = 0; chan<=channels; ++chan) {
-            // printf("%s:%i c:%li t:%i\n", __PRETTY_FUNCTION__, __LINE__, chan, type);
-            if (robotdata->getTelemetry(type, &proto, true, chan)) {
-                // printf("%s:%i c:%li t:%i\n", __PRETTY_FUNCTION__, __LINE__, chan, type);
-                // printf("%s:%i %s %.2f\n", __PRETTY_FUNCTION__, __LINE__,robot_remote_control::TelemetryMessageType_Name(type).c_str(), stamp);
-                addToPlot(proto, stamp, robot_remote_control::TelemetryMessageType_Name(type) + "/c" + std::to_string(chan) + "/");
+            while (robotdata->getTelemetry(type, &proto, false, chan)) {
+                double headerstamp = proto.header().timestamp().secs() + proto.header().timestamp().nsecs() / 1000000000.0;
+                if (headerstamp == 0) {
+                    headerstamp = stamp;
+                }
+
+                newDataReceived = true;
+                addToPlot(proto, headerstamp, robot_remote_control::TelemetryMessageType_Name(type) + std::to_string(chan) + "/");
             }
         }
+        return newDataReceived;
     }
 
 
@@ -138,7 +169,7 @@ class DataStreamRRC : public PJ::DataStreamer {
     bool _running;
 
 
-    bool newData;
+    UpdateBool newData;
     void pushSingleCycle();
 
     // QLabel* optiontext;
