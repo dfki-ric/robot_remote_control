@@ -199,7 +199,7 @@ void DataStreamRRC::pushSingleCycle() {
             case robot_remote_control::CURRENT_POSE :           newData = handleChannels<robot_remote_control::Pose>(robot_remote_control::CURRENT_POSE, stamp);
             case robot_remote_control::JOINT_STATE :            newData = handleChannels<robot_remote_control::JointState>(robot_remote_control::JOINT_STATE, stamp);
             case robot_remote_control::ROBOT_STATE :            newData = handleChannels<robot_remote_control::RobotState>(robot_remote_control::ROBOT_STATE, stamp);
-            case robot_remote_control::LOG_MESSAGE :            newData = handleChannels<robot_remote_control::LogMessage>(robot_remote_control::LOG_MESSAGE, stamp);
+            // case robot_remote_control::LOG_MESSAGE :            newData = handleChannels<robot_remote_control::LogMessage>(robot_remote_control::LOG_MESSAGE, stamp);
             case robot_remote_control::SIMPLE_SENSOR :          newData = handleChannels<robot_remote_control::SimpleSensor>(robot_remote_control::SIMPLE_SENSOR, stamp);
             case robot_remote_control::WRENCH_STATE :           newData = handleChannels<robot_remote_control::WrenchState>(robot_remote_control::WRENCH_STATE, stamp);
             case robot_remote_control::POSES :                  newData = handleChannels<robot_remote_control::Poses>(robot_remote_control::POSES, stamp);
