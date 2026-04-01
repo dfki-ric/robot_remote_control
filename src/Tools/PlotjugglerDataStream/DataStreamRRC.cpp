@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QSpinBox>
 #include <QPushButton>
+#include <QCheckBox>
 
 #include <thread>
 #include <mutex>
@@ -68,6 +69,10 @@ bool DataStreamRRC::start(QStringList*) {
     QPushButton* button = new QPushButton("connect");
     vlayout->addWidget(button);
 
+    QCheckBox* stampBox = new QCheckBox("use data timestamp");
+    vlayout->addWidget(stampBox);
+
+
     QSettings settings;
     QString address = settings.value("RRC::address", "localhost").toString();
     QString commandport = settings.value("RRC::commandport", "7001").toString();
@@ -89,7 +94,7 @@ bool DataStreamRRC::start(QStringList*) {
     address = ip->text();
     commandport = cmd->text();
     telemetryport = tele->text();
-
+    useDataTimestamp = stampBox->isChecked();
 
     settings.setValue("RRC::address", address);
     settings.setValue("RRC::commandport", commandport);
@@ -112,7 +117,7 @@ bool DataStreamRRC::start(QStringList*) {
     robotdata->requestChannelsDefinition(&channeldef);
 
 
-    // robotdata->getStatistics().setRunningAverageSamples(100);
+    robotdata->getStatistics().setRunningAverageSamples(100);
 
     // channeldef.PrintDebugString();
 
@@ -195,7 +200,6 @@ void DataStreamRRC::pushSingleCycle() {
     double stamp = std::chrono::duration_cast<std::chrono::duration<double>>(now.time_since_epoch()).count();
 
     // printf("%s:%i %f\n", __PRETTY_FUNCTION__, __LINE__, stamp);
-    
 
     for (size_t dataindex = 0; dataindex < robot_remote_control::TELEMETRY_MESSAGE_TYPES_NUMBER; ++dataindex) {
         switch (dataindex) {
@@ -215,14 +219,29 @@ void DataStreamRRC::pushSingleCycle() {
     }
     //TODO displawrenchstate
 
-    robot_remote_control::Statistics& stats = robotdata->getStatistics();
-    stats.calculate();
-    for (size_t i = 0; i < robot_remote_control::TELEMETRY_MESSAGE_TYPES_NUMBER; ++i) {
-        dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[i] + "/kBps").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[i].getStats().bpsAvg/1024.0));
-        dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[i] + "/total kB").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[i].getStats().bytesTotal/1024.0));
-        dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[i] + "/freq").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[i].getStats().frequencyAvg));
+    if (newData.needsUpdate()) {
+        robot_remote_control::Statistics& stats = robotdata->getStatistics();
+        stats.calculate();
+        for (size_t dataindex = 0; dataindex < robot_remote_control::TELEMETRY_MESSAGE_TYPES_NUMBER; ++dataindex) {
+            switch (dataindex) {
+                case robot_remote_control::NO_TELEMETRY_DATA:
+                case robot_remote_control::CURRENT_POSE :
+                case robot_remote_control::JOINT_STATE :
+                case robot_remote_control::ROBOT_STATE :
+                // case robot_remote_control::LOG_MESSAGE :
+                case robot_remote_control::SIMPLE_SENSOR :
+                case robot_remote_control::WRENCH_STATE :
+                case robot_remote_control::POSES :    
+                case robot_remote_control::IMU_VALUES : 
+                case robot_remote_control::CURRENT_TWIST :
+                case robot_remote_control::CURRENT_ACCELERATION :
+                    dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[dataindex] + "/kBps").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[dataindex].getStats().bpsAvg/1024.0));
+                    dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[dataindex] + "/total kB").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[dataindex].getStats().bytesTotal/1024.0));
+                    dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[dataindex] + "/freq").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[dataindex].getStats().frequencyAvg));
+                    break;
+            }
+        }
     }
-
 
     // printf("%s:%i %i\n", __PRETTY_FUNCTION__, __LINE__, newData);
 

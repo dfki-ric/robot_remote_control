@@ -135,16 +135,19 @@ class DataStreamRRC : public PJ::DataStreamer {
         PROTO proto;
         bool newDataReceived = false;
         int channels = robotdata->getMaxChannelNo(type);
+        static double headerstamp;
         for (size_t chan = 0; chan<=channels; ++chan) {
             while (robotdata->getTelemetry(type, &proto, false, chan)) {
-                double headerstamp = proto.header().timestamp().secs() + proto.header().timestamp().nsecs() / 1000000000.0;
-                if (headerstamp == 0) {
+                headerstamp = proto.header().timestamp().secs() + proto.header().timestamp().nsecs() / 1000000000.0;
+                if (!useDataTimestamp || headerstamp == 0) {
                     headerstamp = stamp;
                 }
-
                 newDataReceived = true;
                 addToPlot(proto, headerstamp, robot_remote_control::TelemetryMessageType_Name(type) + std::to_string(chan) + "/");
             }
+            // no new data, but we still want to write the plot
+            // addToPlot(proto, stamp, robot_remote_control::TelemetryMessageType_Name(type) + std::to_string(chan) + "/");
+            
         }
         return newDataReceived;
     }
@@ -171,6 +174,9 @@ class DataStreamRRC : public PJ::DataStreamer {
 
     UpdateBool newData;
     void pushSingleCycle();
+
+
+    bool useDataTimestamp;
 
     // QLabel* optiontext;
 
