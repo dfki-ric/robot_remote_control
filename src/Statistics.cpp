@@ -58,7 +58,6 @@ void Statistics::Stats::print(const std::string& name) {
 void Statistics::calculate() {
     #ifdef RRC_STATISTICS
         gettimeofday(&currenttime, 0);
-        global.calculate(&currenttime);
         std::for_each(stat_per_type.begin(), stat_per_type.end(), [&](auto & stat){
             stat.calculate(&currenttime);
         });
@@ -74,9 +73,8 @@ void Statistics::setRunningAverageSamples(const double &samples) {
 
 void Statistics::print(const bool &verbose) {
     #ifdef RRC_STATISTICS
-        global.print("global");
         if (verbose) {
-            for (int i = 1; i < names.size(); ++i) {
+            for (int i = 0; i < names.size(); ++i) {
                 stat_per_type[i].print(names[i]);
             }
         }

@@ -143,7 +143,7 @@ void ControlledRobot::update() {
 
 void ControlledRobot::updateStatistics(const uint32_t &bytesSent, const MessageId &type) {
     #ifdef RRC_STATISTICS
-        statistics.global.addBytesSent(bytesSent);
+        statistics.stat_per_type[0].addBytesSent(bytesSent);
         statistics.stat_per_type[type].addBytesSent(bytesSent);
     #endif
 }
