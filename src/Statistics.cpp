@@ -16,7 +16,6 @@ Statistics::Stats::Stats(const double &runningAvgSamples) {
     runningAvgFactor = ((runningAvgSamples-1)/runningAvgSamples);
 }
 
-
 void Statistics::Stats::addBytesSent(const double& bytes) {
     statdata.bytesTotal += bytes;
     statdata.bytesSinceLast += bytes;
@@ -64,6 +63,13 @@ void Statistics::calculate() {
             stat.calculate(&currenttime);
         });
     #endif
+}
+
+void Statistics::setRunningAverageSamples(const double &samples) {
+    for (auto& stat : stat_per_type) {
+        stat.statdata.runningAvgSamples = samples;
+        stat.runningAvgFactor = ((samples-1)/samples);
+    }   
 }
 
 void Statistics::print(const bool &verbose) {

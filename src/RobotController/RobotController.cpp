@@ -67,13 +67,14 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
     registerTelemetryType<LaserScan>(LASER_SCAN, buffersize);
 
-    // #ifdef RRC_STATISTICS
+    #ifdef RRC_STATISTICS
+        statistics.names[0] = "total";
     //     // add names to buffer, this types have aspecial treatment, the should not be registered
     //     MapsDefinition mapsDefinition;
     //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
     //     Map map;
     //     statistics.names[MAP] = map.GetTypeName();
-    // #endif
+    #endif
 
     for (auto& chan : messageChannels) {
         chan = 0;

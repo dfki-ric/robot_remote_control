@@ -111,6 +111,9 @@ bool DataStreamRRC::start(QStringList*) {
     robotdata->waitForConnection();
     robotdata->requestChannelsDefinition(&channeldef);
 
+
+    // robotdata->getStatistics().setRunningAverageSamples(100);
+
     // channeldef.PrintDebugString();
 
     pushSingleCycle();
@@ -211,6 +214,14 @@ void DataStreamRRC::pushSingleCycle() {
         }
     }
     //TODO displawrenchstate
+
+    robot_remote_control::Statistics& stats = robotdata->getStatistics();
+    stats.calculate();
+    for (size_t i = 0; i < robot_remote_control::TELEMETRY_MESSAGE_TYPES_NUMBER; ++i) {
+        dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[i] + "/kBps").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[i].getStats().bpsAvg/1024.0));
+        dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[i] + "/total kB").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[i].getStats().bytesTotal/1024.0));
+        dataMap().getOrCreateNumeric("ConnectionStatistics/"+ stats.names[i] + "/freq").pushBack(PJ::PlotData::Point(stamp, stats.stat_per_type[i].getStats().frequencyAvg));
+    }
 
 
     // printf("%s:%i %i\n", __PRETTY_FUNCTION__, __LINE__, newData);
