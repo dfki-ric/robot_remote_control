@@ -130,6 +130,8 @@ class DataStreamRRC : public PJ::DataStreamer {
 
     void addToPlot(const robot_remote_control::JointState& proto, const double stamp, const std::string prefix = "");
 
+    void addToPlot(const robot_remote_control::Pose& proto, const double stamp, const std::string prefix = "");
+
 
     template<class PROTO> bool handleChannels(const robot_remote_control::TelemetryMessageType &type, const double& stamp) {
         PROTO proto;

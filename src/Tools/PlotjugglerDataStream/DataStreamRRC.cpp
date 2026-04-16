@@ -316,3 +316,14 @@ void DataStreamRRC::addToPlot(const robot_remote_control::JointState& proto, con
     }
 }
 
+void DataStreamRRC::addToPlot(const robot_remote_control::Pose& proto, const double stamp, const std::string prefix) {
+    std::string entryname = prefix + "/";
+    addToPlot(proto.header(),stamp,entryname+"/header");
+    addToPlot(proto.position(),stamp,entryname+"/position/");
+    addToPlot(proto.orientation(),stamp,entryname+"/orientation/");
+
+    // dataMap().getOrCreateStringSeries(entryname + "frame").pushBack(PJ::StringSeries::Point(stamp, header.frame()));
+    // dataMap().getOrCreateNumeric(entryname + "seq").pushBack(PJ::PlotData::Point(stamp, header.seq()));
+}
+
+
