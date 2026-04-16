@@ -66,3 +66,20 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 
+add_library(robot_remote_control-send_timer_simple_actions
+            SendTimerSimpleActions.cpp
+            )
+
+target_link_libraries(robot_remote_control-send_timer_simple_actions PUBLIC robot_remote_control-send_timers robot_remote_control-simple_action_helper)
+
+target_include_directories(robot_remote_control-send_timer_simple_actions
+	PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+install (TARGETS robot_remote_control-send_timer_simple_actions
+        EXPORT robot_remote_control-targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
