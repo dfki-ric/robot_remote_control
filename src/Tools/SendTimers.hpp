@@ -91,6 +91,8 @@ class SendTimers {
 
     bool isTimeOver(Config* conf);
 
+ protected:
+    friend class SendTimerSimpleActions;
     std::vector<Config> config;
 };
 

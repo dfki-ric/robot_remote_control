@@ -454,6 +454,7 @@ message SimpleActionDef {
     float step_size = 4;
     repeated NamedValue value_names = 5; // {name: barrel_found, value=0}, {name: barrel_close, value=1}
     repeated ActionDependency action_dependency = 6;
+    string documentation = 7;
 }
 
 message SimpleActions {
