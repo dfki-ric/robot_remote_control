@@ -219,6 +219,9 @@ int main(int argc, char** argv)
 
         if (robot.getTwistCommand(&twistcommand)) {
             printf("\ngot twist command:\n%s\n", twistcommand.ShortDebugString().c_str());
+            currentpose.mutable_position()->set_x(currentpose.position().x() + twistcommand.linear().x());
+            currentpose.mutable_position()->set_y(currentpose.position().y() + twistcommand.linear().y());
+            currentpose.mutable_position()->set_z(currentpose.position().z() + twistcommand.linear().z());
             robot.setLogMessage(robot_remote_control::ERROR, "twist not supported for fake robot\n");
         }
 

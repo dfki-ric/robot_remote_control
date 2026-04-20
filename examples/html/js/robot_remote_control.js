@@ -8,10 +8,10 @@ class RobotController {
         this.telemetryport = telemetryport
 
         this.dependentsimpleactionforms = new Array();
+        this.telemetryCallbacks = new Object;
 
         this.connectTelemetry()
         this.connectCommands()
-
     }
 
     close() {
@@ -20,17 +20,33 @@ class RobotController {
     
     get(url, callback) {
         var xmlHttp = new XMLHttpRequest()
-        xmlHttp.open( "GET", url, false ) // false for synchronous request
+        xmlHttp.open( "GET", url, true ) // false for synchronous request
         xmlHttp.send( null )
-        callback(JSON.parse(xmlHttp.responseText))
+        xmlHttp.onload = (e) => {
+            if (xmlHttp.readyState === 4) {
+                if (xmlHttp.status === 200) {
+                    callback(JSON.parse(xmlHttp.responseText))
+                } else {
+                    console.error(xmlHttp.statusText);
+                }
+            }
+        };
     }
 
     post(url, data, callback){
         var xmlHttp = new XMLHttpRequest()
-        xmlHttp.open( "post", url, false ) // false for synchronous request
+        xmlHttp.open( "post", url, true ) // false for synchronous request
         xmlHttp.setRequestHeader('Content-type', 'application/json');
         xmlHttp.send( JSON.stringify(data) )
-        callback(JSON.parse(xmlHttp.responseText))
+        xmlHttp.onload = (e) => {
+            if (xmlHttp.readyState === 4) {
+                if (xmlHttp.status === 200) {
+                    callback(JSON.parse(xmlHttp.responseText))
+                } else {
+                    console.error(xmlHttp.statusText);
+                }
+            }
+        };
     }
 
     connectCommands() {
@@ -46,22 +62,18 @@ class RobotController {
             //todo request simple actions
 
         }
+        let rrc = this
         this.telemetryws.onmessage=function(evt) {
             // parse wrapping TelemetryMessage js Object
+            var telemetryMessage = JSON.parse(evt.data)
 
-            // if (evt.data != "") {
-                var telemetryMessage = JSON.parse(evt.data)
-
-                
-                // parse actual data into js Object
-                var json = JSON.parse(telemetryMessage.json)
-                
-                // handle different messages
-                if (telemetryMessage.type == "CURRENT_POSE") {
-                    document.getElementById("pose").innerHTML = telemetryMessage.json
-                }
-            // }
-
+            // parse actual data into js Object
+            var json = JSON.parse(telemetryMessage.json)
+            // handle different messages
+            if (telemetryMessage.type in rrc.telemetryCallbacks) {
+                // call callback registered with addTelemetryCallback()
+                rrc.telemetryCallbacks[telemetryMessage.type](json, telemetryMessage.channel)
+            }
 
         };
 
@@ -70,6 +82,9 @@ class RobotController {
         };
     }
 
+    addTelemetryCallback(type, callback) {
+        this.telemetryCallbacks[type] = callback;
+    }
 
     generateControlMessage(type, payload) {
         var msg = new Object
@@ -79,6 +94,7 @@ class RobotController {
         }
         return msg
     }
+
     generateTelemetryRequest(type, channel) {
         var msg = new Object
         msg["type"] = type
@@ -88,6 +104,15 @@ class RobotController {
         return msg
     }
 
+    requestTelemetry(type, channel, callback) {
+        var myurl = "http://"+host+":"+this.commandport+"/api/command";
+        console.log(myurl)
+        this.post(myurl, this.generateControlMessage("TELEMETRY_REQUEST",this.generateTelemetryRequest(type, channel)), function(data){
+            console.log("recv")
+            callback(data)
+            console.log("done")
+        })
+    }
 
     setSimpleAction(name, value){
         var simpleactioncommand = new Object;
@@ -265,7 +290,25 @@ class RobotController {
         });
     }
 
+    setTwistCommand(x,y,z,rx,ry,rz,frame="") {
+        var twist = new Object
+        twist["header"] = new Object();
+        twist["header"]["frame"] = frame;
+        twist["linear"] = new Object();
+        twist["linear"]["x"] = x;
+        twist["linear"]["y"] = y;
+        twist["linear"]["z"] = z;
+        twist["angular"] = new Object();
+        twist["angular"]["x"] = rx;
+        twist["angular"]["y"] = ry;
+        twist["angular"]["z"] = rz;
+        this.post("http://"+host+":"+commandport+"/api/command", this.generateControlMessage("TWIST_COMMAND", twist),function (reply){
+            //console.log(reply)
+        })
 
 
+    }
 
 }
+
+
