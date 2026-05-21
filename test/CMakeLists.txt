@@ -103,7 +103,29 @@ if(websocketpp_FOUND AND cpprestsdk_FOUND)
       robot_remote_control-transport_http
     )
     target_compile_definitions(test_suite_web PUBLIC -DTRANSPORT_WEB)
+
+    add_executable(test_suite_multi_web ${COMMON_SOURCE})
+    target_link_libraries(test_suite_multi_web
+      ${COMMON_LIBS}
+      robot_remote_control-transport_ws
+      robot_remote_control-transport_http
+      robot_remote_control-transport_wrapper_multi_transport
+    )
+    target_compile_definitions(test_suite_multi_web PUBLIC -DTRANSPORT_MULTI_CONTROLLED_WEB_CONTROLLER)
+
+    add_executable(test_suite_multi_zmq ${COMMON_SOURCE})
+    target_link_libraries(test_suite_multi_zmq
+      ${COMMON_LIBS}
+      robot_remote_control-transport_ws
+      robot_remote_control-transport_http
+      robot_remote_control-transport_wrapper_multi_transport
+    )
+    target_compile_definitions(test_suite_multi_zmq PUBLIC -DTRANSPORT_MULTI_CONTROLLED_ZMQ_CONTROLLER)
+
+
 endif()
+
+
 
 
 #set_target_properties(test_suite PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)

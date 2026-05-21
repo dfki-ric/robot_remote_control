@@ -34,7 +34,7 @@ class RingBufferBase{
 
 template <class TYPE> class RingBuffer: public RingBufferBase {
     public:
-        explicit RingBuffer(const size_t & buffersize): RingBufferBase(), buffersize(buffersize), contentsize(0), in(0), out(0), droppedMessages(0) {
+        explicit RingBuffer(const size_t & buffersize = 10): RingBufferBase(), buffersize(buffersize), contentsize(0), in(0), out(0), droppedMessages(0) {
             buffer.resize(buffersize);
         }
 

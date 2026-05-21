@@ -18,6 +18,13 @@
   #include "../src/Transports/WebSocket/TransportWebSocket.hpp"
   #include "../src/Transports/Http/TransportHttp.hpp"
 #endif
+#if defined TRANSPORT_MULTI_CONTROLLED_ZMQ_CONTROLLER || defined TRANSPORT_MULTI_CONTROLLED_WEB_CONTROLLER
+  #include "../src/Transports/WebSocket/TransportWebSocket.hpp"
+  #include "../src/Transports/Http/TransportHttp.hpp"
+  #include "../src/TransportWrappers/MultiTransport/MultiTransport.hpp"
+#endif
+
+
 namespace robot_remote_control {
 
 class Transports {
