@@ -9,29 +9,27 @@
 #include <unistd.h>
 #include <stdexcept>
 
-
 #include "Transports/Transport.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
 #include "TelemetryBuffer.hpp"
 #include "CommandBuffer.hpp"
 #include "Statistics.hpp"
-#include "Serialization.hpp"
 
 namespace robot_remote_control {
 
 class ControlledRobot: public UpdateThread {
     public:
         explicit ControlledRobot(TransportSharedPtr commandTransport, TransportSharedPtr telemetryTransport = TransportSharedPtr(), const size_t &buffersize = 10);
+
+        explicit ControlledRobot(std::vector<TransportSharedPtr> commandTransports, std::vector<TransportSharedPtr> telemetryTransports, const size_t &buffersize = 10);
+
+        void init(const size_t &buffersize);
+
         virtual ~ControlledRobot();
 
         
-        void setSerializationMode(const Serialization::Mode & mode) {
-            serialization.setMode(mode);
-        }
-        Serialization::Mode getSerializationMode() {
-            return serialization.getMode();
-        }
+
 
         /**
          * @brief threaded update function called by UpdateThread that receives commands
@@ -248,32 +246,31 @@ class ControlledRobot: public UpdateThread {
          * @return int size sent
          */
         template<class CLASS> int sendTelemetry(const CLASS &protodata, const TelemetryMessageType& type, bool requestOnly, const ChannelId &channel) {
-            if (telemetryTransport.get()) {
-                
+            if (telemetryTransports.size()) {
                 TelemetryMessage telemetryMessage;
                 telemetryMessage.set_type(type);
                 telemetryMessage.set_channel(channel);
-
-                std::string buf;
                 
-
-                serialization.serialize(protodata, &telemetryMessage);
-                size_t payloadsize = serialization.getPayloadSize(telemetryMessage);
-                serialization.serialize(telemetryMessage, &buf);
-                
-                // store latest data for future requests
-                {
-                    auto lockedbuffer = buffers->lockedAccess();
-                    // check existence only if channel is actially set
-                    if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
-                        throw std::out_of_range ("Channel does not exist");
+                size_t payloadsize = 0;
+                for (auto& transport : telemetryTransports) {
+                    std::string buf;
+                    transport->getSerialization().serialize(protodata, &telemetryMessage);
+                    payloadsize = transport->getSerialization().getPayloadSize(telemetryMessage);
+                    transport->getSerialization().serialize(telemetryMessage, &buf);
+                    
+                    // store latest data for future requests
+                    {
+                        auto lockedbuffer = buffers->lockedAccess();
+                        // check existence only if channel is actially set
+                        if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
+                            throw std::out_of_range ("Channel does not exist");
+                        }
+                        RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
                     }
-                    RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
-                }
-                if (!requestOnly) {
-                    uint32_t bytes = telemetryTransport->send(buf);
-                    updateStatistics(bytes, type);
-                    return payloadsize;
+                    if (!requestOnly) {
+                        uint32_t bytes = transport->send(buf);
+                        updateStatistics(bytes, type);
+                    }
                 }
                 return payloadsize;
             } else {  
@@ -289,39 +286,27 @@ class ControlledRobot: public UpdateThread {
         }
 
         int sendTelemetryRaw(const TelemetryMessageType& type, const std::string& serialized, const ChannelId &channel = 0) {
-            if (telemetryTransport.get()) {
-                std::string buf;
-                TelemetryMessage telemetryMessage;
-                telemetryMessage.set_type(type);
-                telemetryMessage.set_channel(channel);
+            if (telemetryTransports.size()) {
 
-                serialization.setSerialized(serialized, &telemetryMessage);
-                serialization.serialize(telemetryMessage, &buf);
-                // if (serializationMode == JSON) {
-                //     google::protobuf::util::JsonPrintOptions jsonOptions;
-                //     // jsonOptions.add_whitespace = true;
-                //     jsonOptions.always_print_primitive_fields = true;
-                //     telemetryMessage.set_json(serialized);
-                //     payloadSize = telemetryMessage.json().size();
-                //     google::protobuf::util::MessageToJsonString(telemetryMessage, &buf,jsonOptions); 
-                // }else{
-                //     telemetryMessage.set_data(serialized);
-                //     telemetryMessage.SerializeToString(&buf);
-                //     payloadSize = telemetryMessage.data().size();
-                // }
+                for (auto& transport : telemetryTransports) {
+                                        std::string buf;
+                    TelemetryMessage telemetryMessage;
+                    telemetryMessage.set_type(type);
+                    telemetryMessage.set_channel(channel);
 
-                {
-                    // check existence only if channel is actially set
-                    if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
-                        throw std::out_of_range ("Channel does not exist");
+                    transport->getSerialization().setSerialized(serialized, &telemetryMessage);
+                    transport->getSerialization().serialize(telemetryMessage, &buf);
+                    {
+                        // check existence only if channel is actially set
+                        if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
+                            throw std::out_of_range ("Channel does not exist");
+                        }
+                        buffers->pushSerialized(type, buf, channel);
                     }
-                    buffers->pushSerialized(type, buf, channel);
-                    // RingBufferAccess::pushData(lockedbuffer.get()[type][channel], protodata, true);
+                    uint32_t bytes = 0;
+                    bytes = transport->send(buf);
+                    updateStatistics(bytes, type);
                 }
-                uint32_t bytes = 0;
-                bytes = telemetryTransport->send(buf);
-                
-                updateStatistics(bytes, type);
                 return serialized.size();
             }
             printf("ERROR Transport invalid\n");
@@ -674,7 +659,7 @@ class ControlledRobot: public UpdateThread {
     protected:
         virtual ControlMessageType receiveRequest();
 
-        virtual ControlMessageType evaluateRequest(const std::string& request);
+        virtual ControlMessageType evaluateRequest(TransportSharedPtr transport, const std::string& request);
 
         bool loadFile(FileTransfer* file, const std::string &path, bool compressed = false, const std::string &remotePath = "");
 
@@ -721,10 +706,13 @@ class ControlledRobot: public UpdateThread {
             commandbuffers[ID] = bufptr;
         }
 
-        TransportSharedPtr commandTransport;
-        TransportSharedPtr telemetryTransport;
+        std::vector<TransportSharedPtr> commandTransports;
+        std::vector<TransportSharedPtr> telemetryTransports;
 
-        std::string serializeControlMessageType(const ControlMessageType& type);
+        // std::string serializeControlMessageType(const ControlMessageType& type);
+
+        size_t sendControlMessageType(TransportSharedPtr transport, const ControlMessageType& type);
+
         // std::string serializeCurrentPose();
 
         template <class PROTO> void registerTelemetryType(const MessageId &type) {
@@ -745,8 +733,6 @@ class ControlledRobot: public UpdateThread {
         ChannelsDefinition channels;
 
         Transport::Flags receiveflags;
-
-        Serialization serialization;
 
 };
 

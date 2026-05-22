@@ -140,11 +140,11 @@ int main(int argc, char** argv) {
         telemetry = TransportSharedPtr(new TransportZmq("tcp://"+ip+":"+telemetryport, TransportZmq::SUB));
     }
 
-    robot_remote_control::RobotController controller(commands, telemetry);
-
     if (json) {
-        controller.setSerializationMode(robot_remote_control::Serialization::JSON);
+        commands->setSerializationMode(robot_remote_control::Serialization::JSON);
+        telemetry->setSerializationMode(robot_remote_control::Serialization::JSON);
     }
+    robot_remote_control::RobotController controller(commands, telemetry);
 
     controller.startUpdateThread(10);
 

@@ -45,21 +45,9 @@ class TransportHttp : public Transport {
      */
     virtual int receive(std::string* buf, Flags flags = NONE);
 
-    /**
-     * @brief some transports may require a non-binary format
-     * 
-     * @return true 
-     * @return false 
-     */
-    virtual bool requiresTextProtocol() {
-        return true;
-    };
-
-    virtual bool requiresRobotControllerPointer() {
-        return true;
-    }
-
  private:
+
+    void setSerializationMode(const Serialization::Mode & mode) override {}
 
     TelemetryMessageType getTelemetryType(const std::string &param);
     ControlMessageType getControlType(const std::string &param);
@@ -72,7 +60,7 @@ class TransportHttp : public Transport {
 
     std::future<std::string> requestTelemetry(const TelemetryMessageType type, const int &channel = 0);
 
-    Serialization serialization;
+    // Serialization serialization;
     Serialization docSerialization;
     Serialization sampleSerialization;
 

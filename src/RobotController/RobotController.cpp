@@ -32,10 +32,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         throw std::runtime_error("RobotController: provided telemetry transport is not supporting telemeter");
     }
 
-    if (commandTransport->requiresTextProtocol() || telemetryTransport->requiresTextProtocol()) {
-        serialization.setMode(Serialization::JSON);
-    }
-
     registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
     registerTelemetryType<JointState>(JOINT_STATE, buffersize);
     registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
@@ -106,7 +102,7 @@ std::string RobotController::requestProtocolVersion() {
     std::string buf;
     ControlMessage controlMessage;
     controlMessage.set_type(PROTOCOL_VERSION);
-    serialization.serialize(controlMessage, &buf);
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -127,7 +123,7 @@ std::string RobotController::requestLibraryVersion() {
     std::string buf;
     ControlMessage controlMessage;
     controlMessage.set_type(LIBRARY_VERSION);
-    serialization.serialize(controlMessage, &buf);
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -148,7 +144,7 @@ std::string RobotController::requestGitVersion() {
     std::string buf;
     ControlMessage controlMessage;
     controlMessage.set_type(GIT_VERSION);
-    serialization.serialize(controlMessage, &buf);
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -228,7 +224,7 @@ void RobotController::setLogLevel(const LogLevelId &level) {
 
     ControlMessage controlMessage = initControlMessage(LOG_LEVEL_SELECT, levelrequest);
 
-    serialization.serialize(controlMessage, &buf);
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
 
     sendRequest(buf);
 }
@@ -275,15 +271,7 @@ void RobotController::update() {
 bool RobotController::requestMap(Map *map, const ChannelId &channel, const float &overrideMaxLatency){
     std::string replybuf;
     bool result = requestBinary(MAP, &replybuf, TELEMETRY_REQUEST, channel, overrideMaxLatency);
-
-    //  if (serializationMode == JSON) {
-    //     google::protobuf::util::JsonStringToMessage(replybuf, map);
-    //  } else {
-    //     google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
-    //     cistream.SetTotalBytesLimit(replybuf.size());
-    //     map->ParseFromCodedStream(&cistream);
-    // }
-    serialization.deserializeLongData(replybuf, map);
+    commandTransport->getSerialization().deserializeLongData(replybuf, map);
 
     return result;
 }
@@ -302,7 +290,6 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     if (overrideMaxLatency > 0) {
         currentMaxLatency = overrideMaxLatency;
     }
-
     try {
         commandTransport->send(serializedMessage, flags);
     } catch (const std::exception &error) {
@@ -336,7 +323,6 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
             connectedCallback();
         }
     }
-
     connected.store(true);
     return replystr;
 }
@@ -346,17 +332,11 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     TelemetryMessage telemetryMessage;
     std::string serializedMessage;
 
-    serialization.deserialize(reply, &telemetryMessage, &serializedMessage);
+    telemetryTransport->getSerialization().deserialize(reply, &telemetryMessage, &serializedMessage);
+    
 
     ChannelId channel = telemetryMessage.channel();
     TelemetryMessageType msgtype = telemetryMessage.type();
-    
-    
-    // if (serializationMode == JSON) {
-    //     serializedMessage = telemetryMessage.json();
-    // } else {
-    //     serializedMessage = telemetryMessage.data();
-    // }
 
     updateStatistics(serializedMessage.size(), msgtype);
 
@@ -378,7 +358,7 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {
-                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel, serialization.getMode());
+                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel, telemetryTransport->getSerialization().getMode());
                 return msgtype;
             } else {
                 throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
@@ -398,7 +378,7 @@ bool RobotController::requestBinary(const TelemetryMessageType &type, std::strin
     telemetryRequest.set_type(type);
     telemetryRequest.set_channel(channel);
     
-    serialization.serialize(telemetryRequest, &request);
+    commandTransport->getSerialization().serialize(telemetryRequest, &request);
 
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
@@ -408,8 +388,8 @@ bool RobotController::requestBinary(const std::string &request, std::string *res
     ControlMessage controlmessage;
     controlmessage.set_type(requestType);
 
-    serialization.setSerialized(request, &controlmessage);
-    serialization.serialize(controlmessage, &buf);
+    commandTransport->getSerialization().setSerialized(request, &controlmessage);
+    commandTransport->getSerialization().serialize(controlmessage, &buf);
 
     *result = sendRequest(buf, overrideMaxLatency);
     return (result->size() > 0) ? true : false;

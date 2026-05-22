@@ -53,9 +53,7 @@ class TransportWebSocket : public Transport {
         return server;
     }
 
-    virtual bool requiresTextProtocol() {
-        return opcode == websocketpp::frame::opcode::text;
-    };
+    void setSerializationMode(const Serialization::Mode & mode) override;
 
  private:
     std::shared_ptr<WSClient> client;

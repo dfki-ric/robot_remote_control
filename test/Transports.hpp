@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "../src/Transports/ZeroMQ/TransportZmq.hpp"
 
 #ifdef TRANSPORT_DEFAULT_GZIP
@@ -21,7 +22,6 @@
 #if defined TRANSPORT_MULTI_CONTROLLED_ZMQ_CONTROLLER || defined TRANSPORT_MULTI_CONTROLLED_WEB_CONTROLLER
   #include "../src/Transports/WebSocket/TransportWebSocket.hpp"
   #include "../src/Transports/Http/TransportHttp.hpp"
-  #include "../src/TransportWrappers/MultiTransport/MultiTransport.hpp"
 #endif
 
 
@@ -41,8 +41,8 @@ class Transports {
     TransportSharedPtr robotControllerCommands;
     TransportSharedPtr robotControllerTelemetry;
 
-    TransportSharedPtr controlledRobotCommands;
-    TransportSharedPtr controlledRobotTelemetry;
+    std::vector<TransportSharedPtr> controlledRobotCommands;
+    std::vector<TransportSharedPtr> controlledRobotTelemetry;
 
 };
 

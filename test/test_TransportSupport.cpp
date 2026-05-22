@@ -31,13 +31,13 @@ BOOST_AUTO_TEST_CASE(transport_implemented_correctly) {
 
     BOOST_CHECK_NE(t.robotControllerCommands->getTransportSupportBitmask(), Transport::UNSET);
     BOOST_CHECK_NE(t.robotControllerTelemetry->getTransportSupportBitmask(), Transport::UNSET);
-    BOOST_CHECK_NE(t.controlledRobotCommands->getTransportSupportBitmask(), Transport::UNSET);
-    BOOST_CHECK_NE(t.controlledRobotTelemetry->getTransportSupportBitmask(), Transport::UNSET);
+    BOOST_CHECK_NE(t.controlledRobotCommands.front()->getTransportSupportBitmask(), Transport::UNSET);
+    BOOST_CHECK_NE(t.controlledRobotTelemetry.front()->getTransportSupportBitmask(), Transport::UNSET);
 
     BOOST_CHECK_EQUAL(t.robotControllerCommands->supportsRobotControllerCommands(), true);
     BOOST_CHECK_EQUAL(t.robotControllerTelemetry->supportsRobotControllerTelemetry(), true);
-    BOOST_CHECK_EQUAL(t.controlledRobotCommands->supportsControlledRobotCommands(), true);
-    BOOST_CHECK_EQUAL(t.controlledRobotTelemetry->supportsControlledRobotTelemetry(), true);
+    BOOST_CHECK_EQUAL(t.controlledRobotCommands.front()->supportsControlledRobotCommands(), true);
+    BOOST_CHECK_EQUAL(t.controlledRobotTelemetry.front()->supportsControlledRobotTelemetry(), true);
     
     BOOST_CHECK_NO_THROW(RobotController(t.robotControllerCommands, t.robotControllerTelemetry));
     BOOST_CHECK_NO_THROW(ControlledRobot(t.controlledRobotCommands, t.controlledRobotTelemetry));

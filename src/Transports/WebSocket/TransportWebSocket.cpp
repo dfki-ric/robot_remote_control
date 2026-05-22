@@ -9,8 +9,10 @@ TransportWebSocket::TransportWebSocket(const ConnectionType &type, const int &po
 
     if (type == SERVER_TEXT || type == CLIENT_TEXT) {
         opcode = websocketpp::frame::opcode::text;
-    }else{
+        serialization.setMode(Serialization::JSON);
+    } else {
         opcode = websocketpp::frame::opcode::binary;
+        serialization.setMode(Serialization::BINARY);
     }
 
     if (type == SERVER || type == SERVER_TEXT) {
@@ -91,6 +93,17 @@ TransportWebSocket::TransportWebSocket(const ConnectionType &type, const int &po
         }));
     }
 
+}
+
+void TransportWebSocket::setSerializationMode(const Serialization::Mode & mode) {
+    serialization.setMode(mode);
+    if (mode == Serialization::JSON) {
+        opcode = websocketpp::frame::opcode::text;
+        serialization.setMode(Serialization::JSON);
+    } else {
+        opcode = websocketpp::frame::opcode::binary;
+        serialization.setMode(Serialization::BINARY);
+    }
 }
 
 TransportWebSocket::~TransportWebSocket() {

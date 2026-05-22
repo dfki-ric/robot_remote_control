@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   // buffer for size comparsion
   std::string buf;
 
-  serialization.setMode(controller.getSerializationMode());
+  serialization.setMode(controller.telemetryTransport->getSerializationMode());
   serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
 
   // buffer for size comparsion
   std::string buf;
-  serialization.setMode(controller.getSerializationMode());
+  serialization.setMode(controller.telemetryTransport->getSerializationMode());
   serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
   // buffer for size comparsion
   std::string buf;
 
-  serialization.setMode(controller.getSerializationMode());
+  serialization.setMode(controller.telemetryTransport->getSerializationMode());
   serialization.serialize(telemetry_data, &buf);
 
   // send telemetry data
@@ -490,7 +490,7 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   std::string binarydata;
   PROTOBUFDATA receivedraw;
   
-  serialization.setMode(controller.getSerializationMode());
+  serialization.setMode(controller.telemetryTransport->getSerializationMode());
   serialization.serialize(protodata, &binarydata);
 
   robot.sendTelemetryRaw(type, binarydata);

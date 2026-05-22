@@ -109,7 +109,6 @@ if(websocketpp_FOUND AND cpprestsdk_FOUND)
       ${COMMON_LIBS}
       robot_remote_control-transport_ws
       robot_remote_control-transport_http
-      robot_remote_control-transport_wrapper_multi_transport
     )
     target_compile_definitions(test_suite_multi_web PUBLIC -DTRANSPORT_MULTI_CONTROLLED_WEB_CONTROLLER)
 
@@ -118,7 +117,6 @@ if(websocketpp_FOUND AND cpprestsdk_FOUND)
       ${COMMON_LIBS}
       robot_remote_control-transport_ws
       robot_remote_control-transport_http
-      robot_remote_control-transport_wrapper_multi_transport
     )
     target_compile_definitions(test_suite_multi_zmq PUBLIC -DTRANSPORT_MULTI_CONTROLLED_ZMQ_CONTROLLER)
 

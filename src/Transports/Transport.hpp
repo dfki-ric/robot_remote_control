@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include "../Serialization.hpp"
 
 namespace robot_remote_control {
 
@@ -31,15 +32,16 @@ class Transport {
      */
     virtual int receive(std::string* buf, Flags flags = NONE) = 0;
 
-    /**
-     * @brief some transports may require a non-binary format
-     * 
-     * @return true 
-     * @return false 
-     */
-    virtual bool requiresTextProtocol() {
-        return false;
-    };
+    virtual void setSerializationMode(const Serialization::Mode & mode) {
+        serialization.setMode(mode);
+    }
+    virtual Serialization::Mode getSerializationMode() {
+        return serialization.getMode();
+    }
+
+    Serialization &getSerialization() {
+        return serialization;
+    }
 
     enum TransportSupport {UNSET = 0, ROBOTCOMMANDS = 1<<1, ROBOTTELEMETRY = 1<<2, CONTOLLERCOMMANDS = 1<<3, CONTROLLERTELEMETRY = 1<<4};
     uint8_t supports;
@@ -68,6 +70,8 @@ class Transport {
     void setTransportSupport(uint8_t supportdef){
         supports = supportdef;
     }
+
+    Serialization serialization;
 
 };
     
