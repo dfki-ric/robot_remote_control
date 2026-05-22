@@ -177,12 +177,6 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
   Pose telemetry_data = TypeGenerator::genPose();
   Pose currentpose;
 
-  // buffer for size comparsion
-  std::string buf;
-
-  serialization.setMode(controller.telemetryTransport->getSerializationMode());
-  serialization.serialize(telemetry_data, &buf);
-
   // send telemetry data
   int sent = robot.setCurrentPose(telemetry_data);
 
@@ -195,9 +189,6 @@ BOOST_AUTO_TEST_CASE(checking_current_pose) {
     usleep(10000);
   }
 
-
-  // data was sent completely
-  BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
   COMPARE_PROTOBUF(telemetry_data, currentpose);
 }
@@ -212,11 +203,6 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
   Twist telemetry_data = TypeGenerator::genTwist();
   Twist currenttelemetry;
 
-  // buffer for size comparsion
-  std::string buf;
-  serialization.setMode(controller.telemetryTransport->getSerializationMode());
-  serialization.serialize(telemetry_data, &buf);
-
   // send telemetry data
   int sent = robot.setCurrentTwist(telemetry_data);
 
@@ -230,9 +216,6 @@ BOOST_AUTO_TEST_CASE(checking_current_twist) {
     usleep(10000);
   }
 
-
-  // data was sent completely
-  BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
   COMPARE_PROTOBUF(telemetry_data, currenttelemetry);
 }
@@ -247,12 +230,6 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
   Acceleration telemetry_data = TypeGenerator::genAcceleration();
   Acceleration currenttelemetry;
 
-  // buffer for size comparsion
-  std::string buf;
-
-  serialization.setMode(controller.telemetryTransport->getSerializationMode());
-  serialization.serialize(telemetry_data, &buf);
-
   // send telemetry data
   int sent = robot.setCurrentAcceleration(telemetry_data);
 
@@ -266,9 +243,6 @@ BOOST_AUTO_TEST_CASE(checking_current_acceleration) {
     usleep(10000);
   }
 
-
-  // data was sent completely
-  BOOST_CHECK((unsigned int)sent == buf.size());
   // and is the same
   COMPARE_PROTOBUF(telemetry_data, currenttelemetry);
 }

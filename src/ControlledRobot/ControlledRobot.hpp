@@ -28,8 +28,6 @@ class ControlledRobot: public UpdateThread {
 
         virtual ~ControlledRobot();
 
-        
-
 
         /**
          * @brief threaded update function called by UpdateThread that receives commands
@@ -255,7 +253,7 @@ class ControlledRobot: public UpdateThread {
                 for (auto& transport : telemetryTransports) {
                     std::string buf;
                     transport->getSerialization().serialize(protodata, &telemetryMessage);
-                    payloadsize = transport->getSerialization().getPayloadSize(telemetryMessage);
+                    payloadsize += transport->getSerialization().getPayloadSize(telemetryMessage);
                     transport->getSerialization().serialize(telemetryMessage, &buf);
                     
                     // store latest data for future requests
@@ -287,9 +285,9 @@ class ControlledRobot: public UpdateThread {
 
         int sendTelemetryRaw(const TelemetryMessageType& type, const std::string& serialized, const ChannelId &channel = 0) {
             if (telemetryTransports.size()) {
-
+                size_t payloadsize = 0;
                 for (auto& transport : telemetryTransports) {
-                                        std::string buf;
+                    std::string buf;
                     TelemetryMessage telemetryMessage;
                     telemetryMessage.set_type(type);
                     telemetryMessage.set_channel(channel);
@@ -305,9 +303,10 @@ class ControlledRobot: public UpdateThread {
                     }
                     uint32_t bytes = 0;
                     bytes = transport->send(buf);
+                    payloadsize += bytes;
                     updateStatistics(bytes, type);
                 }
-                return serialized.size();
+                return payloadsize;
             }
             printf("ERROR Transport invalid\n");
             return 0;
