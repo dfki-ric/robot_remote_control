@@ -283,10 +283,13 @@ class ControlledRobot: public UpdateThread {
             return 0;
         }
 
-        int sendTelemetryRaw(const TelemetryMessageType& type, const std::string& serialized, const ChannelId &channel = 0) {
+        int sendTelemetryRaw(const TelemetryMessageType& type, const std::string& serialized, const ChannelId &channel = 0, TransportSharedPtr transport = nullptr) {
             if (telemetryTransports.size()) {
+                if (!transport){
+                    transport = telemetryTransports.front();
+                }
                 size_t payloadsize = 0;
-                for (auto& transport : telemetryTransports) {
+                // for (auto& transport : telemetryTransports) {
                     std::string buf;
                     TelemetryMessage telemetryMessage;
                     telemetryMessage.set_type(type);
@@ -305,7 +308,7 @@ class ControlledRobot: public UpdateThread {
                     bytes = transport->send(buf);
                     payloadsize += bytes;
                     updateStatistics(bytes, type);
-                }
+                // }
                 return payloadsize;
             }
             printf("ERROR Transport invalid\n");

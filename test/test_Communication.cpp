@@ -461,17 +461,17 @@ template <class PROTOBUFDATA> PROTOBUFDATA testTelemetry(PROTOBUFDATA protodata,
   }
 
   // check if raw telemetry sending works
-  std::string binarydata;
   PROTOBUFDATA receivedraw;
-  
-  serialization.setMode(controller.telemetryTransport->getSerializationMode());
-  serialization.serialize(protodata, &binarydata);
 
-  robot.sendTelemetryRaw(type, binarydata);
+  for (auto &transport: transports.controlledRobotTelemetry) {
+    std::string binarydata;
+    transport->getSerialization().serialize(protodata, &binarydata);
+    robot.sendTelemetryRaw(type, binarydata, 0, transport);
+  }
+
   while (!controller.getTelemetry(type, &receivedraw, false, 0)) {
     usleep(10000);
   }
-
   controller.stopUpdateThread();
 
   COMPARE_PROTOBUF(received, receivedraw);

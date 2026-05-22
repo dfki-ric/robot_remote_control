@@ -183,7 +183,7 @@ ControlMessageType ControlledRobot::evaluateRequest(TransportSharedPtr transport
     transport->getSerialization().deserialize(request, &controlMessage);
     if (transport->getSerialization().getMode() == Serialization::JSON) {
         serializedMessage = controlMessage.json();
-    }else{
+    } else {
         serializedMessage = controlMessage.data();
     }
     
