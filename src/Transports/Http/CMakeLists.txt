@@ -19,7 +19,7 @@ target_link_libraries (robot_remote_control-transport_http
     OpenSSL::Crypto
     ${CMAKE_THREAD_LIBS_INIT}
 )
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/Transports/UDT/
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/Transports/Http/
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control/Transports
 	FILES_MATCHING PATTERN "*.hpp"
 )
