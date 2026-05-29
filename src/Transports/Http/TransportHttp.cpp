@@ -198,6 +198,9 @@ void TransportHttp::serveFolder(const std::string& folderpath, const std::string
     server->serveFolder(folderpath, url);
 }
 
+void TransportHttp::setDefaultPage(const std::string& localurl) {
+    server->setDefaultPage(localurl);
+}
 
 TelemetryMessageType TransportHttp::getTelemetryType(const std::string &param) {
     // check if type is a number (o=error, of NO_TELEMETRY)

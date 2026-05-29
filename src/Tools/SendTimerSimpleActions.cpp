@@ -10,7 +10,7 @@ void SendTimerSimpleActions::generateTelemetrySimpleActions() {
 }
 
 void SendTimerSimpleActions::addTelemetrySimpleAction(const robot_remote_control::TelemetryMessageType& type) {
-        std::string actioname = "set_" + TelemetryMessageType_Name(type) + "_interval";
+        std::string actioname = TelemetryMessageType_Name(type) + "_interval";
         simpleActionNameToIndex[actioname] = type;
         auto action = actionhelper.addSimpleAction(actioname, VALUE_FLOAT, "set time between sends of " + TelemetryMessageType_Name(type) + " messages");
         action->setLimits(-1, 60, 0.01);

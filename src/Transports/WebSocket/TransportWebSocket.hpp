@@ -25,7 +25,7 @@ class TransportWebSocket : public Transport {
     
     enum ConnectionType {SERVER,CLIENT,SERVER_TEXT,CLIENT_TEXT};
 
-    TransportWebSocket(const ConnectionType &type, const int &port, const std::string &addr = "127.0.0.1");
+    TransportWebSocket(const ConnectionType &type, const int &port, const std::string &addr = "");
     virtual ~TransportWebSocket();
 
     /**

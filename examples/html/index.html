@@ -18,7 +18,8 @@
 
     // obtain ip and port from url / papramater http://192.168.0.1?telemetryport=1234 will connect rrc on ws://192.168.0.1:1237
     if (typeof url !== 'undefined' && url != null) { 
-        var host = url.hostname
+        host = url.hostname
+        commandport = url.port
         var commandport = url.searchParams.get("commandport")
         if (typeof commandport === 'undefined' || commandport == null) {
             commandport = "7001"

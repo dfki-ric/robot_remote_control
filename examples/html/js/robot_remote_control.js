@@ -10,8 +10,8 @@ class RobotController {
         this.dependentsimpleactionforms = new Array();
         this.telemetryCallbacks = new Object;
 
-        this.connectTelemetry()
         this.connectCommands()
+        this.connectTelemetry()
     }
 
     close() {
@@ -186,7 +186,6 @@ class RobotController {
                 var form = document.createElement("form");
                 form.setAttribute("id", simpleaction.name);
                 formdiv.appendChild(form);
-                
 
                 if (simpleaction.type.type == "TRIGGER") {
                     var button = document.createElement("button");
@@ -208,7 +207,9 @@ class RobotController {
                         action["form"] = form;
                         dependentactions.push(action);
                     }
-                    field = document.createElement("fieldset");
+                    console.log(simpleaction)
+                    var field = document.createElement("fieldset");
+                    console.log("fieldset")
                     field.name = simpleaction.name;
                     field.innerHTML = simpleaction.name;
                     field.appendChild(document.createElement("br"));
@@ -226,15 +227,16 @@ class RobotController {
                         if (simpleaction.state !== undefined) {
                             state = simpleaction.state;
                         }
-                        if (value == state ) {
+                        console.log(state)
+                        if (value == state) {
                             input.setAttribute("checked","checked");
                         }
                         input.setAttribute("value", value);
-                        label = document.createElement("label");
+                        var label = document.createElement("label");
                         label.setAttribute("for", namedValue.name);
                         label.innerHTML = " " + namedValue.name;
 
-                        command =  'rrc.setSimpleAction("'+ simpleaction.name + '",this.value);'                            
+                        var command =  'rrc.setSimpleAction("'+ simpleaction.name + '",this.value);'                            
                         input.setAttribute("onchange", command);
 
                         field.appendChild(input);

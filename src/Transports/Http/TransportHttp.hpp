@@ -16,8 +16,14 @@ namespace robot_remote_control {
 class TransportHttp : public Transport {
  public:
 
-    enum ConnectionType {SERVER,CLIENT};
+    enum ConnectionType {SERVER, CLIENT};
 
+    /**
+     * @brief Construct a new Transport Http object
+     * 
+     * @param url follows the https://github.com/microsoft/cpprestsdk syntax, e.g. http://0.0.0.0:7001 listen on all ips on port 7001
+     * @param mode can be server and client
+     */
     TransportHttp(const std::string& url, const ConnectionType& mode = SERVER);
     virtual ~TransportHttp();
 
@@ -26,6 +32,13 @@ class TransportHttp : public Transport {
      * 
      */
     void serveFolder(const std::string& folderpath, const std::string& url = "html");
+
+    /**
+     * @brief Set the Default Page if unset, a default listing (api/html folder) is shown
+     * 
+     * @param localurl local file like "html/index.html"
+     */
+    void setDefaultPage(const std::string& localurl);
 
     /**
      * @brief send data
