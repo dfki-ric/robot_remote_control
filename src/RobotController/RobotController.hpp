@@ -659,7 +659,12 @@ class RobotController: public UpdateThread {
             requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
 
             google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
-            cistream.SetTotalBytesLimit(recvbuf.size());
+
+            #if GOOGLE_PROTOBUF_VERSION <= 3000000
+                cistream.SetTotalBytesLimit(recvbuf.size(),recvbuf.size());
+            #else
+                cistream.SetTotalBytesLimit(recvbuf.size());
+            #endif
             reply->ParseFromCodedStream(&cistream);
 
             return (recvbuf.size() > 0) ? true : false;

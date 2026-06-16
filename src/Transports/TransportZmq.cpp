@@ -21,10 +21,17 @@ TransportZmq::TransportZmq(const std::string &addr, const ConnectionType &type) 
 int TransportZmq::send(const std::string& buf, Flags flags) {
     zmq::message_t msg(buf.data(), buf.size());
 
-    zmq::send_flags zmqflag = zmq::send_flags::none;
-    if (flags & NOBLOCK) {
-        zmqflag = zmq::send_flags::dontwait;
-    }
+    #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)
+        int zmqflag = 0;
+        if (flags & NOBLOCK) {
+                zmqflag = ZMQ_NOBLOCK;
+        }
+    #else
+        zmq::send_flags zmqflag = zmq::send_flags::none;
+        if (flags & NOBLOCK) {
+            zmqflag = zmq::send_flags::dontwait;
+        }
+    #endif
     if (socket->send(msg, zmqflag)) {
         return buf.size();
     }
@@ -33,15 +40,24 @@ int TransportZmq::send(const std::string& buf, Flags flags) {
 
 int TransportZmq::receive(std::string* buf, Flags flags) {
     zmq::message_t requestmsg;
-    zmq::recv_flags zmqflag = zmq::recv_flags::none;
-    if (flags & NOBLOCK) {
-        zmqflag = zmq::recv_flags::dontwait;
-    }
 
-    if (socket->recv(requestmsg, zmqflag)) {
-        buf->assign(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
-    }
-
+    #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)
+        int zmqflag = 0;
+        if (flags & NOBLOCK) {
+            zmqflag = ZMQ_NOBLOCK;
+        }
+        if (socket->recv(&requestmsg, zmqflag)) {
+            buf->assign(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
+        }
+    #else
+        zmq::recv_flags zmqflag = zmq::recv_flags::none;
+        if (flags & NOBLOCK) {
+            zmqflag = zmq::send_flags::dontwait;
+        }
+        if (socket->recv(requestmsg, zmqflag)) {
+            buf->assign(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
+        }
+    #endif
     return requestmsg.size();
 }
 

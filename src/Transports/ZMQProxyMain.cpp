@@ -56,8 +56,11 @@ int main(int argc, char** argv) {
         zmq::socket_t pub(context, ZMQ_PUB);
         pub.bind("tcp://*:"+local_telemetryport);
 
-        // zmq::proxy(static_cast<void*>(sub), static_cast<void*>(pub), nullptr);
-        zmq::proxy(sub, pub);
+        #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)
+            zmq::proxy(static_cast<void*>(sub), static_cast<void*>(pub), nullptr);
+        #else
+            zmq::proxy(sub, pub);
+        #endif
     });
 
     zmq::context_t context(1);
@@ -68,8 +71,11 @@ int main(int argc, char** argv) {
     zmq::socket_t rep(context, ZMQ_REP);
     rep.bind("tcp://*:"+local_commandport);
 
-    //zmq::proxy(static_cast<void*>(req), static_cast<void*>(rep), nullptr);
-    zmq::proxy(req, rep);
+    #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)
+        zmq::proxy(static_cast<void*>(req), static_cast<void*>(rep), nullptr);
+    #else
+        zmq::proxy(req, rep);
+    #endif
 
 
     tememetrythread.join();
