@@ -50,7 +50,7 @@ execute_process(
     COMMAND /bin/bash "-c" "git rev-parse HEAD | head -c -1 | awk '{print \"\\\"\" $1 \"\\\"\"}' | head -c -1"
     OUTPUT_VARIABLE GIT_ID
 )
-add_compile_definitions(GIT_COMMIT_ID=${GIT_ID})
+add_definitions(-DGIT_COMMIT_ID=${GIT_ID})
 
 
 
