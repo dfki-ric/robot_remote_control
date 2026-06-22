@@ -10,6 +10,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/util/json_util.h>
 
 #include "Types/RobotRemoteControl.pb.h"
 #include "Transports/Transport.hpp"
@@ -17,8 +18,6 @@
 #include "Statistics.hpp"
 #include "UpdateThread/UpdateThread.hpp"
 #include "UpdateThread/Timer.hpp"
-
-
 
 namespace robot_remote_control {
 
@@ -632,23 +631,16 @@ class RobotController: public UpdateThread {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
             }
-            *dataSerialized = buffers->peekSerialized(type, channel);
+            *dataSerialized = buffers->peekSerialized(type, channel, commandTransport->getSerialization().getMode());
             bool result = buffers->lockedAccess().get()[type][channel]->pop(onlyNewest);
             return result;
         }
 
-        template< class DATATYPE > bool requestTelemetry(const MessageId &type, DATATYPE *result, const ChannelId &channel) {
-            const MessageId requestType = TELEMETRY_REQUEST;
+        template< class DATATYPE > bool requestTelemetry(const TelemetryMessageType &type, DATATYPE *result, const ChannelId &channel) {
             std::string replybuf;
-            std::string request;
-            request.resize(sizeof(MessageId) + sizeof(ChannelId));
-            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
-            ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
-            *data = type;
-            *chan = channel;
-            bool received = requestBinary(request, &replybuf, requestType);
+            bool received = requestBinary(type, &replybuf, TELEMETRY_REQUEST, channel);
 
-            result->ParseFromString(replybuf);
+            commandTransport->getSerialization().deserialize(replybuf, result);
             return received;
         }
 
@@ -661,18 +653,17 @@ class RobotController: public UpdateThread {
         }
 
 
-        bool requestBinary(const MessageId &type, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
-        bool requestBinary(const std::string &request, std::string *result, const MessageId &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
+        bool requestBinary(const TelemetryMessageType &type, std::string *result, const ControlMessageType &requestType = TELEMETRY_REQUEST, const ChannelId &channel = 0, const float &overrideMaxLatency = 0);
+        bool requestBinary(const std::string &request, std::string *result, const ControlMessageType &requestType = TELEMETRY_REQUEST, const float &overrideMaxLatency = 0);
 
 
-        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const MessageId &requestType, const float &overrideMaxLatency = 0) {
+        template <class PROTOREQ, class PROTOREP> bool requestProtobuf(const PROTOREQ& requestdata, PROTOREP *reply, const ControlMessageType &requestType, const float &overrideMaxLatency = 0) {
             std::string request, recvbuf;
-            requestdata.SerializeToString(&request);
-            requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
+            
 
-            google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(recvbuf.data()), recvbuf.size());
-            cistream.SetTotalBytesLimit(recvbuf.size());
-            reply->ParseFromCodedStream(&cistream);
+            commandTransport->getSerialization().serialize(requestdata, &request);
+            requestBinary(request, &recvbuf, requestType, overrideMaxLatency);
+            commandTransport->getSerialization().deserializeLongData(recvbuf, reply);
 
             return (recvbuf.size() > 0) ? true : false;
         }
@@ -720,21 +711,25 @@ class RobotController: public UpdateThread {
         std::array<std::vector<std::string>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelNames;
         std::array<std::map<std::string, ChannelId>, TELEMETRY_MESSAGE_TYPES_NUMBER > messageChannelIdByName;
 
-        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const MessageId &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
-            std::string buf;
-            buf.resize(sizeof(MessageId));
-            MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-            *data = type;
-            protodata.AppendToString(&buf);
-            return sendRequest(buf, 0, flags);
+        template< class CLASS > ControlMessage initControlMessage(const ControlMessageType &type, const CLASS &protodata) {
+            ControlMessage controlMessage;
+            controlMessage.set_type(type);
+            commandTransport->getSerialization().serialize(protodata, &controlMessage);
+            return controlMessage;
         }
 
+        template< class CLASS > std::string sendProtobufData(const CLASS &protodata, const ControlMessageType &type, const robot_remote_control::Transport::Flags &flags = robot_remote_control::Transport::NOBLOCK ) {
+            std::string buf;
+            ControlMessage controlMessage = initControlMessage(type, protodata);
+            commandTransport->getSerialization().serialize(controlMessage, &buf);            
+            return sendRequest(buf, 0, flags);
+        }
 
         class TelemetryAdderBase{
          public:
             explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
             virtual ~TelemetryAdderBase() {}
-            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) = 0;
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel, bool textMode) = 0;
             void setOverwrite(bool mode = true) {
                 overwrite = mode;
             }
@@ -747,9 +742,14 @@ class RobotController: public UpdateThread {
         template <class CLASS> class TelemetryAdder : public TelemetryAdderBase {
          public:
             explicit TelemetryAdder(std::shared_ptr<TelemetryBuffer> buffers) : TelemetryAdderBase(buffers) {}
-            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel) {
+            virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel, bool textMode) {
                 CLASS data;
-                data.ParseFromString(serializedMessage);
+                
+                if (textMode) {
+                    google::protobuf::util::JsonStringToMessage(serializedMessage, &data);
+                }else{
+                    data.ParseFromString(serializedMessage);
+                }
                 RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);
             }
         };

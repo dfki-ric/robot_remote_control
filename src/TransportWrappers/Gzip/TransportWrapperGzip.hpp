@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Transport.hpp"
+#include "TransportWrapper.hpp"
 #include <string>
 #include <memory>
 
@@ -11,7 +11,7 @@ namespace robot_remote_control {
  * @warning it adds an extra 4 bytes to each measage as size field, so the effect may be negative
  */
 
-class TransportWrapperGzip : public Transport {
+class TransportWrapperGzip : public TransportWrapper {
  public:
     /**
      * @brief Construct a new Transport Wrapper Gzip object
@@ -29,7 +29,7 @@ class TransportWrapperGzip : public Transport {
      * @param Flags flags the flags
      * @return int number of bytes sent
      */
-    virtual int send(const std::string& uncompressed, Flags flags = NONE);
+    virtual int send(const std::string& uncompressed, Transport::Flags flags = Transport::NONE);
 
     /**
      * @brief receive data
@@ -38,11 +38,10 @@ class TransportWrapperGzip : public Transport {
      * @param Flags flags the flags
      * @return int 0 if no data received, size of data otherwise
      */
-    virtual int receive(std::string* uncompressed, Flags flags = NONE);
+    virtual int receive(std::string* uncompressed, Transport::Flags flags = Transport::NONE);
 
 
  private:
-    std::shared_ptr<Transport> transport;
     int compressionlevel;
 };
 

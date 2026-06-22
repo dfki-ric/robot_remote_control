@@ -13,6 +13,8 @@
   <build_depend>libzmq3-dev</build_depend>
   <build_depend>protobuf-dev</build_depend>
   <build_depend>readline-dev</build_depend>
+  <build_depend>restcpp</build_depend>
+  <build_depend>websocketpp</build_depend>
   
 	<export>
 		<build_type>cmake</build_type>

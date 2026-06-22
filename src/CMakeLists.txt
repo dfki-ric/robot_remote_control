@@ -57,14 +57,13 @@ add_compile_definitions(GIT_COMMIT_ID=${GIT_ID})
 add_subdirectory(Types)
 add_subdirectory(UpdateThread)
 add_subdirectory(Transports)
+add_subdirectory(TransportWrappers)
 
 add_subdirectory(ControlledRobot)
 add_subdirectory(RobotController)
 
 add_subdirectory(CLI)
 add_subdirectory(Tools)
-
-
 
 
 
@@ -75,10 +74,9 @@ install(FILES
 	CommandBuffer.hpp
 	TelemetryBuffer.hpp
 	Statistics.hpp
+    Serialization.hpp
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_remote_control
 )
-
-
 
 #Export the library interface
 install(

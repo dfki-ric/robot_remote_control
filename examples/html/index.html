@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Robot Remote Control</title>
+
+<script src="js/robot_remote_control.js"></script>
+<script src="js/joy.min.js"></script>
+
+<link rel="stylesheet" href="css/style.css">
+
+<script>
+    var host="127.0.0.1"
+    var commandport, telemetryport
+    var url = new URL(window.location.href)
+    var rrc;
+    
+
+    // obtain ip and port from url / papramater http://192.168.0.1?telemetryport=1234 will connect rrc on ws://192.168.0.1:1237
+    if (typeof url !== 'undefined' && url != null) { 
+        host = url.hostname
+        commandport = url.port
+        var commandport = url.searchParams.get("commandport")
+        if (typeof commandport === 'undefined' || commandport == null) {
+            commandport = "7001"
+        }
+        var telemetryport = url.searchParams.get("telemetryport")
+        if (typeof telemetryport === 'undefined' || telemetryport == null) {
+            telemetryport = "7002"
+        }
+
+    }
+
+
+    function init() {
+        rrc = new RobotController(host, commandport, telemetryport)
+
+        console.log("request")
+        rrc.requestTelemetry("ROBOT_NAME",0,function(data) {
+            document.getElementById("robotname").innerHTML=data.value;
+        })
+
+        rrc.addTelemetryCallback("CURRENT_POSE", function (pose, channel) {
+            document.getElementById("pose").innerHTML = "x: "+ pose.position.x +", y:"+ pose.position.y +", z:"+ pose.position.z
+        })
+
+        rrc.addTelemetryCallback("ROBOT_STATE", function (pose, channel) {
+            document.getElementById("robotstate").innerHTML = JSON.stringify(pose)
+        })
+
+        rrc.addTelemetryCallback("SIMPLE_SENSOR", function (data, channel) {
+            console.log(data)
+            console.log(channel)
+        })
+
+    }
+
+    window.onclose=function(){
+        rrc.close()
+    }
+
+</script>    
+
+
+</head>
+<body onload=init()>
+
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="font-size:35px; color:black;" id="robotname">not connected</div><br>
+            <div id="simpleactions" >bla</div>
+        </div>
+    </div>
+
+
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="color:black;" id="robotstate">not connected</div><br>
+        </div>
+    </div>
+    
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="color:black;" id="pose">not connected</div><br>
+        </div>
+    </div>
+
+    <div id="leftJoy" style="width:200px;height:200px;float:left;"></div>
+    <div id="rightJoy" style="width:200px;height:200px;margin-left: auto; margin-right: 0;"></div>
+    <script>
+        let leftjoy = new JoyStick('leftJoy')
+        let rightjoy = new JoyStick('rightJoy')
+        let resend = false
+        setInterval(function(){
+            lx = leftjoy.GetX()/100.0;
+            ly = leftjoy.GetY()/100.0;
+
+            rx = rightjoy.GetX()/100.0;
+            ry = rightjoy.GetY()/100.0;
+
+            if (lx != 0 || ly != 0 || rx !=0 || ry !=0 ) {
+                resend = true
+                rrc.setTwistCommand(lx,ly,0,rx,ry,0);
+            } else {
+                if (resend) {
+                    rrc.setTwistCommand(0,0,0,0,0,0);
+                    resend = false
+                }
+            }
+        }, 50);
+    </script>
+</body>
+</html>

@@ -29,3 +29,13 @@ jobs:
       run: ./build/test/test_suite_udt
     - name: test_gzip
       run: ./build/test/test_suite_gzip
+    - name: test_ws
+      run: ./build/test/test_suite_ws
+    - name: test_ws_json
+      run: ./build/test/test_suite_ws_json
+    - name: test_web
+      run: ./build/test/test_suite_web
+    - name: test_multi_web
+      run: ./build/test/test_suite_multi_web
+    - name: test_multi_zmq
+      run: ./build/test/test_suite_multi_zmq

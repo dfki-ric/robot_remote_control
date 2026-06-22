@@ -23,56 +23,66 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
     maxLatency(maxLatency),
     buffers(std::make_shared<TelemetryBuffer>()),
     connected(false) {
-        registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
-        registerTelemetryType<JointState>(JOINT_STATE, buffersize);
-        registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
-        registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<RobotName>(ROBOT_NAME, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
-        registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
-        registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
-        registerTelemetryType<Map>(MAP, 1);
-        registerTelemetryType<Poses>(POSES, buffersize);
-        registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
-        registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
-        registerTelemetryType<PointCloud>(POINTCLOUD, buffersize);
-        registerTelemetryType<IMU>(IMU_VALUES, buffersize);
-        registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
-        registerTelemetryType<Twist>(CURRENT_TWIST, buffersize);
-        registerTelemetryType<Acceleration>(CURRENT_ACCELERATION, buffersize);
-        registerTelemetryType<CameraInformation>(CAMERA_INFORMATION, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<Image>(IMAGE, buffersize);
-        registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
-        registerTelemetryType<Odometry>(ODOMETRY, buffersize);
-        registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
-        registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
-        registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
-        registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
-        registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
-        registerTelemetryType<LaserScan>(LASER_SCAN, buffersize);
 
-        // #ifdef RRC_STATISTICS
-        //     // add names to buffer, this types have aspecial treatment, the should not be registered
-        //     MapsDefinition mapsDefinition;
-        //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
-        //     Map map;
-        //     statistics.names[MAP] = map.GetTypeName();
-        // #endif
+    if (!commandTransport->supportsRobotControllerCommands()) {
+        throw std::runtime_error("RobotController: provided command transport is not supporting commands");
+    }
 
-        for (auto& chan : messageChannels) {
-            chan = 0;
-        }
+    if (!telemetryTransport->supportsRobotControllerTelemetry()) {
+        throw std::runtime_error("RobotController: provided telemetry transport is not supporting telemeter");
+    }
 
-        lostConnectionCallback = [&](const float& time){
-            printf("lost connection to robot, no reply for %f seconds\n", time);
-        };
+    registerTelemetryType<Pose>(CURRENT_POSE, buffersize);
+    registerTelemetryType<JointState>(JOINT_STATE, buffersize);
+    registerTelemetryType<JointState>(CONTROLLABLE_JOINTS, buffersize);
+    registerTelemetryType<SimpleActions>(SIMPLE_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<ComplexActions>(COMPLEX_ACTIONS, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<RobotName>(ROBOT_NAME, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<RobotState>(ROBOT_STATE, buffersize);
+    registerTelemetryType<LogMessage>(LOG_MESSAGE, buffersize);
+    registerTelemetryType<VideoStreams>(VIDEO_STREAMS, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<SimpleSensor>(SIMPLE_SENSOR, buffersize);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<WrenchState>(WRENCH_STATE, buffersize);
+    registerTelemetryType<Map>(MAP, 1);
+    registerTelemetryType<Poses>(POSES, buffersize);
+    registerTelemetryType<Transforms>(TRANSFORMS, buffersize);
+    registerTelemetryType<PermissionRequest>(PERMISSION_REQUEST, buffersize);
+    registerTelemetryType<PointCloud>(POINTCLOUD, buffersize);
+    registerTelemetryType<IMU>(IMU_VALUES, buffersize);
+    registerTelemetryType<ContactPoints>(CONTACT_POINTS, buffersize);
+    registerTelemetryType<Twist>(CURRENT_TWIST, buffersize);
+    registerTelemetryType<Acceleration>(CURRENT_ACCELERATION, buffersize);
+    registerTelemetryType<CameraInformation>(CAMERA_INFORMATION, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<Image>(IMAGE, buffersize);
+    registerTelemetryType<ImageLayers>(IMAGE_LAYERS, buffersize);
+    registerTelemetryType<Odometry>(ODOMETRY, buffersize);
+    registerTelemetryType<ControllableFrames>(CONTROLLABLE_FRAMES, 1);  // this is a configuration, so no bigger buffer needed
+    registerTelemetryType<FileDefinition>(FILE_DEFINITION, 1);
+    registerTelemetryType<RobotModelInformation>(ROBOT_MODEL_INFORMATION, 1);
+    registerTelemetryType<InterfaceOptions>(INTERFACE_OPTIONS, 1);
+    registerTelemetryType<ChannelsDefinition>(CHANNELS_DEFINITION, 1);
+    registerTelemetryType<LaserScan>(LASER_SCAN, buffersize);
 
-        connectedCallback = [&](){
-            printf("connected to robot\n");
-        };
+    #ifdef RRC_STATISTICS
+        statistics.names[0] = "total";
+    //     // add names to buffer, this types have aspecial treatment, the should not be registered
+    //     MapsDefinition mapsDefinition;
+    //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
+    //     Map map;
+    //     statistics.names[MAP] = map.GetTypeName();
+    #endif
+
+    for (auto& chan : messageChannels) {
+        chan = 0;
+    }
+
+    lostConnectionCallback = [&](const float& time){
+        printf("lost connection to robot, no reply for %f seconds\n", time);
+    };
+
+    connectedCallback = [&](){
+        // printf("connected to robot\n");
+    };
 }
 
 RobotController::~RobotController() {
@@ -90,9 +100,9 @@ bool RobotController::checkProtocolVersion() {
 
 std::string RobotController::requestProtocolVersion() {
     std::string buf;
-    buf.resize(sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = PROTOCOL_VERSION;
+    ControlMessage controlMessage;
+    controlMessage.set_type(PROTOCOL_VERSION);
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -102,7 +112,7 @@ std::string RobotController::protocolVersion() {
 
 bool RobotController::checkLibraryVersion() {
     std::string remote_ver = requestLibraryVersion();
-    if (remote_ver != LIBRARY_VERSION_STRING) {
+    if (remote_ver != libraryVersion()) {
         printf("library version mismatch (%s : %s), consider using the same version on both sides if your calls do not work\n", remote_ver.c_str(), LIBRARY_VERSION_STRING);
         return false;
     }
@@ -111,9 +121,9 @@ bool RobotController::checkLibraryVersion() {
 
 std::string RobotController::requestLibraryVersion() {
     std::string buf;
-    buf.resize(sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = LIBRARY_VERSION;
+    ControlMessage controlMessage;
+    controlMessage.set_type(LIBRARY_VERSION);
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -123,7 +133,7 @@ std::string RobotController::libraryVersion() {
 
 bool RobotController::checkGitVersion() {
     std::string remote_ver = requestGitVersion();
-    if (remote_ver != GIT_COMMIT_ID) {
+    if (remote_ver != gitVersion()) {
         printf("git version mismatch, consider using the same version on both sides if your calls do not work\n");
         return false;
     }
@@ -132,9 +142,9 @@ bool RobotController::checkGitVersion() {
 
 std::string RobotController::requestGitVersion() {
     std::string buf;
-    buf.resize(sizeof(MessageId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = GIT_VERSION;
+    ControlMessage controlMessage;
+    controlMessage.set_type(GIT_VERSION);
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
     return sendRequest(buf);
 }
 
@@ -209,12 +219,13 @@ void RobotController::setRobotTrajectoryCommand(const Poses &robotTrajectoryComm
 
 void RobotController::setLogLevel(const LogLevelId &level) {
     std::string buf;
-    buf.resize(sizeof(MessageId) + sizeof(LogLevelId));
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = LOG_LEVEL_SELECT;
+    LogLevelRequest levelrequest;
+    levelrequest.set_level(static_cast<LogLevel>(level));
 
-    LogLevelId *levelptr = reinterpret_cast<LogLevelId*>(const_cast<char*>(buf.data()+sizeof(MessageId)));
-    *levelptr = level;
+    ControlMessage controlMessage = initControlMessage(LOG_LEVEL_SELECT, levelrequest);
+
+    commandTransport->getSerialization().serialize(controlMessage, &buf);
+
     sendRequest(buf);
 }
 
@@ -260,16 +271,14 @@ void RobotController::update() {
 bool RobotController::requestMap(Map *map, const ChannelId &channel, const float &overrideMaxLatency){
     std::string replybuf;
     bool result = requestBinary(MAP, &replybuf, TELEMETRY_REQUEST, channel, overrideMaxLatency);
+    commandTransport->getSerialization().deserializeLongData(replybuf, map);
 
-    google::protobuf::io::CodedInputStream cistream(reinterpret_cast<const uint8_t *>(replybuf.data()), replybuf.size());
-    cistream.SetTotalBytesLimit(replybuf.size());
-    map->ParseFromCodedStream(&cistream);
     return result;
 }
 
 void RobotController::updateStatistics(const uint32_t &bytesSent, const MessageId &type) {
     #ifdef RRC_STATISTICS
-        statistics.global.addBytesSent(bytesSent);
+        statistics.stat_per_type[0].addBytesSent(bytesSent);
         statistics.stat_per_type[type].addBytesSent(bytesSent);
     #endif
 }
@@ -281,7 +290,6 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
     if (overrideMaxLatency > 0) {
         currentMaxLatency = overrideMaxLatency;
     }
-
     try {
         commandTransport->send(serializedMessage, flags);
     } catch (const std::exception &error) {
@@ -315,21 +323,22 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
             connectedCallback();
         }
     }
-
     connected.store(true);
     return replystr;
 }
 
 TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply) {
-    MessageId* type = reinterpret_cast<MessageId*>(const_cast<char*>(reply.data()));
-    ChannelId* channel = reinterpret_cast<ChannelId*>(const_cast<char*>(reply.data()+sizeof(MessageId)));
-    size_t headersize = sizeof(MessageId) + sizeof(ChannelId);
-    // size_t headersize = sizeof(MessageId);
-    std::string serializedMessage(reply.data()+headersize, reply.size()-headersize);
 
-    TelemetryMessageType msgtype = (TelemetryMessageType)*type;
+    TelemetryMessage telemetryMessage;
+    std::string serializedMessage;
 
-    updateStatistics(serializedMessage.size(), *type);
+    telemetryTransport->getSerialization().deserialize(reply, &telemetryMessage, &serializedMessage);
+    
+
+    ChannelId channel = telemetryMessage.channel();
+    TelemetryMessageType msgtype = telemetryMessage.type();
+
+    updateStatistics(serializedMessage.size(), msgtype);
 
     // handle special types
     switch (msgtype) {
@@ -340,16 +349,16 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
         }
         default:
         {
-            if (*channel != 0) {
-                if (!buffers->hasChannelBuffer(msgtype,*channel)) {
+            if (channel != 0) {
+                if (!buffers->hasChannelBuffer(msgtype,channel)) {
                     //TODO: let user pre-define buffers for channels and also defiene buffersize after creation
-                    buffers->addChannelBuffer(msgtype,*channel, 10);
+                    buffers->addChannelBuffer(msgtype,channel, 10);
                 }
             }
             // try to resolve through registered types
             std::shared_ptr<TelemetryAdderBase> adder = telemetryAdders[msgtype];
             if (adder.get()) {
-                adder->addToTelemetryBuffer(msgtype, serializedMessage, *channel);
+                adder->addToTelemetryBuffer(msgtype, serializedMessage, channel, telemetryTransport->getSerialization().getMode());
                 return msgtype;
             } else {
                 throw std::range_error("message type " + std::to_string(msgtype) + " not registered, dropping telemetry");
@@ -362,28 +371,26 @@ TelemetryMessageType RobotController::evaluateTelemetry(const std::string& reply
     return NO_TELEMETRY_DATA;
 }
 
-bool RobotController::requestBinary(const MessageId &type, std::string *result, const MessageId &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const TelemetryMessageType &type, std::string *result, const ControlMessageType &requestType, const ChannelId &channel, const float &overrideMaxLatency) {
     std::string request;
-    request.resize(sizeof(MessageId) + sizeof(ChannelId));
 
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(request.data()));
-    ChannelId* chan = reinterpret_cast<ChannelId*>(const_cast<char*>(request.data()+sizeof(MessageId)));
-    *data = type;
-    *chan = channel;
+    TelemetryRequest telemetryRequest;
+    telemetryRequest.set_type(type);
+    telemetryRequest.set_channel(channel);
+    
+    commandTransport->getSerialization().serialize(telemetryRequest, &request);
 
     return requestBinary(request, result, requestType, overrideMaxLatency);
 }
 
-bool RobotController::requestBinary(const std::string &request, std::string *result, const MessageId &requestType, const float &overrideMaxLatency) {
+bool RobotController::requestBinary(const std::string &request, std::string *result, const ControlMessageType &requestType, const float &overrideMaxLatency) {
     std::string buf;
-    buf.resize(sizeof(MessageId)+request.size());
+    ControlMessage controlmessage;
+    controlmessage.set_type(requestType);
 
-    MessageId* data = reinterpret_cast<MessageId*>(const_cast<char*>(buf.data()));
-    *data = requestType;
-    data++;
+    commandTransport->getSerialization().setSerialized(request, &controlmessage);
+    commandTransport->getSerialization().serialize(controlmessage, &buf);
 
-    // add the requested data
-    memcpy(data, request.data(), request.size());
     *result = sendRequest(buf, overrideMaxLatency);
     return (result->size() > 0) ? true : false;
 }
@@ -407,7 +414,6 @@ bool RobotController::requestFile(const std::string &identifier, const bool &com
     if (result) {
         if (folder.file().size() == 0) {
             // no files defined in ControlledRobot
-            folder.PrintDebugString();
             return false;
         }
         std::experimental::filesystem::create_directories(targetpath);
@@ -452,5 +458,3 @@ std::pair<std::string, std::string> RobotController::requestRobotModel(const std
     }
     return {"",""};
 }
-
-

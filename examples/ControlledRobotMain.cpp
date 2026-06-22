@@ -4,17 +4,28 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "Transports/TransportZmq.hpp"
+#include "Transports/ZeroMQ/TransportZmq.hpp" // in a non-example use #include <robot_remote_control/Transports/TransportZmq>
+// #include "Transports/WebSocket/TransportWebSocket.hpp"
+// #include "Transports/Http/TransportHttp.hpp"
 
 using robot_remote_control::TransportSharedPtr;
 using robot_remote_control::TransportZmq;
-
+// using robot_remote_control::TransportWebSocket;
+// using robot_remote_control::TransportHttp;
 
 int main(int argc, char** argv)
 {
     TransportSharedPtr commands = TransportSharedPtr(new TransportZmq("tcp://*:7001", TransportZmq::REP));
     TransportSharedPtr telemetry = TransportSharedPtr(new TransportZmq("tcp://*:7002", TransportZmq::PUB));
-    robot_remote_control::ControlledRobot robot(commands, telemetry);
+    
+    // TransportWebSocket may run in SERVER or SERVER_TEXT mode, SERVER_TEXT tells the ControlledRobot, that binary can't be transmitted
+    // als switches to JSON serialization, this is required to connect the WS from a browser, if just SERVER is set, data will be binary
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7001));
+    // TransportSharedPtr telemetry = TransportSharedPtr(new TransportWebSocket(TransportWebSocket::SERVER_TEXT, 7002));
+    
+    // TransportSharedPtr commands = TransportSharedPtr(new TransportHttp("http://0.0.0.0:7001"));
+
+    robot_remote_control::ControlledRobot robot(commands,telemetry);
 
     robot.startUpdateThread(10);
 
@@ -23,7 +34,7 @@ int main(int argc, char** argv)
     // the elapsed time may be used to have different stages of escalation
     // when there are multiple connections to this robots with different heartbeats
     // in rare occations the logner heartbeat is used (connection loss (hight freq) right after the low freq time was send)
-    robot.setupDisconnectedCallback(0.1, [](const float &elapsed){
+    robot.setupDisconnectedCallback(0.2, [](const float &elapsed){
         printf("no heartbeat since %.2f seconds\n", elapsed);
     });
 
@@ -163,10 +174,10 @@ int main(int argc, char** argv)
 
     // for requests to work, you need a valid connection:
     // only works when heartbeats are set up
-    while (!robot.isConnected()) {
-        printf("waiting for connection\n");
-        usleep(100000);
-    }
+    // while (!robot.isConnected()) {
+    //     printf("waiting for connection\n");
+    //     usleep(100000);
+    // }
 
     robot.addCommandReceivedCallback(robot_remote_control::TARGET_POSE_COMMAND, []() {
         // WARNING: this callback run in the reveive thread, you should not use this to access data, only to notify other threads

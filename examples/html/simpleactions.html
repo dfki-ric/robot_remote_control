@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Robot Remote Control</title>
+
+<script src="js/robot_remote_control.js"></script>
+<script src="js/joy.min.js"></script>
+
+<link rel="stylesheet" href="css/style.css">
+
+<script>
+    var host="127.0.0.1"
+    var commandport, telemetryport
+    var url = new URL(window.location.href)
+    var rrc;
+    
+
+    // obtain ip and port from url / papramater http://192.168.0.1?telemetryport=1234 will connect rrc on ws://192.168.0.1:1237
+    if (typeof url !== 'undefined' && url != null) { 
+        host = url.hostname
+        commandport = url.port // as long cors is not anables, this must be the same anyway
+        telemetryport = url.searchParams.get("telemetryport")
+        if (typeof telemetryport === 'undefined' || telemetryport == null) {
+            telemetryport = "7002"
+        }
+
+    }
+
+
+    function init() {
+        rrc = new RobotController(host, commandport, null)
+
+        console.log("request")
+        rrc.requestTelemetry("ROBOT_NAME",0,function(data) {
+            document.getElementById("robotname").innerHTML=data.value;
+        })
+    }
+
+    window.onclose=function(){
+        rrc.close()
+    }
+
+</script>    
+
+
+</head>
+<body onload=init()>
+
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="font-size:35px; color:black;" id="robotname">not connected</div><br>
+            <div id="simpleactions" >bla</div>
+        </div>
+    </div>
+
+
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="color:black;" id="robotstate">not connected</div><br>
+        </div>
+    </div>
+
+</body>
+</html>

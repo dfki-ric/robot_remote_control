@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "../src/Transports/TransportUDT.hpp"
+#include "../src/Transports/UDT/TransportUDT.hpp"
 
 #include <unistd.h>
 

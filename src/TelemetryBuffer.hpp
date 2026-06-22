@@ -9,6 +9,7 @@
 #include "RingBuffer.hpp"
 #include "MessageTypes.hpp"
 
+#include "Serialization.hpp"
 
 namespace robot_remote_control {
 
@@ -29,7 +30,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
      * @param type The TelemetryMessageType, using a size_t to be able to extent the function
      * @return std::string 
      */
-    std::string peekSerialized(const uint16_t &type, const uint8_t &channel = 0);
+    std::string peekSerialized(const uint16_t &type, const uint8_t &channel, const Serialization::Mode &serializationMode);
 
     bool pushSerialized(const uint16_t &type, const std::string& data, const uint8_t &channel = 0, const bool &overwrite = false);
 
@@ -68,7 +69,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
     class ProtobufToStringBase {
      public:
         virtual ~ProtobufToStringBase() {}
-        virtual std::string get(const uint8_t &channel = 0) = 0;
+        virtual std::string get(const uint8_t &channel, const Serialization::Mode &serializationMode) = 0;
     };
 
     template <class PBTYPE> class ProtobufToString : public ProtobufToStringBase {
@@ -76,13 +77,20 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         explicit ProtobufToString(const uint16_t& type, TelemetryBuffer *telemetrybuffer) : type(type), telemetrybuffer(telemetrybuffer) {}
         virtual ~ProtobufToString() {}
 
-        virtual std::string get(const uint8_t &channel = 0) {
+        virtual std::string get(const uint8_t &channel, const Serialization::Mode &serializationMode) {
             std::string buf("");
             PBTYPE data;
+            serialization.setMode(serializationMode);
             // expects the buffer to be locked!
             auto lockObj = telemetrybuffer->lockedAccess();
             if (RingBufferAccess::peekData(lockObj.get()[type][channel], &data)) {
-                data.SerializeToString(&buf);
+                
+                serialization.serialize(data,&buf);
+                // if (useText) {
+                //     google::protobuf::util::MessageToJsonString(data,&buf);
+                // }else{
+                //     data.SerializeToString(&buf);
+                // }
             }
             return buf;
         }
@@ -90,6 +98,7 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
      private:
         uint16_t type;
         TelemetryBuffer* telemetrybuffer;
+        Serialization serialization;
     };
 
     class StringToProtobufBase {
