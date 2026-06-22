@@ -51,6 +51,8 @@ target_include_directories(robot_remote_control-simple_action_helper
 		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+target_link_libraries(robot_remote_control-simple_action_helper PUBLIC robot_remote_control-types)
+
 install (TARGETS robot_remote_control-simple_action_helper
         EXPORT robot_remote_control-targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
