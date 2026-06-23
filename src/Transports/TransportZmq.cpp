@@ -52,7 +52,7 @@ int TransportZmq::receive(std::string* buf, Flags flags) {
     #else
         zmq::recv_flags zmqflag = zmq::recv_flags::none;
         if (flags & NOBLOCK) {
-            zmqflag = zmq::send_flags::dontwait;
+            zmqflag = zmq::recv_flags::dontwait;
         }
         if (socket->recv(requestmsg, zmqflag)) {
             buf->assign(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
