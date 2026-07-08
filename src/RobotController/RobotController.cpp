@@ -28,7 +28,7 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
         throw std::runtime_error("RobotController: provided command transport is not supporting commands");
     }
 
-    if (!telemetryTransport->supportsRobotControllerTelemetry()) {
+    if (telemetryTransport && !telemetryTransport->supportsRobotControllerTelemetry()) {
         throw std::runtime_error("RobotController: provided telemetry transport is not supporting telemeter");
     }
 
@@ -65,11 +65,6 @@ RobotController::RobotController(TransportSharedPtr commandTransport, TransportS
 
     #ifdef RRC_STATISTICS
         statistics.names[0] = "total";
-    //     // add names to buffer, this types have aspecial treatment, the should not be registered
-    //     MapsDefinition mapsDefinition;
-    //     statistics.names[MAPS_DEFINITION] = mapsDefinition.GetTypeName();
-    //     Map map;
-    //     statistics.names[MAP] = map.GetTypeName();
     #endif
 
     for (auto& chan : messageChannels) {

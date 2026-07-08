@@ -5,6 +5,7 @@
 #include <memory>
 #include <functional>
 #include <algorithm>
+#include <stdexcept>
 
 
 namespace robot_remote_control {
@@ -35,6 +36,9 @@ class RingBufferBase{
 template <class TYPE> class RingBuffer: public RingBufferBase {
     public:
         explicit RingBuffer(const size_t & buffersize = 10): RingBufferBase(), buffersize(buffersize), contentsize(0), in(0), out(0), droppedMessages(0) {
+            if (buffersize == 0) {
+                throw std::runtime_error("buffer with size 0 will not buffer");
+            }
             buffer.resize(buffersize);
         }
 
@@ -69,6 +73,10 @@ template <class TYPE> class RingBuffer: public RingBufferBase {
          * @param newsize the size of the new buffer
          */
         void resize(const size_t &newsize) {
+            if (newsize == 0) {
+                throw std::runtime_error("buffer with size 0 will not buffer");
+            }
+
             if (contentsize > 0) {
                 clear();
             }

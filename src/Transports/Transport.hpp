@@ -44,7 +44,6 @@ class Transport {
     }
 
     enum TransportSupport {UNSET = 0, ROBOTCOMMANDS = 1<<1, ROBOTTELEMETRY = 1<<2, CONTOLLERCOMMANDS = 1<<3, CONTROLLERTELEMETRY = 1<<4};
-    uint8_t supports;
 
     virtual bool supportsControlledRobotTelemetry() {
         return supports & ROBOTTELEMETRY;
@@ -67,6 +66,7 @@ class Transport {
     }
 
  protected:
+    uint8_t supports;
     void setTransportSupport(uint8_t supportdef){
         supports = supportdef;
     }

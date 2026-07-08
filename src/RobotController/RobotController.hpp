@@ -456,7 +456,7 @@ class RobotController: public UpdateThread {
         }
 
         std::string getChannelName(const MessageId& MessageId, const ChannelId &channel) {
-            if (messageChannelNames[MessageId].size() < channel) {
+            if (channel < messageChannelNames[MessageId].size()) {
                 return messageChannelNames[MessageId][channel];
             }
             return "";
@@ -555,10 +555,6 @@ class RobotController: public UpdateThread {
 
         bool requestMap(Map *map, const ChannelId &channel = 0, const float &overrideMaxLatency = 120);
 
-        // bool requestMap(std::string *map, const ChannelId &channel = 0, const float &overrideMaxLatency = 120) {
-        //     return requestBinary(MAP, map, TELEMETRY_REQUEST, channel, overrideMaxLatency);
-        // }
-
         /**
          * @brief Request which movement commands (in which frames) are supported by the robot
          * 
@@ -619,7 +615,7 @@ class RobotController: public UpdateThread {
 
         template< class DATATYPE > unsigned int getTelemetry(const MessageId &type, DATATYPE *data, bool onlyNewest, const ChannelId &channel) {
             auto lockedbuffer = buffers->lockedAccess();
-            if (channel > 0 && channel > lockedbuffer.get()[type].size()-1) {
+            if (channel > 0 && channel >= lockedbuffer.get()[type].size()) {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
             }
@@ -627,7 +623,7 @@ class RobotController: public UpdateThread {
         }
 
         unsigned int getTelemetryRaw(const MessageId &type, std::string *dataSerialized, bool onlyNewest, const ChannelId &channel) {
-            if (channel > 0 && channel > buffers->lockedAccess().get()[type].size()-1) {
+            if (channel > 0 && channel >= buffers->lockedAccess().get()[type].size()) {
                 // channel nonexistent, retrun 0, as the buffer might be created later on the first message
                 return 0;
             }
