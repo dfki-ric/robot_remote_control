@@ -4,3 +4,4 @@ build/
 /src/GitVersion.hpp
 /src/LibraryVersion.hpp
 /src/ProtocolVersion.hpp
+/src/Types/js/*

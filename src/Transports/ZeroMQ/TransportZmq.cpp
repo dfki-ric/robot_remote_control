@@ -49,6 +49,7 @@ void TransportZmq::connect() {
     if (!connected) {
         switch (type) {
             case REQ: {
+                setTransportSupport(CONTOLLERCOMMANDS);
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REQ));
 
                 #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)
@@ -63,16 +64,19 @@ void TransportZmq::connect() {
                 break;
             }
             case REP: {
+                setTransportSupport(ROBOTCOMMANDS);
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_REP));
                 socket->bind(addr);
                 break;
             }
             case PUB: {
+                setTransportSupport(ROBOTTELEMETRY);
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_PUB));
                 socket->bind(addr);
                 break;
             }
             case SUB: {
+                setTransportSupport(CONTROLLERTELEMETRY);
                 socket = std::shared_ptr<zmq::socket_t>(new zmq::socket_t(*(context.get()), ZMQ_SUB));
 
                 #if CPPZMQ_VERSION <= ZMQ_MAKE_VERSION(4, 7, 0)

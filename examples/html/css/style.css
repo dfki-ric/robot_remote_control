@@ -1,0 +1,50 @@
+
+
+.button{
+    width:100px;
+    height:100px;
+    background-color: lightblue;
+    opacity:0.8;
+    border: 0px solid darkblue;
+    filter: hue-rotate(100deg);
+}
+
+.button_highlighted {
+    width:100px;
+    height:100px;
+    background-color: lightblue;
+    opacity:0.8;
+    border: 2px solid yellow;
+    filter: hue-rotate(100deg);
+}
+
+.input_button {
+    height:150px;
+    width:150px;
+    background-color: skyblue;
+    color: blue;
+}
+
+.simpleaction_input_button {
+    height:100px;
+    width:150px;
+    background-color: skyblue;
+    color: blue;
+}
+
+.box{
+    /* background-color: yellow; */
+    opacity: 0.6;
+    border: 2px solid darkblue;
+    
+    border-radius: 25px;
+    text-align: center;
+    width: 550px;
+    
+    background-color: lightblue;
+    opacity:0.8;
+    padding: 10px;
+    overflow:auto;
+}
+
+p, label, input { font-size: 1em; }

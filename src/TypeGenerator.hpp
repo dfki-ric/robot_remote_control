@@ -6,6 +6,11 @@
 
 namespace robot_remote_control {
 
+/**
+ * @brief generator for randomly filled Types (for unit tests and sample represenations (json, http transports))
+ * 
+ */
+
 class TypeGenerator{
  public:
 
@@ -80,6 +85,9 @@ class TypeGenerator{
         Pose data;
         *data.mutable_position() = genPosition();
         *data.mutable_orientation() = genOrentation();
+        data.set_orientation2d(std::rand()/(double)RAND_MAX);
+        data.add_covariance(std::rand()/(double)RAND_MAX);
+        data.add_covariance(std::rand()/(double)RAND_MAX);
         return data;
     }
 
@@ -123,6 +131,13 @@ class TypeGenerator{
         data.set_name(genString());
         data.set_state(std::rand());
         *data.mutable_type() = genSimpleActionDef();
+        return data;
+    }
+
+    static SimpleAction genSimpleCmd() {
+        SimpleAction data;
+        data.set_name(genString());
+        data.set_state(std::rand());
         return data;
     }
 
@@ -304,7 +319,19 @@ class TypeGenerator{
         return data;
     }
 
-
+    static JointCommand genJointCommand () {
+        JointCommand data;
+        *data.mutable_header() = genHeader();
+        data.add_name(genString());
+        data.add_position(std::rand() / (double)RAND_MAX);
+        data.add_velocity(std::rand() / (double)RAND_MAX);
+        data.add_effort(std::rand() / (double)RAND_MAX);
+        data.add_acceleration(std::rand() / (double)RAND_MAX);
+        data.add_tics(std::rand());
+        data.add_kp_gain(std::rand() / (double)RAND_MAX);
+        data.add_kd_gain(std::rand() / (double)RAND_MAX);
+        return data;
+    }
 
 };
 

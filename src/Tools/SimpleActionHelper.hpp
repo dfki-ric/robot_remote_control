@@ -35,6 +35,7 @@ class SimpleActionsHelper {
      * @return std::shared_ptr<SimpleActionWrapper> 
      */
     std::shared_ptr<SimpleActionWrapper> addSimpleAction(const std::string &actionname, const robot_remote_control::SimpleActionType& type);
+    std::shared_ptr<SimpleActionWrapper> addSimpleAction(const std::string &actionname, const robot_remote_control::SimpleActionType& type, const std::string doc);
 
     /**
      * @brief Get the Simple Actions Definition object to be passed to ControlledRobot::initSimpleActions()
@@ -87,7 +88,7 @@ class SimpleActionsHelper {
     }
 
     /**
-     * @brief update the locak action with ne data (received from the robot)
+     * @brief update the local action with new data (received from the robot)
      * while updating the Action pointers in the SimpleActionWrappers (may be in use)
      * 
      * @param initfrom the newly received data

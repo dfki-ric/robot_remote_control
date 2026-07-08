@@ -64,6 +64,16 @@ std::shared_ptr<SimpleActionWrapper> SimpleActionsHelper::addSimpleAction(const 
     return wrapper;
 }
 
+std::shared_ptr<SimpleActionWrapper> SimpleActionsHelper::addSimpleAction(const std::string &actionname, const robot_remote_control::SimpleActionType& type, const std::string doc) {
+    robot_remote_control::SimpleAction* action = actions.add_actions();
+    action->set_name(actionname);
+    action->mutable_type()->set_type(type);
+    action->mutable_type()->set_documentation(doc);
+    std::shared_ptr<SimpleActionWrapper> wrapper = std::make_shared<SimpleActionWrapper>(action);
+    actionbyname[actionname] = wrapper;
+    return wrapper;
+}
+
 bool SimpleActionsHelper::canExecute(const std::shared_ptr<SimpleActionWrapper> &action) {    
     //check dependencies (multiple entries on single actions: OR, between actions: AND)
     for (const auto& actionstate : action->actionDependencyStates) {
