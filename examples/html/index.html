@@ -14,17 +14,14 @@
     var commandport, telemetryport
     var url = new URL(window.location.href)
     var rrc;
+    var twistFrame = "arter/base_link"
     
 
     // obtain ip and port from url / papramater http://192.168.0.1?telemetryport=1234 will connect rrc on ws://192.168.0.1:1237
     if (typeof url !== 'undefined' && url != null) { 
         host = url.hostname
-        commandport = url.port
-        var commandport = url.searchParams.get("commandport")
-        if (typeof commandport === 'undefined' || commandport == null) {
-            commandport = "7001"
-        }
-        var telemetryport = url.searchParams.get("telemetryport")
+        commandport = url.port // as long cors is not anables, this must be the same anyway
+        telemetryport = url.searchParams.get("telemetryport")
         if (typeof telemetryport === 'undefined' || telemetryport == null) {
             telemetryport = "7002"
         }
@@ -88,6 +85,16 @@
         </div>
     </div>
 
+
+    <div class="box", style="text-align: left;">
+        <label for="speed">Max Speed (m/s):</label>
+        <input type="number" id="speed" min="0" max="1" step="0.1" value="0.1">
+    </div>
+
+    <div class="box", style="text-align: left;">
+        <label for="twistFrame">Twist Command Frame:</label>
+        <input type="text" id="twistFrame" value="" oninput="twistFrame = this.value">
+    </div>
     <div id="leftJoy" style="width:200px;height:200px;float:left;"></div>
     <div id="rightJoy" style="width:200px;height:200px;margin-left: auto; margin-right: 0;"></div>
     <script>
@@ -101,12 +108,20 @@
             rx = rightjoy.GetX()/100.0;
             ry = rightjoy.GetY()/100.0;
 
+            const speed = document.getElementById("speed").valueAsNumber
+            lx *= speed
+            ly *= speed
+
+            rx *= speed
+            ry *= speed
+
+
             if (lx != 0 || ly != 0 || rx !=0 || ry !=0 ) {
                 resend = true
-                rrc.setTwistCommand(lx,ly,0,rx,ry,0);
+                rrc.setTwistCommand(ly,lx,0,0,ry,-rx,twistFrame);
             } else {
                 if (resend) {
-                    rrc.setTwistCommand(0,0,0,0,0,0);
+                    rrc.setTwistCommand(0,0,0,0,0,0,twistFrame);
                     resend = false
                 }
             }
