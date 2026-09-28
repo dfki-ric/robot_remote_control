@@ -47,8 +47,9 @@ class Statistics {
 
     void print(const bool &verbose = false);
 
+    void setRunningAverageSamples(const double &samples);
+
     timeval currenttime;
-    Stats global;
     std::array<std::string, TELEMETRY_MESSAGE_TYPES_NUMBER> names;
     std::array<Stats, TELEMETRY_MESSAGE_TYPES_NUMBER> stat_per_type;
 };

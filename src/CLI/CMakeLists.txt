@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1.0)
 
 set(CURSES_NEED_NCURSES true)
 find_package(Curses)
+find_package(Boost COMPONENTS program_options REQUIRED)
 pkg_check_modules(readline REQUIRED IMPORTED_TARGET readline)
 
 if (CURSES_HAVE_NCURSES_H)
@@ -24,10 +25,23 @@ if (CURSES_HAVE_NCURSES_H)
 endif(CURSES_HAVE_NCURSES_H)
 
 add_executable(robot_controller RobotControllerCLI.cpp ConsoleCommands.cpp)
+
+if (websocketpp_FOUND)
+    target_compile_definitions(robot_controller PRIVATE -DADD_WEBSOCKET_TRANSPORT=TRUE)
+    set(OTHER_TRANSPORT_LIBS robot_remote_control-transport_ws)
+endif()
+
+if (cpprestsdk_FOUND AND websocketpp_FOUND)
+    target_compile_definitions(robot_controller PRIVATE -DADD_HTTP_TRANSPORT=TRUE)
+    set(OTHER_TRANSPORT_LIBS ${OTHER_TRANSPORT_LIBS} robot_remote_control-transport_http)
+endif()
+
 target_link_libraries(robot_controller
     robot_remote_control-robot_controller
     robot_remote_control-transport_zmq
+    ${OTHER_TRANSPORT_LIBS}
     PkgConfig::readline
+    Boost::program_options
 )
 target_include_directories(robot_controller
 	PUBLIC

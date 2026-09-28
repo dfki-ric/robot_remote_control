@@ -14,6 +14,8 @@
   <depend package="libreadline" />
   <depend package="zmq" />
   <depend package="ncurses" optional="1"/>
+  <depend package="restcpp" optional="1"/>
+  <depend package="websocketpp" optional="1"/>
 
   <keywords>
     <keyword>communication</keyword>

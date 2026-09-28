@@ -17,7 +17,8 @@ TransportUDT::TransportUDT(const ConnectionType &type, const int &port, const st
     UDT::startup();
 
     if (type == SERVER){
-
+        setTransportSupport(ROBOTCOMMANDS | ROBOTTELEMETRY);
+        
         serv = UDT::socket(AF_INET, SOCK_DGRAM, 0);
 
         bool block = true;
@@ -47,6 +48,7 @@ TransportUDT::TransportUDT(const ConnectionType &type, const int &port, const st
         //sleep(1);
 
     }else{
+        setTransportSupport(CONTOLLERCOMMANDS | CONTROLLERTELEMETRY);
         socket.lockedAccess().set(UDT::socket(AF_INET, SOCK_DGRAM, 0));
 
         // bool block = true;

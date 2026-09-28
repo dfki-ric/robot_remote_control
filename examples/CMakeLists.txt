@@ -6,6 +6,8 @@ add_executable(robot_remote_control-controlled_robot_bin ControlledRobotMain.cpp
 target_link_libraries(robot_remote_control-controlled_robot_bin
     robot_remote_control-controlled_robot
     robot_remote_control-transport_zmq
+    # robot_remote_control-transport_ws
+    # robot_remote_control-transport_http
 )
 target_include_directories(robot_remote_control-controlled_robot_bin
 	PUBLIC
@@ -14,11 +16,27 @@ target_include_directories(robot_remote_control-controlled_robot_bin
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+if(websocketpp_FOUND AND cpprestsdk_FOUND)
+    add_executable(robot_remote_control-controlled_robot_web_bin ControlledRobotWebMain.cpp)
+    target_link_libraries(robot_remote_control-controlled_robot_web_bin
+        robot_remote_control-controlled_robot
+        robot_remote_control-transport_ws
+        robot_remote_control-transport_http
+    )
+    target_include_directories(robot_remote_control-controlled_robot_web_bin
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/ControlledRobot>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
+endif()
 
 add_executable(robot_remote_control-robot_controller_bin RobotControllerMain.cpp)
 target_link_libraries(robot_remote_control-robot_controller_bin
     robot_remote_control-robot_controller
     robot_remote_control-transport_zmq
+    # robot_remote_control-transport_ws
+    # robot_remote_control-transport_http
 )
 target_include_directories(robot_remote_control-robot_controller_bin
 	PUBLIC

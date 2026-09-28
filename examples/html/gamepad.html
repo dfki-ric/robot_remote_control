@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Robot Remote Control (Gamepad)</title>
+
+<script src="js/robot_remote_control.js"></script>
+
+<link rel="stylesheet" href="css/style.css">
+
+<script>
+    var host="127.0.0.1"
+    var commandport, telemetryport
+    var url = new URL(window.location.href)
+    var rrc;
+    var twistFrame = ""
+
+
+    // obtain ip and port from url / papramater http://192.168.0.1?telemetryport=1234 will connect rrc on ws://192.168.0.1:1237
+    if (typeof url !== 'undefined' && url != null) {
+        host = url.hostname
+        commandport = url.port // as long cors is not anables, this must be the same anyway
+        telemetryport = url.searchParams.get("telemetryport")
+        if (typeof telemetryport === 'undefined' || telemetryport == null) {
+            telemetryport = "7002"
+        }
+
+    }
+
+
+    function init() {
+        rrc = new RobotController(host, commandport, telemetryport)
+
+        console.log("request")
+        rrc.requestTelemetry("ROBOT_NAME",0,function(data) {
+            document.getElementById("robotname").innerHTML=data.value;
+        })
+
+        rrc.addTelemetryCallback("CURRENT_POSE", function (pose, channel) {
+            document.getElementById("pose").innerHTML = "x: "+ pose.position.x +", y:"+ pose.position.y +", z:"+ pose.position.z
+        })
+
+        rrc.addTelemetryCallback("ROBOT_STATE", function (pose, channel) {
+            document.getElementById("robotstate").innerHTML = JSON.stringify(pose)
+        })
+
+        rrc.addTelemetryCallback("SIMPLE_SENSOR", function (data, channel) {
+            console.log(data)
+            console.log(channel)
+        })
+
+    }
+
+    window.onclose=function(){
+        rrc.close()
+    }
+
+</script>
+
+
+</head>
+<body onload=init()>
+
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="font-size:35px; color:black;" id="robotname">not connected</div><br>
+            <div id="simpleactions" >bla</div>
+        </div>
+    </div>
+
+
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="color:black;" id="robotstate">not connected</div><br>
+        </div>
+    </div>
+
+    <div class="box">
+        <div style="vertical-align: middle;">
+            <!-- <div style="font-size:35px; color:white;">Actions</div><br>	 -->
+            <div style="color:black;" id="pose">not connected</div><br>
+        </div>
+    </div>
+
+
+    <div class="box", style="text-align: left;">
+        <label for="speed">Max Speed (m/s):</label>
+        <input type="number" id="speed" min="0" max="1" step="0.1" value="0.1">
+        <span style="color:black; margin-left: 10px;" id="speedpreset">Preset 1/4 (0.1 m/s)</span>
+        <br>
+        <small style="color:black;">Left/Right bumper (LB/RB) cycles the max-speed presets.</small>
+    </div>
+
+    <div class="box", style="text-align: left;">
+        <label for="twistFrame">Twist Command Frame:</label>
+        <input type="text" id="twistFrame" value="" oninput="twistFrame = this.value">
+    </div>
+
+    <div class="box", style="text-align: left;">
+        <div style="color:black;" id="gamepadstatus">No gamepad connected. Press a button on your controller to activate it.</div>
+        <div style="color:black;" id="gamepadaxes"></div>
+    </div>
+
+    <script>
+        // Ignore small stick values so controller drift does not command the robot.
+        const DEADZONE = 0.08
+
+        // Max-speed presets (m/s) cycled with the shoulder buttons.
+        const SPEED_PRESETS = [0.1, 0.3, 0.5, 1.0]
+        let presetIndex = 0
+
+        // Standard gamepad mapping: buttons[4] = LB (left bumper), buttons[5] = RB (right bumper).
+        const BTN_SPEED_DOWN = 4
+        const BTN_SPEED_UP = 5
+        // Remember previous button states for edge detection (only act on press, not hold).
+        let prevButtons = []
+
+        function applyDeadzone(value) {
+            return Math.abs(value) < DEADZONE ? 0 : value
+        }
+
+        function setSpeedPreset(index) {
+            presetIndex = Math.max(0, Math.min(SPEED_PRESETS.length - 1, index))
+            document.getElementById("speed").value = SPEED_PRESETS[presetIndex]
+            document.getElementById("speedpreset").innerHTML =
+                "Preset " + (presetIndex + 1) + "/" + SPEED_PRESETS.length +
+                " (" + SPEED_PRESETS[presetIndex] + " m/s)"
+        }
+
+        function buttonPressed(pad, index) {
+            const btn = pad.buttons[index]
+            return btn ? btn.pressed : false
+        }
+
+        // Cycle presets on a rising edge of the shoulder buttons.
+        function handleSpeedButtons(pad) {
+            const downNow = buttonPressed(pad, BTN_SPEED_DOWN)
+            const upNow = buttonPressed(pad, BTN_SPEED_UP)
+
+            if (downNow && !prevButtons[BTN_SPEED_DOWN]) {
+                setSpeedPreset(presetIndex - 1)
+            }
+            if (upNow && !prevButtons[BTN_SPEED_UP]) {
+                setSpeedPreset(presetIndex + 1)
+            }
+
+            prevButtons[BTN_SPEED_DOWN] = downNow
+            prevButtons[BTN_SPEED_UP] = upNow
+        }
+
+        // Return the first connected gamepad, or null.
+        function getGamepad() {
+            const pads = navigator.getGamepads ? navigator.getGamepads() : []
+            for (let i = 0; i < pads.length; i++) {
+                if (pads[i]) {
+                    return pads[i]
+                }
+            }
+            return null
+        }
+
+        window.addEventListener("gamepadconnected", function (e) {
+            document.getElementById("gamepadstatus").innerHTML =
+                "Gamepad connected: " + e.gamepad.id
+        })
+
+        window.addEventListener("gamepaddisconnected", function (e) {
+            document.getElementById("gamepadstatus").innerHTML =
+                "Gamepad disconnected. Press a button to reconnect."
+        })
+
+        let resend = false
+        setInterval(function () {
+            const pad = getGamepad()
+            if (!pad) {
+                return
+            }
+
+            handleSpeedButtons(pad)
+
+            // Standard mapping: axes[0/1] = left stick X/Y, axes[2/3] = right stick X/Y.
+            // Gamepad Y axes are negative when pushed up, so invert them to match the
+            // on-screen joystick convention (forward/up = positive) used in index.html.
+            let lx = applyDeadzone(pad.axes[0] || 0)
+            let ly = applyDeadzone(-(pad.axes[1] || 0))
+
+            let rx = applyDeadzone(pad.axes[2] || 0)
+            let ry = applyDeadzone(-(pad.axes[3] || 0))
+
+            document.getElementById("gamepadaxes").innerHTML =
+                "left: " + lx.toFixed(2) + ", " + ly.toFixed(2) +
+                " | right: " + rx.toFixed(2) + ", " + ry.toFixed(2)
+
+            const speed = document.getElementById("speed").valueAsNumber
+            lx *= speed
+            ly *= speed
+
+            rx *= speed
+            ry *= speed
+
+            if (lx != 0 || ly != 0 || rx != 0 || ry != 0) {
+                resend = true
+                rrc.setTwistCommand(ly, lx, 0, 0, ry, -rx, twistFrame);
+            } else {
+                if (resend) {
+                    rrc.setTwistCommand(0, 0, 0, 0, 0, 0, twistFrame);
+                    resend = false
+                }
+            }
+        }, 50);
+    </script>
+</body>
+</html>

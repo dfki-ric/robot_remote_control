@@ -1,13 +1,21 @@
 # CMakeLists.txt has to be located in the project folder and cmake has to be
 # executed from 'project/build' with 'cmake ../'.
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(robot_remote_control VERSION "0.0.9")
 
 set(BUILD_SHARED_LIBS ON)
- 
-######################################################## CHECK FOR UDT
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
 find_package(PkgConfig)
+
+######################################################## CHECK FOR ZeroMQ
+pkg_check_modules(ZMQ libzmq)
+
+######################################################## CHECK FOR UDT
 pkg_check_modules(UDT "udt")
 if(UDT_FOUND)
     message(STATUS "  Found UDT using pkg-config: ${UDT_LIBRARIES}")
@@ -25,8 +33,14 @@ else()
     endif()
 endif()
 
+######################################################## CHECK FOR WebSocket++
+find_package(websocketpp)
+
 ######################################################## CHECK FOR ZLIB
 find_package(ZLIB)
+
+######################################################## CHECK FOR cpprest
+find_package(cpprestsdk)
 
 #################################################### COLLECT SATISTICS?
 set (RRC_STATISTICS ON)
