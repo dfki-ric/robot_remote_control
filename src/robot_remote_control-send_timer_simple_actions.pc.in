@@ -3,10 +3,10 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: robot_remote_control-send_timers
+Name: robot_remote_control-send_timer_simple_actions
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 Requires: @PKGCONFIG_REQUIRES@
-Libs: -L${libdir} -lrobot_remote_control-send_timers @PKGCONFIG_LIBS@
+Libs: -L${libdir} -lrobot_remote_control-send_timer_simple_actions @PKGCONFIG_LIBS@
 Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
 
