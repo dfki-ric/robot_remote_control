@@ -278,7 +278,7 @@ void DataStreamRRC::addToPlot(const robot_remote_control::Header& header, const 
     std::string entryname = prefix + "/";
     addToPlot(header.timestamp(),stamp,entryname);
 
-    dataMap().getOrCreateStringSeries(entryname + "frame").pushBack(PJ::StringSeries::Point(stamp, header.frame()));
+    dataMap().getOrCreateStringSeries(entryname + "frame").pushBack({stamp, PJ::StringRef(header.frame())});
     dataMap().getOrCreateNumeric(entryname + "seq").pushBack(PJ::PlotData::Point(stamp, header.seq()));
 }
 

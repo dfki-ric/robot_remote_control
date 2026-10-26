@@ -16,6 +16,7 @@
   <depend package="ncurses" optional="1"/>
   <depend package="restcpp" optional="1"/>
   <depend package="websocketpp" optional="1"/>
+  <depend package="gui/plotjuggler" optional="1"/>
 
   <keywords>
     <keyword>communication</keyword>

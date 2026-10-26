@@ -37,7 +37,11 @@ if (plotjuggler_FOUND)
         Qt5::Svg )
 
     add_definitions( ${QT_DEFINITIONS} -DQT_PLUGIN)
-    set( PJ_LIBRARIES ${QT_LIBRARIES} plotjuggler_base)
+    if (TARGET plotjuggler::plotjuggler_base)
+        set( PJ_LIBRARIES ${QT_LIBRARIES} plotjuggler::plotjuggler_base)
+    else()
+        set( PJ_LIBRARIES ${QT_LIBRARIES} plotjuggler_base)
+    endif()
 
     #--------------------------------------------------------
     #-------------- Build with CATKIN (ROS1) ----------------
