@@ -90,7 +90,7 @@ class DataStreamRRC : public PJ::DataStreamer {
 
                     if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING){
                         auto& plot = dataMap().getOrCreateStringSeries(fieldname + std::to_string(i));
-                        plot.pushBack(PJ::StringSeries::Point(stamp, reflection->GetRepeatedString(proto,field,i))); break;
+                        plot.pushBack({stamp, PJ::StringRef(reflection->GetRepeatedString(proto,field,i))});
                     } else {
                         auto& plot = dataMap().getOrCreateNumeric(fieldname + std::to_string(i));    
                         switch (field->cpp_type()) {
@@ -107,7 +107,7 @@ class DataStreamRRC : public PJ::DataStreamer {
             }else{
                 if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING){
                     auto& plot = dataMap().getOrCreateStringSeries(fieldname);
-                    plot.pushBack(PJ::StringSeries::Point(stamp, reflection->GetString(proto,field))); break;
+                    plot.pushBack({stamp, PJ::StringRef(reflection->GetString(proto,field))});
                 } else {
                     auto& plot = dataMap().getOrCreateNumeric(fieldname);
                     switch (field->cpp_type()) {
