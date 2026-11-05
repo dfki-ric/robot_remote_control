@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.1.0)
-
 set(CURSES_NEED_NCURSES true)
 find_package(Curses)
 find_package(Boost COMPONENTS program_options REQUIRED)
