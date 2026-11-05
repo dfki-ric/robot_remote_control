@@ -32,6 +32,18 @@ class Transport {
      */
     virtual int receive(std::string* buf, Flags flags = NONE) = 0;
 
+    /**
+     * @brief receive data, also empty messages: receive() returns 0 for those, like when nothing was received
+     * (e.g. the reply to a telemetry request of data that was never set)
+     *
+     * @param buf buffer to fill on receive
+     * @param Flags flags the flags
+     * @return true if a message was received
+     */
+    virtual bool receiveMessage(std::string* buf, Flags flags = NONE) {
+        return receive(buf, flags) > 0;
+    }
+
     virtual void setSerializationMode(const Serialization::Mode & mode) {
         serialization.setMode(mode);
     }

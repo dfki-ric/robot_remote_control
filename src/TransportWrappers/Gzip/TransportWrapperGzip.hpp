@@ -40,6 +40,8 @@ class TransportWrapperGzip : public TransportWrapper {
      */
     virtual int receive(std::string* uncompressed, Transport::Flags flags = Transport::NONE);
 
+    bool receiveMessage(std::string* uncompressed, Transport::Flags flags = Transport::NONE) override;
+
 
  private:
     int compressionlevel;

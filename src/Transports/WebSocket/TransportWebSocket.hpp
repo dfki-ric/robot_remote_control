@@ -2,6 +2,7 @@
 
 #include "Transport.hpp"
 
+#include <map>
 #include <memory>
 #include <set>
 #include <queue>
@@ -46,6 +47,8 @@ class TransportWebSocket : public Transport {
      */
     virtual int receive(std::string* buf, Flags flags = NONE);
 
+    bool receiveMessage(std::string* buf, Flags flags = NONE) override;
+
     std::shared_ptr<WSClient> getClient() {
         return client;
     }
@@ -55,7 +58,22 @@ class TransportWebSocket : public Transport {
 
     void setSerializationMode(const Serialization::Mode & mode) override;
 
+    /**
+     * @brief serve the files of a local folder via http on the websocket port (SERVER and SERVER_TEXT only),
+     * e.g. a browser interface that connects to the websocket: http://host:port/html/index.html
+     * The root url lists the served folders, folders show a directory listing.
+     *
+     * @param folderpath the local folder to serve
+     * @param url the first part of the url path the folder is served at
+     */
+    void serveFolder(const std::string& folderpath, const std::string& url = "html");
+
  private:
+    void handleHttpRequest(websocketpp::connection_hdl hdl);
+
+    // url -> local folder
+    LockableClass<std::map<std::string, std::string>> servedFolders;
+
     std::shared_ptr<WSClient> client;
     std::shared_ptr<WSServer> server;
     websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread;

@@ -1,6 +1,7 @@
 find_package (Threads)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework system filesystem)
+# Boost.System is header only since boost 1.69, its library was removed in 1.89
+find_package(Boost REQUIRED COMPONENTS unit_test_framework filesystem)
 
 add_subdirectory(performance)
 
@@ -22,7 +23,8 @@ set (COMMON_LIBS
    robot_remote_control-robot_controller
    robot_remote_control-send_timers
    robot_remote_control-simple_action_helper
-   ${Boost_LIBRARIES}
+   Boost::unit_test_framework
+   Boost::filesystem
 )
 
 add_executable(test_suite ${COMMON_SOURCE} )
@@ -120,6 +122,14 @@ if(websocketpp_FOUND AND cpprestsdk_FOUND)
     )
     target_compile_definitions(test_suite_multi_zmq PUBLIC -DTRANSPORT_MULTI_CONTROLLED_ZMQ_CONTROLLER)
 
+    # uses its own transports and ports
+    add_executable(test_proxy suite.cpp test_Proxy.cpp)
+    target_link_libraries(test_proxy
+      ${COMMON_LIBS}
+      robot_remote_control-transport_proxy
+      robot_remote_control-transport_ws
+      robot_remote_control-transport_http
+    )
 
 endif()
 

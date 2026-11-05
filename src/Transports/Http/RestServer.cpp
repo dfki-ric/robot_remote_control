@@ -192,13 +192,34 @@ void RestServer::serve_api(const std::vector<utility::string_t> &path, int alrea
 void RestServer::serve_folder(const std::vector<utility::string_t> &path, int alreadyEvaluated, http_request& message) {
     // cout << message.request_uri().to_string() << endl;
 
-    // map to server side folder
-    // get map to local folder
-    std::string folder = path[alreadyEvaluated-1];
-    std::string localpath = servedFolders[folder];
+    auto replyError = [&message](const status_code &status, const std::string &text) {
+        message.reply(status, text)
+                .then([](pplx::task<void> t){
+                    try {
+                        t.get();
+                    }
+                    catch(...){
+                        //
+                    }
+                });
+    };
 
-    // add rest of uri path
+    // map to server side folder, only registered folders are served
+    // (find() does not add entries, which operator[] would do for unknown urls)
+    auto servedFolder = servedFolders.find(path[alreadyEvaluated-1]);
+    if (servedFolder == servedFolders.end()) {
+        replyError(status_codes::NotFound, "404");
+        return;
+    }
+    std::string localpath = servedFolder->second;
+
+    // add rest of uri path (already url decoded)
     for (unsigned int i = alreadyEvaluated; i < path.size(); ++i) {
+        if (path[i] == "..") {
+            // no access outside of the served folder
+            replyError(status_codes::Forbidden, "403");
+            return;
+        }
         localpath += "/";
         localpath += path[i];
     }

@@ -42,6 +42,9 @@ ControlledRobot::ControlledRobot(std::vector<TransportSharedPtr> commandTranspor
 
 void ControlledRobot::init(const size_t &buffersize) {
 
+    // the telemetry transport is optional (default argument), only keep valid ones
+    telemetryTransports.erase(std::remove(telemetryTransports.begin(), telemetryTransports.end(), nullptr), telemetryTransports.end());
+
     for (const auto& transport : commandTransports) {
         if (!transport->supportsControlledRobotCommands()) {
             throw std::runtime_error("ControlledRobot: provided command transport is not supporting commands");
@@ -223,10 +226,7 @@ void ControlledRobot::notifyCommandCallbacks(const MessageId &type) {
     std::for_each(commandCallbacks.begin(), commandCallbacks.end(), callCb);
 }
 
-int ControlledRobot::initFiles(const FileDefinition& files) {
-    // store private version
-    this->internal_files.MergeFrom(files);
-    // remove local paths from remote version
+FileDefinition ControlledRobot::toRemoteFileDefinition(const FileDefinition& files) {
     FileDefinition remote;
     remote.CopyFrom(files);
     for (auto& file : *remote.mutable_file()) {
@@ -236,8 +236,14 @@ int ControlledRobot::initFiles(const FileDefinition& files) {
             file.set_remote_path("");
         }
     }
+    return remote;
+}
+
+int ControlledRobot::initFiles(const FileDefinition& files) {
+    // store private version
+    this->internal_files.MergeFrom(files);
     // update remote version
-    this->remote_files.MergeFrom(remote);
+    this->remote_files.MergeFrom(toRemoteFileDefinition(files));
     // initialize buffer for requests
     return sendTelemetry(this->remote_files, FILE_DEFINITION, true, 0);
 }

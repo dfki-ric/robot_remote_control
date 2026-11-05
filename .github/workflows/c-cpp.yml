@@ -13,7 +13,7 @@ jobs:
 
     strategy:
         matrix:
-            os: [ubuntu-latest, ubuntu-22.04]
+            os: [ubuntu-latest, ubuntu-24.04, ubuntu-22.04]
 
     steps:
     - uses: actions/checkout@v4
@@ -39,3 +39,5 @@ jobs:
       run: ./build/test/test_suite_multi_web
     - name: test_multi_zmq
       run: ./build/test/test_suite_multi_zmq
+    - name: test_proxy
+      run: ./build/test/test_proxy

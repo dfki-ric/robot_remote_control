@@ -32,6 +32,10 @@ int TransportZmq::send(const std::string& buf, Flags flags) {
 }
 
 int TransportZmq::receive(std::string* buf, Flags flags) {
+    return receiveMessage(buf, flags) ? buf->size() : 0;
+}
+
+bool TransportZmq::receiveMessage(std::string* buf, Flags flags) {
     zmq::message_t requestmsg;
     zmq::recv_flags zmqflag = zmq::recv_flags::none;
     if (flags & NOBLOCK) {
@@ -40,9 +44,9 @@ int TransportZmq::receive(std::string* buf, Flags flags) {
 
     if (socket->recv(requestmsg, zmqflag)) {
         buf->assign(reinterpret_cast<char*>(requestmsg.data()), requestmsg.size());
+        return true;
     }
-
-    return requestmsg.size();
+    return false;
 }
 
 void TransportZmq::connect() {

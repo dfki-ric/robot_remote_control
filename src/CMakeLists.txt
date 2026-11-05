@@ -64,6 +64,7 @@ add_subdirectory(RobotController)
 
 add_subdirectory(CLI)
 add_subdirectory(Tools)
+add_subdirectory(TransportProxy)
 
 
 
@@ -106,6 +107,7 @@ install(
 configure_file(robot_remote_control-types.pc.in robot_remote_control-types.pc @ONLY)
 configure_file(robot_remote_control-update_thread.pc.in robot_remote_control-update_thread.pc @ONLY)
 configure_file(robot_remote_control-transport_zmq.pc.in robot_remote_control-transport_zmq.pc @ONLY)
+configure_file(robot_remote_control-transport_proxy.pc.in robot_remote_control-transport_proxy.pc @ONLY)
 configure_file(robot_remote_control-controlled_robot.pc.in robot_remote_control-controlled_robot.pc @ONLY)
 configure_file(robot_remote_control-robot_controller.pc.in robot_remote_control-robot_controller.pc @ONLY)
 configure_file(robot_remote_control-send_timers.pc.in robot_remote_control-send_timers.pc @ONLY)
@@ -116,6 +118,7 @@ install(FILES
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-types.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-update_thread.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-transport_zmq.pc
+	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-transport_proxy.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-controlled_robot.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-robot_controller.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-send_timers.pc
@@ -128,3 +131,14 @@ install(FILES
 # 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 # 	FILES_MATCHING PATTERN "*.pc"
 # )
+
+# web interface, its javascript libraries are downloaded with Web/download_libraries.sh
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Web/
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/robot_remote_control/web
+	PATTERN "CLAUDE.md" EXCLUDE
+	PATTERN ".gitignore" EXCLUDE
+	PATTERN "download_libraries.sh" EXCLUDE
+)
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Web/lib/VERSIONS)
+	message(STATUS "web interface: run src/Web/download_libraries.sh to download its javascript libraries")
+endif()

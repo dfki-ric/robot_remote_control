@@ -1,0 +1,12 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: robot_remote_control-transport_proxy
+Description: @PROJECT_DESCRIPTION@
+Version: @PROJECT_VERSION@
+Requires: robot_remote_control-types robot_remote_control-update_thread
+Libs: -L${libdir} -lrobot_remote_control-transport_proxy @PKGCONFIG_LIBS@
+Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
+

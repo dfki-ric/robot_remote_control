@@ -212,8 +212,6 @@ class TelemetryBuffer: public LockableClass< std::vector < std::vector <std::sha
         if (channels.size() <= channel) {
             channels.resize(channel + 1);  // size != channelno (channel 0 == size 1)
         }
-        std::shared_ptr<robot_remote_control::RingBufferBase> newbuffer = bufferFactroies[type]->create(buffersize);
-
         channels[channel] = bufferFactroies[type]->create(buffersize);
 
         // save that this new buffer exists

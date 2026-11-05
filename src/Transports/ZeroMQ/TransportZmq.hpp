@@ -42,6 +42,8 @@ class TransportZmq: public Transport {
 
     int receive(std::string* buf, Flags flags = NONE);
 
+    bool receiveMessage(std::string* buf, Flags flags = NONE) override;
+
     /**
      * @brief disconnect socket (only for connection tests)
      */

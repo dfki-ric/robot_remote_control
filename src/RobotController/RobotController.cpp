@@ -150,9 +150,12 @@ std::string RobotController::gitVersion() {
 
 
 bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite, const ChannelId &channel) {
+    if (static_cast<size_t>(type) >= telemetryAdders.size()) {
+        return false;
+    }
     std::shared_ptr<TelemetryAdderBase> adder =  telemetryAdders[type];
     if (adder.get()) {
-        adder->setOverwrite(overwrite);
+        adder->setOverwrite(overwrite, channel);
         return true;
     }
     return false;
@@ -161,7 +164,7 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
 void RobotController::setTelemetryBufferOverwrite(bool overwrite, const ChannelId &channel) {
     for (auto &adder : telemetryAdders) {
         if (adder.get()) {
-            adder->setOverwrite(overwrite);
+            adder->setOverwrite(overwrite, channel);
         }
     }
 }
@@ -296,8 +299,10 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 
     requestTimer.start(currentMaxLatency);
 
+    bool replied = false;
     try {
-        while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
+        // empty replies are valid (e.g. requested telemetry that was never set), do not wait for the timeout
+        while (!(replied = commandTransport->receiveMessage(&replystr, flags)) && !requestTimer.isExpired()) {
             // wait time depends on how long the transports recv blocks
             usleep(1000);
         }
@@ -306,7 +311,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
         return "";
     }
-    if (replystr.size() == 0 && requestTimer.isExpired()) {
+    if (!replied) {
         connected.store(false);
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
         return replystr;

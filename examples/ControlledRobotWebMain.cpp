@@ -24,6 +24,8 @@ int main(int argc, char** argv)
     TransportSharedPtr commands = TransportSharedPtr(new TransportHttp("http://0.0.0.0:7001"));
 
     std::dynamic_pointer_cast<TransportHttp>(commands)->serveFolder("examples/html");
+    // the websocket server can also serve folders (on the same port):
+    // std::dynamic_pointer_cast<TransportWebSocket>(telemetry)->serveFolder("examples/html");
 
 
     robot_remote_control::ControlledRobot robot(commands,telemetry);
