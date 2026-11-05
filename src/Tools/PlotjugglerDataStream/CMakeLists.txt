@@ -88,6 +88,12 @@ if (plotjuggler_FOUND)
         DataStreamRRC.hpp
         DataStreamRRC.cpp)
 
+    # The PlotJuggler headers use C++17 (std::optional, std::any, std::byte),
+    # but compilers before GCC 11 default to C++14
+    set_target_properties(DataStreamRRC PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON)
+
 
     # target_include_directories(DataStreamRRC
     #         PUBLIC
