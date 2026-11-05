@@ -267,16 +267,19 @@ int TransportHttp::send(const std::string& buf, Flags flags) {
 }
 
 int TransportHttp::receive(std::string* buf, Flags flags) {
+    return receiveMessage(buf, flags) ? buf->size() : 0;
+}
+
+bool TransportHttp::receiveMessage(std::string* buf, Flags flags) {
     if (server) {
-        // forward POST requests 
-        int res = 0;
+        // forward POST requests
         auto queue = recvQueue.lockedAccess();
         if (queue->size()) {
             // todo use conditionvar to block?
             activeRequest = queue->front();
             *buf = activeRequest.request;
             queue->pop();
-            return buf->size();
+            return true;
         }
     }
     if (client) {
@@ -284,11 +287,10 @@ int TransportHttp::receive(std::string* buf, Flags flags) {
         if (queue->size()) {
             *buf = queue->front();
             queue->pop();
-            return buf->size();
+            return true;
         }
     }
-
-    return 0;
+    return false;
 }
 
 

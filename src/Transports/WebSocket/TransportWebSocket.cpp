@@ -280,12 +280,15 @@ int TransportWebSocket::send(const std::string& buf, Flags flags) {
 }
 
 int TransportWebSocket::receive(std::string* buf, Flags flags) {
-    int res = 0;
+    return receiveMessage(buf, flags) ? buf->size() : 0;
+}
+
+bool TransportWebSocket::receiveMessage(std::string* buf, Flags flags) {
     auto queue = recvQueue.lockedAccess();
     if (queue->size()) {
         *buf = queue->front();
         queue->pop();
-        return buf->size();
+        return true;
     }
-    return 0;
+    return false;
 }

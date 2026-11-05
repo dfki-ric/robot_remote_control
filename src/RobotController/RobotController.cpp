@@ -299,8 +299,10 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
 
     requestTimer.start(currentMaxLatency);
 
+    bool replied = false;
     try {
-        while (commandTransport->receive(&replystr, flags) == 0 && !requestTimer.isExpired()) {
+        // empty replies are valid (e.g. requested telemetry that was never set), do not wait for the timeout
+        while (!(replied = commandTransport->receiveMessage(&replystr, flags)) && !requestTimer.isExpired()) {
             // wait time depends on how long the transports recv blocks
             usleep(1000);
         }
@@ -309,7 +311,7 @@ std::string RobotController::sendRequest(const std::string& serializedMessage, c
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
         return "";
     }
-    if (replystr.size() == 0 && requestTimer.isExpired()) {
+    if (!replied) {
         connected.store(false);
         lostConnectionCallback(lastConnectedTimer.getElapsedTime());
         return replystr;

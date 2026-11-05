@@ -44,6 +44,16 @@ Open http://robot:7001/ (or http://robot:7001/html/index.html?telemetryport=7002
 | `telemetryport` | 7002 | port of the telemetry websocket |
 | `commandport` | port of the page | port of the http commands (cross origin requests are not supported by the robot) |
 
+For robots that only use zmq transports, `robot_remote_control-web_proxy` connects to the robot and serves
+the interface locally (see [src/TransportProxy](../TransportProxy)):
+
+    robot_remote_control-web_proxy <robot host>
+
+then open http://localhost:8001/.
+
+The robot model is loaded from the http server if it hosts one at `/model/<robot name>/model.json` (the web proxy
+caches the model of the robot there), otherwise it is downloaded from the robot.
+
 To test the interface without a robot, use the fake robots of `rrc_test_robots`:
 
     rrc_test_robots --html <this folder> [config.yml]

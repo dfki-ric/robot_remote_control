@@ -124,6 +124,13 @@ While commands from RobotController to ControlledRobot are getting acknowledged 
 These Transports are given to the RobotController and ControlledRobot in their contructor and only implement an send() and receive() function.
 So it is easy to implement other means of connections between those by implementing the Transport.hpp interface.
 
+The `GenericProxy` in [src/TransportProxy](src/TransportProxy) forwards connections between different transports (and serializations).
+
+### Web interface
+
+[src/Web](src/Web) is a browser interface (3D view of the robot model, driving, joints, actions, images, log) for robots using the http and websocket transports.
+For robots using zmq, `robot_remote_control-web_proxy <robot host>` connects to the robot and serves the interface at http://localhost:8001/.
+
 
 ## Testing
 

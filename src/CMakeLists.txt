@@ -64,6 +64,7 @@ add_subdirectory(RobotController)
 
 add_subdirectory(CLI)
 add_subdirectory(Tools)
+add_subdirectory(TransportProxy)
 
 
 
@@ -106,6 +107,7 @@ install(
 configure_file(robot_remote_control-types.pc.in robot_remote_control-types.pc @ONLY)
 configure_file(robot_remote_control-update_thread.pc.in robot_remote_control-update_thread.pc @ONLY)
 configure_file(robot_remote_control-transport_zmq.pc.in robot_remote_control-transport_zmq.pc @ONLY)
+configure_file(robot_remote_control-transport_proxy.pc.in robot_remote_control-transport_proxy.pc @ONLY)
 configure_file(robot_remote_control-controlled_robot.pc.in robot_remote_control-controlled_robot.pc @ONLY)
 configure_file(robot_remote_control-robot_controller.pc.in robot_remote_control-robot_controller.pc @ONLY)
 configure_file(robot_remote_control-send_timers.pc.in robot_remote_control-send_timers.pc @ONLY)
@@ -116,6 +118,7 @@ install(FILES
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-types.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-update_thread.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-transport_zmq.pc
+	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-transport_proxy.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-controlled_robot.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-robot_controller.pc
 	${CMAKE_CURRENT_BINARY_DIR}/robot_remote_control-send_timers.pc

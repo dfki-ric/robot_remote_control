@@ -235,7 +235,7 @@ async function loadVersions() {
 async function loadModel() {
     const message = $('viewer-message');
     try {
-        const model = await loadRobotModel(rrc, (text) => {
+        const model = await loadRobotModel(rrc, state.robotName, (text) => {
             message.textContent = `${text}…`;
         });
         message.textContent = '';
@@ -254,7 +254,7 @@ async function loadModel() {
         // the joint limits are known now
         setControllableJoints(state.controllableJoints);
         const movable = Object.values(model.robot.joints).filter((joint) => joint.jointType !== 'fixed').length;
-        setInfo('model', `${model.robot.robotName || 'unnamed'}, ${movable} movable joints`);
+        setInfo('model', `${model.robot.robotName || 'unnamed'}, ${movable} movable joints (from the ${model.source})`);
         if (model.missing.length) {
             toast(`${model.missing.length} model file(s) could not be loaded: ${model.missing.slice(0, 3).join(', ')}`);
         }

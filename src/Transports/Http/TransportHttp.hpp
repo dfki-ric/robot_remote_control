@@ -58,6 +58,8 @@ class TransportHttp : public Transport {
      */
     virtual int receive(std::string* buf, Flags flags = NONE);
 
+    bool receiveMessage(std::string* buf, Flags flags = NONE) override;
+
  private:
 
     void setSerializationMode(const Serialization::Mode & mode) override {}

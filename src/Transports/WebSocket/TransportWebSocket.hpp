@@ -47,6 +47,8 @@ class TransportWebSocket : public Transport {
      */
     virtual int receive(std::string* buf, Flags flags = NONE);
 
+    bool receiveMessage(std::string* buf, Flags flags = NONE) override;
+
     std::shared_ptr<WSClient> getClient() {
         return client;
     }

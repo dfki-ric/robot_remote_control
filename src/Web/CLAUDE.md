@@ -12,6 +12,9 @@ no npm. Usage is in README.md.
 - Serve it with the fake robots: `rrc_test_robots --html <this folder> [config.yml]` (in
   `interaction/executables/rrc_test_robots`), then open http://localhost:7001/. Robot r1 of its default
   config uses ports 7001 (http) and 7002 (websocket).
+- Robots using zmq are reached through `robot_remote_control-web_proxy` (src/TransportProxy), which converts
+  the binary messages to json: the interface must not depend on anything the robot's TransportHttp does
+  besides `/api/command`, the `/api/*` shortcuts, and serving the files.
 - There is no javascript engine or browser in the development container. Verify protocol changes by sending
   the same requests with Python (`http.client`, plus a minimal websocket client for telemetry) against the
   fake robot, and check that every import resolves through the import map and every `$('id')` exists in
@@ -30,9 +33,11 @@ no npm. Usage is in README.md.
   work without it.
 - `js/viewer.js`: three.js scene. Everything robot related is in `world`, a group rotated by -90° around x,
   because robot_remote_control uses z up and three.js y up: use robot coordinates inside it.
-- `js/model-loader.js`: downloads the urdf model like `RobotController::requestRobotModel()`
-  (ROBOT_MODEL_INFORMATION, then FILE_REQUEST) and maps mesh urls (package://, file://, relative) to the
-  downloaded files by the longest matching path suffix.
+- `js/model-loader.js`: loads the urdf model from the http server if it hosts one at
+  `/model/<modelFolderName(robot name)>/model.json` (`{path, modelfilename, files: [paths relative to the folder]}`,
+  written by robot_remote_control-web_proxy, which uses the same folder name rule), otherwise downloads it like
+  `RobotController::requestRobotModel()` (ROBOT_MODEL_INFORMATION, then FILE_REQUEST). Mesh urls (package://,
+  file://, relative) are mapped to the model files by the longest matching path suffix.
 - `js/input.js`: on screen joysticks, keyboard and gamepad input.
 
 ## Protocol facts the code relies on

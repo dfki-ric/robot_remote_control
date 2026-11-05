@@ -1,7 +1,10 @@
 /**
- * Loads the urdf model of a robot through robot_remote_control: the model folder is downloaded
- * with a FILE_REQUEST (like RobotController::requestRobotModel()), mesh and texture urls in the urdf
- * (package://, file://, relative) are mapped to the downloaded files by their path.
+ * Loads the urdf model of a robot:
+ * - hosted by the http server (e.g. robot_remote_control-web_proxy caches the model of the robot): the files
+ *   are at /model/<robot name>/, listed in /model/<robot name>/model.json
+ * - otherwise downloaded through robot_remote_control: the model folder is transferred with a FILE_REQUEST
+ *   (like RobotController::requestRobotModel())
+ * Mesh and texture urls in the urdf (package://, file://, relative) are mapped to the model files by their path.
  */
 import * as THREE from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
@@ -33,17 +36,23 @@ function pathSegments(path) {
 }
 
 /**
- * the downloaded files, urls are resolved by the longest matching path suffix
+ * the name of the folder of a robot on the server, like robot_remote_control-web_proxy names it
  */
-class DownloadedFiles {
-    constructor(transfers) {
-        this.files = transfers.map((transfer) => {
-            const segments = pathSegments(transfer.path);
-            const bytes = base64ToBytes(transfer.data);
-            const extension = (segments[segments.length - 1] || '').split('.').pop().toLowerCase();
-            const blob = new Blob([bytes], {type: MIME_TYPES[extension] || 'application/octet-stream'});
-            return {path: transfer.path, segments, bytes, url: URL.createObjectURL(blob)};
-        });
+export function modelFolderName(robotName) {
+    // one _ per character (code point), like the proxy does for utf-8
+    const name = (robotName || '').replace(/[^A-Za-z0-9_.-]/gu, '_');
+    return ['', '.', '..'].includes(name) ? 'robot' : name;
+}
+
+/**
+ * the files of a model, urls are resolved by the longest matching path suffix
+ */
+class ModelFiles {
+    /**
+     * @param files [{path, url, bytes (optional)}]
+     */
+    constructor(files) {
+        this.files = files.map((file) => ({...file, segments: pathSegments(file.path)}));
         this.urls = new Set(this.files.map((file) => file.url));
     }
 
@@ -74,38 +83,92 @@ class DownloadedFiles {
     }
 
     dispose() {
-        this.files.forEach((file) => URL.revokeObjectURL(file.url));
+        this.files.filter((file) => file.url.startsWith('blob:')).forEach((file) => URL.revokeObjectURL(file.url));
     }
 }
 
 /**
- * @param rrc RobotRemoteControl client
- * @param onStatus called with progress messages
- * @returns {robot: URDFRobot, files, missing: urls that could not be loaded} or null if the robot has no model
+ * @returns {files, urdf, text} of the model hosted by the http server, null if there is none
  */
-export async function loadRobotModel(rrc, onStatus = () => {}) {
+async function hostedModel(robotName) {
+    const base = `/model/${modelFolderName(robotName)}`;
+    let index;
+    try {
+        const response = await fetch(`${base}/model.json`, {cache: 'no-cache'});
+        index = response.ok ? await response.json() : null;
+    } catch (error) {
+        return null;
+    }
+    if (!index || !Array.isArray(index.files)) {
+        return null;
+    }
+    const files = new ModelFiles(index.files.map((path) => ({
+        path,
+        url: `${base}/${pathSegments(path).map(encodeURIComponent).join('/')}`,
+    })));
+    const urdf = files.find(index.modelfilename ? `${index.path}/${index.modelfilename}` : index.path);
+    if (!urdf) {
+        return null;
+    }
+    const response = await fetch(urdf.url);
+    if (!response.ok) {
+        return null;
+    }
+    return {files, urdf, text: await response.text()};
+}
+
+/**
+ * @returns {files, urdf, text} of the model downloaded from the robot, null if the robot has no model
+ */
+async function transferredModel(rrc, onStatus) {
     onStatus('requesting the model information');
     const info = await rrc.requestTelemetry('ROBOT_MODEL_INFORMATION');
     const definition = info && info.filedef && info.filedef.file && info.filedef.file[0];
     if (!definition) {
         return null;
     }
-
     onStatus('downloading the model');
     const folder = await rrc.commandJson('FILE_REQUEST', {identifier: definition.identifier, compressed: false}, 120000);
     const transfers = ((folder && folder.file) || []).filter((file) => file.data);
     if (!transfers.length) {
         throw new Error(`the model files of '${definition.identifier}' could not be downloaded`);
     }
-    const files = new DownloadedFiles(transfers);
+    const files = new ModelFiles(transfers.map((transfer) => {
+        const bytes = base64ToBytes(transfer.data);
+        const extension = transfer.path.split('.').pop().toLowerCase();
+        const blob = new Blob([bytes], {type: MIME_TYPES[extension] || 'application/octet-stream'});
+        return {path: transfer.path, bytes, url: URL.createObjectURL(blob)};
+    }));
     // folder model: path is the folder, modelfilename the urdf file in it
     const urdfPath = info.modelfilename ? `${definition.path}/${info.modelfilename}` : definition.path;
     const urdf = files.find(urdfPath);
     if (!urdf) {
+        files.dispose();
         throw new Error(`the model file ${urdfPath} is missing in the download`);
+    }
+    return {files, urdf, text: new TextDecoder().decode(urdf.bytes)};
+}
+
+/**
+ * @param rrc RobotRemoteControl client
+ * @param robotName name of the robot, to find a hosted model
+ * @param onStatus called with progress messages
+ * @returns {robot: URDFRobot, files, missing: urls that could not be loaded, source: 'server' or 'robot'}
+ *          or null if the robot has no model
+ */
+export async function loadRobotModel(rrc, robotName, onStatus = () => {}) {
+    onStatus('looking for the model on the server');
+    let model = await hostedModel(robotName);
+    const source = model ? 'server' : 'robot';
+    if (!model) {
+        model = await transferredModel(rrc, onStatus);
+        if (!model) {
+            return null;
+        }
     }
 
     onStatus('loading the model');
+    const {files, urdf, text} = model;
     const manager = new THREE.LoadingManager();
     manager.setURLModifier((url) => files.resolve(url));
     const missing = [];
@@ -119,7 +182,7 @@ export async function loadRobotModel(rrc, onStatus = () => {}) {
     });
 
     const loader = new URDFLoader(manager);
-    // package://name/path is resolved to name/path, then mapped to a downloaded file
+    // package://name/path is resolved to name/path, then mapped to a model file
     loader.packages = (name) => name;
     loader.loadMeshCb = (path, meshManager, material, done) => {
         if (/\.obj$/i.test(path)) {
@@ -138,10 +201,10 @@ export async function loadRobotModel(rrc, onStatus = () => {}) {
         }
     };
     const workingPath = urdf.segments.slice(0, -1).join('/') + '/';
-    const robot = loader.parse(new TextDecoder().decode(urdf.bytes), workingPath);
+    const robot = loader.parse(text, workingPath);
     // meshes are loaded asynchronously, primitives only models load nothing
     if (loading) {
         await loaded;
     }
-    return {robot, files, missing};
+    return {robot, files, missing, source};
 }

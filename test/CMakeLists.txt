@@ -122,6 +122,14 @@ if(websocketpp_FOUND AND cpprestsdk_FOUND)
     )
     target_compile_definitions(test_suite_multi_zmq PUBLIC -DTRANSPORT_MULTI_CONTROLLED_ZMQ_CONTROLLER)
 
+    # uses its own transports and ports
+    add_executable(test_proxy suite.cpp test_Proxy.cpp)
+    target_link_libraries(test_proxy
+      ${COMMON_LIBS}
+      robot_remote_control-transport_proxy
+      robot_remote_control-transport_ws
+      robot_remote_control-transport_http
+    )
 
 endif()
 

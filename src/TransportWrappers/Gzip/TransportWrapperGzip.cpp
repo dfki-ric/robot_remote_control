@@ -27,6 +27,15 @@ int TransportWrapperGzip::receive(std::string* uncompressed, Transport::Flags fl
     return 0;
 }
 
+bool TransportWrapperGzip::receiveMessage(std::string* uncompressed, Transport::Flags flags) {
+    std::string compressed;
+    if (transport->receiveMessage(&compressed, flags)) {
+        Compression::decompressString(compressed, uncompressed);
+        return true;
+    }
+    return false;
+}
+
 
 }  // namespace robot_remote_control
 
