@@ -10,6 +10,7 @@ target_include_directories(robot_remote_control-transport_ws
 )
 target_link_libraries (robot_remote_control-transport_ws
                         websocketpp::websocketpp
+                        stdc++fs
                        ${CMAKE_THREAD_LIBS_INIT}
 )
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/Transports/WebSocket/

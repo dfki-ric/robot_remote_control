@@ -128,3 +128,14 @@ install(FILES
 # 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 # 	FILES_MATCHING PATTERN "*.pc"
 # )
+
+# web interface, its javascript libraries are downloaded with Web/download_libraries.sh
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Web/
+	DESTINATION ${CMAKE_INSTALL_DATADIR}/robot_remote_control/web
+	PATTERN "CLAUDE.md" EXCLUDE
+	PATTERN ".gitignore" EXCLUDE
+	PATTERN "download_libraries.sh" EXCLUDE
+)
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Web/lib/VERSIONS)
+	message(STATUS "web interface: run src/Web/download_libraries.sh to download its javascript libraries")
+endif()

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robot Remote Control</title>
+<link rel="stylesheet" href="css/rrc.css">
+<script type="importmap">
+{
+    "imports": {
+        "three": "./lib/three/build/three.module.js",
+        "three/examples/jsm/": "./lib/three/examples/jsm/"
+    }
+}
+</script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+    <div class="brand">RRC</div>
+    <div class="robot-name" id="robot-name">connecting…</div>
+    <div class="chips" id="robot-state"></div>
+    <div class="spacer"></div>
+    <div class="connection" title="http commands and heartbeat round trip time">
+        <span class="dot" id="status-commands"></span>commands <span class="muted" id="latency"></span>
+    </div>
+    <div class="connection" title="websocket telemetry">
+        <span class="dot" id="status-telemetry"></span>telemetry
+    </div>
+</header>
+
+<main>
+    <section class="viewer-area">
+        <div id="viewer"></div>
+        <div class="viewer-toolbar">
+            <button id="goal-mode" title="drag on the ground to set a goal and its orientation">Set goal</button>
+            <button id="follow" class="active" title="keep the robot in view">Follow</button>
+            <button id="reset-view">Reset view</button>
+            <span class="separator"></span>
+            <label><input type="checkbox" data-layer="robot" checked> Robot</label>
+            <label><input type="checkbox" data-layer="trail" checked> Trail</label>
+            <label><input type="checkbox" data-layer="path" checked> Path</label>
+            <label><input type="checkbox" data-layer="laser" checked> Laser</label>
+            <label><input type="checkbox" data-layer="cloud" checked> Point cloud</label>
+            <button id="clear-trail" title="clear the driven path">Clear trail</button>
+        </div>
+        <div class="viewer-overlay" id="pose-display">no pose</div>
+        <div class="viewer-message" id="viewer-message"></div>
+        <div class="viewer-hint" id="pick-hint"></div>
+    </section>
+
+    <aside class="sidebar">
+
+        <details class="card" data-card="drive" open>
+            <summary>Drive</summary>
+            <div class="drive">
+                <div class="joystick-column">
+                    <div id="move-joystick"></div>
+                    <span class="muted">forward / turn</span>
+                </div>
+                <div class="joystick-column">
+                    <div id="lateral-joystick"></div>
+                    <span class="muted">sideways</span>
+                </div>
+            </div>
+            <div class="form-grid">
+                <label for="linear-speed">Linear</label>
+                <div class="slider-row"><input type="range" id="linear-speed" min="0.05" max="2" step="0.05" value="0.5"><span id="linear-speed-value"></span></div>
+                <label for="angular-speed">Angular</label>
+                <div class="slider-row"><input type="range" id="angular-speed" min="0.05" max="2" step="0.05" value="0.8"><span id="angular-speed-value"></span></div>
+                <label for="twist-frame">Frame</label>
+                <select id="twist-frame"><option value="">default</option></select>
+            </div>
+            <div class="row">
+                <button id="stop" class="danger wide">Stop</button>
+            </div>
+            <div class="muted small" id="drive-info">W/S forward, A/D sideways, Q/E turn, Space stop · gamepad: left stick drives, right stick turns</div>
+            <div class="readout" id="velocity-display"></div>
+        </details>
+
+        <details class="card" data-card="actions" open>
+            <summary>Actions</summary>
+            <div id="simple-actions" class="actions"><span class="muted">no simple actions</span></div>
+        </details>
+
+        <details class="card" data-card="joints">
+            <summary>Joints</summary>
+            <div id="joints"><span class="muted">no controllable joints</span></div>
+        </details>
+
+        <details class="card" data-card="camera">
+            <summary>Camera</summary>
+            <select id="image-source"><option value="">no images</option></select>
+            <canvas id="camera-image" width="320" height="240"></canvas>
+            <div class="muted small" id="image-info"></div>
+            <div id="video-streams"></div>
+        </details>
+
+        <details class="card" data-card="sensors">
+            <summary>Sensors</summary>
+            <div id="sensors"><span class="muted">no sensor data</span></div>
+        </details>
+
+        <details class="card" data-card="tasks">
+            <summary>Tasks</summary>
+            <div class="form-grid">
+                <label for="complex-action">Action</label>
+                <select id="complex-action"></select>
+            </div>
+            <div id="task-poses" class="task-section">
+                <div class="row">
+                    <button id="task-pick">Pick points</button>
+                    <button id="task-clear">Clear</button>
+                    <span class="muted" id="task-count"></span>
+                </div>
+            </div>
+            <div id="task-twists" class="task-section">
+                <div class="row twist-inputs">
+                    <input type="number" id="task-vx" step="0.1" value="0.2" title="linear x (m/s)">
+                    <input type="number" id="task-vy" step="0.1" value="0" title="linear y (m/s)">
+                    <input type="number" id="task-wz" step="0.1" value="0" title="angular z (rad/s)">
+                    <button id="task-add-twist">Add</button>
+                </div>
+                <div class="muted small" id="task-twist-list"></div>
+            </div>
+            <div class="row">
+                <button id="task-send" class="primary wide">Send task</button>
+            </div>
+        </details>
+
+        <details class="card" data-card="maps">
+            <summary>Maps</summary>
+            <div id="maps"><span class="muted">no maps</span></div>
+        </details>
+
+        <details class="card" data-card="log" open>
+            <summary>Log</summary>
+            <div class="row">
+                <select id="log-level" title="log level of the robot">
+                    <option value="" disabled selected>robot log level</option>
+                    <option>FATAL</option><option>ERROR</option><option>WARN</option><option>INFO</option><option>DEBUG</option>
+                </select>
+                <button id="log-clear">Clear</button>
+            </div>
+            <div id="log" class="log"></div>
+        </details>
+
+        <details class="card" data-card="telemetry">
+            <summary>Telemetry</summary>
+            <table class="telemetry-table">
+                <thead><tr><th>type</th><th>ch</th><th>Hz</th><th>age</th></tr></thead>
+                <tbody id="telemetry-table"></tbody>
+            </table>
+            <pre id="telemetry-detail" class="json"></pre>
+        </details>
+
+        <details class="card" data-card="info">
+            <summary>Robot</summary>
+            <dl id="robot-info" class="info"></dl>
+            <div class="row">
+                <button id="reload-model">Reload model</button>
+                <button id="reload-interface">Reload interface</button>
+            </div>
+            <div id="files"></div>
+        </details>
+
+    </aside>
+</main>
+
+<div class="dialog-backdrop hidden" id="permission-dialog">
+    <div class="dialog">
+        <h2>Permission requested</h2>
+        <p id="permission-description"></p>
+        <div class="row right">
+            <button id="permission-deny" class="danger">Deny</button>
+            <button id="permission-grant" class="primary">Grant</button>
+        </div>
+    </div>
+</div>
+
+<div id="toasts"></div>
+
+</body>
+</html>
