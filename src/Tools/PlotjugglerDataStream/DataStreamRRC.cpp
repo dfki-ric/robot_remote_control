@@ -41,7 +41,12 @@ DataStreamRRC::DataStreamRRC() {
     // localtask = OrocosHelpers::getClientTask();
 
 
+#if GOOGLE_PROTOBUF_VERSION >= 3012000
     google::protobuf::LinkMessageReflection<robot_remote_control::JointState>();
+#else
+    // LinkMessageReflection is only available since protobuf 3.12
+    robot_remote_control::JointState::descriptor();
+#endif
 }
 
 
