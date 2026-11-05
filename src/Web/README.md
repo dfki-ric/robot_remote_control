@@ -7,8 +7,11 @@ commands via `TransportHttp`, telemetry via `TransportWebSocket` in `SERVER_TEXT
   driven trail, planned path, laser scans, point clouds and maps; set goals by clicking/dragging on the ground
 * driving with on screen joysticks, keyboard (W/S, A/D, Q/E, space: stop) or a gamepad
 * joint sliders, simple actions (incl. named values and dependencies), complex actions with points picked in the 3D view
-* camera images and image layers, simple sensors, IMU and wrenches
-* robot state, log messages and log level, permission requests, telemetry inspector, file downloads
+* image region above the 3D view with any number of views side by side, each showing an image channel or a
+  layer of image layers (e.g. rgb and depth), log region below the 3D view; both are resizable and can be
+  hidden, the layout is remembered by the browser
+* simple sensors, IMU and wrenches
+* robot state, log level, permission requests, telemetry inspector, file downloads
 * heartbeats, so the robot detects a lost connection
 
 ## Setup

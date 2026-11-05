@@ -180,9 +180,16 @@ main {
 }
 
 .viewer-area {
-    position: relative;
+    display: flex;
+    flex-direction: column;
     min-height: 0;
     min-width: 0;
+}
+
+.viewer-stage {
+    position: relative;
+    flex: 1;
+    min-height: 150px;
 }
 
 #viewer {
@@ -455,19 +462,119 @@ main {
     font-family: ui-monospace, monospace;
 }
 
-/* ------------------------------------------------------------ camera */
+/* ------------------------------------------------------------ regions above and below the 3D view */
 
-#camera-image {
-    display: block;
-    width: 100%;
-    margin-top: 8px;
-    background: #000;
-    border-radius: var(--radius);
-    image-rendering: pixelated;
+.splitter {
+    height: 6px;
+    flex-shrink: 0;
+    cursor: row-resize;
+    background: var(--border);
+    touch-action: none;
 }
 
-#image-source {
+.splitter:hover, .splitter.dragging {
+    background: var(--accent);
+}
+
+.region {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: var(--panel);
+}
+
+#image-region {
+    height: 260px;
+}
+
+#log-region {
+    height: 170px;
+}
+
+.region-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.region-header button, .region-header select {
+    padding: 2px 10px;
+}
+
+/* ------------------------------------------------------------ images */
+
+.video-streams {
+    font-size: 12px;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.video-streams a {
+    color: var(--accent);
+    margin-right: 8px;
+}
+
+/* the views share the width, they scroll if there are too many */
+.image-views {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 1fr);
+    gap: 8px;
+    padding: 8px;
+    overflow-x: auto;
+}
+
+.image-view {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.image-view-header {
+    display: flex;
+    gap: 6px;
+    padding: 4px;
+}
+
+.image-view-header select {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 4px;
+}
+
+.image-view-header button {
+    padding: 0 8px;
+}
+
+.image-view canvas {
+    flex: 1 1 0;
+    min-height: 0;
     width: 100%;
+    display: block;
+    object-fit: contain;
+    image-rendering: pixelated;
+    background: #000;
+}
+
+.image-view .info {
+    font-size: 11px;
+    color: var(--muted);
+    padding: 2px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ------------------------------------------------------------ tasks, maps */
@@ -495,8 +602,10 @@ main {
 /* ------------------------------------------------------------ log */
 
 .log {
-    max-height: 260px;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
+    padding: 2px 10px;
     font-family: ui-monospace, monospace;
     font-size: 12px;
 }
@@ -644,8 +753,12 @@ main {
 @media (max-width: 900px) {
     main {
         grid-template-columns: 1fr;
-        grid-template-rows: 55vh auto;
+        grid-template-rows: auto auto;
         overflow-y: auto;
+    }
+    .viewer-stage {
+        flex: none;
+        height: 55vh;
     }
     .sidebar {
         border-left: none;

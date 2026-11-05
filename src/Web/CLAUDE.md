@@ -23,7 +23,11 @@ no npm. Usage is in README.md.
 - `js/rrc-client.js`: protocol client. `command()` POSTs a ControlMessage to `/api/command`,
   `requestTelemetry()`, telemetry websocket with reconnect, heartbeats, `LatestValueSender` for continuous
   commands (one request at a time, in order, newer values replace pending ones).
-- `js/app.js`: all panels and their wiring to telemetry and commands.
+- `js/app.js`: all panels and their wiring to telemetry and commands. The 3D view has a `Region` above
+  (image views) and below (log), each with a splitter and a toolbar toggle; the sidebar holds the other
+  panels as collapsible cards. The layout (open cards, image views, region heights and visibility) is kept in
+  `localStorage` through `storageGet()`/`storageSet()`, which tolerate unavailable storage: the page must
+  work without it.
 - `js/viewer.js`: three.js scene. Everything robot related is in `world`, a group rotated by -90° around x,
   because robot_remote_control uses z up and three.js y up: use robot coordinates inside it.
 - `js/model-loader.js`: downloads the urdf model like `RobotController::requestRobotModel()`

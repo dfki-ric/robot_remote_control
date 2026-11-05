@@ -31,23 +31,51 @@
 </header>
 
 <main>
-    <section class="viewer-area">
-        <div id="viewer"></div>
-        <div class="viewer-toolbar">
-            <button id="goal-mode" title="drag on the ground to set a goal and its orientation">Set goal</button>
-            <button id="follow" class="active" title="keep the robot in view">Follow</button>
-            <button id="reset-view">Reset view</button>
-            <span class="separator"></span>
-            <label><input type="checkbox" data-layer="robot" checked> Robot</label>
-            <label><input type="checkbox" data-layer="trail" checked> Trail</label>
-            <label><input type="checkbox" data-layer="path" checked> Path</label>
-            <label><input type="checkbox" data-layer="laser" checked> Laser</label>
-            <label><input type="checkbox" data-layer="cloud" checked> Point cloud</label>
-            <button id="clear-trail" title="clear the driven path">Clear trail</button>
+    <section class="viewer-area" id="viewer-area">
+        <div class="region hidden" id="image-region">
+            <div class="region-header">
+                <strong>Images</strong>
+                <button id="add-image-view" title="add a view, each view shows one image channel or layer">+ View</button>
+                <span class="video-streams" id="video-streams"></span>
+            </div>
+            <div class="image-views" id="image-views">
+                <span class="muted" id="image-views-empty">no image views, add one with "+ View"</span>
+            </div>
         </div>
-        <div class="viewer-overlay" id="pose-display">no pose</div>
-        <div class="viewer-message" id="viewer-message"></div>
-        <div class="viewer-hint" id="pick-hint"></div>
+        <div class="splitter hidden" id="image-splitter" title="drag to resize the image views"></div>
+        <div class="viewer-stage">
+            <div id="viewer"></div>
+            <div class="viewer-toolbar">
+                <button id="goal-mode" title="drag on the ground to set a goal and its orientation">Set goal</button>
+                <button id="follow" class="active" title="keep the robot in view">Follow</button>
+                <button id="reset-view">Reset view</button>
+                <span class="separator"></span>
+                <label><input type="checkbox" data-layer="robot" checked> Robot</label>
+                <label><input type="checkbox" data-layer="trail" checked> Trail</label>
+                <label><input type="checkbox" data-layer="path" checked> Path</label>
+                <label><input type="checkbox" data-layer="laser" checked> Laser</label>
+                <label><input type="checkbox" data-layer="cloud" checked> Point cloud</label>
+                <button id="clear-trail" title="clear the driven path">Clear trail</button>
+                <span class="separator"></span>
+                <button id="toggle-images" title="show or hide the image views">Images</button>
+                <button id="toggle-log" title="show or hide the log">Log</button>
+            </div>
+            <div class="viewer-overlay" id="pose-display">no pose</div>
+            <div class="viewer-message" id="viewer-message"></div>
+            <div class="viewer-hint" id="pick-hint"></div>
+        </div>
+        <div class="splitter" id="log-splitter" title="drag to resize the log"></div>
+        <div class="region" id="log-region">
+            <div class="region-header">
+                <strong>Log</strong>
+                <select id="log-level" title="log level of the robot">
+                    <option value="" disabled selected>robot log level</option>
+                    <option>FATAL</option><option>ERROR</option><option>WARN</option><option>INFO</option><option>DEBUG</option>
+                </select>
+                <button id="log-clear">Clear</button>
+            </div>
+            <div id="log" class="log"></div>
+        </div>
     </section>
 
     <aside class="sidebar">
@@ -89,14 +117,6 @@
             <div id="joints"><span class="muted">no controllable joints</span></div>
         </details>
 
-        <details class="card" data-card="camera">
-            <summary>Camera</summary>
-            <select id="image-source"><option value="">no images</option></select>
-            <canvas id="camera-image" width="320" height="240"></canvas>
-            <div class="muted small" id="image-info"></div>
-            <div id="video-streams"></div>
-        </details>
-
         <details class="card" data-card="sensors">
             <summary>Sensors</summary>
             <div id="sensors"><span class="muted">no sensor data</span></div>
@@ -132,18 +152,6 @@
         <details class="card" data-card="maps">
             <summary>Maps</summary>
             <div id="maps"><span class="muted">no maps</span></div>
-        </details>
-
-        <details class="card" data-card="log" open>
-            <summary>Log</summary>
-            <div class="row">
-                <select id="log-level" title="log level of the robot">
-                    <option value="" disabled selected>robot log level</option>
-                    <option>FATAL</option><option>ERROR</option><option>WARN</option><option>INFO</option><option>DEBUG</option>
-                </select>
-                <button id="log-clear">Clear</button>
-            </div>
-            <div id="log" class="log"></div>
         </details>
 
         <details class="card" data-card="telemetry">

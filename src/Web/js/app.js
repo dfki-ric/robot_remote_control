@@ -4,7 +4,7 @@
  * The page has to be served by the TransportHttp of the robot (commands are sent to the same server),
  * the telemetry websocket port is given as url parameter: index.html?telemetryport=7002
  */
-import { RobotRemoteControl, LatestValueSender, LOG_LEVELS, TELEMETRY_TYPES, base64ToBytes } from './rrc-client.js';
+import { RobotRemoteControl, LatestValueSender, LOG_LEVELS, TELEMETRY_TYPES, base64ToBytes, parseJson } from './rrc-client.js';
 import { Viewer } from './viewer.js';
 import { loadRobotModel } from './model-loader.js';
 import { Joystick, KeyboardInput, readGamepad } from './input.js';
@@ -129,6 +129,23 @@ function throttle(render, interval) {
             }, wait);
         }
     };
+}
+
+// the browser storage keeps the layout, it may be unavailable (private mode, blocked storage)
+function storageGet(key) {
+    try {
+        return localStorage.getItem(key);
+    } catch (error) {
+        return null;
+    }
+}
+
+function storageSet(key, value) {
+    try {
+        localStorage.setItem(key, value);
+    } catch (error) {
+        // the layout is just not remembered
+    }
 }
 
 // ------------------------------------------------------------------ connection
@@ -597,22 +614,189 @@ rrc.on('JOINT_STATE', (jointState) => {
     updateJointsThrottled(jointState);
 });
 
-// ------------------------------------------------------------------ camera
+// ------------------------------------------------------------------ regions above and below the 3D view
 
+const regions = [];
+
+/**
+ * A region above or below the 3D view: shown or hidden with a toolbar button, resized with its splitter,
+ * the visibility and height are remembered.
+ */
+class Region {
+    constructor(name, {region, splitter, toggle, above, onShow = () => {}}) {
+        this.region = $(region);
+        this.splitter = $(splitter);
+        this.toggle = $(toggle);
+        this.above = above;
+        this.onShow = onShow;
+        this.visibleKey = `rrc-${name}-region`;
+        this.heightKey = `rrc-${name}-height`;
+        regions.push(this);
+
+        this.toggle.addEventListener('click', () => this.setVisible(!this.visible));
+        this.splitter.addEventListener('pointerdown', (event) => {
+            this.splitter.setPointerCapture(event.pointerId);
+            this.splitter.classList.add('dragging');
+        });
+        this.splitter.addEventListener('pointermove', (event) => {
+            if (this.splitter.classList.contains('dragging')) {
+                this.resize(event.clientY);
+            }
+        });
+        const endResize = () => {
+            if (this.splitter.classList.contains('dragging')) {
+                this.splitter.classList.remove('dragging');
+                storageSet(this.heightKey, this.region.style.height);
+            }
+        };
+        this.splitter.addEventListener('pointerup', endResize);
+        this.splitter.addEventListener('pointercancel', endResize);
+    }
+
+    get visible() {
+        return !this.region.classList.contains('hidden');
+    }
+
+    setVisible(visible, remember = true) {
+        this.region.classList.toggle('hidden', !visible);
+        this.splitter.classList.toggle('hidden', !visible);
+        this.toggle.classList.toggle('active', visible);
+        if (remember) {
+            storageSet(this.visibleKey, visible ? 'shown' : 'hidden');
+        }
+        if (visible) {
+            this.onShow();
+        }
+    }
+
+    resize(pointerY) {
+        const area = $('viewer-area').getBoundingClientRect();
+        const others = regions.filter((region) => region !== this && region.visible)
+            .reduce((sum, region) => sum + region.region.offsetHeight, 0);
+        const wanted = this.above ? pointerY - area.top : area.bottom - pointerY;
+        // keep space for the 3D view
+        const height = Math.min(Math.max(wanted, 80), area.height - others - 160);
+        this.region.style.height = `${Math.round(height)}px`;
+    }
+
+    /**
+     * @param visible used if the visibility was not remembered
+     */
+    restore(visible) {
+        const height = storageGet(this.heightKey);
+        if (height) {
+            this.region.style.height = height;
+        }
+        const stored = storageGet(this.visibleKey);
+        this.setVisible(stored === null ? visible : stored === 'shown', false);
+    }
+}
+
+const imageRegion = new Region('image', {
+    region: 'image-region', splitter: 'image-splitter', toggle: 'toggle-images', above: true,
+    onShow: () => imageViews.forEach((view) => view.draw()),
+});
+const logRegion = new Region('log', {region: 'log-region', splitter: 'log-splitter', toggle: 'toggle-log', above: false});
+
+// ------------------------------------------------------------------ images
+
+const IMAGE_VIEWS_KEY = 'rrc-image-views';
+
+// key ("image:<channel>" or "layers:<channel>:<layer>") -> {label, image, rate, last}
 const imageSources = new Map();
+const imageViews = [];
+
+function saveImageViews() {
+    storageSet(IMAGE_VIEWS_KEY, JSON.stringify(imageViews.map((view) => view.key)));
+}
+
+function fillImageSourceOptions(select, selected) {
+    const keys = Array.from(imageSources.keys());
+    // views restored from the last session may show sources that were not received yet
+    if (selected && !imageSources.has(selected)) {
+        keys.push(selected);
+    }
+    select.replaceChildren(...keys.map((key) =>
+        element('option', {value: key}, imageSources.has(key) ? imageSources.get(key).label : `${key} (waiting)`)));
+    if (!keys.length) {
+        select.append(element('option', {value: ''}, 'no images'));
+    }
+    select.value = selected || '';
+}
+
+/**
+ * add a view showing one image source
+ */
+function addImageView(key) {
+    const select = element('select', {title: 'image channel or layer'});
+    const close = element('button', {title: 'remove this view'}, '×');
+    const canvas = element('canvas', {width: 320, height: 240});
+    const info = element('div', {class: 'info'});
+    const node = element('div', {class: 'image-view'}, element('div', {class: 'image-view-header'}, select, close), canvas, info);
+    const view = {key: key || '', select, node};
+    view.draw = throttle(() => {
+        const source = imageSources.get(view.key);
+        if (!source || !imageRegion.visible) {
+            return;
+        }
+        drawImage(canvas, source.image).then((details) => {
+            info.textContent = `${details} · ${format(source.rate, 1)} Hz`;
+        }).catch((error) => {
+            info.textContent = error.message;
+        });
+    }, 100);
+    select.addEventListener('change', () => {
+        view.key = select.value;
+        saveImageViews();
+        view.draw();
+    });
+    close.addEventListener('click', () => {
+        imageViews.splice(imageViews.indexOf(view), 1);
+        node.remove();
+        saveImageViews();
+        $('image-views-empty').classList.toggle('hidden', imageViews.length > 0);
+    });
+    fillImageSourceOptions(select, view.key);
+    imageViews.push(view);
+    $('image-views').append(node);
+    $('image-views-empty').classList.add('hidden');
+    saveImageViews();
+    view.draw();
+}
 
 function addImageSource(key, label, image) {
-    const select = $('image-source');
-    if (!imageSources.has(key)) {
-        if (!imageSources.size) {
-            select.replaceChildren();
+    let source = imageSources.get(key);
+    const isNew = !source;
+    if (isNew) {
+        source = {rate: 0, last: 0};
+        imageSources.set(key, source);
+    }
+    const now = performance.now();
+    if (source.last) {
+        const rate = 1000 / Math.max(now - source.last, 1);
+        source.rate = source.rate ? source.rate * 0.8 + rate * 0.2 : rate;
+    }
+    source.last = now;
+    source.label = label;
+    source.image = image;
+    if (isNew) {
+        imageViews.forEach((view) => {
+            view.key = view.key || key;
+            fillImageSourceOptions(view.select, view.key);
+        });
+        // first images: show them, unless the user arranged the views or hid the region before
+        if (storageGet(IMAGE_VIEWS_KEY) === null) {
+            addImageView(key);
         }
-        select.append(element('option', {value: key}, label));
+        if (storageGet(imageRegion.visibleKey) === null && !imageRegion.visible) {
+            imageRegion.setVisible(true, false);
+        }
     }
-    imageSources.set(key, image);
-    if (select.value === key) {
-        drawSelectedImage();
-    }
+    imageViews.forEach((view) => {
+        if (view.key === key) {
+            view.draw();
+        }
+    });
 }
 
 rrc.on('IMAGE', (image, channel) => {
@@ -625,16 +809,19 @@ rrc.on('IMAGE_LAYERS', (layers, channel) => {
     });
 });
 
-$('image-source').addEventListener('change', () => drawSelectedImage());
+$('add-image-view').addEventListener('click', () => {
+    // prefer a source that is not shown yet
+    const shown = new Set(imageViews.map((view) => view.key));
+    const keys = Array.from(imageSources.keys());
+    addImageView(keys.find((key) => !shown.has(key)) || keys[0]);
+});
 
-const drawSelectedImage = throttle(() => {
-    const image = imageSources.get($('image-source').value);
-    if (image && $('camera-image').closest('details').open) {
-        drawImage(image).catch((error) => {
-            $('image-info').textContent = error.message;
-        });
+function restoreImageViews() {
+    const keys = parseJson(storageGet(IMAGE_VIEWS_KEY));
+    if (Array.isArray(keys)) {
+        keys.forEach((key) => addImageView(key));
     }
-}, 100);
+}
 
 const PIXEL_FORMATS = {
     MODE_RGB: [3, [0, 1, 2]], RGB8: [3, [0, 1, 2]],
@@ -643,21 +830,24 @@ const PIXEL_FORMATS = {
     MODE_GRAYSCALE: [1, [0, 0, 0]], MONO8: [1, [0, 0, 0]],
 };
 
-async function drawImage(image) {
-    const canvas = $('camera-image');
+/**
+ * draw a robot_remote_control::Image into the canvas
+ * @returns a description of the image
+ */
+async function drawImage(canvas, image) {
     const context = canvas.getContext('2d');
     const encoding = (image.encoding || '').toUpperCase();
     const bytes = base64ToBytes(image.data);
     const width = image.width || 0;
     const height = image.height || 0;
-    $('image-info').textContent = `${width}×${height} ${image.encoding || ''}`;
+    let details = `${width}×${height} ${image.encoding || ''}`;
 
     if (/JPEG|JPG|PNG/.test(encoding)) {
         const bitmap = await createImageBitmap(new Blob([bytes]));
         canvas.width = bitmap.width;
         canvas.height = bitmap.height;
         context.drawImage(bitmap, 0, 0);
-        return;
+        return `${bitmap.width}×${bitmap.height} ${image.encoding}`;
     }
     if (!width || !height) {
         throw new Error('empty image');
@@ -703,19 +893,20 @@ async function drawImage(image) {
             const shade = Number.isFinite(v) && v > 0 ? 255 - 225 * (v - min) / range : 0;
             out.set([shade, shade, shade, 255], i * 4);
         });
-        $('image-info').textContent += `  ${format(min)}…${format(max)}`;
+        details += `  ${format(min)}…${format(max)}`;
     } else {
         throw new Error(`unsupported image encoding ${image.encoding}`);
     }
     canvas.width = width;
     canvas.height = height;
     context.putImageData(pixels, 0, 0);
+    return details;
 }
 
 function setVideoStreams(streams) {
     const list = (streams && streams.stream) || [];
-    $('video-streams').replaceChildren(...list.map((stream) =>
-        element('div', {class: 'small'}, 'video stream: ', element('a', {href: stream.url, target: '_blank'}, stream.url))));
+    $('video-streams').replaceChildren(...(list.length ? ['video streams: '] : []),
+        ...list.map((stream) => element('a', {href: stream.url, target: '_blank'}, stream.url)));
 }
 
 // ------------------------------------------------------------------ sensors
@@ -1063,28 +1254,19 @@ $('reload-interface').addEventListener('click', loadInterface);
 
 document.querySelectorAll('details[data-card]').forEach((card) => {
     const key = `rrc-card-${card.dataset.card}`;
-    try {
-        const stored = localStorage.getItem(key);
-        if (stored !== null) {
-            card.open = stored === 'open';
-        }
-    } catch (error) {
-        // storage may be unavailable
+    const stored = storageGet(key);
+    if (stored !== null) {
+        card.open = stored === 'open';
     }
-    card.addEventListener('toggle', () => {
-        try {
-            localStorage.setItem(key, card.open ? 'open' : 'closed');
-        } catch (error) {
-            // storage may be unavailable
-        }
-        if (card.open && card.dataset.card === 'camera') {
-            drawSelectedImage();
-        }
-    });
+    card.addEventListener('toggle', () => storageSet(key, card.open ? 'open' : 'closed'));
 });
 
 // ------------------------------------------------------------------ start
 
+// the image region appears with the first images, the log is shown by default
+imageRegion.restore(false);
+logRegion.restore(true);
+restoreImageViews();
 rrc.connectTelemetry();
 rrc.startHeartbeat();
 loadInterface();
