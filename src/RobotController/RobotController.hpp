@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <array>
+#include <limits>
 #include <memory>
 #include <map>
 #include <mutex>
@@ -35,17 +37,19 @@ class RobotController: public UpdateThread {
         virtual void update();
 
         /**
-         * @brief Set the overwrite mode of a specific buffers (default false)
-         * 
+         * @brief Set the overwrite mode of a specific buffer (default true)
+         *
          * @param type TelemetryMessageType enum
          * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
+         * @param channel the channel of the type to set the mode for
          */
         bool setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite = true, const ChannelId &channel = 0);
 
         /**
-         * @brief Set the overwrite mode of all buffers (default false)
-         * 
+         * @brief Set the overwrite mode of the buffers of all types on a channel (default true)
+         *
          * @param overwrite if false: new data is dropped if the buffer is full, if true: oldest data in buffer is overwritten
+         * @param channel the channel to set the mode for
          */
         void setTelemetryBufferOverwrite(bool overwrite = true, const ChannelId &channel = 0);
 
@@ -723,15 +727,20 @@ class RobotController: public UpdateThread {
 
         class TelemetryAdderBase{
          public:
-            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : overwrite(true), buffers(buffers) {}
+            explicit TelemetryAdderBase(std::shared_ptr<TelemetryBuffer> buffers) : buffers(buffers) {
+                for (auto &mode : overwrite) {
+                    mode.store(true);
+                }
+            }
             virtual ~TelemetryAdderBase() {}
             virtual void addToTelemetryBuffer(const MessageId &type, const std::string &serializedMessage, const ChannelId &channel, bool textMode) = 0;
-            void setOverwrite(bool mode = true) {
-                overwrite = mode;
+            void setOverwrite(bool mode = true, const ChannelId &channel = 0) {
+                overwrite[channel].store(mode);
             }
 
          protected:
-            bool overwrite;
+            // overwrite mode per channel, read by the update thread
+            std::array<std::atomic<bool>, std::numeric_limits<ChannelId>::max() + 1> overwrite;
             std::shared_ptr<TelemetryBuffer>  buffers;
         };
 
@@ -746,7 +755,7 @@ class RobotController: public UpdateThread {
                 }else{
                     data.ParseFromString(serializedMessage);
                 }
-                RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite);
+                RingBufferAccess::pushData(buffers->lockedAccess().get()[type][channel], data, overwrite[channel].load());
             }
         };
 

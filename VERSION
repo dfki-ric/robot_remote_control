@@ -1,3 +1,4 @@
+7.0.1 - some fixes suggested by claude
 7.0.0 - Use a protobuf-only wire protocol (channel and type in proto)
 6.0.0 - Updated ControllabeFrames irformation
 5.0.3 - Allow path overrides for file transfers

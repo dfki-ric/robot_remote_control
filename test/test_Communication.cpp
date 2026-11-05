@@ -1281,6 +1281,32 @@ BOOST_AUTO_TEST_CASE(robot_model) {
     boost::filesystem::remove_all("./downloaded_model_folder");
 }
 
+BOOST_AUTO_TEST_CASE(robot_model_remote_path) {
+    RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+    ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
+
+    controller.startUpdateThread(10);
+    robot.startUpdateThread(10);
+
+    // the local path of the model is hidden from the controller
+    FileDefinition model;
+    File* file = model.add_file();
+    model.add_isfolder(true);
+    file->set_identifier("robotmodel");
+    file->set_path("./test/testfiles/model");
+    file->set_remote_path("/mymodel");
+
+    robot.initRobotModel(model, "model.urdf");
+
+    auto modelpath = controller.requestRobotModel("./downloaded_model_folder");
+    BOOST_CHECK_EQUAL(modelpath.first, "/mymodel");
+    BOOST_CHECK_EQUAL(modelpath.second, "model.urdf");
+    const std::string downloaded = "./downloaded_model_folder/" + modelpath.first + "/" + modelpath.second;
+    BOOST_TEST(isFileEqual("./test/testfiles/model/model.urdf", downloaded));
+
+    boost::filesystem::remove_all("./downloaded_model_folder");
+}
+
 
 BOOST_AUTO_TEST_CASE(telemetry_channels) {
   
@@ -1367,4 +1393,76 @@ BOOST_AUTO_TEST_CASE(telemetry_channels) {
 
     // robot.addChannel<robot_remote_control::JointState>(robot_remote_control::CURRENT_POSE, "Invalid type");
 
+}
+
+BOOST_AUTO_TEST_CASE(default_channel_name) {
+    RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+    ControlledRobot robot(transports.controlledRobotCommands, transports.controlledRobotTelemetry);
+
+    robot.startUpdateThread(10);
+
+    BOOST_CHECK(robot.setDefaultChannelName(robot_remote_control::CURRENT_POSE, "BasePose"));
+    BOOST_CHECK(robot.setDefaultChannelName(robot_remote_control::JOINT_STATE, "Joints"));
+
+    // the names are requestable without adding further channels
+    robot_remote_control::ChannelsDefinition channels;
+    controller.requestChannelsDefinition(&channels);
+    BOOST_REQUIRE_EQUAL(channels.channel().size(), 2);
+    BOOST_CHECK_EQUAL(channels.channel(0).channelno(), 0);
+    BOOST_CHECK_EQUAL(channels.channel(0).messagetype(), robot_remote_control::CURRENT_POSE);
+    BOOST_CHECK_EQUAL(channels.channel(0).name(), "BasePose");
+    BOOST_CHECK_EQUAL(channels.channel(1).channelno(), 0);
+    BOOST_CHECK_EQUAL(channels.channel(1).messagetype(), robot_remote_control::JOINT_STATE);
+    BOOST_CHECK_EQUAL(channels.channel(1).name(), "Joints");
+
+    // setting the name again renames instead of adding a definition
+    BOOST_CHECK(robot.setDefaultChannelName(robot_remote_control::CURRENT_POSE, "BasePose2"));
+    robot_remote_control::ChannelsDefinition renamed;
+    controller.requestChannelsDefinition(&renamed);
+    BOOST_REQUIRE_EQUAL(renamed.channel().size(), 2);
+    BOOST_CHECK_EQUAL(renamed.channel(0).name(), "BasePose2");
+    BOOST_CHECK_EQUAL(controller.getChannelName(robot_remote_control::CURRENT_POSE, 0), "BasePose2");
+    BOOST_CHECK_EQUAL(controller.getChannelName(robot_remote_control::JOINT_STATE, 0), "Joints");
+}
+
+BOOST_AUTO_TEST_CASE(controlled_robot_without_telemetry_transport) {
+    // the telemetry transport is optional, telemetry is only buffered for requests
+    ControlledRobot robot(transports.controlledRobotCommands.front());
+    BOOST_CHECK_EQUAL(robot.telemetryTransports.size(), 0);
+
+    robot_remote_control::Pose pose = TypeGenerator::genPose();
+    BOOST_CHECK_EQUAL(robot.setCurrentPose(pose), 0);
+    BOOST_CHECK(robot.buffers->peekSerialized(CURRENT_POSE, 0, Serialization::BINARY) == pose.SerializeAsString());
+}
+
+BOOST_AUTO_TEST_CASE(buffer_setting_overwrite_per_channel) {
+    RobotController controller(transports.robotControllerCommands, transports.robotControllerTelemetry);
+
+    // two buffers of size 2 for the same type, channel 1 drops new data when full
+    BOOST_CHECK(controller.setSingleTelemetryBufferSize(CURRENT_POSE, 2, 0));
+    BOOST_CHECK(controller.addChannelBuffer(CURRENT_POSE, 1, 2));
+    BOOST_CHECK(controller.setSingleTelemetryBufferOverwrite(CURRENT_POSE, false, 1));
+    BOOST_CHECK(controller.setSingleTelemetryBufferOverwrite(static_cast<TelemetryMessageType>(200), false) == false);
+
+    robot_remote_control::Pose pose = TypeGenerator::genPose();
+    for (int i = 0; i < 3; ++i) {
+        pose.mutable_position()->set_x(i);
+        controller.telemetryAdders[CURRENT_POSE]->addToTelemetryBuffer(CURRENT_POSE, pose.SerializeAsString(), 0, false);
+        controller.telemetryAdders[CURRENT_POSE]->addToTelemetryBuffer(CURRENT_POSE, pose.SerializeAsString(), 1, false);
+    }
+
+    robot_remote_control::Pose received;
+    // channel 0 (overwrite): oldest value was overwritten
+    BOOST_CHECK(controller.getCurrentPose(&received, false, 0));
+    BOOST_CHECK_EQUAL(received.position().x(), 1);
+    // channel 1 (no overwrite): newest value was dropped
+    BOOST_CHECK(controller.getCurrentPose(&received, false, 1));
+    BOOST_CHECK_EQUAL(received.position().x(), 0);
+    BOOST_CHECK_EQUAL(controller.getDroppedTelemetry(CURRENT_POSE, 1), 1);
+
+    // setting all buffers of a channel
+    controller.setTelemetryBufferOverwrite(false, 0);
+    BOOST_CHECK(controller.telemetryAdders[CURRENT_POSE]->overwrite[0].load() == false);
+    BOOST_CHECK(controller.telemetryAdders[JOINT_STATE]->overwrite[0].load() == false);
+    BOOST_CHECK(controller.telemetryAdders[JOINT_STATE]->overwrite[1].load() == true);
 }

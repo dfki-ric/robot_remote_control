@@ -150,9 +150,12 @@ std::string RobotController::gitVersion() {
 
 
 bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType type, bool overwrite, const ChannelId &channel) {
+    if (static_cast<size_t>(type) >= telemetryAdders.size()) {
+        return false;
+    }
     std::shared_ptr<TelemetryAdderBase> adder =  telemetryAdders[type];
     if (adder.get()) {
-        adder->setOverwrite(overwrite);
+        adder->setOverwrite(overwrite, channel);
         return true;
     }
     return false;
@@ -161,7 +164,7 @@ bool RobotController::setSingleTelemetryBufferOverwrite(TelemetryMessageType typ
 void RobotController::setTelemetryBufferOverwrite(bool overwrite, const ChannelId &channel) {
     for (auto &adder : telemetryAdders) {
         if (adder.get()) {
-            adder->setOverwrite(overwrite);
+            adder->setOverwrite(overwrite, channel);
         }
     }
 }

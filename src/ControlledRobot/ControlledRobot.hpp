@@ -92,27 +92,32 @@ class ControlledRobot: public UpdateThread {
             return channelno;
         }
 
+        /**
+         * @brief set the name of the default channel (0) of a telemetry type,
+         * it can be requested by the controller using requestChannelsDefinition()
+         *
+         * @param type
+         * @param name
+         * @return true
+         */
         bool setDefaultChannelName(const TelemetryMessageType& type, const std::string& name) {
             ChannelDefinition* channel = nullptr;
             for (int i = 0; i < channels.channel().size(); ++i) {
                 ChannelDefinition* chan = channels.mutable_channel()->Mutable(i);
-                if (chan->channelno() == 0) {
+                if (chan->messagetype() == type && chan->channelno() == 0) {
                     channel = chan;
+                    break;
                 }
             }
-            // if channel is 0 and not already found, create decription
-            if (channel == 0 && channel == nullptr) {
+            // if the default channel of this type was not named before, create decription
+            if (channel == nullptr) {
                 channel = channels.add_channel();
-                channel->set_name(name);
                 channel->set_messagetype(type);
                 channel->set_channelno(0);
-                return true;
             }
-            // if (channel) {
-            //     channel->set_name(name);
-            //     return true;
-            // }
-            return false;
+            channel->set_name(name);
+            sendTelemetry(channels, CHANNELS_DEFINITION, true, 0);
+            return true;
         }
 
         // Command Callbacks
@@ -427,20 +432,20 @@ class ControlledRobot: public UpdateThread {
          */
         int initFiles(const FileDefinition& files);
 
+        /**
+         * @brief set the robot model that can be downloaded by the RobotController using requestRobotModel()
+         *
+         * @param filedef the model file, or the model folder (isFolder set), the remote_path can be used to hide the local path
+         * @param modelfilename for folder models: the model file inside the folder
+         * @return int
+         */
         int initRobotModel(const FileDefinition& filedef, const std::string& modelfilename = "") {
             RobotModelInformation modelinfo;
-
-            if (modelfilename == "") {
-                // single file model
-                modelinfo.mutable_filedef()->CopyFrom(filedef);
-            } else {
-                // folder model
-                modelinfo.mutable_filedef()->CopyFrom(filedef);
-                modelinfo.set_modelfilename(modelfilename);
-            }
-            if (!initFiles(filedef)) {
-                return -1;
-            }
+            // the RobotController locates the downloaded model by the path, so it has to be the remote one
+            modelinfo.mutable_filedef()->CopyFrom(toRemoteFileDefinition(filedef));
+            // empty for single file models
+            modelinfo.set_modelfilename(modelfilename);
+            initFiles(filedef);
             return sendTelemetry(modelinfo, ROBOT_MODEL_INFORMATION, true, 0);
         }
 
@@ -662,6 +667,11 @@ class ControlledRobot: public UpdateThread {
         virtual ControlMessageType receiveRequest();
 
         virtual ControlMessageType evaluateRequest(TransportSharedPtr transport, const std::string& request);
+
+        /**
+         * @brief replaces local paths by the remote_path (if set), to hide them from the RobotController
+         */
+        static FileDefinition toRemoteFileDefinition(const FileDefinition& files);
 
         bool loadFile(FileTransfer* file, const std::string &path, bool compressed = false, const std::string &remotePath = "");
 
