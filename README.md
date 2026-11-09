@@ -126,11 +126,14 @@ So it is easy to implement other means of connections between those by implement
 
 The `GenericProxy` in [src/TransportProxy](src/TransportProxy) forwards connections between different transports (and serializations).
 
-### Web interface
+### Web interfaces
 
 [src/Web](src/Web) is a browser interface (3D view of the robot model, driving, joints, actions, images, log) for robots using the http and websocket transports.
 For robots using zmq, `robot_remote_control-web_proxy <robot host>` connects to the robot and serves the interface at http://localhost:8001/.
 
+#### Svelte (Typescript)
+[src/WebSvelte](src/WebSvelte) is a [Svelte web app](https://svelte.dev/) using [Noph UI](https://noph.dev/) that implements [Googles modern Material Design](https://m3.material.io/) and the [threlte.xyz](https://threlte.xyz) based [URDF-Viewer](https://codeberg.org/brean/urdf-viewer) for visualization.
+Its very close to the default [src/Web](src/Web)-page but is split into multiple component files and provides a Dialog to configure the Gamepad/Keyboard controls and the overall theme.
 
 ## Testing
 
