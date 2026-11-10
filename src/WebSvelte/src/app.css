@@ -1,0 +1,22 @@
+:root {
+	--rrc-sidebar-width: 400px;
+	--rrc-ok: #66bb6a;
+	--rrc-warn: #ffb74d;
+	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	font-size: 14px;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	height: 100%;
+}
+
+body {
+	background-color: var(--np-color-background);
+	color: var(--np-color-on-background);
+}
